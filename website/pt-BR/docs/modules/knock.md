@@ -9,8 +9,9 @@ Single Packet Authorization (SPA) compatível com o [fwknop](https://www.cipherd
 - **Bloqueio no firewall**: as portas protegidas são gravadas no firewall do sistema (nftables; iptables + ipset quando o kernel não tem nf_tables) e só os endereços que fizeram o knock são liberados, protegendo o sshd local e outros serviços que não passam pelo Gately;
 - **Entradas do Gately liberadas por knock**: regras de redirecionamento de portas, roteamento por protocolo e encaminhamento integrado do STUN, além de cada rota individual do roteamento por protocolo, podem usar «Exigir knock», decidido pelo próprio Gately, sem permissão de firewall, o que funciona também no Windows, no macOS e em contêineres sem `NET_ADMIN`;
 - **Uma única porta aberta**: o roteamento por protocolo reconhece pacotes de knock enviados por TCP (`fwknop -P tcp`), de modo que a mesma porta recebe o knock e, conforme o resultado, libera rotas como SSH;
+- **Liberação após login web**: um site do Serviço Web pode servir de entrada de liberação; depois que o visitante passa pela autenticação do site, o IP de origem dele recebe a autorização da regra de knock, sem instalar cliente. O site também pode exigir admissão por batida; veja [Admissão por batida e liberação após login no Serviço Web](/pt-BR/docs/modules/web#knock);
 - **Integração com a Prevenção de intrusão**: knocks recusados publicam o evento «Knock recusado», o modelo «Falha de port knocking» da Prevenção de intrusão bloqueia a origem por número de ocorrências, e knocks vindos de endereços já bloqueados são descartados direto;
-- Lista das autorizações atuais (tempo restante, com revogação); knocks aceitos e recusados são registrados no log de execução e podem ser assinados na Central de notificações.
+- Lista das autorizações atuais (origem da autorização, pacote de knock ou login web, usuário que fez login, tempo restante, com revogação); knocks aceitos e recusados são registrados no log de execução e podem ser assinados na Central de notificações.
 
 ## Início rápido: proteger o SSH local
 
@@ -35,9 +36,9 @@ Por padrão, o pacote de knock é enviado à porta UDP 62201. Se o Gately estive
 
 | Campo | Descrição |
 | --- | --- |
-| Portas | Portas que o cliente pode pedir para liberar, como `tcp/22`, `udp/51820`, no máximo 16. Todas as portas do parâmetro `-A` do cliente precisam estar nesta lista; caso contrário o knock inteiro é recusado |
+| Portas | Portas que o cliente pode pedir para liberar, como `tcp/22`, `udp/51820`, no máximo 16. Todas as portas do parâmetro `-A` do cliente precisam estar nesta lista; caso contrário o knock inteiro é recusado. Pode ficar vazio quando o bloqueio no firewall está desligado: a regra então só recebe autorizações pelo «Liberar após login» de um site web, não aceita pacotes de knock e não abre a porta UDP de knock por causa dela, e o cartão mostra «Nenhuma (liberado apenas por login web)» |
 | Bloqueio no firewall | Quando ativado, bloqueia essas portas no firewall do sistema e libera só os endereços que fizeram o knock; desativado, o firewall não é alterado e a regra serve apenas às entradas que usam «Exigir knock» |
-| Chave de criptografia / chave HMAC | Codificadas em base64; vazias, são geradas automaticamente (32 / 64 bytes, como em `fwknop -k`), e também é possível informar as chaves de um servidor fwknop existente. Copiar a regra gera chaves novas; editar, desativar ou excluir a regra revoga todas as autorizações que ela emitiu |
+| Chave de criptografia / chave HMAC | Codificadas em base64; vazias, são geradas automaticamente (32 / 64 bytes, como em `fwknop -k`), e também é possível informar as chaves de um servidor fwknop existente. Copiar a regra gera chaves novas. Editar uma regra que continua ativada (nome, portas, chaves etc.) revoga as autorizações obtidas por pacotes de knock e mantém as obtidas por login web; desativar ou excluir a regra revoga todas as autorizações |
 | Algoritmo HMAC | SHA-256 (padrão do fwknop), SHA-384, SHA-512; deve coincidir com `--hmac-digest-type` do cliente |
 | Duração do acesso | Tempo em que novas conexões podem ser estabelecidas após o knock; padrão 30 segundos |
 | Duração máxima do cliente | Limite quando o cliente pede uma duração maior com `-f` (padrão 300 segundos); 0 ignora a duração pedida pelo cliente; se o pedido for menor que a duração do acesso, ele sempre vale |
@@ -56,7 +57,7 @@ O cliente fwknop 2.6 só envia pacotes de knock por IPv4 e só libera endereços
 
 ## Configurações globais
 
-- **Porta UDP de knock**: padrão 62201 (a porta padrão do cliente fwknop); com 0 não escuta UDP e recebe apenas knocks enviados pelo roteamento por protocolo. Sem regras ativadas, não há escuta;
+- **Porta UDP de knock**: padrão 62201 (a porta padrão do cliente fwknop); com 0 não escuta UDP e recebe apenas knocks enviados pelo roteamento por protocolo. Sem regras ativadas, ou quando nenhuma regra ativada tem portas preenchidas (liberação apenas por login web), não há escuta;
 - **Liberar no firewall automaticamente**: veja acima;
 - **Knock dispensado na rede local / lista de dispensa**: afetam apenas o bloqueio no firewall; as entradas com «Exigir knock» são controladas pelas próprias listas de IP;
 - **Validade do pacote**: diferença máxima entre o carimbo de tempo do pacote e a hora local, padrão 120 segundos; os relógios do cliente e do servidor precisam estar corretos.
@@ -73,6 +74,10 @@ O cliente fwknop 2.6 só envia pacotes de knock por IPv4 e só libera endereços
 O Gately cria no nftables uma tabela própria, `inet gately_knock`, sem alterar as regras existentes do sistema: a cadeia `prerouting` (prioridade -160, depois do rastreamento de conexões e antes da tradução de endereços de destino) entrega à cadeia `gate` os pacotes destinados às portas protegidas, que libera, em ordem, o tráfego cujo destino não é o host (conexões encaminhadas por este host a outros dispositivos não são afetadas), a interface de loopback, as conexões já estabelecidas, os pacotes TCP que não iniciam conexão, e endereço + protocolo + porta presentes nas redes dispensadas e no conjunto de liberações por knock, descartando o restante. Como a decisão é tomada no prerouting, portas mapeadas para contêineres Docker são bloqueadas pela porta anterior ao mapeamento. As liberações são gravadas como elementos de conjunto com timeout e o kernel os remove automaticamente ao expirar.
 
 Sem nf_tables, usa-se a tabela mangle do iptables: `PREROUTING` salta para `GATELY_KNOCK`, com um conjunto ipset por porta protegida (`gkn4_tcp_22` etc., com timeout). Se a tabela ou o salto forem removidos por um recarregamento do firewall, por `nft flush ruleset` etc., ele é regravado em até 10 segundos, junto com as liberações ainda válidas. «Ver regras do firewall» na página mostra as regras gravadas no momento.
+
+### Autorização por login web {#web-grant}
+
+As autorizações obtidas pelo [Liberar após login](/pt-BR/docs/modules/web#knock) de um site web também valem nas regras com o bloqueio no firewall ativado: o Gately grava no conjunto de liberações os endereços que de fato acessaram o site de entrada com essa autorização (até 8 por autorização; acima disso, sai o mais antigo), junto com as portas da regra e com a mesma validade da autorização, e os remove quando a autorização é revogada ou expira. Autorizações IPv6 são avaliadas por faixa (padrão /64), mas o firewall libera apenas os endereços específicos registrados. Se o mesmo endereço também tiver uma autorização obtida por pacote de knock, cada uma é mantida até a própria validade.
 
 ::: tip SSH que entra por redirecionamento de portas
 Conexões encaminhadas pelo redirecionamento de portas do Gately para `127.0.0.1:22` do host chegam pela interface de loopback e não passam pelo bloqueio no firewall. Nesse caso, escolha «Exigir knock» na regra de redirecionamento de portas ou proteja, no bloqueio no firewall, a porta externa de encaminhamento.
@@ -115,4 +120,4 @@ Antes da autenticação, a taxa é limitada por faixa de origem (no máximo 10 p
 
 - Só há suporte ao modo Rijndael (AES) CBC do fwknop com HMAC; GnuPG, o modo IV antigo e pacotes sem HMAC não são suportados;
 - Não executa mensagens de comando (`fwknop -C`) e não suporta solicitações de acesso NAT (`-N`);
-- As autorizações de knock ficam na memória; depois de reiniciar o Gately, é preciso dar o knock de novo (conexões já estabelecidas não são afetadas). Os registros antirreplay também ficam só na memória, então após um reinício qualquer pacote com carimbo de tempo anterior à inicialização é recusado; se o relógio do cliente estiver atrasado em relação ao servidor, um knock nos primeiros segundos após o reinício pode ser recusado, e basta bater de novo.
+- As autorizações de knock ficam na memória; depois de reiniciar o Gately, é preciso dar o knock de novo ou abrir outra vez a página de liberação web (conexões já estabelecidas não são afetadas). Os registros antirreplay também ficam só na memória, então após um reinício qualquer pacote com carimbo de tempo anterior à inicialização é recusado; se o relógio do cliente estiver atrasado em relação ao servidor, um knock nos primeiros segundos após o reinício pode ser recusado, e basta bater de novo.

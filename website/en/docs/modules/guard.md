@@ -10,6 +10,7 @@ fail2ban-style intrusion prevention: Gately finds brute-force attempts in logs, 
 - **TLS handshake failures**: counts handshake failures on the web service HTTPS listeners by failure type (dropped mid-handshake, reset, timeout, not TLS or protocol error, cannot negotiate, unknown domain and more), listener and number of times, catching scans that drop during the handshake and never send an HTTP request;
 - **Trap ports**: traps on ports this host does not use (23, 135, 1433, 3389, 5900, 6379 and others by default). Any source that connects is banned;
 - **Port-scan detection**: a source that connects to closed ports on this host more often than the threshold per minute is banned;
+- **Ports that were hit**: when kernel-level trap ports and scan detection ban a source, the ban reason, the runtime log and the notification include the ports it hit, which shows what the scan was after;
 - **One ban list**: manual bans (CIDR networks and permanent bans included) and the web service's authentication-failure bans are managed here. Manual bans cannot cover loopback addresses, since connections forwarded through this machine all show that address. Bans are persisted and restored after a restart;
 - **Escalating bans**: when an address is banned again within 30 days, the duration doubles up to a maximum;
 - **Whitelist**: LAN, loopback, 100.64.0.0/10 (Tailscale) and the IPv6 /64 networks of this host's interfaces are ignored by default (bans are per /64, so public IPv6 devices on the same LAN are not banned along with an offender), and you can add IPs or networks. A single whitelisted IPv6 address protects its whole /64.
@@ -32,9 +33,12 @@ With "Sync to system firewall" on, Gately creates its own `inet gately` table in
 
 - The `prerouting` chain (priority -190, after connection tracking and before destination NAT) drops packets from banned addresses, whether they are for this host or forwarded to a container or LAN device. Replies to connections this host opens itself (DNS, package mirrors and so on) still get through even if the other end is banned. IPv6 is banned per /64;
 - The `input` chain only looks at new connections to this host, for trap ports and scan detection. Whitelisted addresses are skipped;
+- With trap ports or scan detection on, the `input` chain records each hit as source address + port in the `port4` / `port6` sets (kept for the last 5 minutes, up to 16384 entries per address family), which Gately reads to list the ports hit when banning;
 - The whole table is deleted when sync is turned off or Gately stops. If another program removes it, Gately rewrites it within 10 seconds.
 
-When the kernel has no nf_tables (Synology DSM, for example), iptables (legacy) and ipset are used instead, again without touching existing rules: the first rule of `PREROUTING` and `INPUT` in the mangle table jumps to Gately's own `GATELY_PRE` and `GATELY_IN` chains, which do the same as the two chains above; banned single addresses go into the ipset sets `gately_ban4` / `gately_ban6` (IPv6 per /64), and network and permanent bans become rules in the `GATELY_DENY` chain. If a program such as the Synology firewall puts its own rules in front, the jumps are moved back to the top within 10 seconds, and cleared chains are written again. Scan detection counts with the recent module, with the threshold capped at 255 per minute.
+When the kernel has no nf_tables (Synology DSM, for example), iptables (legacy) and ipset are used instead, again without touching existing rules: the first rule of `PREROUTING` and `INPUT` in the mangle table jumps to Gately's own `GATELY_PRE` and `GATELY_IN` chains, which do the same as the two chains above; banned single addresses go into the ipset sets `gately_ban4` / `gately_ban6` (IPv6 per /64), and network and permanent bans become rules in the `GATELY_DENY` chain. If a program such as the Synology firewall puts its own rules in front, the jumps are moved back to the top within 10 seconds, and cleared chains are written again. Scan detection counts with the recent module, with the threshold capped at 255 per minute. The ports that were hit are recorded in the `hash:ip,port` ipset sets `gately_port4` / `gately_port6` (also kept for 5 minutes, up to 16384 entries per family).
+
+When the kernel or nft cannot create the port logging sets (for example slim firmware without `hash:ip,port`), Gately skips port logging and notes this once in the runtime log; ban reasons then carry no ports, while trap ports, scan detection and all other bans keep working. Port logging is retried every time the rules are rewritten.
 
 "View rules" on the page shows the complete rules currently in place.
 
@@ -154,7 +158,7 @@ The web service and the WAF only learn the real client address through the PROXY
 
 ## Notifications
 
-Bans raise the `Intrusion Prevention: IP banned` event, which you can subscribe to in the [Notification Center](/en/docs/modules/notify). Addresses banned by trap ports and scan detection in the same check are combined into one notification.
+Bans raise the `Intrusion Prevention: IP banned` event, which you can subscribe to in the [Notification Center](/en/docs/modules/notify). Addresses banned by trap ports and scan detection in the same check are combined into one notification, which also lists the ports that were hit when they were recorded.
 
 ## Verification
 

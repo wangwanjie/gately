@@ -164,7 +164,7 @@ Activez « Connexion via fnOS » dans « Paramètres → Contrôle d'accès » e
 
 L'interface d'administration écoute par défaut sur le port `16680`, avec le compte par défaut `admin` et le mot de passe par défaut `gately.cn`. Pour un déploiement automatisé, la variable d'environnement `GATELY_INITIAL_PASSWORD` permet de fixer un autre mot de passe initial.
 
-Le mot de passe par défaut est public : tant qu'il est utilisé, un avertissement invitant à le changer reste affiché en haut de l'interface d'administration. La première connexion ouvre un guide de démarrage qui propose successivement de changer le mot de passe, d'activer l'authentification à deux facteurs ou une passkey, de lancer l'auto-diagnostic réseau, d'importer depuis Lucky et de configurer les notifications.
+Le mot de passe par défaut est public. Lors d'une connexion avec le mot de passe par défaut ou un mot de passe trop faible, une boîte de dialogue de changement de mot de passe impossible à fermer s'ouvre d'abord ; il faut choisir un nouveau mot de passe conforme aux règles (10 à 72 octets, pas un mot de passe faible courant, sans gately ni le nom d'utilisateur, etc.) pour continuer, voir [Modèle de sécurité](/fr/docs/guide/security). Un guide de démarrage propose ensuite successivement d'activer l'authentification à deux facteurs ou une passkey, de lancer l'auto-diagnostic réseau, d'importer depuis Lucky et de configurer les notifications.
 
 ## Réinitialiser le mot de passe et l'authentification à deux facteurs {#reset}
 

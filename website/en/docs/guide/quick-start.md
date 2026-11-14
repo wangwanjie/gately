@@ -21,15 +21,15 @@ Install the native app instead: it opens from the desktop icon through the fnOS 
 
 ## 2. Sign in
 
-Open `http://<device-ip>:16680` in a browser. The username is `admin` and the default password is `gately.cn`. The default password is public, so the admin UI keeps showing a warning at the top until you change it.
+Open `http://<device-ip>:16680` in a browser. The username is `admin` and the default password is `gately.cn`. The default password is public: after signing in, a password change dialog opens, and you can continue only after setting a new password of at least 10 characters that is hard to guess.
 
 ## 3. Apply basic hardening
 
 Right after signing in, go to "Settings" and:
 
-1. Change the administrator password;
-2. Enable two-factor authentication (TOTP);
-3. Set a secure entrance path, LAN-only access or admin UI HTTPS as needed.
+1. Enable two-factor authentication (TOTP), or register a Passkey;
+2. Set a secure entrance path, LAN-only access or admin UI HTTPS as needed;
+3. Check the security score at the top of "Settings → Account & Security" and resolve the flagged items.
 
 See the [Hardening Guide](/en/docs/guide/hardening) for more recommendations.
 

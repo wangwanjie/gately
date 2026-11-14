@@ -9,8 +9,9 @@ Single Packet Authorization (SPA) compatible with [fwknop](https://www.cipherdyn
 - **Firewall blocking**: protected ports are written into the system firewall (nftables, or iptables + ipset when the kernel has no nf_tables), and only addresses that knocked successfully are let through, which protects services such as the local sshd that do not pass through Gately;
 - **Gately entries open by knock**: rules of Port Forwarding, Protocol Routing and the built-in forwarding of STUN, as well as single routes in Protocol Routing, can be set to "Require knock". Gately decides by itself, no firewall privileges are needed, and it works on Windows, macOS and containers without `NET_ADMIN`;
 - **Only one port open**: Protocol Routing can recognize knock packets sent over TCP (`fwknop -P tcp`), so a single port both receives knocks and opens routes such as SSH according to the knock result;
+- **Release after web login**: a Web Services site can act as a release entry: once a visitor passes the site's authentication, their source IP receives a grant of the knock rule, with no client to install; sites can also require knock admission, see [Knock admission and release after login in Web Services](/en/docs/modules/web#knock);
 - **Works with Intrusion Prevention**: rejected knocks publish a "Port knock rejected" event, the built-in "Port knock failures" template of Intrusion Prevention can ban sources by count, and knocks from banned addresses are dropped immediately;
-- A list of current grants (remaining time, revocable); successful and rejected knocks are both recorded in the run log and can be subscribed to in the Notification Center.
+- A list of current grants (whether the grant came from a knock packet or a web login, the signed-in user, remaining time, revocable); successful and rejected knocks are both recorded in the run log and can be subscribed to in the Notification Center.
 
 ## Quick start: protect local SSH
 
@@ -35,9 +36,9 @@ Knock packets are sent to UDP port 62201 by default. When Gately sits behind a r
 
 | Field | Description |
 | --- | --- |
-| Ports | Ports the client may ask to open, such as `tcp/22` and `udp/51820`, up to 16. Every port in the client's `-A` argument must be in this list, otherwise the whole knock is rejected |
+| Ports | Ports the client may ask to open, such as `tcp/22` and `udp/51820`, up to 16. Every port in the client's `-A` argument must be in this list, otherwise the whole knock is rejected. Can be left empty when firewall blocking is off: the rule then gets grants only through "Release after login" on Web sites, accepts no knock packets and needs no UDP knock port, and the rule card shows "None (released by web login only)" |
 | Firewall blocking | When on, these ports are blocked in the system firewall and only addresses that knocked successfully are let through; when off the firewall is untouched and the rule is only referenced by "Require knock" entries |
-| Encryption key / HMAC key | base64-encoded; leave empty to generate (32 / 64 bytes, same as `fwknop -k`), or enter the keys of an existing fwknop server. Copying a rule generates new keys; editing, disabling or deleting a rule revokes all grants it produced |
+| Encryption key / HMAC key | base64-encoded; leave empty to generate (32 / 64 bytes, same as `fwknop -k`), or enter the keys of an existing fwknop server. Copying a rule generates new keys. Editing a rule that stays enabled (name, ports, keys and so on) revokes the grants obtained by knock packets and keeps those obtained by web login; disabling or deleting a rule revokes all of its grants |
 | HMAC algorithm | SHA-256 (fwknop default), SHA-384, SHA-512; must match the client's `--hmac-digest-type` |
 | Access duration | How long new connections may be opened after a successful knock, 30 seconds by default |
 | Client max duration | Upper limit when the client asks for a longer duration with `-f` (300 seconds by default); 0 ignores the duration requested by the client. A request shorter than the access duration is always honored |
@@ -56,7 +57,7 @@ The fwknop 2.6 client can only send knock packets over IPv4 and open IPv4 addres
 
 ## Global settings
 
-- **UDP knock port**: 62201 by default (the default port of the fwknop client); enter 0 to stop listening on UDP and accept only knocks sent through Protocol Routing. Nothing is listened on while no rule is enabled;
+- **UDP knock port**: 62201 by default (the default port of the fwknop client); enter 0 to stop listening on UDP and accept only knocks sent through Protocol Routing. Nothing is listened on while no rule is enabled, or while no enabled rule has ports filled in (all released by web login only);
 - **Auto-open firewall**: see above;
 - **LAN knock-exempt / knock-exempt allowlist**: affects firewall blocking only; "Require knock" entries are controlled by their own IP lists;
 - **Packet validity**: the maximum difference between the packet timestamp and this machine's time, 120 seconds by default; the clocks of both client and server must be accurate.
@@ -73,6 +74,10 @@ The fwknop 2.6 client can only send knock packets over IPv4 and open IPv4 addres
 Gately creates its own `inet gately_knock` table in nftables and leaves existing system rules untouched. The `prerouting` chain (priority -160, after connection tracking and before destination NAT) passes packets sent to protected ports to the `gate` chain, which in order accepts traffic not destined to this machine (connections forwarded through it to other devices are unaffected), the loopback interface, established connections, TCP packets that do not start a connection, and address + protocol + port entries from the knock-exempt networks and the knock-grant set, and drops everything else. Because the decision is made in prerouting, a port mapped to a Docker container is blocked by its port before mapping. Grants are written as set elements with a timeout and removed by the kernel when they expire.
 
 Without nf_tables, the iptables mangle table is used instead: `PREROUTING` jumps to `GATELY_KNOCK`, with one ipset (such as `gkn4_tcp_22`, with timeouts) per protected port. If the table or the jump is cleared by a firewall reload, `nft flush ruleset` and the like, it is rewritten within 10 seconds together with the grants that are still valid. "View firewall rules" on the page shows the rules currently written.
+
+### Web login grants {#web-grant}
+
+Grants obtained through [release after login](/en/docs/modules/web#knock) on a Web site also apply to rules with firewall blocking: Gately writes the addresses that actually visited the entry site under that grant (up to 8 per grant, dropping the oldest when exceeded), together with the rule's ports, into the allow sets, with the same expiry as the grant, and removes them when the grant is revoked or expires. IPv6 grants are matched by network (/64 by default), while the firewall only opens the specific addresses recorded. When the same address also holds a grant from a knock packet, each is kept until its own expiry.
 
 ::: tip SSH arriving through port forwarding
 Connections forwarded by Gately Port Forwarding to local `127.0.0.1:22` come from the loopback interface and are not blocked by the firewall. In that case choose "Require knock" on the port forwarding rule, or protect the outward-facing forwarded port with firewall blocking.
@@ -115,4 +120,4 @@ Before authentication, packets are rate-limited per source range (at most 10 per
 
 - Only fwknop's Rijndael (AES) CBC mode with HMAC is supported; GnuPG, the legacy IV mode and packets without HMAC are not;
 - Command messages (`fwknop -C`) are not executed, and NAT access requests (`-N`) are not supported;
-- Knock grants are kept in memory, so after Gately restarts you need to knock again (established connections are unaffected). Replay records are also kept only in memory, so after a restart any packet whose timestamp is earlier than the start is refused; if the client clock is behind the server, a knock in the first few seconds after a restart may be refused, and knocking again works.
+- Knock grants are kept in memory, so after Gately restarts you need to knock again or reopen the Web release page (established connections are unaffected). Replay records are also kept only in memory, so after a restart any packet whose timestamp is earlier than the start is refused; if the client clock is behind the server, a knock in the first few seconds after a restart may be refused, and knocking again works.

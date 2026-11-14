@@ -10,6 +10,7 @@ Einbruchschutz im Stil von fail2ban: Gately erkennt Brute-Force-Versuche in Prot
 - **TLS-Handshake-Fehler**: zählt Handshake-Fehler auf den HTTPS-Listenern des Webdienstes nach Fehlertyp (Abbruch mitten im Handshake, Zurücksetzen, Zeitüberschreitung, kein TLS oder Protokollfehler, nicht aushandelbar, unbekannte Domain u. a.), Listener und Anzahl; fängt Scans ab, die im Handshake abbrechen und nie eine HTTP-Anfrage senden;
 - **Köderports**: Köder auf Ports, die dieser Host nicht nutzt (standardmäßig 23, 135, 1433, 3389, 5900, 6379 und weitere). Jede Quelle, die sich verbindet, wird gesperrt;
 - **Portscan-Erkennung**: Eine Quelle, die sich öfter als der Schwellenwert pro Minute zu geschlossenen Ports dieses Hosts verbindet, wird gesperrt;
+- **Getroffene Ports erfassen**: Bei Sperren durch Köderports und Scan-Erkennung auf Kernel-Ebene nennen Sperrgrund, Laufprotokoll und Benachrichtigung die Ports, die diese Quelle getroffen hat, damit sich das Ziel des Scans einschätzen lässt;
 - **Eine Sperrliste**: Manuelle Sperren (auch CIDR-Netze und dauerhafte Sperren) und die automatischen Sperren des Webdienstes nach fehlgeschlagener Authentifizierung werden hier verwaltet. Manuelle Sperren dürfen keine Loopback-Adressen umfassen, da über diesen Rechner weitergeleitete Verbindungen alle mit dieser Adresse erscheinen. Sperren werden gespeichert und nach einem Neustart wiederhergestellt;
 - **Steigende Sperren**: Wird eine Adresse innerhalb von 30 Tagen erneut gesperrt, verdoppelt sich die Dauer bis zu einem Höchstwert;
 - **Whitelist**: LAN-, Loopback- und 100.64.0.0/10-Adressen (Tailscale) sowie die IPv6-/64-Netze der Schnittstellen dieses Hosts werden standardmäßig ignoriert (gesperrt wird pro /64, so trifft eine Sperre nicht alle Geräte mit öffentlicher IPv6 im selben LAN); weitere IPs oder Netze lassen sich ergänzen. Eine einzelne IPv6-Adresse auf der Whitelist schützt ihr ganzes /64.
@@ -32,9 +33,12 @@ Mit „Mit System-Firewall synchronisieren“ legt Gately in nftables eine eigen
 
 - Die Kette `prerouting` (Priorität -190, nach dem Connection Tracking und vor dem Ziel-NAT) verwirft Pakete gesperrter Adressen, egal ob sie für diesen Host bestimmt sind oder an einen Container bzw. ein LAN-Gerät weitergeleitet werden. Antworten auf Verbindungen, die dieser Host selbst aufbaut (DNS, Paketquellen usw.), kommen weiterhin an, auch wenn die Gegenstelle gesperrt ist. IPv6 wird pro /64 gesperrt;
 - Die Kette `input` betrachtet nur neue Verbindungen zu diesem Host, für Köderports und Scan-Erkennung. Whitelist-Adressen bleiben außen vor;
+- Sind Köderports oder Scan-Erkennung aktiv, schreibt die Kette `input` die getroffenen Paare aus Quelladresse + Port in die Sets `port4` / `port6` (die letzten 5 Minuten, höchstens 16384 Einträge je Adressfamilie); daraus ergeben sich beim Sperren die getroffenen Ports;
 - Die ganze Tabelle wird gelöscht, wenn die Synchronisierung ausgeschaltet wird oder Gately stoppt. Entfernt ein anderes Programm sie, schreibt Gately sie innerhalb von 10 Sekunden neu.
 
-Hat der Kernel kein nf_tables (z. B. Synology DSM), werden iptables (legacy) und ipset verwendet, ebenfalls ohne bestehende Regeln anzufassen: Die erste Regel von `PREROUTING` und `INPUT` in der mangle-Tabelle springt in Gatelys eigene Ketten `GATELY_PRE` und `GATELY_IN`, die dasselbe tun wie die beiden Ketten oben; gesperrte Einzeladressen landen in den ipset-Sets `gately_ban4` / `gately_ban6` (IPv6 pro /64), Netz- und dauerhafte Sperren werden Regeln in der Kette `GATELY_DENY`. Setzt ein Programm wie die Synology-Firewall eigene Regeln davor, werden die Sprünge innerhalb von 10 Sekunden wieder an die erste Stelle gesetzt, gelöschte Ketten werden neu geschrieben. Die Scan-Erkennung zählt mit dem recent-Modul, der Schwellenwert wird auf höchstens 255 pro Minute begrenzt.
+Hat der Kernel kein nf_tables (z. B. Synology DSM), werden iptables (legacy) und ipset verwendet, ebenfalls ohne bestehende Regeln anzufassen: Die erste Regel von `PREROUTING` und `INPUT` in der mangle-Tabelle springt in Gatelys eigene Ketten `GATELY_PRE` und `GATELY_IN`, die dasselbe tun wie die beiden Ketten oben; gesperrte Einzeladressen landen in den ipset-Sets `gately_ban4` / `gately_ban6` (IPv6 pro /64), Netz- und dauerhafte Sperren werden Regeln in der Kette `GATELY_DENY`. Setzt ein Programm wie die Synology-Firewall eigene Regeln davor, werden die Sprünge innerhalb von 10 Sekunden wieder an die erste Stelle gesetzt, gelöschte Ketten werden neu geschrieben. Die Scan-Erkennung zählt mit dem recent-Modul, der Schwellenwert wird auf höchstens 255 pro Minute begrenzt. Getroffene Ports landen in den ipset-Sets `gately_port4` / `gately_port6` vom Typ `hash:ip,port` (ebenfalls 5 Minuten, höchstens 16384 Einträge je Adressfamilie).
+
+Unterstützen Kernel oder nft keine Sets zum Erfassen von Ports (etwa schlanke Firmware ohne `hash:ip,port`), verzichtet Gately auf die Port-Erfassung und weist einmal im Laufprotokoll darauf hin; Sperrgründe enthalten dann keine Ports, Köderports, Scan-Erkennung und alle anderen Sperren wirken weiterhin. Bei jedem Neuschreiben der Regeln wird es erneut versucht.
 
 „Regeln anzeigen“ auf der Seite zeigt die vollständigen aktuellen Regeln.
 
@@ -154,7 +158,7 @@ Webdienst und WAF erfahren die echte Client-Adresse nur über das PROXY-Protokol
 
 ## Benachrichtigungen
 
-Sperren lösen das Ereignis `Einbruchschutz: IP gesperrt` aus, das Sie in der [Benachrichtigungszentrale](/de/docs/modules/notify) abonnieren können. Adressen, die Köderports und Scan-Erkennung in derselben Prüfung sperren, werden zu einer Benachrichtigung zusammengefasst.
+Sperren lösen das Ereignis `Einbruchschutz: IP gesperrt` aus, das Sie in der [Benachrichtigungszentrale](/de/docs/modules/notify) abonnieren können. Adressen, die Köderports und Scan-Erkennung in derselben Prüfung sperren, werden zu einer Benachrichtigung zusammengefasst; erfasste getroffene Ports werden dabei mit aufgeführt.
 
 ## Überprüfung
 

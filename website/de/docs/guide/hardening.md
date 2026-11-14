@@ -4,8 +4,10 @@ Die Verwaltungsoberfläche steuert DNS, Zertifikate und Ports. Arbeiten Sie die 
 
 ## Verwaltungsoberfläche
 
-- [ ] Administratorpasswort nach der ersten Anmeldung ändern
+- [ ] Administratorpasswort nach der ersten Anmeldung wie angezeigt ändern (beim Standardpasswort oder einem schwachen Passwort wird die Änderung zuerst verlangt) und unter „Einstellungen → Konto & Sicherheit“ die Sicherheitsbewertung prüfen und die markierten Punkte beheben
 - [ ] Zwei-Faktor-Authentifizierung (TOTP) aktivieren oder einen Passkey registrieren
+- [ ] Nach der Registrierung eines Passkeys die Passwortanmeldung deaktivieren: Das Administratorkonto meldet sich dann nur noch per Passkey oder über Drittanbieter an, und das Passwort lässt sich nicht mehr per Brute-Force knacken; gehen alle Passkeys verloren, aktiviert `gately reset-password` die Passwortanmeldung wieder
+- [ ] Ist der Verwaltungsport aus dem Internet erreichbar, das „Fehlerbudget für unbekannte Adressen“ eingeschaltet lassen (standardmäßig 20 Fehlversuche in 10 Minuten) und den Administratorbenutzernamen von admin in einen schwer zu erratenden Namen ändern
 - [ ] Familienmitgliedern oder Kollegen, die nur etwas einsehen müssen, ein Nur-Lese-Konto anlegen, statt das Administratorpasswort weiterzugeben
 - [ ] Einen sicheren Einstiegspfad festlegen, sodass die Verwaltungsoberfläche nur über einen eigenen Pfad erreichbar ist
 - [ ] „Zugriff nur aus dem LAN“ aktivieren und für die Fernverwaltung ein VPN (etwa [Tailscale](/de/docs/modules/tunnels)) verwenden

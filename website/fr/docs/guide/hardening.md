@@ -4,8 +4,10 @@ L'interface d'administration contrôle le DNS, les certificats et les ports. Par
 
 ## Interface d'administration
 
-- [ ] Changer le mot de passe de l'administrateur après la première connexion
+- [ ] Changer le mot de passe de l'administrateur à la première connexion comme demandé (le mot de passe par défaut ou un mot de passe faible doit d'abord être changé), puis consulter le score de sécurité dans « Paramètres → Compte et sécurité » et traiter les points signalés
 - [ ] Activer l'authentification à deux facteurs (TOTP), ou enregistrer une passkey
+- [ ] Après l'enregistrement d'une passkey, désactiver la connexion par mot de passe : le compte administrateur ne se connecte plus que par passkey ou connexion tierce, et le mot de passe ne peut plus être attaqué par force brute ; en cas de perte de toutes les passkeys, `gately reset-password` la réactive
+- [ ] Si le port d'administration est joignable depuis Internet, garder le « Budget d'échecs des adresses inconnues » activé (20 échecs en 10 minutes par défaut) et remplacer le nom d'utilisateur administrateur admin par un nom difficile à deviner
 - [ ] Créer un compte en lecture seule pour les proches ou collègues qui n'ont besoin que de consulter, au lieu de partager le mot de passe administrateur
 - [ ] Définir un chemin d'accès secret pour que l'interface ne soit joignable que par un chemin personnalisé
 - [ ] Activer « l'accès limité au réseau local » et utiliser un VPN (comme [Tailscale](/fr/docs/modules/tunnels)) pour l'administration à distance

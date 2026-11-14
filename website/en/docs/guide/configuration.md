@@ -14,7 +14,7 @@
 
 | Environment variable | Description |
 | --- | --- |
-| `GATELY_INITIAL_PASSWORD` | Initial administrator password on first start (at least 8 characters); defaults to `gately.cn` when unset; has no effect once the account exists |
+| `GATELY_INITIAL_PASSWORD` | Initial administrator password on first start (at least 8 characters); defaults to `gately.cn` when unset; has no effect once the account exists. If it is shorter than 10 characters or too weak, the first sign-in asks you to change it |
 | `GATELY_LANG` | Language code read first when the server language is "Follow system"; `LC_ALL`, `LC_MESSAGES` and `LANG` follow in that order |
 
 ## Config directory

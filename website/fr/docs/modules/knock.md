@@ -9,8 +9,9 @@ Autorisation par paquet unique (SPA, Single Packet Authorization) compatible ave
 - **Blocage par le pare-feu** : les ports protégés sont inscrits dans le pare-feu du système (nftables, ou iptables + ipset quand le noyau n'a pas nf_tables) et seules les adresses ayant frappé avec succès sont autorisées, ce qui protège le sshd local et les autres services qui ne passent pas par Gately ;
 - **Entrées de Gately autorisées par knock** : les règles de la redirection de ports, du routage par protocole et du relais intégré de STUN, ainsi que les routes individuelles du routage par protocole, peuvent choisir « Exiger un knock ». Gately décide lui-même, sans privilèges de pare-feu, ce qui fonctionne aussi sous Windows, macOS et dans les conteneurs sans `NET_ADMIN` ;
 - **Un seul port ouvert** : le routage par protocole reconnaît les paquets de knock envoyés en TCP (`fwknop -P tcp`) ; le même port reçoit le knock et ouvre ensuite des routes comme SSH selon le résultat ;
+- **Autorisation après connexion web** : un site du service Web peut servir d'entrée d'autorisation ; lorsqu'un visiteur réussit l'authentification du site, son IP source obtient une autorisation de la règle de port knocking, sans installer de client ; un site peut aussi exiger l'admission par knock, voir [Admission par frappe et autorisation après connexion dans le service Web](/fr/docs/modules/web#knock) ;
 - **Lié à la prévention d'intrusion** : un knock refusé publie l'événement « Knock refusé » ; le modèle intégré « Échec de knock » de la prévention d'intrusion peut bannir la source après un certain nombre d'échecs, et les knocks provenant d'adresses déjà bannies sont abandonnés directement ;
-- Liste des autorisations en cours (temps restant, révocables) ; les knocks réussis et refusés sont consignés dans le journal d'exécution et peuvent être suivis dans le centre de notifications.
+- Liste des autorisations en cours (origine de l'autorisation, paquet de knock ou connexion web, utilisateur connecté, temps restant, révocables) ; les knocks réussis et refusés sont consignés dans le journal d'exécution et peuvent être suivis dans le centre de notifications.
 
 ## Démarrage rapide : protéger le SSH local
 
@@ -35,9 +36,9 @@ Le paquet de knock est envoyé par défaut au port UDP 62201. Quand Gately se tr
 
 | Champ | Description |
 | --- | --- |
-| Ports | Ports que le client peut demander d'ouvrir, comme `tcp/22` ou `udp/51820`, 16 au maximum. Tous les ports du paramètre `-A` du client doivent figurer dans cette liste, sinon le knock entier est refusé |
+| Ports | Ports que le client peut demander d'ouvrir, comme `tcp/22` ou `udp/51820`, 16 au maximum. Tous les ports du paramètre `-A` du client doivent figurer dans cette liste, sinon le knock entier est refusé. Peut rester vide quand le blocage par le pare-feu est désactivé : la règle n'obtient alors d'autorisations que par « Autoriser après connexion » d'un site Web, n'accepte aucun paquet de knock et n'ouvre pas d'écoute UDP de knock pour elle ; la carte affiche « Aucun (autorisé uniquement par connexion web) » |
 | Blocage par le pare-feu | Une fois activé, ces ports sont bloqués dans le pare-feu du système et seules les adresses ayant frappé avec succès sont autorisées ; désactivé, le pare-feu n'est pas modifié et la règle sert uniquement aux entrées configurées sur « Exiger un knock » |
-| Clé de chiffrement / clé HMAC | Encodées en base64, générées automatiquement si laissées vides (32 / 64 octets, comme `fwknop -k`) ; vous pouvez aussi saisir les clés d'un serveur fwknop existant. Dupliquer une règle génère de nouvelles clés ; modifier, désactiver ou supprimer une règle révoque toutes les autorisations qu'elle a produites |
+| Clé de chiffrement / clé HMAC | Encodées en base64, générées automatiquement si laissées vides (32 / 64 octets, comme `fwknop -k`) ; vous pouvez aussi saisir les clés d'un serveur fwknop existant. Dupliquer une règle génère de nouvelles clés. Modifier une règle qui reste active (nom, ports, clés, etc.) révoque les autorisations obtenues par paquet de knock et conserve celles obtenues par connexion web ; désactiver ou supprimer une règle révoque toutes ses autorisations |
 | Algorithme HMAC | SHA-256 (valeur par défaut de fwknop), SHA-384, SHA-512, à faire correspondre à `--hmac-digest-type` du client |
 | Durée d'accès | Durée pendant laquelle de nouvelles connexions sont possibles après un knock réussi, 30 secondes par défaut |
 | Durée maximale côté client | Plafond appliqué quand le client demande une durée plus longue avec `-f` (300 secondes par défaut) ; 0 ignore la durée demandée par le client ; une demande plus courte que la durée d'accès est toujours retenue |
@@ -56,7 +57,7 @@ Le client fwknop 2.6 ne peut envoyer les paquets de knock qu'en IPv4 et n'autori
 
 ## Paramètres globaux
 
-- **Port UDP de knock** : 62201 par défaut (port par défaut du client fwknop) ; 0 n'écoute pas en UDP et ne reçoit que les knocks acheminés par le routage par protocole. Sans règle activée, aucune écoute ;
+- **Port UDP de knock** : 62201 par défaut (port par défaut du client fwknop) ; 0 n'écoute pas en UDP et ne reçoit que les knocks acheminés par le routage par protocole. Aucune écoute sans règle activée, ni quand aucune règle activée n'a de port renseigné (autorisation uniquement par connexion web) ;
 - **Ouvrir le port dans le pare-feu** : voir plus haut ;
 - **Réseau local sans knock / liste blanche sans knock** : n'affecte que le blocage par le pare-feu ; les entrées « Exiger un knock » sont contrôlées par leurs propres listes d'IP ;
 - **Durée de validité des paquets** : écart maximal entre l'horodatage du paquet et l'heure locale, 120 secondes par défaut ; les horloges du client et du serveur doivent être exactes.
@@ -73,6 +74,10 @@ Le client fwknop 2.6 ne peut envoyer les paquets de knock qu'en IPv4 et n'autori
 Gately crée dans nftables une table dédiée `inet gately_knock` sans toucher aux règles existantes du système : la chaîne `prerouting` (priorité -160, après le suivi de connexion et avant la traduction d'adresse de destination) confie les paquets destinés aux ports protégés à la chaîne `gate`, qui laisse passer successivement le trafic dont la destination n'est pas cette machine (les connexions relayées vers d'autres appareils ne sont pas affectées), l'interface de bouclage, les connexions établies, les paquets TCP qui n'initient pas de connexion, et les triplets adresse + protocole + port des réseaux sans knock et de l'ensemble des autorisations par knock ; tout le reste est abandonné. Le contrôle se fait dans prerouting : un port mappé vers un conteneur Docker est donc bloqué selon le port avant mappage. Chaque autorisation est un élément d'ensemble avec délai d'expiration, supprimé par le noyau à l'échéance.
 
 Sans nf_tables, la table mangle d'iptables est utilisée : `PREROUTING` saute vers `GATELY_KNOCK`, avec un ensemble ipset par port protégé (`gkn4_tcp_22`, etc., avec délai d'expiration). Si la table ou le saut est supprimé (rechargement du pare-feu, `nft flush ruleset`, etc.), ils sont réécrits en 10 secondes avec les autorisations encore valides. « Afficher les règles du pare-feu » sur la page montre les règles actuellement inscrites.
+
+### Autorisations par connexion web {#web-grant}
+
+Les autorisations obtenues par [autorisation après connexion](/fr/docs/modules/web#knock) sur un site Web s'appliquent aussi aux règles avec blocage par le pare-feu : Gately inscrit dans les ensembles d'autorisation, avec les ports de la règle, les adresses qui ont réellement visité le site d'entrée sous cette autorisation (8 au maximum par autorisation, la plus ancienne étant retirée au-delà), avec la même échéance que l'autorisation ; elles sont supprimées quand l'autorisation est révoquée ou expire. Une autorisation IPv6 est évaluée par réseau (/64 par défaut), mais le pare-feu n'ouvre que les adresses précises enregistrées. Si une même adresse dispose aussi d'une autorisation obtenue par paquet de knock, chacune est conservée selon sa propre échéance.
 
 ::: tip SSH arrivant par redirection de ports
 Une connexion redirigée par Gately vers `127.0.0.1:22` de la machine passe par l'interface de bouclage et n'est pas soumise au blocage du pare-feu. Dans ce cas, choisissez « Exiger un knock » sur la règle de redirection de ports, ou protégez le port de redirection exposé avec le blocage par le pare-feu.
@@ -115,4 +120,4 @@ Avant l'authentification, le débit est limité par plage source (au plus 10 paq
 
 - Seul le mode Rijndael (AES) CBC de fwknop avec HMAC est pris en charge ; GnuPG, l'ancien mode IV et les paquets sans HMAC ne le sont pas ;
 - Aucun message de commande n'est exécuté (`fwknop -C`) et les demandes d'accès NAT (`-N`) ne sont pas prises en charge ;
-- Les autorisations de knock sont conservées en mémoire : après un redémarrage de Gately, il faut frapper à nouveau (les connexions déjà établies ne sont pas affectées). Les traces anti-rejeu ne sont elles aussi qu'en mémoire : après un redémarrage, tout paquet dont l'horodatage précède le démarrage est refusé ; si l'horloge du client retarde sur celle du serveur, un knock dans les premières secondes après le redémarrage peut être refusé, il suffit de recommencer.
+- Les autorisations de knock sont conservées en mémoire : après un redémarrage de Gately, il faut frapper à nouveau ou rouvrir la page d'autorisation du site Web (les connexions déjà établies ne sont pas affectées). Les traces anti-rejeu ne sont elles aussi qu'en mémoire : après un redémarrage, tout paquet dont l'horodatage précède le démarrage est refusé ; si l'horloge du client retarde sur celle du serveur, un knock dans les premières secondes après le redémarrage peut être refusé, il suffit de recommencer.

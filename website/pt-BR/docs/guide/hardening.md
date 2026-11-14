@@ -4,8 +4,10 @@ A interface de administração controla DNS, certificados e portas. Percorra a l
 
 ## Interface de administração
 
-- [ ] Altere a senha do administrador após o primeiro acesso
+- [ ] Após o primeiro acesso, altere a senha do administrador quando solicitado (com a senha padrão ou uma senha fraca, a troca é exigida antes de continuar) e confira a pontuação de segurança em "Configurações → Conta e segurança", resolvendo os itens que perdem pontos
 - [ ] Ative a autenticação em dois fatores (TOTP) ou registre uma passkey
+- [ ] Depois de registrar uma passkey, você pode desativar o login por senha: a conta de administrador passa a entrar só com passkey ou login de terceiros, e a senha não pode mais ser quebrada por força bruta; se perder todas as passkeys, reative-o com `gately reset-password`
+- [ ] Se a porta de administração estiver aberta para a internet, mantenha ativado o "Orçamento de falhas de endereços desconhecidos" (padrão: 20 falhas em 10 minutos) e troque o nome de usuário do administrador por um nome diferente de admin e difícil de adivinhar
 - [ ] Quando familiares ou colegas só precisarem visualizar, crie para eles uma conta somente leitura em vez de compartilhar a senha do administrador
 - [ ] Defina um caminho de entrada seguro, para que a interface de administração só seja acessível por um caminho personalizado
 - [ ] Ative o "Acesso apenas pela rede local" e use uma VPN (como o [Tailscale](/pt-BR/docs/modules/tunnels)) quando precisar administrar remotamente

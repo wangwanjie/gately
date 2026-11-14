@@ -21,15 +21,15 @@ Instale o aplicativo nativo: ele abre pelo ícone da área de trabalho através 
 
 ## 2. Entrar
 
-Abra `http://<ip-do-dispositivo>:16680` no navegador. O usuário é `admin` e a senha padrão é `gately.cn`. A senha padrão é pública; até você alterá-la, um aviso fica fixo no topo da interface de administração.
+Abra `http://<ip-do-dispositivo>:16680` no navegador. O usuário é `admin` e a senha padrão é `gately.cn`. A senha padrão é pública; depois de entrar, abre-se uma janela de troca de senha, e só é possível continuar depois de definir uma nova senha com pelo menos 10 caracteres e difícil de adivinhar.
 
 ## 3. Aplicar o reforço básico de segurança
 
 Logo após entrar, vá em "Configurações" e:
 
-1. Altere a senha do administrador;
-2. Ative a autenticação em dois fatores (TOTP);
-3. Defina um caminho de entrada seguro, acesso apenas pela rede local ou HTTPS na interface de administração, conforme a sua necessidade.
+1. Ative a autenticação em dois fatores (TOTP) ou registre uma passkey;
+2. Defina um caminho de entrada seguro, acesso apenas pela rede local ou HTTPS na interface de administração, conforme a sua necessidade;
+3. Confira a pontuação de segurança no topo de "Configurações → Conta e segurança" e resolva os itens que perdem pontos.
 
 Veja mais recomendações no [Guia de reforço de segurança](/pt-BR/docs/guide/hardening).
 

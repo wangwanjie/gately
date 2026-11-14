@@ -6,7 +6,7 @@ No. Gately does not connect to any project servers and does not report device in
 
 ## What are the default username and password?
 
-The default account is `admin` and the default password is `gately.cn`. The default password is public, so change it under "Settings → Account & Security" right after signing in; until you do, the admin UI keeps showing a warning at the top. If the `GATELY_INITIAL_PASSWORD` environment variable was set at deployment, that password applies instead.
+The default account is `admin` and the default password is `gately.cn`. The default password is public: signing in with it opens a password change dialog, and you can continue only after setting a new password that meets the password rules (at least 10 characters, not a common weak password, and so on). If the `GATELY_INITIAL_PASSWORD` environment variable was set at deployment, that password applies instead; if it is shorter than 10 characters or too weak, the first sign-in also asks you to change it.
 
 ## What if I forget the administrator password?
 

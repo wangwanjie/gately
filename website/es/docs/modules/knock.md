@@ -9,8 +9,9 @@ Autorización de paquete único (SPA, Single Packet Authorization) compatible co
 - **Bloqueo en el cortafuegos**: los puertos protegidos se escriben en el cortafuegos del sistema (nftables, o iptables + ipset si el kernel no tiene nf_tables) y solo se abren a las direcciones que han llamado con éxito, lo que protege servicios como el sshd local que no pasan por Gately;
 - **Entradas de Gately abiertas por llamada**: las reglas de Reenvío de puertos, Enrutamiento por protocolo y reenvío integrado de STUN, además de cada ruta de Enrutamiento por protocolo, pueden elegir «Requerir llamada»; lo decide Gately por sí mismo, sin permisos de cortafuegos, y funciona en Windows, macOS y contenedores sin `NET_ADMIN`;
 - **Un solo puerto**: el Enrutamiento por protocolo puede reconocer paquetes de llamada enviados por TCP (`fwknop -P tcp`), de modo que el mismo puerto recibe la llamada y, según su resultado, abre rutas como SSH;
+- **Permiso tras iniciar sesión web**: un sitio del servicio web puede actuar como entrada de permiso; cuando un visitante supera la autenticación del sitio, su IP de origen recibe un permiso de la regla de Port Knocking, sin instalar ningún cliente; el sitio también puede exigir admisión por llamada. Consulta [Admisión por llamada y permiso tras iniciar sesión en el servicio web](/es/docs/modules/web#knock);
 - **Integración con Prevención de intrusiones**: las llamadas rechazadas publican el evento «Llamada de Port Knocking rechazada», y la plantilla integrada «Fallos de Port Knocking» de Prevención de intrusiones puede bloquear el origen por número de intentos; las llamadas de direcciones ya bloqueadas se descartan directamente;
-- Lista de autorizaciones actuales (tiempo restante, revocables); las llamadas correctas y rechazadas se anotan en el registro de ejecución y se pueden suscribir en el Centro de notificaciones.
+- Lista de autorizaciones actuales (origen de la autorización, paquete de llamada o inicio de sesión web, usuario que inició sesión, tiempo restante, revocables); las llamadas correctas y rechazadas se anotan en el registro de ejecución y se pueden suscribir en el Centro de notificaciones.
 
 ## Inicio rápido: proteger el SSH local
 
@@ -35,9 +36,9 @@ Los paquetes de llamada se envían por defecto al puerto UDP 62201. Si Gately es
 
 | Campo | Descripción |
 | --- | --- |
-| Puerto | Puertos cuya apertura puede solicitar el cliente, como `tcp/22` o `udp/51820`, hasta 16. Todos los puertos del parámetro `-A` del cliente deben estar en esta lista; de lo contrario se rechaza toda la llamada |
+| Puerto | Puertos cuya apertura puede solicitar el cliente, como `tcp/22` o `udp/51820`, hasta 16. Todos los puertos del parámetro `-A` del cliente deben estar en esta lista; de lo contrario se rechaza toda la llamada. Si el bloqueo en el cortafuegos está desactivado, puede dejarse vacío: la regla solo obtiene autorizaciones mediante «Permitir tras iniciar sesión» de los sitios web, no acepta paquetes de llamada ni hace que se escuche el puerto UDP de llamada, y la tarjeta muestra «Ninguno (solo se permite por inicio de sesión web)» |
 | Bloqueo en el cortafuegos | Si se activa, estos puertos se bloquean en el cortafuegos del sistema y solo se abren a las direcciones que han llamado con éxito; si se desactiva, no se modifica el cortafuegos y la regla solo la usan las entradas con «Requerir llamada» |
-| Clave de cifrado / clave HMAC | Codificadas en base64; si se dejan vacías se generan automáticamente (32 / 64 bytes, igual que `fwknop -k`), o se pueden escribir las de un servidor fwknop existente. Copiar la regla genera claves nuevas; modificar, desactivar o eliminar la regla revoca todas las autorizaciones que haya emitido |
+| Clave de cifrado / clave HMAC | Codificadas en base64; si se dejan vacías se generan automáticamente (32 / 64 bytes, igual que `fwknop -k`), o se pueden escribir las de un servidor fwknop existente. Copiar la regla genera claves nuevas. Modificar una regla que sigue activa (nombre, puertos, claves, etc.) revoca las autorizaciones obtenidas con paquetes de llamada y conserva las obtenidas por inicio de sesión web; desactivar o eliminar la regla revoca todas las autorizaciones |
 | Algoritmo HMAC | SHA-256 (predeterminado de fwknop), SHA-384, SHA-512; debe coincidir con `--hmac-digest-type` del cliente |
 | Duración del acceso | Tiempo durante el cual se pueden establecer nuevas conexiones tras una llamada correcta; 30 segundos por defecto |
 | Duración máxima del cliente | Límite cuando el cliente pide una duración mayor con `-f` (300 segundos por defecto); 0 ignora la duración pedida por el cliente; si la petición es menor que la duración del acceso, siempre se usa la petición |
@@ -56,7 +57,7 @@ El cliente fwknop 2.6 solo puede enviar paquetes de llamada por IPv4 y abrir dir
 
 ## Ajustes globales
 
-- **Puerto UDP de llamada**: 62201 por defecto (el puerto predeterminado del cliente fwknop); con 0 no se escucha en UDP y solo se reciben llamadas enviadas mediante Enrutamiento por protocolo. Sin reglas activas no se escucha;
+- **Puerto UDP de llamada**: 62201 por defecto (el puerto predeterminado del cliente fwknop); con 0 no se escucha en UDP y solo se reciben llamadas enviadas mediante Enrutamiento por protocolo. No se escucha si no hay reglas activas o si ninguna regla activa tiene puertos (solo se permiten por inicio de sesión web);
 - **Abrir automáticamente en el cortafuegos**: véase arriba;
 - **Red interna sin llamada / lista sin llamada**: solo afectan al bloqueo en el cortafuegos; las entradas con «Requerir llamada» se controlan con sus propias listas de IP;
 - **Vigencia del paquete**: diferencia máxima entre la marca de tiempo del paquete y la hora local, 120 segundos por defecto; los relojes del cliente y del servidor deben ser precisos.
@@ -73,6 +74,10 @@ El cliente fwknop 2.6 solo puede enviar paquetes de llamada por IPv4 y abrir dir
 Gately crea en nftables una tabla independiente `inet gately_knock` sin tocar las reglas existentes del sistema: la cadena `prerouting` (prioridad -160, después del seguimiento de conexiones y antes de la traducción de destino) entrega a la cadena `gate` los paquetes dirigidos a los puertos protegidos, que permite en orden el tráfico cuyo destino no es el equipo local (las conexiones reenviadas a otros dispositivos no se ven afectadas), la interfaz de loopback, las conexiones ya establecidas, los paquetes TCP que no inician conexión, y las combinaciones dirección + protocolo + puerto de las redes sin llamada y del conjunto de llamadas aceptadas; el resto se descarta. Como se decide en prerouting, los puertos asignados a contenedores Docker se bloquean según el puerto anterior a la asignación. Las aperturas se escriben como elementos de conjunto con tiempo de expiración, y el kernel los elimina al caducar.
 
 Sin nf_tables se usa la tabla mangle de iptables: `PREROUTING` salta a `GATELY_KNOCK`, con un conjunto ipset por cada puerto protegido (`gkn4_tcp_22`, etc., con tiempo de expiración). Si la tabla o el salto se borran por una recarga del cortafuegos, `nft flush ruleset` u otra causa, se reescriben en 10 segundos junto con las aperturas todavía vigentes. «Ver reglas del cortafuegos» en la página muestra las reglas escritas actualmente.
+
+### Autorizaciones por inicio de sesión web {#web-grant}
+
+Las autorizaciones obtenidas con [Permitir tras iniciar sesión](/es/docs/modules/web#knock) en un sitio web también se aplican a las reglas con el bloqueo en el cortafuegos activado: Gately escribe en el conjunto de aperturas las direcciones que realmente han visitado el sitio de entrada con esa autorización (hasta 8 por autorización; al superarlas se elimina la más antigua) junto con los puertos de la regla, con la misma caducidad que la autorización, y las elimina cuando la autorización se revoca o caduca. Las autorizaciones IPv6 se evalúan por red (/64 por defecto), pero el cortafuegos solo abre las direcciones concretas registradas. Si una dirección tiene además una autorización obtenida con un paquete de llamada, cada una se conserva hasta su propia caducidad.
 
 ::: tip SSH que llega por Reenvío de puertos
 Las conexiones reenviadas por el Reenvío de puertos de Gately a `127.0.0.1:22` del equipo llegan por la interfaz de loopback y el bloqueo del cortafuegos no se aplica. En ese caso elige «Requerir llamada» en la regla de Reenvío de puertos, o protege el puerto de reenvío expuesto con el bloqueo en el cortafuegos.
@@ -115,4 +120,4 @@ Antes de autenticar se limita la tasa por rango de origen (como máximo 10 paque
 
 - Solo admite el modo Rijndael (AES) CBC con HMAC de fwknop; no admite GnuPG, el modo IV antiguo ni paquetes sin HMAC;
 - No ejecuta mensajes de comando (`fwknop -C`) ni admite solicitudes de acceso NAT (`-N`);
-- Las autorizaciones se guardan en memoria; tras reiniciar Gately hay que volver a llamar (las conexiones ya establecidas no se ven afectadas). Los registros contra repetición también están solo en memoria, así que tras un reinicio se rechaza cualquier paquete con marca de tiempo anterior al arranque; si el reloj del cliente va por detrás del servidor, una llamada en los primeros segundos tras el reinicio puede rechazarse y basta con volver a llamar.
+- Las autorizaciones se guardan en memoria; tras reiniciar Gately hay que volver a llamar o volver a abrir la página de permiso web (las conexiones ya establecidas no se ven afectadas). Los registros contra repetición también están solo en memoria, así que tras un reinicio se rechaza cualquier paquete con marca de tiempo anterior al arranque; si el reloj del cliente va por detrás del servidor, una llamada en los primeros segundos tras el reinicio puede rechazarse y basta con volver a llamar.

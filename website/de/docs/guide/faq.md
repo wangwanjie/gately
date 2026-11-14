@@ -6,7 +6,7 @@ Nein. Gately verbindet sich mit keinem Projektserver und übermittelt keine Ger�
 
 ## Wie lauten Standardkonto und Standardpasswort?
 
-Das Standardkonto ist `admin`, das Standardpasswort `gately.cn`. Das Standardpasswort ist öffentlich bekannt: Ändern Sie es nach der Anmeldung sofort unter „Einstellungen → Konto & Sicherheit“; bis dahin zeigt die Verwaltungsoberfläche oben einen dauerhaften Hinweis an. Wurde bei der Bereitstellung die Umgebungsvariable `GATELY_INITIAL_PASSWORD` gesetzt, gilt dieses Passwort.
+Das Standardkonto ist `admin`, das Standardpasswort `gately.cn`. Das Standardpasswort ist öffentlich bekannt: Nach der Anmeldung mit dem Standardpasswort erscheint ein Dialog zur Passwortänderung, und Sie können erst weiterarbeiten, wenn Sie ein neues Passwort gesetzt haben, das den Passwortregeln entspricht (mindestens 10 Zeichen, kein gängiges schwaches Passwort usw.). Wurde bei der Bereitstellung die Umgebungsvariable `GATELY_INITIAL_PASSWORD` gesetzt, gilt dieses Passwort; ist es kürzer als 10 Zeichen oder zu schwach, muss es bei der ersten Anmeldung ebenfalls geändert werden.
 
 ## Was tun, wenn ich das Administratorpasswort vergessen habe?
 

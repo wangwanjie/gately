@@ -14,7 +14,7 @@
 
 | Umgebungsvariable | Beschreibung |
 | --- | --- |
-| `GATELY_INITIAL_PASSWORD` | Initialpasswort des Administrators beim ersten Start (mindestens 8 Zeichen), ohne Angabe gilt das Standardpasswort `gately.cn`; ohne Wirkung, wenn das Konto bereits existiert |
+| `GATELY_INITIAL_PASSWORD` | Initialpasswort des Administrators beim ersten Start (mindestens 8 Zeichen), ohne Angabe gilt das Standardpasswort `gately.cn`; ohne Wirkung, wenn das Konto bereits existiert. Ist es kürzer als 10 Zeichen oder zu schwach, muss es bei der ersten Anmeldung geändert werden |
 | `GATELY_LANG` | Sprachcode, der zuerst gelesen wird, wenn die Serversprache auf „System folgen“ steht; danach folgen `LC_ALL`, `LC_MESSAGES` und `LANG` in dieser Reihenfolge |
 
 ## Konfigurationsverzeichnis
