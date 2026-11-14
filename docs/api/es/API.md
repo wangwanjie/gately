@@ -2925,6 +2925,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `trustAuthUsers` | boolean |
 | `trustBackendAuth` | boolean |
 | `type` | string |
+| `upstreamH2c` | boolean |
 | `upstreamSniFromHost` | boolean |
 | `useTargetHost` | boolean |
 | `userHeader` | string |

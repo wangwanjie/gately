@@ -2925,6 +2925,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `trustAuthUsers` | boolean |
 | `trustBackendAuth` | boolean |
 | `type` | string |
+| `upstreamH2c` | boolean |
 | `upstreamSniFromHost` | boolean |
 | `useTargetHost` | boolean |
 | `userHeader` | string |

@@ -2925,6 +2925,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `trustAuthUsers` | boolean |
 | `trustBackendAuth` | boolean |
 | `type` | string |
+| `upstreamH2c` | boolean |
 | `upstreamSniFromHost` | boolean |
 | `useTargetHost` | boolean |
 | `userHeader` | string |

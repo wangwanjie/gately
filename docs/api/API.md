@@ -2925,6 +2925,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `trustAuthUsers` | boolean |
 | `trustBackendAuth` | boolean |
 | `type` | string |
+| `upstreamH2c` | boolean |
 | `upstreamSniFromHost` | boolean |
 | `useTargetHost` | boolean |
 | `userHeader` | string |
