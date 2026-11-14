@@ -18,6 +18,7 @@ import (
 
 	"github.com/wangwanjie/gately/internal/auth"
 	"github.com/wangwanjie/gately/internal/crud"
+	"github.com/wangwanjie/gately/internal/webauthn"
 )
 
 // AuthUser 是可在多个站点共用的认证用户。站点开启“使用共享用户”后，网页认证与基本认证都接受这些用户，
@@ -36,6 +37,9 @@ type AuthUser struct {
 	Email       string   `json:"email,omitempty"`
 	DisplayName string   `json:"displayName,omitempty"`
 	Groups      []string `json:"groups,omitempty"`
+	// Passkeys 为用户自助注册的 Passkey（只含公钥）。只能经 Passkey 自助页面添加、删除，
+	// 保存用户列表时一律沿用已保存的值，提交的内容被忽略，读取时脱敏（不含公钥坐标与签名计数）
+	Passkeys []webauthn.Credential `json:"passkeys,omitempty"`
 }
 
 // ssoCookie 是共享用户跨站登录态的 Cookie 名称。
@@ -46,6 +50,8 @@ type sharedEnv struct {
 	users map[string]AuthUser
 	// byID 为 ID 到用户名的索引，供 OIDC 按 sub 查找用户
 	byID map[string]string
+	// byCred 为 Passkey 凭据 ID 到用户名的索引，供 Passkey 登录按凭据查找用户
+	byCred map[string]string
 	// domain 为单点登录 Cookie 域，空表示每个站点单独登录
 	domain string
 }
@@ -58,14 +64,18 @@ type sharedStore struct {
 func (s *sharedStore) set(users []AuthUser, domain string) {
 	m := make(map[string]AuthUser, len(users))
 	ids := make(map[string]string, len(users))
+	creds := map[string]string{}
 	for _, u := range users {
 		m[u.Name] = u
 		if u.ID != "" {
 			ids[u.ID] = u.Name
 		}
+		for _, c := range u.Passkeys {
+			creds[c.ID] = u.Name
+		}
 	}
 	s.mu.Lock()
-	s.env = sharedEnv{users: m, byID: ids, domain: strings.ToLower(strings.Trim(domain, ". "))}
+	s.env = sharedEnv{users: m, byID: ids, byCred: creds, domain: strings.ToLower(strings.Trim(domain, ". "))}
 	s.mu.Unlock()
 }
 
@@ -299,6 +309,8 @@ func normalizeAuthUsers(users []AuthUser, old []AuthUser) ([]AuthUser, error) {
 		if u.Password == "" {
 			return nil, fmt.Errorf("请为共享用户 %s 设置密码", u.Name)
 		}
+		// Passkey 只能由用户自助增删：沿用已保存的值，忽略提交的内容（改名后按 ID 对应，仍保留）
+		u.Passkeys = o.Passkeys
 		crud.KeepSecret(o.TOTPSecret, &u.TOTPSecret)
 		u.TOTPSecret = strings.ToUpper(strings.ReplaceAll(u.TOTPSecret, " ", ""))
 		if u.TOTPSecret != "" && !auth.ValidTOTPSecret(u.TOTPSecret) {
@@ -330,6 +342,7 @@ func maskAuthUsers(users []AuthUser) []AuthUser {
 	for i, u := range users {
 		u.Password = crud.Mask(u.Password)
 		u.TOTPSecret = crud.Mask(u.TOTPSecret)
+		u.Passkeys = maskPasskeys(u.Passkeys)
 		out[i] = u
 	}
 	return out

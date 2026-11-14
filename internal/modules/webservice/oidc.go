@@ -417,6 +417,11 @@ func (a *authenticator) serveOIDC(w http.ResponseWriter, r *http.Request, e *oid
 		r.Body = http.MaxBytesReader(w, r.Body, oidcMaxForm)
 	}
 	lg := log.With(logbuf.Fields{logbuf.FieldIP: clientAddr(r).Addr().String(), logbuf.FieldHost: e.host, logbuf.FieldMethod: r.Method, logbuf.FieldPath: p})
+	// Passkey 登录与注册接口、管理页同样由 handleLogin 按路径分发
+	if p == oidcPath+passkeyPath || strings.HasPrefix(p, oidcPath+passkeyPath+"/") {
+		a.handleLogin(w, r, e.loginSite(r), clientAddr(r).Addr().String())
+		return
+	}
 	switch p {
 	case oidcDiscoveryPath:
 		a.oidcCORS(w, r)

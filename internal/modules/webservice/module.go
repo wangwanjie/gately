@@ -6,6 +6,7 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"net"
 	"net/http"
@@ -26,6 +27,7 @@ import (
 	"github.com/wangwanjie/gately/internal/logbuf"
 	"github.com/wangwanjie/gately/internal/module"
 	"github.com/wangwanjie/gately/internal/visitors"
+	"github.com/wangwanjie/gately/internal/webauthn"
 )
 
 // ID 是模块标识。
@@ -138,7 +140,12 @@ func (m *Module) Init(env module.Env) error {
 		m.auth.marker.set(k)
 	}
 	m.auth.selfAuth.Store(m.cfg.Settings.SelfServicePassword)
+	m.auth.passkeyOn.Store(m.cfg.Settings.PasskeyLogin)
 	m.auth.changeShared = m.changeSharedPassword
+	m.auth.savePasskeys = m.saveSharedPasskeys
+	m.auth.onPasskeyEvent = func(msg string) {
+		m.logs.Logger("").Infof("%s", msg)
+	}
 	m.auth.onPasswordChanged = func(kind, name, ip string) {
 		if kind == kindFile {
 			m.logs.Logger("").Infof("文件服务共享用户 %s 从 %s 自助修改了密码", name, ip)
@@ -537,6 +544,7 @@ type settingsPut struct {
 	AuthUsers           *[]AuthUser   `json:"authUsers"`
 	SSODomain           *string       `json:"ssoDomain"`
 	SelfServicePassword *bool         `json:"selfServicePassword"`
+	PasskeyLogin        *bool         `json:"passkeyLogin"`
 	OIDC                *OIDCSettings `json:"oidc"`
 }
 
@@ -611,8 +619,12 @@ func (m *Module) handlePutSettings(w http.ResponseWriter, r *http.Request) {
 	s.TrustedProxies = cleanList(s.TrustedProxies)
 	// 省略的认证用户相关字段沿用原值（原值已规范化），提供的字段照常校验
 	s.AuthUsers, s.SSODomain, s.SelfServicePassword, s.OIDC = old.AuthUsers, old.SSODomain, old.SelfServicePassword, old.OIDC
+	s.PasskeyLogin = old.PasskeyLogin
 	if put.SelfServicePassword != nil {
 		s.SelfServicePassword = *put.SelfServicePassword
+	}
+	if put.PasskeyLogin != nil {
+		s.PasskeyLogin = *put.PasskeyLogin
 	}
 	if put.AuthUsers != nil {
 		users, err := normalizeAuthUsers(*put.AuthUsers, old.AuthUsers)
@@ -689,6 +701,37 @@ func (m *Module) changeSharedPassword(u AuthUser, hash string) error {
 		return errPasswordChanged
 	}
 	users[i].Password = hash
+	m.cfg.Settings.AuthUsers = users
+	if err := m.saveLocked(); err != nil {
+		m.cfg.Settings.AuthUsers = old
+		return fmt.Errorf("保存失败: %v", err)
+	}
+	m.auth.shared.set(users, m.cfg.Settings.SSODomain)
+	return nil
+}
+
+// saveSharedPasskeys 在配置锁内修改共享用户的 Passkey 列表并保存。userID 为用户的不可变 ID：
+// 用户期间被删除时返回 errPasswordChanged；mutate 返回 errNoPasskeyChange 时不写盘。
+func (m *Module) saveSharedPasskeys(userID string, mutate func(all []AuthUser, i int) ([]webauthn.Credential, error)) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	old := m.cfg.Settings.AuthUsers
+	i := slices.IndexFunc(old, func(x AuthUser) bool { return x.ID == userID })
+	if i < 0 {
+		return errPasswordChanged
+	}
+	list, err := mutate(old, i)
+	if errors.Is(err, errNoPasskeyChange) {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	users := slices.Clone(old)
+	users[i].Passkeys = list
+	if len(list) == 0 {
+		users[i].Passkeys = nil
+	}
 	m.cfg.Settings.AuthUsers = users
 	if err := m.saveLocked(); err != nil {
 		m.cfg.Settings.AuthUsers = old

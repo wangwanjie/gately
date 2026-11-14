@@ -270,6 +270,9 @@ type Settings struct {
 	OIDC OIDCSettings `json:"oidc"`
 	// SelfServicePassword 为 true 时共享用户可在开启“使用共享用户”的站点与 OIDC 签发者域名上自助修改密码（认证路径下的 /password）
 	SelfServicePassword bool `json:"selfServicePassword"`
+	// PasskeyLogin 为 true 时共享用户可以注册 Passkey（认证路径下的 /passkey），并在登录页用 Passkey 登录；
+	// 凭据 RP ID 为单点登录域（站点在该域下时）或站点域名，见 passkey.go
+	PasskeyLogin bool `json:"passkeyLogin"`
 	// AuthMarkerKey 为认证标记密钥（至少 16 个字符），双层 Gately（外层只做 WAF、内层负责认证）两端填写相同的值：
 	// 内层给受信任的已登录用户签发认证标记，外层开启信任后端 Gately 的认证标记的站点据此放行。留空不启用
 	AuthMarkerKey string `json:"authMarkerKey"`
