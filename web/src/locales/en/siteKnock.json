@@ -6,7 +6,7 @@
   "lanLabel": "LAN addresses need no release",
   "lanHelp": "Private and link-local addresses are let through directly (loopback excluded). Leave this off when traffic arrives through frp, a tunnel or another forwarder without the real client IP, because every visitor then looks like a LAN address.",
   "grant": "Release after login",
-  "grantHelp": "After a visitor passes this site's authentication, Gately grants the selected knock rule to their source IP, so sites, port forwards and other entries that require this rule let that IP in. LAN and local addresses are never released.",
+  "grantHelp": "After a visitor passes this site's authentication, Gately grants the selected knock rule to their source IP, so sites, port forwards and other entries that require this rule let that IP in. LAN and local addresses are never released. If the rule has firewall blocking on, the rule's ports (such as SSH) are also opened in the system firewall for the address that actually logged in.",
   "sameRule": "A release entry cannot require admission by the same rule, otherwise visitors who are not released yet cannot log in",
   "minutes": "Duration",
   "minutesUnit": "minutes",

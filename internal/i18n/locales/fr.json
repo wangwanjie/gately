@@ -1215,6 +1215,7 @@
   "同时删除落盘的日志文件、历史文件、归档与来源记录。": "Supprime aussi les fichiers journaux sur disque, les fichiers tournés, les archives et la liste des sources.",
   "同时运行的任务已达上限 %d，请稍后再试": "Nombre maximal de tâches simultanées atteint (%d), réessayez plus tard",
   "同步失败": "Échec de la synchronisation",
+  "同步网页登录放行：写入 %d 项，删除 %d 项": "Autorisations de connexion web synchronisées : %d écrites, %d supprimées",
   "名称": "Nom",
   "名称不能为空": "Le nom ne peut pas être vide",
   "名称不能超过 %d 个字符": "Le nom ne peut pas dépasser %d caractères",

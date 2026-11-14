@@ -6,7 +6,7 @@
   "lanLabel": "Endereços da LAN não precisam de liberação",
   "lanHelp": "Endereços privados e link-local passam direto (exceto loopback). Não ative se o tráfego chegar via frp, túnel ou outro encaminhamento sem o IP real, pois então todos os visitantes parecem endereços internos.",
   "grant": "Liberar após login",
-  "grantHelp": "Quando um visitante passa pela autenticação deste site, o Gately registra uma liberação da regra de port knocking selecionada para o IP de origem, e sites, encaminhamentos de porta e outras entradas que usam essa regra passam a aceitar esse IP. Endereços internos e locais nunca são liberados.",
+  "grantHelp": "Quando um visitante passa pela autenticação deste site, o Gately registra uma liberação da regra de port knocking selecionada para o IP de origem, e sites, encaminhamentos de porta e outras entradas que usam essa regra passam a aceitar esse IP. Endereços internos e locais nunca são liberados. Se a regra tiver o bloqueio no firewall ativado, as portas da regra (como SSH) também são abertas no firewall do sistema para o endereço que fez login.",
   "sameRule": "Uma entrada de liberação não pode exigir admissão pela mesma regra; caso contrário, visitantes ainda não liberados não conseguiriam fazer login",
   "minutes": "Duração",
   "minutesUnit": "minutos",

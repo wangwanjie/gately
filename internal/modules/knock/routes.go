@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/netip"
 	"runtime"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -225,12 +226,23 @@ func (m *Module) handleStatus(w http.ResponseWriter, _ *http.Request) {
 	st.Grants = []GrantView{}
 	for _, g := range knockgate.Default.List() {
 		var ports []string
-		if g.Single() {
-			ports = fwPorts[[2]string{g.Addr().String(), g.Rule}]
+		if g.Source == knockgate.SourceWeb {
+			// 网页登录授权按记录的实际地址写入防火墙，网段授权也显示这些地址上的放行端口
+			for _, a := range g.Addrs {
+				for _, p := range fwPorts[[2]string{a.String(), g.Rule}] {
+					if !slices.Contains(ports, p) {
+						ports = append(ports, p)
+					}
+				}
+			}
+		} else if g.Single() {
+			ports = slices.Clone(fwPorts[[2]string{g.Addr().String(), g.Rule}])
 		}
 		if ports == nil {
 			ports = []string{}
 		}
+		// fwPorts 由 map 遍历得到，顺序不定：排序后界面显示与接口输出稳定
+		slices.Sort(ports)
 		st.Grants = append(st.Grants, GrantView{Addr: g.String(), Rule: g.Rule, RuleName: names[g.Rule], Until: g.Until, Ports: ports,
 			Source: g.Source, User: g.User, Site: g.Site, SiteName: g.SiteName})
 	}
