@@ -36,10 +36,13 @@ type Credential struct {
 	// ID 为凭据 ID（base64url）
 	ID   string `json:"id"`
 	Name string `json:"name"`
+	// RPID 为注册时使用的 Relying Party ID；管理员 Passkey 留空（取访问域名），站点访客 Passkey 记录它，
+	// 单点登录域变化后旧凭据不再匹配，不会被其他域名误用
+	RPID string `json:"rpId,omitempty"`
 	// X、Y 为 P-256 公钥坐标（base64url）
-	X         string    `json:"x"`
-	Y         string    `json:"y"`
-	SignCount uint32    `json:"signCount"`
+	X         string    `json:"x,omitempty"`
+	Y         string    `json:"y,omitempty"`
+	SignCount uint32    `json:"signCount,omitempty"`
 	CreatedAt time.Time `json:"createdAt"`
 	LastUsed  time.Time `json:"lastUsed,omitzero"`
 }
@@ -145,6 +148,12 @@ func (a *authData) check(rpID string, needUV bool) error {
 
 // ParseRegistration 校验注册响应并提取公钥。host 为请求的 Host（含端口），用于校验来源与 RP ID。
 func ParseRegistration(resp RegistrationResponse, challenge, host, name string) (*Credential, error) {
+	return ParseRegistrationRP(resp, challenge, host, RPID(host), name)
+}
+
+// ParseRegistrationRP 与 ParseRegistration 相同，但 RP ID 由调用方指定（例如单点登录的父域）。
+// 调用方负责保证 rpID 是 host 的域名本身或其父域。
+func ParseRegistrationRP(resp RegistrationResponse, challenge, host, rpID, name string) (*Credential, error) {
 	if resp.Type != "public-key" {
 		return nil, errors.New("凭据类型无效")
 	}
@@ -175,7 +184,7 @@ func ParseRegistration(resp RegistrationResponse, challenge, host, name string) 
 	if err != nil {
 		return nil, err
 	}
-	if err := ad.check(RPID(host), true); err != nil {
+	if err := ad.check(rpID, true); err != nil {
 		return nil, err
 	}
 	if ad.flags&flagAttested == 0 || len(ad.rest) < 18 {
@@ -200,6 +209,7 @@ func ParseRegistration(resp RegistrationResponse, challenge, host, name string) 
 	return &Credential{
 		ID:        base64.RawURLEncoding.EncodeToString(credID),
 		Name:      name,
+		RPID:      rpID,
 		X:         base64.RawURLEncoding.EncodeToString(x),
 		Y:         base64.RawURLEncoding.EncodeToString(y),
 		SignCount: ad.signCount,
@@ -245,6 +255,11 @@ func publicKey(x, y []byte) (*ecdsa.PublicKey, error) {
 // VerifyAssertion 校验登录断言，成功时返回认证器报告的新签名计数。
 // 签名计数非零时必须严格递增，否则视为凭据被克隆。
 func VerifyAssertion(cred *Credential, resp AssertionResponse, challenge, host string) (uint32, error) {
+	return VerifyAssertionRP(cred, resp, challenge, host, RPID(host))
+}
+
+// VerifyAssertionRP 与 VerifyAssertion 相同，但 RP ID 由调用方指定。
+func VerifyAssertionRP(cred *Credential, resp AssertionResponse, challenge, host, rpID string) (uint32, error) {
 	if resp.Type != "public-key" {
 		return 0, errors.New("凭据类型无效")
 	}
@@ -264,7 +279,7 @@ func VerifyAssertion(cred *Credential, resp AssertionResponse, challenge, host s
 	if err != nil {
 		return 0, err
 	}
-	if err := ad.check(RPID(host), true); err != nil {
+	if err := ad.check(rpID, true); err != nil {
 		return 0, err
 	}
 	sig, err := b64(resp.Response.Signature)
