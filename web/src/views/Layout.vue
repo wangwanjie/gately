@@ -51,12 +51,8 @@
       <main class="content">
         <!-- 顶部提醒区：高度写入 --g-banners-h，供一屏布局的页面（如系统日志）扣除 -->
         <div ref="bannersEl" class="top-banners">
-          <!-- 仍在使用公开的默认密码时持续提醒，修改密码后重新登录即消失 -->
-          <div v-if="defaultPassword" class="default-pw" role="alert">
-            <TriangleAlert :size="18" class="default-pw-icon" />
-            <span class="default-pw-text">{{ t('layout.defaultPassword', { password: DEFAULT_PASSWORD }) }}</span>
-            <el-button type="warning" size="small" @click="onCommand('password')">{{ t('layout.changeNow') }}</el-button>
-          </div>
+          <!-- 管理端安全评分不理想时提醒加固：高风险一直显示，建议加固级别可暂缓 7 天。默认密码与弱密码由强制修改对话框处理，不再重复提示 -->
+          <SecurityBanner v-if="role === 'admin' && !passwordIssue" :status="secStatus" :level="bannerKind" @fix="goFix" @snooze="snoozeBanner" />
           <!-- 自动检查发现新版本或当前版本受安全问题影响时提示 -->
           <UpdateBanner :is-admin="role === 'admin'" />
         </div>
@@ -64,19 +60,25 @@
       </main>
     </div>
     <!-- 首次使用引导的接口只对管理员开放，读取到角色后才挂载 -->
-    <Onboarding v-if="sessionRole === 'admin'" />
+    <Onboarding v-if="sessionRole === 'admin' && !passwordIssue" />
+    <!-- 默认密码或强度不足的密码：必须先修改，对话框无法关闭 -->
+    <ForcePasswordDialog v-if="role === 'admin' && passwordIssue" :issue="passwordIssue" :username="username" @done="afterPasswordFixed" />
   </div>
 </template>
 
 <script setup lang="ts">
 import Onboarding from '../components/Onboarding.vue'
 import UpdateBanner from '../components/UpdateBanner.vue'
+import SecurityBanner from '../components/SecurityBanner.vue'
+import ForcePasswordDialog from '../components/ForcePasswordDialog.vue'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { ElMessageBox } from 'element-plus'
-import { ChevronDown, ChevronRight, KeyRound, LogOut, Menu, PanelLeftClose, PanelLeftOpen, Settings, TriangleAlert } from 'lucide-vue-next'
+import { ChevronDown, ChevronRight, KeyRound, LogOut, Menu, PanelLeftClose, PanelLeftOpen, Settings } from 'lucide-vue-next'
 import { api } from '../api'
+import { bannerLevel, fixTarget, SEC_SNOOZE_KEY, SEC_SNOOZE_MS, snoozeKey } from '../security'
+import { loadSecurity, securityStatus as secStatus } from '../composables/useSecurity'
 import SideNav from '../components/SideNav.vue'
 import AppLogo from '../components/AppLogo.vue'
 import ThemePicker from '../components/ThemePicker.vue'
@@ -91,9 +93,31 @@ const router = useRouter()
 const isMobile = useIsMobile()
 const username = ref('')
 const role = ref('admin')
-// 管理员账号的默认密码，与后端 auth.DefaultPassword 一致
-const DEFAULT_PASSWORD = 'gately.cn'
-const defaultPassword = ref(false)
+// 主账号密码的问题：default 为仍在使用默认密码，weak 为强度不足；有问题时弹出无法关闭的修改对话框
+const passwordIssue = ref<'' | 'default' | 'weak'>('')
+// 加固提示的暂缓记录与当前时间（响应式，点击“暂缓”后立即隐藏）
+const secSnooze = ref(localStorage.getItem(SEC_SNOOZE_KEY) ?? '')
+const secNow = ref(Date.now())
+const bannerKind = computed(() => bannerLevel(secStatus.value, { snooze: secSnooze.value, now: secNow.value }))
+
+// 暂缓 7 天：出现新的待加固问题时记录失效，会重新提示
+function snoozeBanner() {
+  if (!secStatus.value) {
+    return
+  }
+  // 当前时间与到期时间用同一个时刻计算，否则到期时间会因略晚于页面载入时刻而超出暂缓上限，被当作被篡改的记录
+  const now = Date.now()
+  const v = JSON.stringify({ key: snoozeKey(secStatus.value), until: now + SEC_SNOOZE_MS })
+  localStorage.setItem(SEC_SNOOZE_KEY, v)
+  secNow.value = now
+  secSnooze.value = v
+}
+
+// 跳到设置页对应的位置去处理
+function goFix(id: string) {
+  const t = fixTarget(id)
+  router.push({ path: '/settings', query: { tab: t.tab, focus: t.anchor } })
+}
 const drawer = ref(false)
 const collapsed = ref(localStorage.getItem('gately-collapsed') === '1')
 const group = computed(() => groupByPath(route.path))
@@ -151,15 +175,28 @@ onBeforeUnmount(() => {
   document.documentElement.style.removeProperty('--g-banners-h')
 })
 
-onMounted(async () => {
-  const s = await api.get<{ username: string; role?: string; disabledModules?: string[]; absentModules?: string[]; defaultPassword?: boolean }>('/api/session')
+// 读取会话信息；强制修改密码完成后也会再调用，刷新密码状态
+async function loadSession() {
+  const s = await api.get<{ username: string; role?: string; disabledModules?: string[]; absentModules?: string[]; passwordIssue?: '' | 'default' | 'weak' }>('/api/session')
   username.value = s.username
   role.value = s.role ?? 'admin'
   sessionRole.value = role.value
-  defaultPassword.value = s.defaultPassword ?? false
+  passwordIssue.value = s.passwordIssue ?? ''
   disabledModules.value = s.disabledModules ?? []
   absentModules.value = s.absentModules ?? []
+  return s
+}
+
+// 密码已改好并重新登录：刷新会话与安全评分，随后引导提示（如首次引导）照常出现
+async function afterPasswordFixed() {
+  await loadSession()
+  loadSecurity()
+}
+
+onMounted(async () => {
+  await loadSession()
   if (role.value === 'admin') {
+    loadSecurity()
     // 第三方登录、飞牛桌面入口等整页跳转进入时后端拿不到界面语言，这里上报一次；语言没变时后端不写文件
     api.put('/api/account/ui-language', { language: locale.value }).catch(() => undefined)
   }
@@ -314,26 +351,6 @@ onMounted(async () => {
 }
 .top-banners {
   display: flow-root;
-}
-.default-pw {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
-  margin-bottom: 16px;
-  border-radius: var(--g-radius);
-  border: 1px solid var(--el-color-danger-light-5);
-  background: var(--el-color-danger-light-9);
-  font-size: 13px;
-  line-height: 1.5;
-}
-.default-pw-icon {
-  flex-shrink: 0;
-  color: var(--el-color-danger);
-}
-.default-pw-text {
-  flex: 1;
-  min-width: 0;
 }
 @media (max-width: 767.98px) {
   .main {

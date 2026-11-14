@@ -63,7 +63,8 @@
           <p class="sub">{{ t('login.subtitle') }}</p>
         </header>
 
-        <el-form :model="form" label-position="top" size="large" class="login-form" @submit.prevent="submit">
+        <p v-if="!passwordLogin" class="pw-off-note"><LockKeyhole :size="15" />{{ t('login.passwordLoginOff') }}</p>
+        <el-form v-if="passwordLogin" :model="form" label-position="top" size="large" class="login-form" @submit.prevent="submit">
           <el-form-item :label="t('login.username')">
             <el-input v-model="form.username" autocomplete="username" :placeholder="t('login.usernamePlaceholder')" :prefix-icon="UserRound" />
           </el-form-item>
@@ -77,7 +78,7 @@
         </el-form>
 
         <div v-if="canPasskey || fnosUser" class="third">
-          <div class="third-title"><span>{{ t('login.or') }}</span></div>
+          <div v-if="passwordLogin" class="third-title"><span>{{ t('login.or') }}</span></div>
           <div class="third-stack">
             <!-- 经飞牛统一网关访问且已开启飞牛登录态自动登录时显示 -->
             <button v-if="fnosUser" type="button" class="third-btn passkey-btn" :disabled="loading || fnosBusy" @click="loginWithFnos">
@@ -179,6 +180,7 @@ const needCode = ref(false)
 const codeInput = ref<InstanceType<typeof OtpInput>>()
 // 浏览器支持 WebAuthn 时显示 Passkey 登录；服务端尚未注册 Passkey 时点击会提示
 const canPasskey = passkeySupported()
+const passwordLogin = ref(true)
 const passkeyBusy = ref(false)
 const providers = ref<{ key: string; name: string; type: string; url: string }[]>([])
 // 可凭飞牛登录态登录的飞牛用户名（仅经飞牛统一网关访问且已开启时由后端返回）
@@ -211,8 +213,10 @@ if (typeof route.query.oauthError === 'string') {
 
 onMounted(async () => {
   try {
-    const r = await api.get<{ providers: typeof providers.value; fnosUser?: string }>('/api/login/providers')
+    const r = await api.get<{ providers: typeof providers.value; fnosUser?: string; passwordLogin?: boolean }>('/api/login/providers')
     providers.value = r.providers ?? []
+    // 管理员关闭密码登录后隐藏账号密码表单，只保留 Passkey 与第三方登录
+    passwordLogin.value = r.passwordLogin !== false
     fnosUser.value = r.fnosUser ?? ''
   } catch {
     // 登录方式获取失败不影响密码登录
@@ -635,6 +639,22 @@ h2 {
 .third-stack {
   display: grid;
   gap: 10px;
+}
+.pw-off-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--el-text-color-regular);
+  background: var(--el-fill-color-light);
+}
+.pw-off-note svg {
+  flex-shrink: 0;
+  margin-top: 2px;
 }
 .passkey-btn {
   width: 100%;

@@ -30,7 +30,7 @@
         <el-form-item :label="t('users.username')" required><el-input v-model="form.username" autocomplete="off" /></el-form-item>
         <el-form-item :label="t('users.password')" required>
           <el-input v-model="form.password" type="password" show-password autocomplete="new-password" />
-          <div class="hint">{{ t('users.passwordHint') }}</div>
+          <PasswordStrength :password="form.password" :username="form.username" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -47,6 +47,7 @@ import { useI18n } from 'vue-i18n'
 import { Eye, KeyRound, Plus, Trash2 } from 'lucide-vue-next'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { api } from '../api'
+import PasswordStrength from './PasswordStrength.vue'
 
 interface UserItem {
   username: string
@@ -138,10 +139,5 @@ onMounted(load)
 }
 .gap {
   margin-bottom: 12px;
-}
-.hint {
-  margin-top: 4px;
-  font-size: 12px;
-  color: var(--el-text-color-secondary);
 }
 </style>
