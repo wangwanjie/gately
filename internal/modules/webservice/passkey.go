@@ -88,8 +88,13 @@ func (c *passkeyChallenges) issue(kind, user, host, ip string) (string, bool) {
 	}
 	if len(c.m) >= passkeyMaxPending || c.perIP[ip] >= passkeyMaxPerIP {
 		c.sweepLocked(now)
-		if len(c.m) >= passkeyMaxPending || c.perIP[ip] >= passkeyMaxPerIP {
+		if c.perIP[ip] >= passkeyMaxPerIP {
 			return "", false
+		}
+		if len(c.m) >= passkeyMaxPending {
+			// 总量满：淘汰最早到期的挑战，而不是拒绝所有人。否则几百个来源就能让全部访客的 Passkey 登录持续不可用；
+			// 每个来源仍受单独配额限制，正常访客的挑战只在大量来源同时请求时才可能被挤掉
+			c.evictOldestLocked()
 		}
 	}
 	ch := webauthn.NewChallenge()
@@ -103,6 +108,23 @@ func (c *passkeyChallenges) sweepLocked(now time.Time) {
 		if now.After(v.exp) {
 			c.dropLocked(k, v)
 		}
+	}
+}
+
+// evictOldestLocked 淘汰最早到期的一个挑战。
+func (c *passkeyChallenges) evictOldestLocked() {
+	var (
+		ok   bool
+		key  string
+		oldv passkeyChallenge
+	)
+	for k, v := range c.m {
+		if !ok || v.exp.Before(oldv.exp) {
+			ok, key, oldv = true, k, v
+		}
+	}
+	if ok {
+		c.dropLocked(key, oldv)
 	}
 }
 

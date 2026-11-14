@@ -500,8 +500,22 @@ func TestPasskeyChallengeCaps(t *testing.T) {
 	for i := 0; i < passkeyMaxPending; i++ {
 		d.issue(pkLogin, "", "h", "ip"+string(rune('a'+i%26))+strings.Repeat("x", i/26))
 	}
-	if _, ok := d.issue(pkLogin, "", "h", "fresh"); ok {
-		t.Fatal("总量用尽后应拒绝")
+	// 总量用尽后淘汰最早到期的挑战，新来源仍能拿到挑战（分布式占满不能让所有人都无法登录）
+	d.mu.Lock()
+	var oldest string
+	for k := range d.m {
+		oldest = k
+		break
+	}
+	v := d.m[oldest]
+	v.exp = time.Now().Add(time.Second)
+	d.m[oldest] = v
+	d.mu.Unlock()
+	if _, ok := d.issue(pkLogin, "", "h", "fresh"); !ok {
+		t.Fatal("总量用尽后应淘汰最早的挑战，新来源仍可获得挑战")
+	}
+	if _, ok := d.consume(oldest, pkLogin, "h"); ok {
+		t.Fatal("最早到期的挑战应被淘汰")
 	}
 	if d.pending() > passkeyMaxPending {
 		t.Fatalf("挂起数量超过上限: %d", d.pending())
