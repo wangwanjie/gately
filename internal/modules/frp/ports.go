@@ -2,9 +2,12 @@ package frp
 
 import (
 	"net"
+	"net/netip"
 	"sort"
+	"time"
 
 	"github.com/wangwanjie/gately/internal/openports"
+	"github.com/wangwanjie/gately/internal/trustsrc"
 )
 
 // maxLearnedPorts 为单个 frps 实例记住的代理远程端口上限，防止异常客户端登记大量端口撑大防火墙集合。
@@ -53,6 +56,10 @@ type learnState struct {
 	allow []PortRange
 	// ports 为 frpc 申请过的 TCP 代理远程端口
 	ports map[int]bool
+	// bindPort 与 token 为 frpc 连接的端口与令牌，trusted 为用正确令牌登录过的 frpc 来源地址及其最近一次登录时间
+	bindPort int
+	token    string
+	trusted  map[netip.Addr]time.Time
 }
 
 // allows 判断端口是否在 allowPorts 范围内。frps 在校验 allowPorts 之前调用插件，
@@ -90,10 +97,16 @@ func (m *Module) armLearn(key string, s ServerSettings) {
 	}
 	st := m.learned[key]
 	if st == nil {
-		m.learned[key] = &learnState{allow: allow, ports: map[int]bool{}}
+		m.learned[key] = &learnState{allow: allow, ports: map[int]bool{}, bindPort: s.BindPort, token: s.Token}
 		return
 	}
 	st.allow = allow
+	if st.bindPort != s.BindPort || st.token != s.Token {
+		// 换了连接端口或令牌后原来的登录随 frps 重启失效，可信来源等 frpc 用新设置重新登录后再登记
+		st.bindPort, st.token = s.BindPort, s.Token
+		st.trusted = nil
+		trustsrc.Clear(trustOwner(key))
+	}
 	changed := false
 	for p := range st.ports {
 		if !st.allows(p) {
@@ -113,6 +126,7 @@ func (m *Module) clearServerPorts(key string) {
 	m.learnMu.Lock()
 	delete(m.learned, key)
 	openports.Clear(proxyOwner(key))
+	trustsrc.Clear(trustOwner(key))
 	m.learnMu.Unlock()
 }
 
@@ -131,6 +145,51 @@ func (m *Module) learnProxyPort(key string, port int) {
 	}
 	st.ports[port] = true
 	openports.SetPorts(proxyOwner(key), sortedPorts(st.ports))
+}
+
+// maxTrusted 为单个 frps 实例登记的可信来源上限，超出时忘记最早登录的地址（家宽地址变化后旧地址会留在这里）
+const maxTrusted = 32
+
+// trustGrace 为 frpc 登录后无条件视为可信的时间；之后只在它与 frps 之间还有已建立的连接时可信。
+// 这段时间覆盖 frpc 刚登录、断线重连的空档，也让读不到连接状态的系统在登录后的一段时间内生效
+const trustGrace = 10 * time.Minute
+
+// trustOwner 是 frps 实例在 trustsrc 中的登记名。
+func trustOwner(key string) string { return "frps-login:" + key }
+
+// trustClient 把用正确令牌登录实例 key 的 frpc 来源地址登记为可信来源：入侵防护的诱饵端口与扫描检测不再统计它。
+// 只有运行中的实例会登记，实例停止、删除或更换连接端口时撤销；回环与未指定地址（frps 在反向代理之后）不登记。
+func (m *Module) trustClient(key string, a netip.Addr) {
+	a = a.Unmap()
+	if !a.IsValid() || a.IsLoopback() || a.IsUnspecified() {
+		return
+	}
+	m.learnMu.Lock()
+	defer m.learnMu.Unlock()
+	st := m.learned[key]
+	if st == nil || !validPort(st.bindPort) {
+		return
+	}
+	if st.trusted == nil {
+		st.trusted = map[netip.Addr]time.Time{}
+	}
+	st.trusted[a] = time.Now()
+	for len(st.trusted) > maxTrusted {
+		var oldest netip.Addr
+		var at time.Time
+		for addr, t := range st.trusted {
+			if !oldest.IsValid() || t.Before(at) {
+				oldest, at = addr, t
+			}
+		}
+		delete(st.trusted, oldest)
+	}
+	list := make([]trustsrc.Source, 0, len(st.trusted))
+	for addr, t := range st.trusted {
+		list = append(list, trustsrc.Source{Addr: addr, Port: st.bindPort, Until: t.Add(trustGrace)})
+	}
+	sort.Slice(list, func(i, j int) bool { return list[i].Addr.Less(list[j].Addr) })
+	trustsrc.Set(trustOwner(key), list)
 }
 
 func sortedPorts(set map[int]bool) []int {
