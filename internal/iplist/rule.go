@@ -91,7 +91,10 @@ func (a *Access) AddUsers(users map[string][]string, label string) {
 		}
 	}
 	for _, k := range a.IPDenySets {
-		users[k] = append(users[k], label)
+		// 同一条规则在名单与拒绝名单中都引用某个列表时只登记一次
+		if !slices.Contains(users[k], label) {
+			users[k] = append(users[k], label)
+		}
 	}
 }
 
