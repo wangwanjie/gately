@@ -132,7 +132,7 @@ func TestIPTRules(t *testing.T) {
 	open := []portRange{{22, 22}, {8000, 8100}}
 	trap := []portRange{{23, 23}}
 
-	r4 := iptRules(s, false, allow, deny, open, trap)
+	r4 := iptRules(s, false, allow, deny, open, trap, true)
 	pre := strings.Join(r4[iptPre], "\n")
 	for _, want := range []string{"-A GATELY_PRE -i lo -j RETURN", "--ctdir REPLY -j RETURN", "--match-set gately_ban4 src -j DROP", "--match-set gately_scan4 src -j DROP", "-A GATELY_PRE -j GATELY_DENY"} {
 		if !strings.Contains(pre, want) {
@@ -160,7 +160,7 @@ func TestIPTRules(t *testing.T) {
 	}
 
 	// IPv6：按 /64 计数；严格模式直接封禁
-	r6 := iptRules(s, true, allow, deny, open, trap)
+	r6 := iptRules(s, true, allow, deny, open, trap, true)
 	if !strings.Contains(strings.Join(r6[iptScan], "\n"), "--mask "+v6Mask) {
 		t.Errorf("IPv6 计数应按 /64: %v", r6[iptScan])
 	}
@@ -168,7 +168,7 @@ func TestIPTRules(t *testing.T) {
 		t.Errorf("IPv6 网段封禁不符: %v", r6[iptDeny])
 	}
 	s.Scan.IPv6Strict = true
-	r6 = iptRules(s, true, allow, deny, open, trap)
+	r6 = iptRules(s, true, allow, deny, open, trap, true)
 	last := r6[iptScan][len(r6[iptScan])-1]
 	if last != "-A GATELY_SCAN -j GATELY_SCANHIT" || strings.Contains(strings.Join(r6[iptScan], "\n"), "recent") {
 		t.Errorf("严格模式应直接封禁: %v", r6[iptScan])
@@ -176,7 +176,7 @@ func TestIPTRules(t *testing.T) {
 
 	// 诱饵端口与扫描检测都关闭时没有 input 部分的规则
 	s.Trap.Enable, s.Scan.Enable = false, false
-	if r := iptRules(s, false, allow, deny, open, trap); len(r[iptIn]) != 0 || len(r[iptScan]) != 0 {
+	if r := iptRules(s, false, allow, deny, open, trap, true); len(r[iptIn]) != 0 || len(r[iptScan]) != 0 {
 		t.Errorf("功能关闭时不应生成 input 规则: %v", r)
 	}
 	// 声明的链会被清空：只重写 GATELY_DENY 时只声明它

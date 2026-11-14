@@ -1,7 +1,9 @@
 package guard
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"net/netip"
 	"strings"
 	"testing"
@@ -95,7 +97,7 @@ func TestIptRulesPortLog(t *testing.T) {
 	s := Settings{Firewall: true}
 	s.Trap.Enable, s.Trap.Ports = true, "23"
 	s.Scan.Enable, s.Scan.Threshold = true, 12
-	rules := iptRules(s, false, nil, nil, []portRange{{443, 443}}, []portRange{{23, 23}})
+	rules := iptRules(s, false, nil, nil, []portRange{{443, 443}}, []portRange{{23, 23}}, true)
 	want := "-j SET --add-set gately_port4 src,dst --exist --timeout 300"
 	for _, chain := range []string{iptTrap, iptScan} {
 		found := false
@@ -107,5 +109,102 @@ func TestIptRulesPortLog(t *testing.T) {
 		if !found {
 			t.Errorf("%s 链缺少命中端口记录规则: %v", chain, rules[chain])
 		}
+	}
+}
+
+// 诱饵端口与扫描检测都关闭时不声明端口集合。
+func TestBuildScriptNoPortSetsWhenOff(t *testing.T) {
+	s := Settings{Firewall: true}
+	script, _, _ := buildScriptWith(true, s, nil, nil, nil, nil, time.Now())
+	if strings.Contains(script, "port4") || strings.Contains(script, "port6") {
+		t.Fatal("诱饵与扫描都关闭时不应声明端口集合")
+	}
+}
+
+// 内核缺少 hash:ip,port 时（精简固件），iptables 后端放弃记录端口，其余集合与规则照常写入；
+// 诱饵与扫描都关闭时不创建端口集合；下一次重建会重新尝试。
+func TestIptRebuildPortSetFallback(t *testing.T) {
+	fake := &fakeIPT{}
+	fail := true
+	b := newFakeIPTBackend(fake)
+	b.run = func(ctx context.Context, stdin, bin string, args ...string) (string, error) {
+		if fail && bin == "ipset" && strings.Contains(stdin, "hash:ip,port") {
+			return "", errors.New("ipset v7.21: Kernel error received: set type not supported")
+		}
+		return fake.run(ctx, stdin, bin, args...)
+	}
+	s := defaultSettings()
+	s.Trap.Enable, s.Trap.Ports = true, "23"
+	s.Scan.Enable, s.Scan.Threshold = true, 12
+	plan := iptPlan{open: []portRange{{443, 443}}, trap: []portRange{{23, 23}}}
+	if _, _, err := b.rebuild(context.Background(), s, plan, nil, time.Now()); err != nil {
+		t.Fatalf("缺少端口集合类型时重建应成功: %v", err)
+	}
+	if b.portLogErr == nil {
+		t.Fatal("应记录端口集合创建失败的原因")
+	}
+	if len(fake.find("--add-set gately_port")) != 0 {
+		t.Fatal("端口集合不存在时规则不应引用它")
+	}
+	if len(fake.find("create gately_ban4")) == 0 || len(fake.find("--add-set gately_trap4")) == 0 {
+		t.Fatal("其余集合与规则应照常写入")
+	}
+	// 下一次重建重新尝试，内核支持后恢复记录端口
+	fail = false
+	fake.reset()
+	if _, _, err := b.rebuild(context.Background(), s, plan, nil, time.Now()); err != nil {
+		t.Fatal(err)
+	}
+	if b.portLogErr != nil || len(fake.find("--add-set gately_port4")) == 0 {
+		t.Fatal("重新尝试成功后应记录端口")
+	}
+	// 诱饵与扫描都关闭：不创建端口集合
+	s.Trap.Enable, s.Scan.Enable = false, false
+	fake.reset()
+	if _, _, err := b.rebuild(context.Background(), s, iptPlan{}, nil, time.Now()); err != nil {
+		t.Fatal(err)
+	}
+	if len(fake.find("hash:ip,port")) != 0 {
+		t.Fatal("诱饵与扫描都关闭时不应创建端口集合")
+	}
+}
+
+// nft 不支持 (地址 . 端口) 集合时放弃记录端口、其余规则照常写入，只提示一次；
+// 之后每次重写仍先按记录端口尝试，偶发错误不会永久关闭端口记录。
+func TestNFTPortLogFallbackRetries(t *testing.T) {
+	cleanDefault(t)
+	unsupported := true
+	fake := &fakeNFT{fail: func(stdin string, args []string) error {
+		if unsupported && strings.Contains(stdin, "set port4") {
+			return errorString("Error: Could not process rule: Invalid argument")
+		}
+		return nil
+	}}
+	fw, buf := inactiveFirewall(t, fake)
+	ctx := context.Background()
+	s := defaultSettings()
+	s.Firewall = true
+	s.Trap.Enable, s.Trap.Ports = true, "23"
+	fw.apply(ctx, s)
+	if !fw.snapshot().Active {
+		t.Fatalf("不支持端口集合时其余规则应照常写入: %+v", fw.snapshot())
+	}
+	fw.apply(ctx, s)
+	if w := logsAt(buf, "warn"); len(w) != 1 || !strings.Contains(w[0], "命中端口") {
+		t.Fatalf("应只提示一次: %v", w)
+	}
+	unsupported = false
+	fake.mu.Lock()
+	fake.calls = nil
+	fake.mu.Unlock()
+	fw.apply(ctx, s)
+	found := false
+	for _, c := range fake.calls {
+		if strings.Contains(c, "set port4") {
+			found = true
+		}
+	}
+	if !found || !fw.snapshot().Active {
+		t.Fatal("恢复后重写应重新记录端口")
 	}
 }

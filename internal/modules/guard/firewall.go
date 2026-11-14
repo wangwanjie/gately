@@ -113,8 +113,8 @@ type firewall struct {
 	// dirty 表示封禁表有变化，等待轮询协程对账写入
 	dirty    bool
 	importFn func(source string, addrs []netip.Addr, ports portHits)
-	// noPortLog 表示内核不支持记录命中端口用的连接集合（地址 . 端口），之后写入规则时不再带上
-	noPortLog bool
+	// portLogWarned 表示已提示过无法记录命中端口（内核或 nft 不支持地址 . 端口的集合），只提示一次
+	portLogWarned bool
 	// onActive 在轮询协程中发现规则生效状态变化（重试成功或重写失败）时调用，调用时不持有 f.mu
 	onActive func()
 	// local 为本机网卡所在的 IPv6 网段，忽略内网地址时加入白名单
@@ -375,16 +375,24 @@ func (f *firewall) applyLocked(ctx context.Context, s Settings) {
 		f.warnClampLocked(ss)
 		members, capped, err = f.ipt.rebuild(ctx, ss, f.iptPlanLocked(entries, open, trap), entries, time.Now())
 		deny = iptDenyText(entries)
+		if err == nil && f.ipt.portLogErr != nil && !f.portLogWarned {
+			f.portLogWarned = true
+			f.log.Warnf("当前内核不支持 ipset 的 hash:ip,port 集合，封禁原因将不包含端口: %v", f.ipt.portLogErr)
+		}
 	} else {
 		var script string
-		script, members, deny = buildScriptWith(!f.noPortLog, ss, f.local, entries, open, trap, time.Now())
+		script, members, deny = buildScriptWith(true, ss, f.local, entries, open, trap, time.Now())
 		_, err = f.run(ctx, script, "-f", "-")
-		if err != nil && !f.noPortLog && (ss.Trap.Enable || ss.Scan.Enable) {
-			// 较旧的 nft 或内核不支持 (地址 . 端口) 连接集合时，放弃记录命中端口，其余规则照常写入
-			script, members, deny = buildScriptWith(false, ss, f.local, entries, open, trap, time.Now())
-			if _, err2 := f.run(ctx, script, "-f", "-"); err2 == nil {
-				f.noPortLog, err = true, nil
-				f.log.Warnf("当前 nftables 不支持记录命中端口的连接集合，封禁原因将不包含端口")
+		if err != nil && (ss.Trap.Enable || ss.Scan.Enable) {
+			// 较旧的 nft 或内核不支持 (地址 . 端口) 连接集合时，放弃记录命中端口，其余规则照常写入。
+			// 每次重写都先按记录端口尝试：第一次失败可能只是偶发错误（锁冲突等），不能因此永久关闭端口记录
+			script2, members2, deny2 := buildScriptWith(false, ss, f.local, entries, open, trap, time.Now())
+			if _, err2 := f.run(ctx, script2, "-f", "-"); err2 == nil {
+				script, members, deny, err = script2, members2, deny2, nil
+				if !f.portLogWarned {
+					f.portLogWarned = true
+					f.log.Warnf("当前 nftables 不支持记录命中端口的连接集合，封禁原因将不包含端口")
+				}
 			}
 		}
 	}
@@ -538,6 +546,8 @@ func buildScriptWith(portLog bool, s Settings, local []netip.Prefix, entries []b
 	writeIntervalSet(&b, "allow6", "ipv6_addr", allow6)
 	writePortSet(&b, "open", open)
 	writePortSet(&b, "trap", trap)
+	// 诱饵端口与扫描检测都关闭时没有写入端口的规则，也就不声明端口集合
+	portLog = portLog && (s.Trap.Enable || s.Scan.Enable)
 	if portLog {
 		// 记录最近命中诱饵端口或未开放端口的 (来源地址 . 目的端口)，供写入封禁原因；满了以后新的组合不再记录
 		b.WriteString("\tset port4 {\n\t\ttype ipv4_addr . inet_service\n\t\tsize 16384\n\t\tflags dynamic,timeout\n\t\ttimeout 5m\n\t}\n")
