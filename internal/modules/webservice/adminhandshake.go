@@ -44,8 +44,9 @@ const (
 	adminStateTTL  = 5 * time.Minute
 	adminTicketTTL = 60 * time.Second
 	adminHSMaxAge  = 120
-	// adminHSNoneMaxAge 为入口确认“没有登录后台”后不再握手的时长：普通访客每天最多被带去入口一两次
-	adminHSNoneMaxAge = 12 * 3600
+	// adminHSNoneMaxAge 为入口确认“没有登录后台”后不再握手的时长：普通访客每小时最多被带去入口一次；
+	// 不宜更长，先打开站点、后登录后台的管理员要等标记过期（或清除站点 Cookie）才会再次握手
+	adminHSNoneMaxAge = 3600
 	// maxAdminTickets 限制同时存在的票据数：签发需要管理员登录态，达到上限只会出现在异常情况
 	maxAdminTickets = 256
 )
@@ -329,7 +330,7 @@ func (a *authenticator) serveAdminLogin(w http.ResponseWriter, r *http.Request, 
 	hsNoStore(w)
 	q := r.URL.Query()
 	if q.Get("none") == "1" {
-		// 入口确认没有登录后台：回到原路径，握手标记 Cookie 延长到 12 小时，期间站点不再重复握手
+		// 入口确认没有登录后台：回到原路径，握手标记 Cookie 延长到 1 小时，期间站点不再重复握手
 		if c, err := r.Cookie(adminHSCookie); err == nil && c.Value != "" {
 			http.SetCookie(w, &http.Cookie{
 				Name: adminHSCookie, Value: c.Value, Path: "/", MaxAge: adminHSNoneMaxAge,
