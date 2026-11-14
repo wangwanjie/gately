@@ -116,12 +116,12 @@ func TestAdminPassFlow(t *testing.T) {
 	addr, _ := startAdminPass(t, "example.test", "http://127.0.0.1:1")
 	admin := env.login(t, "1.1.1.1")
 
-	resp, _ := get(t, noRedirect(), addr, "admin.example.test", "/", hdr("Cookie", admin))
+	resp, _ := get(t, noRedirect(), addr, "admin.example.test", "/", hdr("Cookie", admin, "X-Forwarded-Proto", "https"))
 	c := bridgeCookie(resp)
 	if c == nil {
 		t.Fatal("管理员访问后台所在站点应写出桥接凭据")
 	}
-	if c.Domain != "example.test" || !c.HttpOnly || c.SameSite != http.SameSiteLaxMode || c.Path != "/" || c.Expires.IsZero() {
+	if c.Domain != "example.test" || !c.HttpOnly || !c.Secure || c.SameSite != http.SameSiteLaxMode || c.Path != "/" || c.Expires.IsZero() {
 		t.Fatalf("桥接凭据 Cookie 属性不对: %+v", c)
 	}
 	bridge := adminBridgeCookie + "=" + c.Value
@@ -161,7 +161,7 @@ func TestAdminPassFlow(t *testing.T) {
 func TestAdminPassScope(t *testing.T) {
 	env := newAdminEnv(t)
 	addr, _ := startAdminPass(t, "example.test", "http://127.0.0.1:1")
-	resp, _ := get(t, noRedirect(), addr, "admin.example.test", "/", hdr("Cookie", env.login(t, "1.1.1.1")))
+	resp, _ := get(t, noRedirect(), addr, "admin.example.test", "/", hdr("Cookie", env.login(t, "1.1.1.1"), "X-Forwarded-Proto", "https"))
 	bridge := adminBridgeCookie + "=" + bridgeCookie(resp).Value
 
 	for _, host := range []string{"plain.example.test", "outside.test"} {
@@ -170,7 +170,7 @@ func TestAdminPassScope(t *testing.T) {
 		}
 	}
 	// 域外的站点收到后台 Cookie 也不签发凭据
-	resp, _ = get(t, noRedirect(), addr, "outside.test", "/", hdr("Cookie", env.login(t, "1.1.1.2")))
+	resp, _ = get(t, noRedirect(), addr, "outside.test", "/", hdr("Cookie", env.login(t, "1.1.1.2"), "X-Forwarded-Proto", "https"))
 	if bridgeCookie(resp) != nil {
 		t.Fatal("单点登录域之外的站点不应签发桥接凭据")
 	}
@@ -179,7 +179,7 @@ func TestAdminPassScope(t *testing.T) {
 // 没有任何站点开启选项、没有配置单点登录域、没有后台登录态时都不签发凭据。
 func TestAdminPassNoIssue(t *testing.T) {
 	env := newAdminEnv(t)
-	admin := hdr("Cookie", env.login(t, "1.1.1.1"))
+	admin := hdr("Cookie", env.login(t, "1.1.1.1"), "X-Forwarded-Proto", "https")
 	addr, r := startAdminPass(t, "example.test", "http://127.0.0.1:1")
 
 	if resp, _ := get(t, noRedirect(), addr, "admin.example.test", "/", nil); bridgeCookie(resp) != nil {
@@ -191,6 +191,10 @@ func TestAdminPassNoIssue(t *testing.T) {
 	r.auth.adminPass.Store(false)
 	if resp, _ := get(t, noRedirect(), addr, "admin.example.test", "/", admin); bridgeCookie(resp) != nil {
 		t.Fatal("没有站点开启选项时不应签发凭据")
+	}
+	// 明文 HTTP 请求不签发：父域上的凭据会被发给域内所有站点，必须带 Secure
+	if resp, _ := get(t, noRedirect(), addr, "admin.example.test", "/", hdr("Cookie", env.login(t, "1.1.1.1"))); bridgeCookie(resp) != nil {
+		t.Fatal("HTTP 请求不应签发桥接凭据")
 	}
 	r.auth.adminPass.Store(true)
 	r.auth.shared.set(nil, "")
@@ -208,9 +212,9 @@ func TestAdminPassNoReissue(t *testing.T) {
 	env := newAdminEnv(t)
 	addr, _ := startAdminPass(t, "example.test", "http://127.0.0.1:1")
 	admin := env.login(t, "1.1.1.1")
-	resp, _ := get(t, noRedirect(), addr, "admin.example.test", "/", hdr("Cookie", admin))
+	resp, _ := get(t, noRedirect(), addr, "admin.example.test", "/", hdr("Cookie", admin, "X-Forwarded-Proto", "https"))
 	bridge := adminBridgeCookie + "=" + bridgeCookie(resp).Value
-	resp, _ = get(t, noRedirect(), addr, "admin.example.test", "/", hdr("Cookie", admin+"; "+bridge))
+	resp, _ = get(t, noRedirect(), addr, "admin.example.test", "/", hdr("Cookie", admin+"; "+bridge, "X-Forwarded-Proto", "https"))
 	if bridgeCookie(resp) != nil {
 		t.Fatal("已有有效凭据时不应重复签发")
 	}
@@ -222,7 +226,7 @@ func TestAdminPassRevocation(t *testing.T) {
 	addr, _ := startAdminPass(t, "example.test", "http://127.0.0.1:1")
 
 	tok, _, _ := env.m.Login("1.1.1.1", "admin", env.pass)
-	resp, _ := get(t, noRedirect(), addr, "admin.example.test", "/", hdr("Cookie", auth.CookieName+"="+tok))
+	resp, _ := get(t, noRedirect(), addr, "admin.example.test", "/", hdr("Cookie", auth.CookieName+"="+tok, "X-Forwarded-Proto", "https"))
 	bridge := adminBridgeCookie + "=" + bridgeCookie(resp).Value
 	if resp, _ := get(t, noRedirect(), addr, "basic.example.test", "/", hdr("Cookie", bridge)); resp.StatusCode != http.StatusOK {
 		t.Fatalf("登出前应放行: %d", resp.StatusCode)
@@ -235,7 +239,7 @@ func TestAdminPassRevocation(t *testing.T) {
 	}
 
 	tok2, _, _ := env.m.Login("1.1.1.2", "admin", env.pass)
-	resp, _ = get(t, noRedirect(), addr, "admin.example.test", "/", hdr("Cookie", auth.CookieName+"="+tok2))
+	resp, _ = get(t, noRedirect(), addr, "admin.example.test", "/", hdr("Cookie", auth.CookieName+"="+tok2, "X-Forwarded-Proto", "https"))
 	bridge2 := adminBridgeCookie + "=" + bridgeCookie(resp).Value
 	if err := env.m.RevokeAll(); err != nil {
 		t.Fatal(err)
@@ -251,7 +255,7 @@ func TestAdminPassRevocation(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	resp, _ = get(t, noRedirect(), addr, "admin.example.test", "/", hdr("Cookie", auth.CookieName+"="+vt))
+	resp, _ = get(t, noRedirect(), addr, "admin.example.test", "/", hdr("Cookie", auth.CookieName+"="+vt, "X-Forwarded-Proto", "https"))
 	if bridgeCookie(resp) != nil {
 		t.Fatal("只读账号不应获得桥接凭据")
 	}
@@ -262,7 +266,7 @@ func TestAdminPassForgery(t *testing.T) {
 	env := newAdminEnv(t)
 	addr, _ := startAdminPass(t, "example.test", "http://127.0.0.1:1")
 	tok, _, _ := env.m.Login("1.1.1.1", "admin", env.pass)
-	resp, _ := get(t, noRedirect(), addr, "admin.example.test", "/", hdr("Cookie", auth.CookieName+"="+tok))
+	resp, _ := get(t, noRedirect(), addr, "admin.example.test", "/", hdr("Cookie", auth.CookieName+"="+tok, "X-Forwarded-Proto", "https"))
 	good := bridgeCookie(resp).Value
 
 	for name, v := range map[string]string{"会话令牌": tok, "乱写": "abc.def", "空": "", "截断": good[:len(good)-4]} {
@@ -313,7 +317,7 @@ func TestAdminPassCookieNotForwarded(t *testing.T) {
 	}))
 	defer backend.Close()
 	addr, _ := startAdminPass(t, "example.test", backend.URL)
-	resp, _ := get(t, noRedirect(), addr, "admin.example.test", "/", hdr("Cookie", env.login(t, "1.1.1.1")))
+	resp, _ := get(t, noRedirect(), addr, "admin.example.test", "/", hdr("Cookie", env.login(t, "1.1.1.1"), "X-Forwarded-Proto", "https"))
 	bridge := adminBridgeCookie + "=" + bridgeCookie(resp).Value
 	resp, body := get(t, noRedirect(), addr, "proxy.example.test", "/", hdr("Cookie", "theme=dark; "+bridge))
 	if resp.StatusCode != http.StatusOK || body != "backend" {
@@ -330,7 +334,7 @@ func TestAdminPassCookieNotForwarded(t *testing.T) {
 func TestAdminPassVisitorIdentity(t *testing.T) {
 	env := newAdminEnv(t)
 	addr, r := startAdminPass(t, "example.test", "http://127.0.0.1:1")
-	resp, _ := get(t, noRedirect(), addr, "admin.example.test", "/", hdr("Cookie", env.login(t, "1.1.1.1")))
+	resp, _ := get(t, noRedirect(), addr, "admin.example.test", "/", hdr("Cookie", env.login(t, "1.1.1.1"), "X-Forwarded-Proto", "https"))
 	req, _ := http.NewRequest("GET", "http://basic.example.test/", nil)
 	req.AddCookie(&http.Cookie{Name: adminBridgeCookie, Value: bridgeCookie(resp).Value})
 	site := Site{AdminPass: true, BasicAuth: true}

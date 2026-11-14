@@ -2,6 +2,7 @@ package webservice
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/wangwanjie/gately/internal/auth"
 	"github.com/wangwanjie/gately/internal/httpx"
@@ -30,6 +31,14 @@ func (a *authenticator) issueAdminBridge(w http.ResponseWriter, r *http.Request)
 	if !a.adminPass.Load() {
 		return
 	}
+	// 写在父域上的凭据会发给域内所有站点：只在 HTTPS 请求时签发，避免不带 Secure 的凭据被明文发给 HTTP 站点
+	if !requestIsHTTPS(r) {
+		return
+	}
+	// 先在原始头里快速判断，绝大多数请求不带后台 Cookie，省去解析全部 Cookie
+	if !strings.Contains(r.Header.Get("Cookie"), auth.CookieName) {
+		return
+	}
 	if _, err := r.Cookie(auth.CookieName); err != nil {
 		return
 	}
@@ -47,7 +56,7 @@ func (a *authenticator) issueAdminBridge(w http.ResponseWriter, r *http.Request)
 	}
 	http.SetCookie(w, &http.Cookie{
 		Name: adminBridgeCookie, Value: value, Domain: domain, Path: "/", Expires: exp,
-		HttpOnly: true, Secure: requestIsHTTPS(r), SameSite: http.SameSiteLaxMode,
+		HttpOnly: true, Secure: true, SameSite: http.SameSiteLaxMode,
 	})
 }
 
