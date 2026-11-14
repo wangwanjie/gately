@@ -100,7 +100,7 @@ func (m *Module) Routes(r module.Router) {
 			}
 			return nil
 		},
-		Changed: m.ruleChangedLocked,
+		Changed: m.ruleEditedLocked,
 		Removed: m.ruleChangedLocked,
 		Secrets: func(x *Rule) map[string]string {
 			return map[string]string{"encKey": x.EncKey, "hmacKey": x.HMACKey}
@@ -153,10 +153,33 @@ func (m *Module) ruleViewLocked(x *Rule) any {
 	return v
 }
 
-// ruleChangedLocked 在规则新增、修改、启停或删除后撤销它的授权（密钥或端口可能已变化）并重新应用。
+// ruleChangedLocked 在规则删除后撤销它的全部授权并重新应用。
 func (m *Module) ruleChangedLocked(key string) {
 	m.revokeRuleLocked(key)
 	m.applyLocked()
+}
+
+// ruleEditedLocked 在规则新增、修改或启停后重新应用。规则停用时撤销全部授权；仍启用时只撤销敲门报文取得的授权
+// （密钥可能已变化），网页登录取得的授权与密钥无关，保留下来，按新的端口重新写入系统防火墙，
+// 否则改个名称或分组就会让所有已登录用户的放行失效。
+func (m *Module) ruleEditedLocked(key string) {
+	i := slices.IndexFunc(m.cfg.Rules, func(x Rule) bool { return x.Key == key })
+	if i < 0 || !m.cfg.Rules[i].Enable {
+		m.ruleChangedLocked(key)
+		return
+	}
+	knockgate.Default.RevokeFunc(func(g knockgate.Grant) bool { return g.Rule == key && g.Source != knockgate.SourceWeb })
+	m.stateMu.Lock()
+	// 防火墙放行记录全部清掉：重新应用时规则的端口可能已变，网页授权随后由 syncWebFirewall 按新端口写回
+	for k := range m.fwGrants {
+		if k.rule == key {
+			delete(m.fwGrants, k)
+		}
+	}
+	delete(m.stats, key)
+	m.stateMu.Unlock()
+	m.applyLocked()
+	m.kickWeb()
 }
 
 func (m *Module) handleGetSettings(w http.ResponseWriter, _ *http.Request) {
