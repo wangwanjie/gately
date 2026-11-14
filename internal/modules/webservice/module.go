@@ -129,6 +129,7 @@ func (m *Module) Init(env module.Env) error {
 		m.realIP.set(from, headers, port)
 	}
 	m.auth.shared.set(m.cfg.Settings.AuthUsers, m.cfg.Settings.SSODomain)
+	m.refreshAdminPass()
 	// 手工编辑配置填入过短的认证标记密钥时不启用，避免弱密钥被猜出后伪造标记
 	if k := m.cfg.Settings.AuthMarkerKey; k != "" && len(k) < minAuthMarkerKey {
 		m.logs.Logger("").Errorf("认证标记密钥少于 %d 个字符，未启用", minAuthMarkerKey)
@@ -358,7 +359,16 @@ func (m *Module) restartLocked(key string) {
 }
 
 func (m *Module) saveLocked() error {
-	return m.store.Save(ID, m.cfg)
+	err := m.store.Save(ID, m.cfg)
+	m.refreshAdminPass()
+	return err
+}
+
+// refreshAdminPass 按当前配置更新“有站点开启后台登录免认证”的标记，站点据此决定是否签发桥接凭据（见 adminpass.go）。
+func (m *Module) refreshAdminPass() {
+	if m.auth != nil {
+		m.auth.adminPass.Store(anyAdminPass(m.cfg.Listeners))
+	}
 }
 
 // ListenerView 是带运行状态的监听器。
