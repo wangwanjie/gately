@@ -127,3 +127,75 @@ export function useScrollLock(allow: string | string[] = '') {
   })
   return setLocked
 }
+
+// ---- 模态层（对话框、确认框、抽屉）的全局滚动防穿透 ----
+//
+// 模态层打开时，遮罩与对话框之外的滚动不能带动下方页面：Element Plus 只给 body 加 overflow:hidden，
+// iOS Safari、部分桌面浏览器与触摸板惯性滚动仍会让页面跟着滚。这里在文档上统一拦截：
+// 存在可见的模态遮罩（.el-overlay）时，滚轮和触摸滑动只在“从目标到根节点之间有元素还能朝该方向滚动”时放行
+// （对话框内容过长、表格、文本框、下拉列表自身的滚动不受影响），其余一律拦截，滚到头后也不会传给页面。
+function modalOpen(): boolean {
+  for (const o of document.querySelectorAll<HTMLElement>('.el-overlay')) {
+    // 关闭后的对话框遮罩仍留在 DOM 中，以 display:none 隐藏
+    if (o.style.display !== 'none') {
+      return true
+    }
+  }
+  return false
+}
+
+// scrollableUp 判断从 target 向上直到根节点，是否有元素还能朝 (dx, dy) 方向滚动。
+export function scrollableUp(target: EventTarget | null, dx: number, dy: number): boolean {
+  for (let el = target instanceof Element ? target : null; el; el = el.parentElement) {
+    if (canScroll(el, dx, dy)) {
+      return true
+    }
+  }
+  return false
+}
+
+function onModalWheel(e: WheelEvent) {
+  // 按住 Ctrl 的滚轮（含触摸板双指缩放）是页面缩放，不拦截
+  if (e.ctrlKey || !modalOpen()) {
+    return
+  }
+  if (!scrollableUp(e.target, e.deltaX, e.deltaY)) {
+    e.preventDefault()
+  }
+}
+
+let modalTouchX = 0
+let modalTouchY = 0
+
+function onModalTouchStart(e: TouchEvent) {
+  modalTouchX = e.touches[0]?.clientX ?? 0
+  modalTouchY = e.touches[0]?.clientY ?? 0
+}
+
+function onModalTouchMove(e: TouchEvent) {
+  // 多指手势（缩放）不拦截
+  if (e.touches.length !== 1 || !modalOpen()) {
+    return
+  }
+  const t = e.touches[0]
+  const dx = modalTouchX - t.clientX
+  const dy = modalTouchY - t.clientY
+  modalTouchX = t.clientX
+  modalTouchY = t.clientY
+  if (!scrollableUp(e.target, dx, dy) && e.cancelable) {
+    e.preventDefault()
+  }
+}
+
+let modalGuardInstalled = false
+
+// installModalScrollGuard 在应用启动时调用一次，之后所有模态层自动生效，无需逐个组件处理。
+export function installModalScrollGuard() {
+  if (modalGuardInstalled || typeof document === 'undefined') {
+    return
+  }
+  modalGuardInstalled = true
+  document.addEventListener('wheel', onModalWheel, { passive: false, capture: true })
+  document.addEventListener('touchstart', onModalTouchStart, { passive: true, capture: true })
+  document.addEventListener('touchmove', onModalTouchMove, { passive: false, capture: true })
+}
