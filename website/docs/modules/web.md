@@ -99,6 +99,7 @@
 | 添加 X-Forwarded-* | 写入 `X-Forwarded-For` / `X-Forwarded-Proto` / `X-Forwarded-Host` / `X-Forwarded-Port` 与 `X-Real-IP`，告诉后端访客的真实 IP、原始协议、域名和端口；访客源端口写入 `X-Real-Port` 与 `X-Forwarded-For-Port`（`X-Forwarded-Port` 是访客访问 Gately 用的端口） | 后端需要记录真实 IP，或要知道外部是 HTTPS 才能生成正确链接（否则可能跳回 http 或登录后循环跳转）。多数应用建议开启 |
 | 向后端发送 PROXY v2 | 在 TCP 连接开头附加 PROXY 协议 v2 头，传递真实客户端 IP。开启后每个请求都新建连接，也不再用 HTTP/2 连接后端。后端是 Gately 时，需在其监听上开启接收 PROXY 协议，并把本机加入可信 PROXY 来源。 | 后端不读 HTTP 头但支持 PROXY 协议，如另一层 Gately、haproxy、开启 `proxy_protocol` 的 nginx。后端未配置接收时所有请求都会失败，不确定时保持关闭 |
 | 使用访问域名作为 SNI | 仅 HTTPS 后端：握手时发送访客使用的域名并按它校验证书，相当于 nginx 的 `proxy_ssl_server_name on; proxy_ssl_name $host` | 后端在同一端口按域名选择证书或分流，如 frp 的 `vhost_https`、托管多个 HTTPS 站点的 nginx。每个后端使用独立的连接池，不同域名的连接不会互相复用 |
+| http:// 后端使用明文 HTTP/2（h2c） | 仅 http:// 后端：以不加密的 HTTP/2（h2c）连接后端，gRPC 流式传输与尾部元数据原样透传；多个访客的请求共用一条后端连接。HTTPS 后端会自动协商 HTTP/2，无需此选项；健康检查同样使用 h2c | 后端是只讲 h2c 的 gRPC 服务，如 NetBird 管理/信令、只开 gRPC 的 xray。后端不支持 h2c 时请求返回 502，且该连接上不能使用 WebSocket 升级 |
 | 转发 Gately 登录 Cookie | 把 Gately 自己的登录 Cookie（单点登录 `gately_sso`、站点会话、第三方登录随机数）原样转发给后端；关闭时（默认）这些 Cookie 不发给后端，避免泄露登录凭据 | 后端是另一台负责认证的 Gately，本站点不开认证。例如公网 Gately 只做 WAF 与访问控制、反代到内网 Gately，由内网 Gately 负责网页认证与单点登录。本站点启用认证时不能开启；只在后端是自己的 Gately 时使用 |
 
 常见组合：
@@ -107,6 +108,7 @@
 - 后端是自签名证书的 https 地址：再开「跳过后端证书校验」；
 - 反代公网网站或第三方服务：开「Host 使用后端地址」；
 - 后端前面还有按 SNI 分流的服务（如 frp `vhost_https`）：开「使用访问域名作为 SNI」。
+- 后端是明文端口上的 gRPC 服务（如 NetBird）：勾选“http:// 后端使用明文 HTTP/2（h2c）”，健康检查选 TCP 模式。
 - 公网 Gately 只做 WAF、内网 Gately 负责登录：公网站点不开认证，开「转发 Gately 登录 Cookie」，需要真实 IP 时再开「向后端发送 PROXY v2」，并在内网 Gately 上接收 PROXY 协议、把公网 Gately 加入可信来源。
 
 ### 请求头与响应头 {#headers}
