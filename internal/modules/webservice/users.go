@@ -190,6 +190,8 @@ func (m *Module) applyUsersLocked(s Settings) {
 	if err := m.auth.oidc.set(s.OIDC); err != nil {
 		m.logs.Add(logbuf.LevelWarn, "", "OIDC 身份提供方未启动: "+err.Error())
 	}
+	// 共享用户已换成新列表：再检查一次敲门放行，撤销保存期间按旧凭据登记的放行
+	m.syncKnockLocked()
 }
 
 func (m *Module) handlePutUsers(w http.ResponseWriter, r *http.Request) {

@@ -340,6 +340,9 @@ func (m *Module) stopLocked(key string) {
 }
 
 func (m *Module) restartLocked(key string) {
+	// 站点表替换后再按新配置检查一次敲门放行：saveLocked 里的检查发生在替换之前，期间旧站点表上登录的
+	// 已删除用户或旧凭据仍可能登记放行，替换后不再有这样的请求
+	defer m.syncKnockLocked()
 	// 只改了站点、监听端口设置不变时热替换站点表，不断开已有连接
 	if r, ok := m.runners[key]; ok && m.cfg.Settings.Enable {
 		for _, l := range m.cfg.Listeners {
