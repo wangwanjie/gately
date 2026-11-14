@@ -1096,6 +1096,11 @@ func (m *Module) revoke(addr netip.Addr, rule string) int {
 	var del []fwGrant
 	m.stateMu.Lock()
 	for k := range m.fwGrants {
+		// 网页登录授权的放行由 syncWebFirewall 按登记表同步：这里撤销的只是单个地址的授权，
+		// 同一地址所在 IPv6 网段的网页授权仍然有效，不能删掉它写入的放行
+		if k.web {
+			continue
+		}
 		if k.addr == addr && (rule == "" || k.rule == rule) {
 			delete(m.fwGrants, k)
 			del = append(del, fwGrant{Addr: k.addr, Access: k.access})
