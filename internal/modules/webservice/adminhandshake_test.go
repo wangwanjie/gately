@@ -704,3 +704,43 @@ func (d *discardWriter) Header() http.Header {
 }
 func (d *discardWriter) Write(p []byte) (int, error) { return len(p), nil }
 func (d *discardWriter) WriteHeader(int)             {}
+
+// Host 头里的端口由访客决定：与请求实际到达的端口不同时既不发起握手，也不能兑换票据。
+// 否则攻击者可以借同一域名的其他端口（例如同机 frps 开出的远程端口）发起握手，把管理员的票据引到自己的端口上。
+func TestHandshakeSpoofedPort(t *testing.T) {
+	e := startHandshake(t)
+	e.loginAdmin(t)
+	req, _ := http.NewRequest("GET", "http://"+e.addr+"/", nil)
+	req.Host = "basic.b.test:9999"
+	for k, v := range e.b.hdr {
+		req.Header.Set(k, v)
+	}
+	resp, err := noRedirect().Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	resp.Body.Close()
+	if resp.StatusCode != http.StatusUnauthorized || resp.Header.Get("Location") != "" {
+		t.Fatalf("伪造端口不应发起握手: %d %s", resp.StatusCode, resp.Header.Get("Location"))
+	}
+	// 用伪造端口签出的 state（模拟旧版本签出的或其他途径得到的）领取票据后，在伪造端口上兑换也被拒绝
+	tok := e.loginAdmin(t)
+	r2 := e.ticketReq("admin.a.test", e.signState("http://basic.b.test:9999", "/", "n1"), map[string]string{"Cookie": auth.CookieName + "=" + tok})
+	loc := r2.Header.Get("Location")
+	i := strings.Index(loc, "ticket=")
+	if i < 0 {
+		t.Fatalf("应签发票据: %d %s", r2.StatusCode, loc)
+	}
+	rq, _ := http.NewRequest("GET", "http://"+e.addr+adminLoginPath+"?ticket="+loc[i+len("ticket="):], nil)
+	rq.Host = "basic.b.test:9999"
+	rq.Header.Set("Cookie", adminHSCookie+"=n1")
+	rr, err := noRedirect().Do(rq)
+	if err != nil {
+		t.Fatal(err)
+	}
+	rr.Body.Close()
+	if rr.StatusCode != http.StatusBadRequest || strings.Contains(strings.Join(rr.Header.Values("Set-Cookie"), ";"), adminBridgeCookie+"=") {
+		t.Fatalf("伪造端口不应兑换成功: %d", rr.StatusCode)
+	}
+}
+
