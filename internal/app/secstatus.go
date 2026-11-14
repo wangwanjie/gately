@@ -188,8 +188,13 @@ func computeSecurity(snap auth.Snapshot, s Settings, exposed, secure bool) secur
 func (a *App) handleSecurityStatus(w http.ResponseWriter, r *http.Request) {
 	s := a.settingsSnapshot()
 	exposed := (listenExposed(s.Listen) && !s.LANOnly) || requestFromPublic(r)
-	secure := r.TLS != nil || strings.EqualFold(r.Header.Get("X-Forwarded-Proto"), "https")
-	httpx.OK(w, computeSecurity(a.auth.Snapshot(), s, exposed, secure))
+	httpx.OK(w, computeSecurity(a.auth.Snapshot(), s, exposed, requestSecure(r)))
+}
+
+// requestSecure 判断访问后台的请求是否经 HTTPS。X-Forwarded-Proto 只在请求来自可信代理时采信，
+// 访客自己带上该头不能把评分里的 HTTPS 项变成通过。
+func requestSecure(r *http.Request) bool {
+	return r.TLS != nil || (strings.EqualFold(r.Header.Get("X-Forwarded-Proto"), "https") && httpx.TrustsPeer(httpx.PeerIP(r)))
 }
 
 // ---- 密码强度预检 ----
