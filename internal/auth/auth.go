@@ -303,7 +303,7 @@ func (m *Manager) Username() string {
 func (m *Manager) Login(ip, username, password string, code ...string) (string, time.Time, error) {
 	key := limitKey(ip)
 	global := m.isUnknown(ip)
-	if err := m.reserve(key, global); err != nil {
+	if err := m.reserve(key, global, global); err != nil {
 		return "", time.Time{}, err
 	}
 	ok := false
@@ -713,11 +713,29 @@ func (m *Manager) Require(next http.Handler) http.Handler {
 }
 
 // reserve 检查是否锁定并预占一次尝试；返回非 nil 表示应拒绝：
-// ErrLocked 为该来源被锁定，ErrBusy 为陌生来源的全局失败预算已耗尽（global 为 true 时才检查）。
-func (m *Manager) reserve(key string, global bool) error {
+// ErrLocked 为该来源被锁定，ErrBusy 为陌生来源的全局失败预算已耗尽或限流表已满。
+// unknown 表示来源是陌生地址（从未登录成功过）：限流表满时只拒绝陌生来源，常用地址照常登记，
+// 否则攻击者用大量地址填满限流表就能把常用地址的管理员也挡在外面。global 表示计入陌生来源的全局失败预算。
+func (m *Manager) reserve(key string, unknown, global bool) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	now := m.now()
+	// 先检查全局预算：预算耗尽时直接拒绝，不为新来源建立记录（拒绝的请求不跑密码校验，几乎零成本，
+	// 若照常建记录，攻击者可以借此迅速填满限流表）
+	if global {
+		if now.Sub(m.gStart) > globalWindow && m.gInflight == 0 {
+			m.gStart, m.gFails, m.gTripped = now, 0, false
+		}
+		if m.gFails+m.gInflight >= m.globalLimit {
+			if !m.gTripped {
+				m.gTripped = true
+				if m.onTrip != nil {
+					go m.onTrip(m.gFails)
+				}
+			}
+			return ErrBusy
+		}
+	}
 	st := m.fails[key]
 	if st == nil || (now.Sub(st.first) > failWindow && st.inflight == 0) {
 		if st != nil && now.Before(st.lockedUntil) {
@@ -725,7 +743,8 @@ func (m *Manager) reserve(key string, global bool) error {
 		}
 		if st == nil && len(m.fails) >= maxTracked {
 			m.sweep(now, true)
-			if len(m.fails) >= maxTracked {
+			// 常用地址的数量有上限（见 loginips），超出 maxTracked 的部分有界
+			if len(m.fails) >= maxTracked && unknown {
 				return ErrBusy
 			}
 		}
@@ -741,18 +760,6 @@ func (m *Manager) reserve(key string, global bool) error {
 		return ErrLocked
 	}
 	if global {
-		if now.Sub(m.gStart) > globalWindow && m.gInflight == 0 {
-			m.gStart, m.gFails, m.gTripped = now, 0, false
-		}
-		if m.gFails+m.gInflight >= m.globalLimit {
-			if !m.gTripped {
-				m.gTripped = true
-				if m.onTrip != nil {
-					go m.onTrip(m.gFails)
-				}
-			}
-			return ErrBusy
-		}
 		m.gInflight++
 	}
 	st.inflight++
@@ -840,7 +847,7 @@ func (m *Manager) sweep(now time.Time, force bool) {
 
 // verifyAccountPassword 校验账号设置操作中的当前密码，失败次数与登录一样受限。
 func (m *Manager) verifyAccountPassword(password string) error {
-	if err := m.reserve(accountKey, false); err != nil {
+	if err := m.reserve(accountKey, false, false); err != nil {
 		return err
 	}
 	m.mu.RLock()
@@ -1106,7 +1113,7 @@ func (m *Manager) RemovePasskey(password, id string) error {
 func (m *Manager) LoginPasskey(ip, credID string, verify func(webauthn.Credential) (uint32, error)) (string, time.Time, error) {
 	key := limitKey(ip)
 	global := m.isUnknown(ip)
-	if err := m.reserve(key, global); err != nil {
+	if err := m.reserve(key, global, global); err != nil {
 		return "", time.Time{}, err
 	}
 	ok := false
