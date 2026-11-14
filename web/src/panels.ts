@@ -20,6 +20,19 @@ export interface PanelLink {
   color: string
   sameTab: boolean
   hide: boolean
+  // size 为卡片尺寸：空为大卡片（图标加标题、描述），small 为小卡片（只显示图标）
+  size: '' | 'small'
+  // hideName、hideDesc 只对大卡片生效：隐藏标题、隐藏描述
+  hideName: boolean
+  hideDesc: boolean
+  // authOnly 为 true 时只对已登录的访客显示（未登录时页面中没有该链接）
+  authOnly: boolean
+}
+
+// PanelEngine 是页面搜索框可选的搜索引擎，url 用 {q} 代表关键词
+export interface PanelEngine {
+  name: string
+  url: string
 }
 
 export interface Panel {
@@ -29,9 +42,24 @@ export interface Panel {
   title: string
   subtitle: string
   icon: string
+  // tabTitle 为浏览器标签页标题，favicon 为标签页图标（写法同 icon），description 为页面描述（meta description）；为空时分别用页面标题、页面图标
+  tabTitle: string
+  favicon: string
+  description: string
+  // footer 为页脚文字（空为 Gately 标志与名称），footerUrl 为文字的链接，hideFooter 为不显示页脚
+  footer: string
+  footerUrl: string
+  hideFooter: boolean
   theme: '' | 'light' | 'dark'
   // skin 为皮肤（色系 ID，与管理界面的主题配色相同），空串为默认色系
   skin: string
+  // engines 为搜索引擎；defaultEngine 为页面默认的搜索范围：0 为本站（过滤本页链接），n 为 engines[n-1]
+  engines: PanelEngine[]
+  defaultEngine: number
+  // background 为背景图片：http(s) 地址或上传的 data:image，空串为默认背景；bgDim 为盖在图片上的底色遮罩浓度（0-90）
+  background: string
+  bgDim: number
+  bgBlur: number
   lanCidrs: string[]
   links: PanelLink[]
   remark: string
@@ -48,13 +76,72 @@ export const MAX_ICON_BYTES = 96 * 1024
 export const MAX_TEXT_ICON = 8
 export const MAX_ALTS = 8
 export const BUILTIN_PREFIX = 'builtin:'
+export const MAX_ENGINES = 12
+export const MAX_BG_BYTES = 1 << 20
+export const MAX_BG_DIM = 90
+export const MAX_BG_BLUR = 20
+// 上传背景图时选图后的默认遮罩浓度：文字在大多数图片上仍清晰
+export const DEFAULT_BG_DIM = 45
+
+// ENGINE_PRESETS 为常用搜索引擎，名称用各自的通用叫法，不随界面语言变化
+export const ENGINE_PRESETS: readonly PanelEngine[] = [
+  { name: 'Google', url: 'https://www.google.com/search?q={q}' },
+  { name: 'Bing', url: 'https://www.bing.com/search?q={q}' },
+  { name: '百度', url: 'https://www.baidu.com/s?wd={q}' },
+  { name: 'DuckDuckGo', url: 'https://duckduckgo.com/?q={q}' },
+  { name: 'GitHub', url: 'https://github.com/search?q={q}' },
+  { name: 'YouTube', url: 'https://www.youtube.com/results?search_query={q}' },
+  { name: '知乎', url: 'https://www.zhihu.com/search?type=content&q={q}' },
+  { name: '小红书', url: 'https://www.xiaohongshu.com/search_result?keyword={q}' },
+  { name: '哔哩哔哩', url: 'https://search.bilibili.com/all?keyword={q}' },
+  { name: 'Wikipedia', url: 'https://en.wikipedia.org/w/index.php?search={q}' },
+]
+
+// engineUrlProblem 粗略检查搜索引擎地址，返回问题类别（空串为通过）；完整规则由后端在保存时校验
+export function engineUrlProblem(url: string): '' | 'scheme' | 'q' {
+  const v = url.trim()
+  if (!/^https?:\/\/[^/?#\s{}]+/i.test(v)) {
+    return 'scheme'
+  }
+  return v.includes('{q}') ? '' : 'q'
+}
+
+// addEngine 追加一个搜索引擎，名称（不区分大小写）已存在或已达上限时返回原数组
+export function addEngine(engines: PanelEngine[], e: PanelEngine): PanelEngine[] {
+  if (engines.length >= MAX_ENGINES || engines.some((x) => x.name.trim().toLowerCase() === e.name.trim().toLowerCase())) {
+    return engines
+  }
+  return [...engines, { ...e }]
+}
+
+// removeEngine 删除第 i 个引擎并让默认选项仍指向同一个引擎：默认的被删除时回到本站（0）
+export function removeEngine(engines: PanelEngine[], def: number, i: number): { engines: PanelEngine[]; def: number } {
+  if (i < 0 || i >= engines.length) {
+    return { engines, def }
+  }
+  const next = engines.filter((_, j) => j !== i)
+  const picked = def - 1
+  return { engines: next, def: picked === i ? 0 : picked > i ? def - 1 : def }
+}
+
+// moveEngine 把第 i 个引擎上移（delta=-1）或下移（delta=1），默认选项跟随其指向的引擎；越界时不变
+export function moveEngine(engines: PanelEngine[], def: number, i: number, delta: -1 | 1): { engines: PanelEngine[]; def: number } {
+  const to = i + delta
+  if (i < 0 || i >= engines.length || to < 0 || to >= engines.length) {
+    return { engines, def }
+  }
+  const next = [...engines]
+  ;[next[i], next[to]] = [next[to], next[i]]
+  const picked = def - 1
+  return { engines: next, def: picked === i ? to + 1 : picked === to ? i + 1 : def }
+}
 
 export function emptyPanel(): Panel {
-  return { name: '', enable: true, title: '', subtitle: '', icon: '', theme: '', skin: '', lanCidrs: [], links: [], remark: '' }
+  return { name: '', enable: true, title: '', subtitle: '', icon: '', tabTitle: '', favicon: '', description: '', footer: '', footerUrl: '', hideFooter: false, theme: '', skin: '', engines: [], defaultEngine: 0, background: '', bgDim: 0, bgBlur: 0, lanCidrs: [], links: [], remark: '' }
 }
 
 export function emptyLink(group = ''): PanelLink {
-  return { name: '', group, description: '', url: '', lanUrl: '', alts: [], icon: '', color: '', sameTab: false, hide: false }
+  return { name: '', group, description: '', url: '', lanUrl: '', alts: [], icon: '', color: '', sameTab: false, hide: false, size: '', hideName: false, hideDesc: false, authOnly: false }
 }
 
 // toPanel 去掉列表接口附带的只读字段（usedBy、key），得到可提交的面板；后端拒绝未知字段
@@ -65,8 +152,19 @@ export function toPanel(v: PanelView | Panel): Panel {
     title: v.title ?? '',
     subtitle: v.subtitle ?? '',
     icon: v.icon ?? '',
+    tabTitle: v.tabTitle ?? '',
+    favicon: v.favicon ?? '',
+    description: v.description ?? '',
+    footer: v.footer ?? '',
+    footerUrl: v.footerUrl ?? '',
+    hideFooter: v.hideFooter ?? false,
     theme: v.theme ?? '',
     skin: v.skin ?? '',
+    engines: (v.engines ?? []).map((e) => ({ name: e.name, url: e.url })),
+    defaultEngine: v.defaultEngine ?? 0,
+    background: v.background ?? '',
+    bgDim: v.bgDim ?? 0,
+    bgBlur: v.bgBlur ?? 0,
     lanCidrs: [...(v.lanCidrs ?? [])],
     links: (v.links ?? []).map((l) => ({ ...emptyLink(), ...l, alts: (l.alts ?? []).map((a) => ({ name: a.name, url: a.url })) })),
     remark: v.remark ?? '',
