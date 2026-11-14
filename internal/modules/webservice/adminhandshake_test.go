@@ -199,17 +199,22 @@ func (e *hsEnv) loginAdmin(t *testing.T) string {
 	return tok
 }
 
+// start 返回管理员在站点上发起握手的地址（访问它才会跳转到后台入口），next 为握手完成后回到的路径。
+func (e *hsEnv) start(host, next string) string {
+	return e.u(host, adminStartPath+"?next="+url.QueryEscape(next))
+}
+
 func (e *hsEnv) u(host, path string) string {
 	return fmt.Sprintf("http://%s:%s%s", host, e.port, path)
 }
 
-// 完整流程：已登录后台的浏览器访问另一个父域的站点，经入口握手后直接放行，原路径与查询串保留；
+// 完整流程：已登录后台的管理员访问另一个父域站点的 admin-start，经入口握手后直接放行，原路径与查询串保留；
 // 握手后同站点的访问不再跳转；未开启选项的站点仍要求认证。
 func TestHandshakeFlow(t *testing.T) {
 	e := startHandshake(t)
 	e.loginAdmin(t)
 
-	resp, body, hops := e.b.nav(e.u("basic.b.test", "/x?y=1"), nil)
+	resp, body, hops := e.b.nav(e.start("basic.b.test", "/x?y=1"), nil)
 	if resp.StatusCode != http.StatusOK || body != "basic-ok" {
 		t.Fatalf("握手后应放行: %d %q hops=%v", resp.StatusCode, body, hops)
 	}
@@ -239,12 +244,12 @@ func TestHandshakeFlow(t *testing.T) {
 		t.Fatalf("握手后应直接放行: %d %q %v", resp.StatusCode, body, hops)
 	}
 	// 另一个站点（同父域）需要各自握手一次：凭据是仅主机的
-	resp, body, hops = e.b.nav(e.u("basic2.b.test", "/"), nil)
+	resp, body, hops = e.b.nav(e.start("basic2.b.test", "/"), nil)
 	if resp.StatusCode != http.StatusOK || body != "basic2-ok" || len(hops) < 3 {
 		t.Fatalf("另一个站点应各自握手: %d %q %v", resp.StatusCode, body, hops)
 	}
 	// 未开启选项的站点
-	if resp, _, hops := e.b.nav(e.u("plain.b.test", "/"), nil); resp.StatusCode != http.StatusUnauthorized || len(hops) != 1 {
+	if resp, _, hops := e.b.nav(e.start("plain.b.test", "/"), nil); resp.StatusCode != http.StatusUnauthorized || len(hops) != 1 {
 		t.Fatalf("未开启选项的站点应直接要求认证: %d %v", resp.StatusCode, hops)
 	}
 }
@@ -253,21 +258,21 @@ func TestHandshakeFlow(t *testing.T) {
 func TestHandshakeWebAuth(t *testing.T) {
 	e := startHandshake(t)
 	e.loginAdmin(t)
-	resp, body, _ := e.b.nav(e.u("web.b.test", "/p"), nil)
+	resp, body, _ := e.b.nav(e.start("web.b.test", "/p"), nil)
 	if resp.StatusCode != http.StatusOK || body != "web-ok" {
 		t.Fatalf("网页认证站点应握手放行: %d %q", resp.StatusCode, body)
 	}
 	e2 := startHandshake(t)
-	resp, _, hops := e2.b.nav(e2.u("web.b.test", "/p"), nil)
+	resp, _, hops := e2.b.nav(e2.start("web.b.test", "/p"), nil)
 	if resp.StatusCode != http.StatusOK || !strings.HasSuffix(hops[len(hops)-1].URL, authPath+"/login?next=%2Fp") {
 		t.Fatalf("未登录后台应回到登录页: %d %v", resp.StatusCode, hops)
 	}
 }
 
-// 没有登录后台：握手后回到站点原有的认证；握手标记使短时间内不再重复握手，也没有登记任何票据。
+// 没有登录后台：握手后回到站点原有的认证，没有登记任何票据。
 func TestHandshakeNotLoggedIn(t *testing.T) {
 	e := startHandshake(t)
-	resp, _, hops := e.b.nav(e.u("basic.b.test", "/"), nil)
+	resp, _, hops := e.b.nav(e.start("basic.b.test", "/"), nil)
 	if resp.StatusCode != http.StatusUnauthorized {
 		t.Fatalf("没有登录后台应要求认证: %d %v", resp.StatusCode, hops)
 	}
@@ -280,13 +285,31 @@ func TestHandshakeNotLoggedIn(t *testing.T) {
 	if n != 0 {
 		t.Fatalf("没有后台登录态不应登记票据: %d", n)
 	}
-	resp, _, hops = e.b.nav(e.u("basic.b.test", "/"), nil)
-	if resp.StatusCode != http.StatusUnauthorized || len(hops) != 1 {
-		t.Fatalf("短时间内不应重复握手: %d %v", resp.StatusCode, hops)
-	}
 	// 站点自己的账号照常可用
 	if resp, body, _ := e.b.nav(e.u("basic.b.test", "/"), map[string]string{"Authorization": "Basic Ym9iOnB3"}); resp.StatusCode != http.StatusOK || body != "basic-ok" {
 		t.Fatalf("站点账号应可用: %d %q", resp.StatusCode, body)
+	}
+}
+
+// 普通访客访问站点任何普通路径都不会被跳转，后台入口域名不会出现在他们的响应里。
+func TestHandshakeVisitorNeverRedirected(t *testing.T) {
+	e := startHandshake(t)
+	for _, host := range []string{"basic.b.test", "web.b.test"} {
+		for _, path := range []string{"/", "/x?y=1", authPath + "/login", authPath + "/admin-login"} {
+			req, _ := http.NewRequest("GET", "http://"+e.addr+path, nil)
+			req.Host = host + ":" + e.port
+			req.Header.Set("User-Agent", "Mozilla/5.0")
+			req.Header.Set("Accept", "text/html")
+			resp, err := noRedirect().Do(req)
+			if err != nil {
+				t.Fatal(err)
+			}
+			b, _ := io.ReadAll(resp.Body)
+			resp.Body.Close()
+			if strings.Contains(resp.Header.Get("Location"), "admin.a.test") || strings.Contains(string(b), "admin.a.test") || len(resp.Header.Values("Set-Cookie")) > 0 && strings.Contains(strings.Join(resp.Header.Values("Set-Cookie"), ";"), adminHSCookie) {
+				t.Fatalf("%s%s 不应暴露后台入口: %d %s", host, path, resp.StatusCode, resp.Header.Get("Location"))
+			}
+		}
 	}
 }
 
@@ -294,19 +317,19 @@ func TestHandshakeNotLoggedIn(t *testing.T) {
 func TestHandshakeRevoked(t *testing.T) {
 	e := startHandshake(t)
 	tok := e.loginAdmin(t)
-	if resp, _, _ := e.b.nav(e.u("basic.b.test", "/"), nil); resp.StatusCode != http.StatusOK {
+	if resp, _, _ := e.b.nav(e.start("basic.b.test", "/"), nil); resp.StatusCode != http.StatusOK {
 		t.Fatalf("握手应成功: %d", resp.StatusCode)
 	}
 	if err := e.env.m.Revoke(tok); err != nil {
 		t.Fatal(err)
 	}
-	// 后台 Cookie 也已失效：站点重新握手，入口确认未登录，回到认证
-	if resp, _, _ := e.b.nav(e.u("basic.b.test", "/"), nil); resp.StatusCode != http.StatusUnauthorized {
+	// 后台 Cookie 也已失效：重新握手时入口确认未登录，回到认证
+	if resp, _, _ := e.b.nav(e.start("basic.b.test", "/"), nil); resp.StatusCode != http.StatusUnauthorized {
 		t.Fatalf("登出后应要求认证: %d", resp.StatusCode)
 	}
 }
 
-// 不满足条件的请求不发起握手：非页面导航、非 GET、非浏览器、框架内、未配置入口、默认站点、通配域名站点、入口自身。
+// 不满足条件的 admin-start 请求不发起握手：非页面导航、非 GET、非浏览器、框架内、未配置入口、默认站点、通配域名站点、入口自身。
 func TestHandshakeNotStarted(t *testing.T) {
 	e := startHandshake(t)
 	e.loginAdmin(t)
@@ -335,12 +358,12 @@ func TestHandshakeNotStarted(t *testing.T) {
 		return h
 	}
 	cases := map[string]*http.Response{
-		"fetch/XHR":  get1("basic.b.test", "/", with("Sec-Fetch-Mode", "cors"), "GET"),
-		"iframe":     get1("basic.b.test", "/", with("Sec-Fetch-Dest", "iframe"), "GET"),
-		"POST":       get1("basic.b.test", "/", nav, "POST"),
-		"curl":       get1("basic.b.test", "/", map[string]string{"User-Agent": "curl/8"}, "GET"),
-		"通配域名站点":     get1("x.c.test", "/", nav, "GET"),
-		"默认站点（未知域名）": get1("unknown.example", "/", nav, "GET"),
+		"fetch/XHR":  get1("basic.b.test", adminStartPath+"?next=%2F", with("Sec-Fetch-Mode", "cors"), "GET"),
+		"iframe":     get1("basic.b.test", adminStartPath+"?next=%2F", with("Sec-Fetch-Dest", "iframe"), "GET"),
+		"POST":       get1("basic.b.test", adminStartPath+"?next=%2F", nav, "POST"),
+		"curl":       get1("basic.b.test", adminStartPath+"?next=%2F", map[string]string{"User-Agent": "curl/8"}, "GET"),
+		"通配域名站点":     get1("x.c.test", adminStartPath+"?next=%2F", nav, "GET"),
+		"默认站点（未知域名）": get1("unknown.example", adminStartPath+"?next=%2F", nav, "GET"),
 	}
 	for name, resp := range cases {
 		if resp.StatusCode != http.StatusUnauthorized {
@@ -348,12 +371,12 @@ func TestHandshakeNotStarted(t *testing.T) {
 		}
 	}
 	// 入口自身带着没有后台登录态的请求不握手（入口站点无认证，这里仅确认不跳转到自己）
-	if resp := get1("admin.a.test", "/", nav, "GET"); resp.StatusCode != http.StatusOK {
+	if resp := get1("admin.a.test", adminStartPath+"?next=%2F", nav, "GET"); resp.StatusCode != http.StatusOK {
 		t.Errorf("入口站点不应跳转: %d", resp.StatusCode)
 	}
 	// 未配置入口
 	e.r.auth.setAdminEntry("")
-	if resp := get1("basic.b.test", "/", nav, "GET"); resp.StatusCode != http.StatusUnauthorized {
+	if resp := get1("basic.b.test", adminStartPath+"?next=%2F", nav, "GET"); resp.StatusCode != http.StatusUnauthorized {
 		t.Errorf("未配置入口不应跳转: %d", resp.StatusCode)
 	}
 }
@@ -561,7 +584,7 @@ func TestHandshakeTicketRedemption(t *testing.T) {
 func TestHandshakeNoSecretsInURLs(t *testing.T) {
 	e := startHandshake(t)
 	tok := e.loginAdmin(t)
-	_, _, hops := e.b.nav(e.u("basic.b.test", "/p"), nil)
+	_, _, hops := e.b.nav(e.start("basic.b.test", "/p"), nil)
 	bridge := e.b.cookie("basic.b.test", adminBridgeCookie)
 	if bridge == "" {
 		t.Fatal("握手应成功")
@@ -683,14 +706,14 @@ func BenchmarkHandshakeIdle(b *testing.B) {
 	a := newAuthenticator("s")
 	a.setAdminEntry("https://admin.example.com")
 	site := Site{AdminPass: true, adminHS: true, BasicAuth: true, Domains: []string{"x.test"}}
-	r, _ := http.NewRequest("POST", "http://x.test/", nil)
+	r, _ := http.NewRequest("GET", "http://x.test/", nil)
 	r.Header.Set("User-Agent", "Mozilla/5.0")
 	r.Header.Set("Accept", "text/html")
 	w := &discardWriter{}
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_ = a.startAdminHandshake(w, r, site)
+		_ = a.serveAdminStart(w, r, site)
 	}
 }
 
@@ -710,7 +733,7 @@ func (d *discardWriter) WriteHeader(int)             {}
 func TestHandshakeSpoofedPort(t *testing.T) {
 	e := startHandshake(t)
 	e.loginAdmin(t)
-	req, _ := http.NewRequest("GET", "http://"+e.addr+"/", nil)
+	req, _ := http.NewRequest("GET", "http://"+e.addr+adminStartPath+"?next=%2F", nil)
 	req.Host = "basic.b.test:9999"
 	for k, v := range e.b.hdr {
 		req.Header.Set(k, v)
@@ -741,26 +764,5 @@ func TestHandshakeSpoofedPort(t *testing.T) {
 	rr.Body.Close()
 	if rr.StatusCode != http.StatusBadRequest || strings.Contains(strings.Join(rr.Header.Values("Set-Cookie"), ";"), adminBridgeCookie+"=") {
 		t.Fatalf("伪造端口不应兑换成功: %d", rr.StatusCode)
-	}
-}
-
-// 入口确认没有登录后台后，握手标记延长到 1 小时，普通访客不会每两分钟被带去后台入口一次。
-func TestHandshakeNoneMarkerExtended(t *testing.T) {
-	e := startHandshake(t)
-	_, _, hops := e.b.nav(e.u("basic.b.test", "/"), nil)
-	if len(hops) < 3 {
-		t.Fatalf("应先握手: %v", hops)
-	}
-	var found bool
-	for _, c := range e.b.jar {
-		if c.c.Name == adminHSCookie && c.domain == "basic.b.test" {
-			found = true
-			if c.c.MaxAge != adminHSNoneMaxAge {
-				t.Fatalf("握手标记应延长到 1 小时: %d", c.c.MaxAge)
-			}
-		}
-	}
-	if !found {
-		t.Fatal("应保留握手标记")
 	}
 }
