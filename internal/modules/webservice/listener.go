@@ -310,6 +310,8 @@ func buildSiteTable(cfg Listener, log *logbuf.Logger, auth *authenticator, waf W
 		if err != nil {
 			return nil, err
 		}
+		// 默认站点处理未匹配任何站点域名的请求，来源域名不受控，不参与后台登录免认证的跳转握手（只有这里的站点设置）
+		h.site.adminHS = h.site.AdminPass
 		t.sites = append(t.sites, h)
 		t.indexDomains(h)
 	}

@@ -69,10 +69,10 @@ func (a *authenticator) bridgeUser(r *http.Request) string {
 }
 
 // adminPassVisitor 判断请求是否来自已登录后台的管理员，且站点开启了后台登录免认证；是则返回对应的访客身份。
-// 只有单点登录域下的站点认可凭据：凭据 Cookie 本身只会发给该域及其子域名，这里再校验一次，
-// 避免把凭据手工带到域外的站点上也放行。
+// 凭据来自两条路径：单点登录域下的站点写在父域上；其他域名的站点经跳转握手写在自己的域名上（见 adminhandshake.go，
+// 需配置后台入口）。两者都没有启用时，域外站点不认凭据，避免把凭据手工带到域外的站点上也放行。
 func (a *authenticator) adminPassVisitor(r *http.Request, s Site) (visitor, bool) {
-	if !s.AdminPass || a.shared.get().ssoFor(hostOnly(r.Host)) == "" {
+	if !s.AdminPass || (a.shared.get().ssoFor(hostOnly(r.Host)) == "" && a.hs.entry.Load() == nil) {
 		return visitor{}, false
 	}
 	user := a.bridgeUser(r)
@@ -80,6 +80,22 @@ func (a *authenticator) adminPassVisitor(r *http.Request, s Site) (visitor, bool
 		return visitor{}, false
 	}
 	return visitor{names: []string{adminVisitorPrefix + user}}, true
+}
+
+// adminPassDomains 返回开启后台登录免认证的站点的域名（只统计启用的监听器与站点）。
+func adminPassDomains(listeners []Listener) []string {
+	var out []string
+	for _, l := range listeners {
+		if !l.Enable {
+			continue
+		}
+		for _, s := range l.Sites {
+			if s.Enable && s.AdminPass {
+				out = append(out, s.Domains...)
+			}
+		}
+	}
+	return out
 }
 
 // anyAdminPass 判断配置中是否有站点开启了后台登录免认证（只统计启用的监听器与站点）。
