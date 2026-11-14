@@ -25,6 +25,9 @@ type serverAccess struct {
 	mode     string
 	prefixes []netip.Prefix
 	sets     []string
+	// denyPrefixes 与 denySets 为优先拒绝名单
+	denyPrefixes []netip.Prefix
+	denySets     []string
 }
 
 // loginGate 是本机回环地址上的 frps 登录插件端点：frpc 每次登录（frps 校验令牌之前）时，
@@ -136,6 +139,10 @@ func (m *Module) checkLogin(key, clientAddr string) string {
 	if banlist.Default.Banned(a) {
 		return fmt.Sprintf("gately: client address %s is banned", a)
 	}
+	// 优先拒绝名单先于白名单、黑名单判断，与访问控制模式无关
+	if (len(acc.denyPrefixes) > 0 || len(acc.denySets) > 0) && iplist.Default.Match(a, acc.denyPrefixes, acc.denySets) {
+		return fmt.Sprintf("gately: client address %s is in the deny list", a)
+	}
 	if !iplist.Default.Allowed(acc.mode, a, acc.prefixes, acc.sets) {
 		if acc.mode == iplist.ModeWhitelist {
 			return fmt.Sprintf("gately: client address %s is not in the allowlist", a)
@@ -179,11 +186,15 @@ func (m *Module) publishAccessLocked() {
 		s := &m.cfg.Servers[i]
 		// 配置已校验过，这里解析失败只可能来自手改的配置文件，按空名单处理
 		prefixes, _ := iplist.ParsePrefixes(s.IPList)
-		rules[s.Key] = &serverAccess{mode: s.IPMode, prefixes: prefixes, sets: s.IPSets}
-		if s.IPMode == iplist.ModeOff {
-			continue
+		denyPrefixes, _ := iplist.ParsePrefixes(s.IPDenyList)
+		rules[s.Key] = &serverAccess{mode: s.IPMode, prefixes: prefixes, sets: s.IPSets, denyPrefixes: denyPrefixes, denySets: s.IPDenySets}
+		// 名单模式关闭时只登记优先拒绝名单的引用
+		if s.IPMode != iplist.ModeOff {
+			for _, k := range s.IPSets {
+				users[k] = append(users[k], "frps / "+s.Name)
+			}
 		}
-		for _, k := range s.IPSets {
+		for _, k := range s.IPDenySets {
 			users[k] = append(users[k], "frps / "+s.Name)
 		}
 	}
@@ -193,10 +204,12 @@ func (m *Module) publishAccessLocked() {
 
 // checkIPSets 检查启用了访问控制的实例引用的订阅列表都存在。
 func checkIPSets(s *Server) error {
-	if s.IPMode == iplist.ModeOff {
-		return nil
+	// 优先拒绝名单不依赖访问控制模式，引用的订阅列表始终要存在
+	refs := s.IPDenySets
+	if s.IPMode != iplist.ModeOff {
+		refs = append(append([]string{}, s.IPSets...), s.IPDenySets...)
 	}
-	for _, k := range s.IPSets {
+	for _, k := range refs {
 		if _, ok := iplist.Default.Name(k); !ok {
 			return fmt.Errorf("引用的 IP 列表 %q 不存在", k)
 		}

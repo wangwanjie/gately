@@ -365,7 +365,7 @@ func (m *Module) serverContent(s *Server) (string, error) {
 	}
 	content := ServerTOML(s.ServerSettings)
 	if m.gate == nil {
-		if s.IPMode != iplist.ModeOff {
+		if s.IPMode != iplist.ModeOff || len(s.IPDenyList) > 0 || len(s.IPDenySets) > 0 {
 			return "", fmt.Errorf("登录检查端点未启动，无法应用 IP 访问控制: %s", m.gateErr)
 		}
 		return content, nil

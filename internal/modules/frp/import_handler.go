@@ -176,6 +176,7 @@ func (m *Module) applyImportLocked(res *ImportResult, in ImportRequest, out *Imp
 			s.ServerSettings = *res.Server
 			// 导入的 frps 配置不含 Gately 的来源 IP 访问控制，沿用实例原有设置
 			s.IPMode, s.IPList, s.IPSets = old.IPMode, old.IPList, old.IPSets
+			s.IPDenyList, s.IPDenySets = old.IPDenyList, old.IPDenySets
 			out.Key = s.Key
 			if err := s.Validate(); err != nil {
 				m.cfg = oldCfg
