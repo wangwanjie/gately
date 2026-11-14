@@ -842,9 +842,9 @@ func (f *firewall) effectiveLocked() Settings {
 	return ss
 }
 
-// allowLocked 返回诱饵端口与扫描检测不处理的白名单网段。调用方持有 f.mu。
+// allowLocked 返回诱饵端口与扫描检测不处理的网段：白名单与可信来源。调用方持有 f.mu。
 func (f *firewall) allowLocked() []netip.Prefix {
-	return mergePrefixes(allowPrefixes(f.cfg.ignoreSet(f.local).prefixes))
+	return allowFor(f.cfg, f.local, f.trusted)
 }
 
 // iptPlanLocked 汇总一次写入需要的白名单、网段封禁与端口。调用方持有 f.mu。
@@ -982,6 +982,7 @@ func (f *firewall) pollIPTLocked(ctx context.Context) {
 		}
 	}
 	portsOK := f.refreshPortsLocked(ctx)
+	f.refreshTrustLocked(ctx)
 	if portsOK && f.cfg.Scan.Enable && f.cfg.Scan.IPv6Strict && !f.strictReady && !f.strictAt.IsZero() && !time.Now().Before(f.strictAt) {
 		f.strictReady = true
 		f.applyLocked(ctx, f.cfg)
@@ -989,7 +990,7 @@ func (f *firewall) pollIPTLocked(ctx context.Context) {
 			f.log.Infof("IPv6 严格模式已启用：IPv6 来源连接开放端口以外的端口即被封禁")
 		}
 	}
-	importFn, ipt := f.importFn, f.ipt
+	importFn, ipt := f.trustedFilterLocked(f.importFn), f.ipt
 	inbox, portLog, kerr := ipt.kernelBans(ctx)
 	f.mu.Unlock()
 	if kerr != nil || len(inbox) == 0 {
