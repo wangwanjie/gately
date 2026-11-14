@@ -296,3 +296,13 @@ func TestAccessValidate(t *testing.T) {
 		t.Error("引用不存在的订阅列表应报错")
 	}
 }
+
+// 优先拒绝名单变化同样只热更新，不触发重建
+func TestOnlyAccessChangedDeny(t *testing.T) {
+	a := Rule{}
+	b := Rule{}
+	b.Access.IPDenyList = []string{"10.0.0.0/8"}
+	if !onlyAccessChanged(a, b) {
+		t.Fatal("只改优先拒绝名单应视为只有访问控制变化")
+	}
+}

@@ -54,6 +54,26 @@ func unmapPrefix(p netip.Prefix) netip.Prefix {
 	return p
 }
 
+// CleanDeny 规范化优先拒绝名单：去掉手填名单中的空项并校验格式，去掉重复与空白的订阅列表 key。
+func CleanDeny(list, sets []string) ([]string, []string, error) {
+	var l []string
+	for _, x := range list {
+		if x = strings.TrimSpace(x); x != "" {
+			l = append(l, x)
+		}
+	}
+	if _, err := ParsePrefixes(l); err != nil {
+		return nil, nil, err
+	}
+	var s []string
+	for _, k := range sets {
+		if k = strings.TrimSpace(k); k != "" && !slices.Contains(s, k) {
+			s = append(s, k)
+		}
+	}
+	return l, s, nil
+}
+
 // Match 判断地址是否命中手填网段或任一引用的订阅列表；尚未载入的订阅列表按空列表处理。
 func (r *Registry) Match(a netip.Addr, prefixes []netip.Prefix, sets []string) bool {
 	a = a.Unmap()

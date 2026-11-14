@@ -20,6 +20,10 @@ type Access struct {
 	IPList []string `json:"ipList"`
 	// IPSets 为引用的订阅 IP 列表 key（在 Web 服务的 IP 列表中维护），与 IPList 一起参与判断
 	IPSets []string `json:"ipSets"`
+	// IPDenyList 与 IPDenySets 是优先拒绝名单：与 IPMode 无关，命中的来源一律拒绝，先于白名单、黑名单判断（先黑后白），
+	// 即使同时在白名单中也会被拒绝；订阅列表同样按 key 实时查询
+	IPDenyList []string `json:"ipDenyList"`
+	IPDenySets []string `json:"ipDenySets"`
 	// Knock 为端口敲门规则 key：非空时来源地址还必须持有该规则的有效敲门授权（见 internal/knockgate），
 	// 与名单同时设置时两者都要满足；留空不要求敲门
 	Knock string `json:"knock,omitempty"`
@@ -47,6 +51,10 @@ func (a *Access) Normalize() error {
 		}
 	}
 	a.IPSets = sets
+	var err error
+	if a.IPDenyList, a.IPDenySets, err = CleanDeny(a.IPDenyList, a.IPDenySets); err != nil {
+		return err
+	}
 	a.Knock = strings.TrimSpace(a.Knock)
 	if a.IPMode == ModeWhitelist && len(a.IPList) == 0 && len(a.IPSets) == 0 {
 		return errors.New("白名单模式需要填写 IP / 网段或选择订阅列表")
@@ -61,10 +69,12 @@ func (a *Access) CheckSets() error {
 			return fmt.Errorf("引用的敲门规则 %q 不存在", a.Knock)
 		}
 	}
-	if a.IPMode == ModeOff {
-		return nil
+	// 优先拒绝名单不依赖访问控制模式，引用的订阅列表始终要存在
+	refs := a.IPDenySets
+	if a.IPMode != ModeOff {
+		refs = append(slices.Clone(a.IPSets), a.IPDenySets...)
 	}
-	for _, k := range a.IPSets {
+	for _, k := range refs {
 		if _, ok := Default.Name(k); !ok {
 			return fmt.Errorf("引用的 IP 列表 %q 不存在", k)
 		}
@@ -72,12 +82,15 @@ func (a *Access) CheckSets() error {
 	return nil
 }
 
-// AddUsers 把规则对订阅列表的引用追加到 users（列表 key -> 引用方描述），访问控制关闭时不登记。
+// AddUsers 把规则对订阅列表的引用追加到 users（列表 key -> 引用方描述）；
+// 名单模式关闭时只登记优先拒绝名单的引用。
 func (a *Access) AddUsers(users map[string][]string, label string) {
-	if a.IPMode == ModeOff {
-		return
+	if a.IPMode != ModeOff {
+		for _, k := range a.IPSets {
+			users[k] = append(users[k], label)
+		}
 	}
-	for _, k := range a.IPSets {
+	for _, k := range a.IPDenySets {
 		users[k] = append(users[k], label)
 	}
 }
@@ -88,17 +101,21 @@ type Filter struct {
 	mode     string
 	prefixes []netip.Prefix
 	sets     []string
-	knock    string
+	// denyPrefixes 与 denySets 为优先拒绝名单
+	denyPrefixes []netip.Prefix
+	denySets     []string
+	knock        string
 }
 
 // Compile 编译访问控制；名单关闭且不要求敲门时返回 nil（nil Filter 放行所有来源）。
 // 配置已校验过，网段解析失败只可能来自手改的配置文件，按空名单处理。
 func (a *Access) Compile() *Filter {
-	if a.IPMode == ModeOff && a.Knock == "" {
+	if a.IPMode == ModeOff && a.Knock == "" && len(a.IPDenyList) == 0 && len(a.IPDenySets) == 0 {
 		return nil
 	}
 	prefixes, _ := ParsePrefixes(a.IPList)
-	return &Filter{mode: a.IPMode, prefixes: prefixes, sets: slices.Clone(a.IPSets), knock: a.Knock}
+	denyPrefixes, _ := ParsePrefixes(a.IPDenyList)
+	return &Filter{mode: a.IPMode, prefixes: prefixes, sets: slices.Clone(a.IPSets), denyPrefixes: denyPrefixes, denySets: slices.Clone(a.IPDenySets), knock: a.Knock}
 }
 
 // Allows 判断来源地址是否允许。无法解析出 IP 的地址在白名单下按不在名单中处理，其它模式放行；
@@ -127,6 +144,10 @@ func (f *Filter) Reason(addr net.Addr) string {
 			return DenyKnock
 		}
 		return ""
+	}
+	// 优先拒绝名单先于白名单、黑名单判断
+	if (len(f.denyPrefixes) > 0 || len(f.denySets) > 0) && Default.Match(a, f.denyPrefixes, f.denySets) {
+		return DenyList
 	}
 	if !Default.Allowed(f.mode, a, f.prefixes, f.sets) {
 		return DenyList

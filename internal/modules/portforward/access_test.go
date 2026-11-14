@@ -319,3 +319,37 @@ func TestAccessValidate(t *testing.T) {
 		t.Error("引用不存在的订阅列表应报错")
 	}
 }
+
+// 优先拒绝名单（#95）：白名单命中也先拒绝，只改名单热更新，TCP 与 UDP 同样生效，订阅列表刷新后立即生效。
+func TestAccessDenyFirst(t *testing.T) {
+	set, _, _ := iplist.Parse(strings.NewReader("127.0.0.0/8\n"))
+	iplist.Default.Store("t-pf-deny", set)
+	t.Cleanup(func() { iplist.Default.Store("t-pf-deny", nil) })
+
+	r, rule, port := startAccessRule(t, iplist.Access{IPMode: iplist.ModeWhitelist, IPList: []string{"127.0.0.0/8"}})
+	if !tcpEchoes(t, port) || !udpEchoes(t, port) {
+		t.Fatal("白名单内的来源应放行")
+	}
+
+	// 同时命中白名单与拒绝名单：拒绝优先
+	rule.Access = iplist.Access{IPMode: iplist.ModeWhitelist, IPList: []string{"127.0.0.0/8"}, IPDenyList: []string{"127.0.0.1"}}
+	if !r.canUpdate(rule, r.settings) {
+		t.Fatal("只修改名单时应能热更新")
+	}
+	r.update(rule, r.settings, r.current().log)
+	if tcpEchoes(t, port) || udpEchoes(t, port) {
+		t.Fatal("命中优先拒绝名单的来源应被拒绝，即使在白名单中")
+	}
+
+	// 访问控制关闭时只靠拒绝订阅列表同样生效，刷新为不含本机后放行
+	rule.Access = iplist.Access{IPDenySets: []string{"t-pf-deny"}}
+	r.update(rule, r.settings, r.current().log)
+	if tcpEchoes(t, port) {
+		t.Fatal("命中拒绝订阅列表的来源应被拒绝")
+	}
+	set2, _, _ := iplist.Parse(strings.NewReader("192.0.2.0/24\n"))
+	iplist.Default.Store("t-pf-deny", set2)
+	if !tcpEchoes(t, port) {
+		t.Fatal("订阅列表刷新后已移出的来源应放行")
+	}
+}

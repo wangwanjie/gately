@@ -217,3 +217,19 @@ func TestAccessBlacklistHit(t *testing.T) {
 		}
 	}
 }
+
+// 优先拒绝名单（#95）：白名单命中也先断开，热更新生效。
+func TestAccessDenyFirst(t *testing.T) {
+	r, rule, port := startAccessRule(t, iplist.Access{IPMode: iplist.ModeWhitelist, IPList: []string{"127.0.0.0/8"}}, "127.0.0.1", []string{"tcp4"})
+	if got := httpReaches(t, port); got != "web" {
+		t.Fatalf("白名单内的来源应放行，实际 %q", got)
+	}
+	rule.Access = iplist.Access{IPMode: iplist.ModeWhitelist, IPList: []string{"127.0.0.0/8"}, IPDenyList: []string{"127.0.0.1"}}
+	r.update(rule, r.settings, r.current().log)
+	if got := httpReaches(t, port); got != "" {
+		t.Fatalf("命中优先拒绝名单的来源应被断开，实际 %q", got)
+	}
+	if s := r.snapshot(); s.Denied < 1 {
+		t.Fatalf("拒绝应计入 Denied: %+v", s)
+	}
+}
