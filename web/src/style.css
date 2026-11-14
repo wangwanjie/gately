@@ -101,6 +101,12 @@ a {
 .g-card + .g-card {
   margin-top: 16px;
 }
+/* 卡片后面紧跟分组列表（及其排序工具栏）、标签页后面紧跟卡片时同样留出卡片间距，否则边框贴在一起 */
+.g-card + .grouped-list,
+.g-card + .sort-bar,
+.el-tabs + .g-card {
+  margin-top: 16px;
+}
 .g-card-head {
   display: flex;
   align-items: center;
