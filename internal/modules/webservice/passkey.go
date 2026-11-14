@@ -338,11 +338,10 @@ func (a *authenticator) passkeyLoginFinish(w http.ResponseWriter, r *http.Reques
 	}
 	u, cred, err := a.passkeyVerifyLogin(r, req, rp, origin)
 	if err == nil {
-		// 落盘新的签名计数；重放（计数未递增）在这里被原子地拒绝，其余保存失败只记日志，不影响登录
-		if perr := a.persistPasskeyUse(u, cred); errors.Is(perr, errPasskeyReplay) {
+		// 落盘新的签名计数；重放（计数未递增）、Passkey 已在此期间被删除、保存失败都拒绝登录：
+		// 新计数没有保存时，克隆的凭据可以重放同一个计数
+		if perr := a.persistPasskeyUse(u, cred); perr != nil {
 			err = fmt.Errorf("用户 %s: %w", u.Name, perr)
-		} else if perr != nil {
-			a.passkeyEvent(fmt.Sprintf("共享用户 %s 的 Passkey 使用记录保存失败: %v", u.Name, perr))
 		}
 	}
 	a.release(key, err == nil)
