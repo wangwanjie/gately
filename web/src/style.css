@@ -409,3 +409,13 @@ html.theme-vt *::before,
 html.theme-vt *::after {
   transition: none !important;
 }
+
+/* 模态层打开时遮罩上的滚动不传给下方页面，与 useScrollLock 的全局拦截互为补充 */
+/* 滚动链在最内层的滚动容器上截断：对话框比视口高时，遮罩层自身滚动到头后不再把剩余滚动量传给页面 */
+.el-overlay,
+.el-overlay-dialog,
+.el-dialog__body,
+.el-drawer__body,
+.el-message-box {
+  overscroll-behavior: contain;
+}
