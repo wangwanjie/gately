@@ -169,6 +169,30 @@ func TestIptRebuildPortSetFallback(t *testing.T) {
 	}
 }
 
+// 轮询时诱饵与扫描集合没有新来源就不读取命中端口集合。
+func TestIptKernelBansReadsPortsOnlyOnHits(t *testing.T) {
+	fake := &fakeIPT{ipsetSave: map[string]string{}}
+	b := newFakeIPTBackend(fake)
+	if _, _, err := b.kernelBans(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if len(fake.find("save gately_port")) != 0 {
+		t.Fatal("没有新来源时不应读取命中端口集合")
+	}
+	fake.ipsetSave["gately_trap4"] = "add gately_trap4 198.51.100.7 timeout 600\n"
+	fake.ipsetSave["gately_port4"] = "add gately_port4 198.51.100.7,tcp:23 timeout 290\n"
+	inbox, hits, err := b.kernelBans(context.Background())
+	if err != nil || len(inbox["gately_trap4"]) != 1 {
+		t.Fatalf("应读到诱饵集合中的来源: %v %v", inbox, err)
+	}
+	if len(fake.find("save gately_port4")) == 0 || len(fake.find("save gately_port6")) != 0 {
+		t.Fatal("只应读取有新来源的地址族的命中端口集合")
+	}
+	if len(hits) == 0 {
+		t.Fatal("应解析出命中端口")
+	}
+}
+
 // nft 不支持 (地址 . 端口) 集合时放弃记录端口、其余规则照常写入，只提示一次；
 // 之后每次重写仍先按记录端口尝试，偶发错误不会永久关闭端口记录。
 func TestNFTPortLogFallbackRetries(t *testing.T) {
