@@ -410,7 +410,7 @@ func newTransport(s Site, up *upstream) *http.Transport {
 		}
 		target = net.JoinHostPort(up.url.Hostname(), port)
 	}
-	return &http.Transport{
+	tr := &http.Transport{
 		Proxy:             nil,
 		TLSClientConfig:   &tls.Config{InsecureSkipVerify: s.InsecureSkipVerify, ClientSessionCache: sharedSessionCache},
 		ForceAttemptHTTP2: !s.SendProxyProtocol,
@@ -441,6 +441,14 @@ func newTransport(s Site, up *upstream) *http.Transport {
 			return c, nil
 		},
 	}
+	if s.UpstreamH2C && up.url.Scheme == "http" {
+		// 明文 HTTP/2：只对 http:// 后端生效；Protocols 不含 HTTP1 时 Transport 对 http:// 直接发 h2c 连接前言。
+		// 同一后端的全部请求复用一条 h2c 连接多路并发，DisableKeepAlives 时每个请求仍独占一条连接
+		var p http.Protocols
+		p.SetUnencryptedHTTP2(true)
+		tr.Protocols = &p
+	}
+	return tr
 }
 
 // upstreamRoundTripper 按请求选中的后端使用对应的连接池；与后端建连失败时换下一个后端重试（见 proxyAttempt）。

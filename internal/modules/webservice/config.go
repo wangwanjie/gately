@@ -65,6 +65,10 @@ type Site struct {
 	// UpstreamSNIFromHost 为 true 时连接 HTTPS 后端使用访客请求的域名作为 SNI 并按它校验证书
 	// （相当于 nginx 的 proxy_ssl_server_name on + proxy_ssl_name $host），后端按 SNI 分流时（如 frp 的 vhost_https）需要开启
 	UpstreamSNIFromHost bool `json:"upstreamSniFromHost"`
+	// UpstreamH2C 为 true 时，http:// 后端按明文 HTTP/2（h2c，prior knowledge）连接，
+	// 用于 gRPC 等只讲 h2c 的后端（如 NetBird 管理/信令服务）；https:// 后端始终按 ALPN 协商，不受影响。
+	// 后端必须支持 h2c，不支持时请求会失败；h2c 连接上没有 WebSocket 升级
+	UpstreamH2C bool `json:"upstreamH2c"`
 	// PassAuthCookies 为 true 时把 Gately 的登录 Cookie（单点登录、站点会话、第三方登录随机数）原样转发给后端，
 	// 用于后端是另一台 Gately 并由它负责认证的场景（如公网 Gately 只做 WAF、内网 Gately 负责登录）；
 	// 默认去掉这些 Cookie，避免把登录凭据交给后端程序。本站点启用认证时不能开启，否则会把本机签发的凭据转给后端

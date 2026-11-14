@@ -95,6 +95,8 @@ type pool struct {
 	hc      HealthCheck
 	site    string
 	skipTLS bool
+	// h2c 为 true 时 http:// 后端的 HTTP 检查按明文 HTTP/2 发送（后端只讲 h2c 时 HTTP/1.1 检查必然失败）
+	h2c bool
 	// proxyProto 为 true 时后端要求 PROXY 头，HTTP 检查改用 TCP
 	proxyProto bool
 	log        *logbuf.Logger
@@ -104,7 +106,7 @@ type pool struct {
 }
 
 func newPool(s Site, log *logbuf.Logger) (*pool, error) {
-	p := &pool{policy: s.LBPolicy, hc: s.Health, site: siteLabel(s), skipTLS: s.InsecureSkipVerify, proxyProto: s.SendProxyProtocol, log: log}
+	p := &pool{policy: s.LBPolicy, hc: s.Health, site: siteLabel(s), skipTLS: s.InsecureSkipVerify, h2c: s.UpstreamH2C, proxyProto: s.SendProxyProtocol, log: log}
 	for _, t := range s.Targets {
 		spec, err := parseUpstream(t)
 		if err != nil {
@@ -332,8 +334,14 @@ func (p *pool) probe(ctx context.Context, u *upstream) error {
 		return err
 	}
 	req.Header.Set("User-Agent", "Gately-HealthCheck")
+	tr := &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: p.skipTLS}, DisableKeepAlives: true}
+	if p.h2c && u.url.Scheme == "http" {
+		var protos http.Protocols
+		protos.SetUnencryptedHTTP2(true)
+		tr.Protocols = &protos
+	}
 	client := &http.Client{
-		Transport:     &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: p.skipTLS}, DisableKeepAlives: true},
+		Transport:     tr,
 		CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse },
 	}
 	resp, err := client.Do(req)
