@@ -54,6 +54,9 @@ type Settings struct {
 	// MaxLoginFailures / LockMinutes 为登录限流参数
 	MaxLoginFailures int `json:"maxLoginFailures"`
 	LockMinutes      int `json:"lockMinutes"`
+	// LoginGlobalLimit 为陌生来源（从未成功登录过的地址）10 分钟内允许累计的登录失败总数：用完后陌生地址的登录暂时受限，
+	// 常用地址不受影响，用来抵御靠大量不同地址分散尝试、绕过单 IP 限流的爆破。0 表示默认 20，负数表示关闭
+	LoginGlobalLimit int `json:"loginGlobalLimit"`
 	// LegacyAPIToken 是旧版的单个全局 API 令牌，仅用于启动时迁移为"遗留令牌"，迁移后清空。
 	// 现在的令牌由 apitoken 包管理，保存在 tokens.json。
 	LegacyAPIToken string `json:"apiToken,omitempty"`
@@ -201,6 +204,9 @@ func (s *Settings) Validate() error {
 	if s.LockMinutes < 0 || s.LockMinutes > 7*24*60 {
 		return errors.New("锁定时长应在 1 分钟到 7 天之间")
 	}
+	if s.LoginGlobalLimit > 10000 {
+		return errors.New("陌生来源的失败预算不能超过 10000")
+	}
 	if s.TimeZone != "" {
 		if _, err := time.LoadLocation(s.TimeZone); err != nil {
 			return fmt.Errorf("时区 %q 无效", s.TimeZone)
@@ -246,6 +252,7 @@ func (a *App) applyRuntime() {
 	i18n.SetServerLang(s.Language)
 	i18n.SetUILang(s.UILanguage)
 	a.auth.SetLimits(s.MaxLoginFailures, time.Duration(s.LockMinutes)*time.Minute)
+	a.applyLoginBudget(s)
 	// 已通过 Validate，解析不会失败
 	extra, _ := httpx.ParsePrefixes(s.TrustedProxies)
 	httpx.SetProxyTrust(!s.DisableProxyHeaders, extra)

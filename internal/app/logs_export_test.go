@@ -111,12 +111,12 @@ func TestLogExportReadOnlyRedactsAndScopes(t *testing.T) {
 	pf := a.modules[0].logs
 	pf.Logger("通知").With(logbuf.Fields{logbuf.FieldHost: "https://hooks.example.com/abc?token=s3cret"}).Infof("推送到 https://user:pa55@hooks.example.com/services/T0ABCDEF1234567890 失败")
 
-	if code, body := doJSON(t, admin, "POST", srv.URL+"/api/account/users", map[string]string{"username": "viewer", "password": "viewer-pass-1"}); code != 200 {
+	if code, body := doJSON(t, admin, "POST", srv.URL+"/api/account/users", map[string]string{"username": "viewer", "password": "tide-Lamp-47-oak"}); code != 200 {
 		t.Fatalf("创建只读账号失败 %d %s", code, body)
 	}
 	jar, _ := cookiejar.New(nil)
 	ro := &http.Client{Jar: jar}
-	if code, body := doJSON(t, ro, "POST", srv.URL+"/api/login", map[string]string{"username": "viewer", "password": "viewer-pass-1"}); code != 200 {
+	if code, body := doJSON(t, ro, "POST", srv.URL+"/api/login", map[string]string{"username": "viewer", "password": "tide-Lamp-47-oak"}); code != 200 {
 		t.Fatalf("只读账号登录失败 %d %s", code, body)
 	}
 	u := srv.URL + "/api/portforward/logs/export?source=" + url.QueryEscape("通知")

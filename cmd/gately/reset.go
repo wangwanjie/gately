@@ -31,12 +31,12 @@ func runReset(cmd string, args []string, in io.Reader, out io.Writer) int {
 	yes := fs.Bool("y", false, "跳过确认，用于脚本等非交互环境")
 	password := new(string)
 	if cmd == "reset-password" {
-		password = fs.String("p", "", fmt.Sprintf("新密码，至少 8 位；不指定时重置为默认密码 %s", auth.DefaultPassword))
+		password = fs.String("p", "", fmt.Sprintf("新密码，至少 10 位且不能是常见弱口令；不指定时重置为默认密码 %s", auth.DefaultPassword))
 	}
 	fs.Usage = func() {
 		if cmd == "reset-password" {
 			say(out, "用法: gately reset-password [-c 配置目录] [-p 新密码] [-y]")
-			say(out, "重置管理员密码（默认重置为 %s），所有已登录会话随之失效。", auth.DefaultPassword)
+			say(out, "重置管理员密码（默认重置为 %s），所有已登录会话随之失效；若已关闭密码登录会同时重新开启。", auth.DefaultPassword)
 			fmt.Fprintln(out)
 		} else {
 			say(out, "用法: gately reset-totp [-c 配置目录] [-y]")

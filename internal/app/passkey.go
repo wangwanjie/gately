@@ -207,7 +207,7 @@ func (a *App) handlePasskeyLoginFinish(w http.ResponseWriter, r *http.Request) {
 		events.Publish(events.Event{Type: events.AuthFailed, Source: "管理后台", Level: events.LevelWarn,
 			Title: "管理后台登录失败", Message: fmt.Sprintf("来自 %s 的登录失败：%v", ip, err), Fields: map[string]string{"ip": ip}})
 		status := http.StatusUnauthorized
-		if errors.Is(err, auth.ErrLocked) {
+		if errors.Is(err, auth.ErrLocked) || errors.Is(err, auth.ErrBusy) {
 			status = http.StatusTooManyRequests
 		}
 		httpx.Error(w, status, "%v", err)
