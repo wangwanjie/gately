@@ -18,6 +18,7 @@ import (
 	"github.com/wangwanjie/gately/internal/banlist"
 	"github.com/wangwanjie/gately/internal/logbuf"
 	"github.com/wangwanjie/gately/internal/openports"
+	"github.com/wangwanjie/gately/internal/trustsrc"
 )
 
 // tableName 是 Gately 在 nftables 中使用的表（inet 族，同时处理 IPv4 与 IPv6）
@@ -119,6 +120,10 @@ type firewall struct {
 	onActive func()
 	// local 为本机网卡所在的 IPv6 网段，忽略内网地址时加入白名单
 	local []netip.Prefix
+	// trusted 为模块登记、当前仍然有效的可信来源（见 trustsrc），诱饵端口与扫描检测不统计；
+	// trustText 为最近一次写入的内容，不变时不重写放行集合
+	trusted   []netip.Prefix
+	trustText string
 	// lastErr 为最近一次记录到日志的写入错误，重试时相同的错误不重复记录
 	lastErr string
 	// baseDropped / baseHits 为之前的表（保存设置、外部清除或停止时被删除重建）累计的计数。
@@ -381,12 +386,13 @@ func (f *firewall) applyLocked(ctx context.Context, s Settings) {
 		}
 	} else {
 		var script string
-		script, members, deny = buildScriptWith(true, ss, f.local, entries, open, trap, time.Now())
+		allow := f.allowLocked()
+		script, members, deny = buildScriptWith(true, ss, allow, entries, open, trap, time.Now())
 		_, err = f.run(ctx, script, "-f", "-")
 		if err != nil && (ss.Trap.Enable || ss.Scan.Enable) {
 			// 较旧的 nft 或内核不支持 (地址 . 端口) 连接集合时，放弃记录命中端口，其余规则照常写入。
 			// 每次重写都先按记录端口尝试：第一次失败可能只是偶发错误（锁冲突等），不能因此永久关闭端口记录
-			script2, members2, deny2 := buildScriptWith(false, ss, f.local, entries, open, trap, time.Now())
+			script2, members2, deny2 := buildScriptWith(false, ss, allow, entries, open, trap, time.Now())
 			if _, err2 := f.run(ctx, script2, "-f", "-"); err2 == nil {
 				script, members, deny, err = script2, members2, deny2, nil
 				if !f.portLogWarned {
@@ -526,11 +532,17 @@ const v6Mask = "ffff:ffff:ffff:ffff::"
 
 // buildScript 生成重建整张表的 nft 脚本。先声明再删除表，保证表不存在时脚本也能执行，且整个替换是原子的。
 func buildScript(s Settings, local []netip.Prefix, entries []banlist.Entry, open, trap []portRange, now time.Time) (script string, members map[string]time.Time, deny string) {
-	return buildScriptWith(true, s, local, entries, open, trap, now)
+	return buildScriptWith(true, s, allowFor(s, local, nil), entries, open, trap, now)
 }
 
-// buildScriptWith 同 buildScript，portLog 为 true 时额外记录命中的端口。
-func buildScriptWith(portLog bool, s Settings, local []netip.Prefix, entries []banlist.Entry, open, trap []portRange, now time.Time) (script string, members map[string]time.Time, deny string) {
+// allowFor 返回 input 链放行集合的网段：白名单（含忽略的内网与本机 IPv6 网段）加上可信来源。
+func allowFor(s Settings, local, trusted []netip.Prefix) []netip.Prefix {
+	list := append(append([]netip.Prefix(nil), s.ignoreSet(local).prefixes...), trusted...)
+	return mergePrefixes(allowPrefixes(list))
+}
+
+// buildScriptWith 同 buildScript，portLog 为 true 时额外记录命中的端口；allow 为 input 链放行的网段（见 allowFor）。
+func buildScriptWith(portLog bool, s Settings, allow []netip.Prefix, entries []banlist.Entry, open, trap []portRange, now time.Time) (script string, members map[string]time.Time, deny string) {
 	var b strings.Builder
 	fmt.Fprintf(&b, "table inet %s {}\ndelete table inet %s\ntable inet %s {\n", tableName, tableName, tableName)
 	for _, set := range []string{"ban4", "trap4", "scan4"} {
@@ -541,7 +553,7 @@ func buildScriptWith(portLog bool, s Settings, local []netip.Prefix, entries []b
 	}
 	b.WriteString("\tset deny4 {\n\t\ttype ipv4_addr\n\t\tflags interval\n\t}\n")
 	b.WriteString("\tset deny6 {\n\t\ttype ipv6_addr\n\t\tflags interval\n\t}\n")
-	allow4, allow6 := splitFamilies(mergePrefixes(allowPrefixes(s.ignoreSet(local).prefixes)))
+	allow4, allow6 := splitFamilies(allow)
 	writeIntervalSet(&b, "allow4", "ipv4_addr", allow4)
 	writeIntervalSet(&b, "allow6", "ipv6_addr", allow6)
 	writePortSet(&b, "open", open)
@@ -790,6 +802,9 @@ func (f *firewall) loop(ctx context.Context) {
 		case <-openWake:
 			openWake = nil
 			f.refreshOpen(ctx)
+		case <-trustsrc.Notify():
+			// 可信来源变化（frpc 刚登录）时立即更新放行集合，不等下一次轮询
+			f.refreshTrust(ctx)
 		case <-early.C:
 			f.poll(ctx)
 		case <-f.kick:
@@ -905,6 +920,11 @@ func (f *firewall) setLocal(ctx context.Context, local []netip.Prefix) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	f.local = local
+	f.rewriteAllowLocked(ctx)
+}
+
+// rewriteAllowLocked 在规则生效时按当前白名单与可信来源重写 input 链的放行集合。调用方持有 f.mu。
+func (f *firewall) rewriteAllowLocked(ctx context.Context) {
 	if !f.status.Active {
 		return
 	}
@@ -919,7 +939,7 @@ func (f *firewall) setLocal(ctx context.Context, local []netip.Prefix) {
 		}
 		return
 	}
-	allow4, allow6 := splitFamilies(mergePrefixes(allowPrefixes(f.cfg.ignoreSet(local).prefixes)))
+	allow4, allow6 := splitFamilies(f.allowLocked())
 	var b strings.Builder
 	fmt.Fprintf(&b, "flush set inet %s allow4\nflush set inet %s allow6\n", tableName, tableName)
 	writeElements(&b, "allow4", prefixStrings(allow4))
@@ -1150,6 +1170,7 @@ func (f *firewall) poll(ctx context.Context) {
 	f.status.Dropped, f.status.Hits = addCounts(f.baseDropped, dropped), addCounts(f.baseHits, hitCounts)
 	f.status.CheckedAt = time.Now()
 	portsOK := f.refreshPortsLocked(ctx)
+	f.refreshTrustLocked(ctx)
 	if portsOK && f.cfg.Scan.Enable && f.cfg.Scan.IPv6Strict && !f.strictReady && !f.strictAt.IsZero() && !time.Now().Before(f.strictAt) {
 		f.strictReady = true
 		f.applyLocked(ctx, f.cfg)
@@ -1157,7 +1178,7 @@ func (f *firewall) poll(ctx context.Context) {
 			f.log.Infof("IPv6 严格模式已启用：IPv6 来源连接开放端口以外的端口即被封禁")
 		}
 	}
-	importFn := f.importFn
+	importFn := f.trustedFilterLocked(f.importFn)
 	f.mu.Unlock()
 
 	// 先写入封禁表（随后由 flush 加入 ban 集合），再从内核的临时集合中删除，避免出现空档
