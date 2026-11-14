@@ -524,7 +524,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/knock/settings` | `knock:read` | 全域設定 |
 | PUT | `/api/knock/settings` | `knock:write` | 修改全域設定 |
 | GET | `/api/knock/status` | `knock:read` | 監聽、防火牆攔截狀態與目前有效的授權 |
-| DELETE | `/api/knock/grants` | `knock:write` | 撤銷授權（body 為 {"addr": 位址, "rule": 規則 key}，rule 留空則撤銷該位址的全部授權） |
+| DELETE | `/api/knock/grants` | `knock:write` | 撤銷授權（body 為 {"addr": 位址, "rule": 規則 key}，rule 留空撤銷該位址的全部授權；網段授權的位址寫成 位址/前綴長度） |
 | GET | `/api/knock/firewall/rules` | `knock:read` | Gately 寫入系統防火牆的攔截規則（文字） |
 
 ## 網路喚醒
@@ -1665,7 +1665,11 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `ports` | 陣列 of string |
 | `rule` | string |
 | `ruleName` | string |
+| `site` | string |
+| `siteName` | string |
+| `source` | string |
 | `until` | 時間 (RFC 3339) |
+| `user` | string |
 
 ### knock.Rule
 

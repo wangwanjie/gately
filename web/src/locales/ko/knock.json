@@ -53,10 +53,12 @@
   "grants": {
     "title": "현재 허용 ({count})",
     "empty": "노크에 성공해 아직 유효 기간 안에 있는 주소가 없습니다",
-    "gatelyOnly": "포트 포워딩, 프로토콜 라우팅, STUN 전용",
+    "gatelyOnly": "Gately 내부에서만 판단(웹 사이트, 포트 포워딩, 프로토콜 라우팅, STUN)",
     "remain": "{t} 남음",
     "revoke": "철회",
-    "revokeConfirm": "철회하면 이 주소는 다시 노크해야 합니다. 이미 맺은 연결에는 영향이 없습니다. 철회할까요?"
+    "revokeConfirm": "철회하면 이 주소는 다시 노크해야 합니다. 이미 맺은 연결에는 영향이 없습니다. 철회할까요?",
+    "web": "웹 로그인",
+    "webWho": "{user} · {site}"
   },
   "rule": {
     "add": "규칙 추가",

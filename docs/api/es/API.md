@@ -524,7 +524,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | GET | `/api/knock/settings` | `knock:read` | Ajustes globales |
 | PUT | `/api/knock/settings` | `knock:write` | Modificar la configuración global |
 | GET | `/api/knock/status` | `knock:read` | Escucha, estado del bloqueo por firewall y autorizaciones vigentes |
-| DELETE | `/api/knock/grants` | `knock:write` | Revocar autorizaciones (el body es {"addr": dirección, "rule": clave de regla}; deje rule vacío para revocar todas las autorizaciones de la dirección) |
+| DELETE | `/api/knock/grants` | `knock:write` | Revocar permiso (body es {"addr": dirección, "rule": clave de la regla}; deje rule vacío para revocar todos los permisos de esa dirección; escriba la dirección de un permiso de red como dirección/longitud de prefijo) |
 | GET | `/api/knock/firewall/rules` | `knock:read` | Reglas de bloqueo que Gately escribió en el firewall del sistema (texto) |
 
 ## Wake-on-LAN
@@ -1665,7 +1665,11 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `ports` | Lista de string |
 | `rule` | string |
 | `ruleName` | string |
+| `site` | string |
+| `siteName` | string |
+| `source` | string |
 | `until` | Hora (RFC 3339) |
+| `user` | string |
 
 ### knock.Rule
 

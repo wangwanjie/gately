@@ -1511,8 +1511,20 @@
           "ruleName": {
             "type": "string"
           },
+          "site": {
+            "type": "string"
+          },
+          "siteName": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
           "until": {
             "format": "date-time",
+            "type": "string"
+          },
+          "user": {
             "type": "string"
           }
         },
@@ -27351,7 +27363,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Revoke grants (body is {\"addr\": address, \"rule\": rule key}; leave rule empty to revoke all grants of the address)",
+        "summary": "Revoke a grant (body is {\"addr\": address, \"rule\": rule key}; leave rule empty to revoke all grants of that address; write a network grant's address as address/prefix length)",
         "tags": [
           "Port knocking"
         ],

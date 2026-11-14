@@ -524,7 +524,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/knock/settings` | `knock:read` | Глобальные настройки |
 | PUT | `/api/knock/settings` | `knock:write` | Изменить общие настройки |
 | GET | `/api/knock/status` | `knock:read` | Прослушивание, состояние блокировки брандмауэром и действующие разрешения |
-| DELETE | `/api/knock/grants` | `knock:write` | Отзыв разрешений (body: {"addr": адрес, "rule": key правила}; пустой rule отзывает все разрешения адреса) |
+| DELETE | `/api/knock/grants` | `knock:write` | Отзыв разрешения (body — {"addr": адрес, "rule": ключ правила}; если rule пуст, отзываются все разрешения этого адреса; адрес разрешения для подсети записывается как адрес/длина префикса) |
 | GET | `/api/knock/firewall/rules` | `knock:read` | Правила блокировки, записанные Gately в системный брандмауэр (текст) |
 
 ## Wake-on-LAN
@@ -1665,7 +1665,11 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `ports` | Массив из string |
 | `rule` | string |
 | `ruleName` | string |
+| `site` | string |
+| `siteName` | string |
+| `source` | string |
 | `until` | Время (RFC 3339) |
+| `user` | string |
 
 ### knock.Rule
 

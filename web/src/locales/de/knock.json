@@ -53,10 +53,12 @@
   "grants": {
     "title": "Aktive Freigaben ({count})",
     "empty": "Keine Adresse hat erfolgreich geklopft und ist noch innerhalb ihrer Freigabedauer",
-    "gatelyOnly": "Nur für Portweiterleitung, Protokoll-Routing und STUN",
+    "gatelyOnly": "Nur innerhalb von Gately geprüft (Webseiten, Portweiterleitung, Protokoll-Routing, STUN)",
     "remain": "Noch {t}",
     "revoke": "Widerrufen",
-    "revokeConfirm": "Nach dem Widerruf muss diese Adresse erneut klopfen. Bestehende Verbindungen bleiben unberührt. Widerrufen?"
+    "revokeConfirm": "Nach dem Widerruf muss diese Adresse erneut klopfen. Bestehende Verbindungen bleiben unberührt. Widerrufen?",
+    "web": "Web-Anmeldung",
+    "webWho": "{user} · {site}"
   },
   "rule": {
     "add": "Regel hinzufügen",

@@ -1511,8 +1511,20 @@
           "ruleName": {
             "type": "string"
           },
+          "site": {
+            "type": "string"
+          },
+          "siteName": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
           "until": {
             "format": "date-time",
+            "type": "string"
+          },
+          "user": {
             "type": "string"
           }
         },
@@ -27351,7 +27363,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "撤銷授權（body 為 {\"addr\": 位址, \"rule\": 規則 key}，rule 留空則撤銷該位址的全部授權）",
+        "summary": "撤銷授權（body 為 {\"addr\": 位址, \"rule\": 規則 key}，rule 留空撤銷該位址的全部授權；網段授權的位址寫成 位址/前綴長度）",
         "tags": [
           "連接埠敲門"
         ],

@@ -1511,8 +1511,20 @@
           "ruleName": {
             "type": "string"
           },
+          "site": {
+            "type": "string"
+          },
+          "siteName": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
           "until": {
             "format": "date-time",
+            "type": "string"
+          },
+          "user": {
             "type": "string"
           }
         },
@@ -27351,7 +27363,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "Berechtigungen widerrufen (body ist {\"addr\": Adresse, \"rule\": Regel-key}; rule leer lassen, um alle Berechtigungen der Adresse zu widerrufen)",
+        "summary": "Freigabe widerrufen (body ist {\"addr\": Adresse, \"rule\": Regel-Key}; bei leerem rule werden alle Freigaben dieser Adresse widerrufen; die Adresse einer Netzfreigabe wird als Adresse/Präfixlänge angegeben)",
         "tags": [
           "Port-Knocking"
         ],

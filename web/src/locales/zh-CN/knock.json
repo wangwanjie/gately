@@ -53,10 +53,12 @@
   "grants": {
     "title": "当前授权（{count}）",
     "empty": "暂时没有敲门成功、仍在有效期内的地址",
-    "gatelyOnly": "仅用于端口转发、协议分流与 STUN",
+    "gatelyOnly": "仅在 Gately 内判断（Web 站点、端口转发、协议分流、STUN）",
     "remain": "剩余 {t}",
     "revoke": "撤销",
-    "revokeConfirm": "撤销后该地址需要重新敲门，已建立的连接不受影响。确定撤销？"
+    "revokeConfirm": "撤销后该地址需要重新敲门，已建立的连接不受影响。确定撤销？",
+    "web": "网页登录",
+    "webWho": "{user} · {site}"
   },
   "rule": {
     "add": "添加规则",

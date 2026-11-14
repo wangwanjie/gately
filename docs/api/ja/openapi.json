@@ -1511,8 +1511,20 @@
           "ruleName": {
             "type": "string"
           },
+          "site": {
+            "type": "string"
+          },
+          "siteName": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
           "until": {
             "format": "date-time",
+            "type": "string"
+          },
+          "user": {
             "type": "string"
           }
         },
@@ -27351,7 +27363,7 @@
             "bearerAuth": []
           }
         ],
-        "summary": "許可を取り消す（body は {\"addr\": アドレス, \"rule\": ルール key}。rule を空にするとそのアドレスの全許可を取り消します）",
+        "summary": "許可を取り消します（body は {\"addr\": アドレス, \"rule\": ルール key}。rule を空にするとそのアドレスのすべての許可を取り消します。ネットワーク範囲の許可は アドレス/プレフィックス長 の形式で指定します）",
         "tags": [
           "ポートノッキング"
         ],

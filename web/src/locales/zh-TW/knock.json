@@ -53,10 +53,12 @@
   "grants": {
     "title": "目前授權（{count}）",
     "empty": "暫時沒有敲門成功、仍在有效期內的位址",
-    "gatelyOnly": "僅用於連接埠轉發、協定分流與 STUN",
+    "gatelyOnly": "僅在 Gately 內判斷（Web 站台、連接埠轉送、協定分流、STUN）",
     "remain": "剩餘 {t}",
     "revoke": "撤銷",
-    "revokeConfirm": "撤銷後該位址需要重新敲門，已建立的連線不受影響。確定撤銷？"
+    "revokeConfirm": "撤銷後該位址需要重新敲門，已建立的連線不受影響。確定撤銷？",
+    "web": "網頁登入",
+    "webWho": "{user} · {site}"
   },
   "rule": {
     "add": "新增規則",
