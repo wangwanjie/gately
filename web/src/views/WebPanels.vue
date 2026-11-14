@@ -93,6 +93,8 @@
                 <div class="link-name">
                   <span class="ellipsis">{{ editing.links[i].name }}</span>
                   <el-tag v-if="editing.links[i].hide" size="small" type="info">{{ t('panels.hiddenTag') }}</el-tag>
+                  <el-tag v-if="editing.links[i].authOnly" size="small" type="warning" data-test="auth-tag"><Lock :size="11" /> {{ t('panels.authOnlyTag') }}</el-tag>
+                  <el-tag v-if="editing.links[i].size === 'small'" size="small" type="info" data-test="size-tag">{{ t('panels.sizeSmall') }}</el-tag>
                   <el-tag v-if="editing.links[i].sameTab" size="small" type="info">{{ t('panels.sameTabTag') }}</el-tag>
                   <el-tag v-if="editing.links[i].alts?.length" size="small" :title="editing.links[i].alts.map((a) => a.name).join(' / ')">{{ t('panels.altCount', { n: editing.links[i].alts.length }) }}</el-tag>
                 </div>
@@ -111,6 +113,40 @@
           </div>
         </el-tab-pane>
 
+        <!-- 搜索：页面搜索框旁的下拉框可选“本站”（过滤本页链接）或这里配置的搜索引擎 -->
+        <el-tab-pane :label="t('panels.tabSearch')" name="search" data-test="tab-search">
+          <div class="form-help engines-help">{{ t('panels.enginesHelp') }}</div>
+          <div class="engine-default">
+            <span class="engine-default-label">{{ t('panels.engineDefault') }}</span>
+            <el-select v-model="editing.defaultEngine" class="engine-default-select" :disabled="isReadonly" data-test="engine-default">
+              <el-option :value="0" :label="t('panels.engineLocal')" />
+              <el-option v-for="(e, i) in editing.engines" :key="i" :value="i + 1" :label="e.name || t('panels.engineUnnamed')" />
+            </el-select>
+          </div>
+          <div v-for="(e, i) in editing.engines" :key="i" class="engine-row" data-test="engine-row">
+            <el-input v-model="e.name" maxlength="20" class="engine-name" :placeholder="t('panels.engineName')" :disabled="isReadonly" data-test="engine-name" />
+            <el-input v-model="e.url" class="mono engine-url" :placeholder="engineUrlExample" :disabled="isReadonly" data-test="engine-url" />
+            <div v-if="!isReadonly" class="engine-actions">
+              <el-button text size="small" :icon="ArrowUp" :disabled="i === 0" :aria-label="t('panels.moveUp')" @click="shiftEngine(i, -1)" />
+              <el-button text size="small" :icon="ArrowDown" :disabled="i === editing.engines.length - 1" :aria-label="t('panels.moveDown')" @click="shiftEngine(i, 1)" />
+              <el-button text size="small" type="danger" :icon="Trash2" :aria-label="t('common.delete')" data-test="engine-delete" @click="dropEngine(i)" />
+            </div>
+          </div>
+          <div v-if="!editing.engines.length" class="links-empty">{{ t('panels.noEngines') }}</div>
+          <div v-if="!isReadonly" class="engine-add">
+            <el-button size="small" :icon="Plus" :disabled="editing.engines.length >= MAX_ENGINES" data-test="engine-add" @click="addBlankEngine">{{ t('panels.addEngine') }}</el-button>
+            <el-dropdown trigger="click" :disabled="editing.engines.length >= MAX_ENGINES" @command="(n: number) => pickPreset(n)">
+              <el-button size="small" data-test="engine-preset">{{ t('panels.enginePreset') }}</el-button>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item v-for="(pr, pi) in ENGINE_PRESETS" :key="pr.name" :command="pi" :disabled="hasEngine(pr.name)" :data-test="'preset-' + pi">{{ pr.name }}</el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+            <span class="muted count">{{ editing.engines.length }} / {{ MAX_ENGINES }}</span>
+          </div>
+        </el-tab-pane>
+
         <el-tab-pane :label="t('panels.tabPage')" name="page">
           <el-form :model="editing" label-width="130px" :label-position="labelPosition" :disabled="isReadonly">
             <el-form-item :label="t('panels.name')" required>
@@ -123,6 +159,26 @@
             <el-form-item :label="t('panels.subtitle')"><el-input v-model="editing.subtitle" maxlength="200" /></el-form-item>
             <el-form-item :label="t('panels.icon')">
               <PanelIconInput v-model="editing.icon" :name="editing.title || editing.name" />
+            </el-form-item>
+            <el-form-item :label="t('panels.tabTitle')">
+              <el-input v-model="editing.tabTitle" maxlength="100" :placeholder="editing.title || editing.name" data-test="panel-tab-title" />
+              <div class="form-help">{{ t('panels.tabTitleHelp') }}</div>
+            </el-form-item>
+            <el-form-item :label="t('panels.favicon')">
+              <PanelIconInput v-model="editing.favicon" :name="editing.title || editing.name" />
+              <div class="form-help">{{ t('panels.faviconHelp') }}</div>
+            </el-form-item>
+            <el-form-item :label="t('panels.pageDesc')">
+              <el-input v-model="editing.description" type="textarea" :rows="2" maxlength="400" data-test="panel-desc" />
+              <div class="form-help">{{ t('panels.pageDescHelp') }}</div>
+            </el-form-item>
+            <el-form-item :label="t('panels.footer')">
+              <el-switch v-model="editing.hideFooter" :active-text="t('panels.hideFooter')" data-test="panel-hide-footer" />
+              <template v-if="!editing.hideFooter">
+                <el-input v-model="editing.footer" maxlength="200" class="footer-input" placeholder="Gately" data-test="panel-footer" />
+                <el-input v-model="editing.footerUrl" class="mono footer-input" placeholder="https://example.com" data-test="panel-footer-url" />
+                <div class="form-help">{{ t('panels.footerHelp') }}</div>
+              </template>
             </el-form-item>
             <!-- 皮肤：与管理界面右上角的主题配色相同的色系，访客可在面板页面上自行换肤 -->
             <el-form-item :label="t('components.themePicker.title')">
@@ -146,6 +202,21 @@
                 <el-radio-button value="dark">{{ t('components.themePicker.modeDark') }}</el-radio-button>
               </el-radio-group>
             </el-form-item>
+            <el-form-item :label="t('panels.background')">
+              <PanelBackgroundInput v-model="editing.background" @uploaded="onBgUploaded" />
+            </el-form-item>
+            <template v-if="editing.background">
+              <el-form-item :label="t('panels.bgBlur')">
+                <el-slider v-model="editing.bgBlur" :min="0" :max="MAX_BG_BLUR" :step="1" show-input :show-input-controls="false" class="bg-dim" data-test="bg-blur" />
+              </el-form-item>
+              <el-form-item :label="t('panels.bgDim')">
+                <el-slider v-model="editing.bgDim" :min="0" :max="MAX_BG_DIM" :step="5" show-input :show-input-controls="false" class="bg-dim" data-test="bg-dim" />
+                <div class="form-help">{{ t('panels.bgDimHelp') }}</div>
+              </el-form-item>
+              <el-form-item label=" ">
+                <el-button :icon="RotateCcw" data-test="bg-reset" @click="resetBackground">{{ t('panels.bgReset') }}</el-button>
+              </el-form-item>
+            </template>
             <el-form-item :label="t('panels.lanCidrs')">
               <el-input v-model="lanText" type="textarea" :rows="2" class="mono" placeholder="100.64.0.0/10" />
               <div class="form-help">{{ t('panels.lanCidrsHelp') }}</div>
@@ -196,7 +267,7 @@
               <el-input v-model="a.url" class="mono alt-url" :placeholder="altUrlExample" data-test="alt-url" />
               <el-button text type="danger" :icon="Trash2" :aria-label="t('common.delete')" @click="link.alts.splice(ai, 1)" />
             </div>
-            <el-button size="small" :icon="Plus" :disabled="link.alts.length >= MAX_ALTS" data-test="alt-add" @click="link.alts.push({ name: '', url: '' })">{{ t('panels.addAlt') }}</el-button>
+            <el-button :icon="Plus" :disabled="link.alts.length >= MAX_ALTS" data-test="alt-add" @click="link.alts.push({ name: '', url: '' })">{{ t('panels.addAlt') }}</el-button>
             <div class="form-help">{{ t('panels.altsHelp') }}</div>
             <div class="form-help">{{ t('panels.varsHelp') }}</div>
           </div>
@@ -209,9 +280,22 @@
           <el-color-picker v-model="colorModel" :predefine="palette" />
           <span class="form-help inline-help">{{ link.color ? link.color : iconKind(link.icon) === 'builtin' ? t('panels.colorBuiltin') : t('panels.colorAuto') }}</span>
         </el-form-item>
+        <el-form-item :label="t('panels.cardSize')">
+          <el-radio-group v-model="link.size" data-test="link-size">
+            <el-radio-button value="">{{ t('panels.sizeLarge') }}</el-radio-button>
+            <el-radio-button value="small">{{ t('panels.sizeSmall') }}</el-radio-button>
+          </el-radio-group>
+          <div v-if="link.size === 'small'" class="form-help size-help">{{ t('panels.sizeSmallHelp') }}</div>
+          <div v-else class="size-opts">
+            <el-checkbox :model-value="!link.hideName" data-test="link-show-name" @change="(v: string | number | boolean) => (link.hideName = !v)">{{ t('panels.showName') }}</el-checkbox>
+            <el-checkbox :model-value="!link.hideDesc" data-test="link-show-desc" @change="(v: string | number | boolean) => (link.hideDesc = !v)">{{ t('panels.showDesc') }}</el-checkbox>
+          </div>
+        </el-form-item>
         <el-form-item :label="t('panels.options')">
           <el-checkbox v-model="link.sameTab">{{ t('panels.sameTab') }}</el-checkbox>
           <el-checkbox v-model="link.hide">{{ t('panels.hide') }}</el-checkbox>
+          <el-checkbox v-model="link.authOnly" data-test="link-auth-only">{{ t('panels.authOnly') }}</el-checkbox>
+          <div v-if="link.authOnly" class="form-help auth-help">{{ t('panels.authOnlyHelp') }}</div>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -249,7 +333,7 @@
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
-import { ArrowDown, ArrowUp, CopyPlus, Eye, FolderClosed, Import, LayoutGrid, Pencil, Plus, RefreshCw, Search, Trash2 } from 'lucide-vue-next'
+import { ArrowDown, ArrowUp, CopyPlus, RotateCcw, Eye, FolderClosed, Import, LayoutGrid, Lock, Pencil, Plus, RefreshCw, Search, Trash2 } from 'lucide-vue-next'
 import PageHeader from '../components/PageHeader.vue'
 import EntityCard from '../components/EntityCard.vue'
 import Field from '../components/Field.vue'
@@ -259,6 +343,7 @@ import CopyHint from '../components/CopyHint.vue'
 import GroupInput from '../components/GroupInput.vue'
 import PanelIcon from '../components/PanelIcon.vue'
 import PanelIconInput from '../components/PanelIconInput.vue'
+import PanelBackgroundInput from '../components/PanelBackgroundInput.vue'
 import { ApiError, api } from '../api'
 import { isReadonly, moduleEnabled } from '../nav'
 import { useFormLayout } from '../composables/useIsMobile'
@@ -268,8 +353,14 @@ import { forwardedEntry, siteLink, type ForwardSource } from '../siteUrl'
 import { DEFAULT_FAMILY, resolveTheme, themeFamilies, type ThemeFamily } from '../themes'
 import { loadForwardSources } from '../forwardSources'
 import {
+  DEFAULT_BG_DIM,
+  ENGINE_PRESETS,
   MAX_ALTS,
+  MAX_BG_BLUR,
+  MAX_BG_DIM,
+  MAX_ENGINES,
   MAX_LINKS,
+  addEngine,
   emptyLink,
   emptyPanel,
   groupLinks,
@@ -277,8 +368,11 @@ import {
   importableSites,
   insertLink,
   linksFromSites,
+  engineUrlProblem,
+  moveEngine,
   moveGroup,
   moveLink,
+  removeEngine,
   toPanel,
   type ImportListener,
   type Panel,
@@ -454,6 +548,9 @@ async function save() {
     ElMessage.error(t('panels.nameRequired'))
     return
   }
+  if (!checkEngines()) {
+    return
+  }
   saving.value = true
   try {
     const body = toPanel(editing.value)
@@ -470,6 +567,63 @@ async function save() {
   } finally {
     saving.value = false
   }
+}
+
+// ---- 搜索引擎 ----
+
+function hasEngine(name: string) {
+  return editing.value.engines.some((e) => e.name.trim().toLowerCase() === name.toLowerCase())
+}
+// 添加第一个搜索引擎时把它设为默认：回车直接用它搜索（默认为本站时回车只过滤本页链接）
+function pickPreset(i: number) {
+  const first = !editing.value.engines.length
+  editing.value.engines = addEngine(editing.value.engines, ENGINE_PRESETS[i])
+  if (first && editing.value.engines.length) {
+    editing.value.defaultEngine = 1
+  }
+}
+function addBlankEngine() {
+  const first = !editing.value.engines.length
+  editing.value.engines.push({ name: '', url: '' })
+  if (first) {
+    editing.value.defaultEngine = 1
+  }
+}
+function dropEngine(i: number) {
+  const r = removeEngine(editing.value.engines, editing.value.defaultEngine, i)
+  editing.value.engines = r.engines
+  editing.value.defaultEngine = r.def
+}
+function shiftEngine(i: number, delta: -1 | 1) {
+  const r = moveEngine(editing.value.engines, editing.value.defaultEngine, i, delta)
+  editing.value.engines = r.engines
+  editing.value.defaultEngine = r.def
+}
+// 选好背景图后遮罩还是 0 时给一个默认值，文字在大多数图片上仍清晰
+function resetBackground() {
+  editing.value.background = ''
+  editing.value.bgDim = 0
+  editing.value.bgBlur = 0
+}
+function onBgUploaded() {
+  if (!editing.value.bgDim) {
+    editing.value.bgDim = DEFAULT_BG_DIM
+  }
+}
+
+// checkEngines 保存前的快速检查：名称必填、地址含 {q}；完整规则由后端校验
+function checkEngines(): boolean {
+  for (const e of editing.value.engines) {
+    e.name = e.name.trim()
+    e.url = e.url.trim()
+    const bad = !e.name ? 'name' : engineUrlProblem(e.url)
+    if (bad) {
+      tab.value = 'search'
+      ElMessage.error(bad === 'name' ? t('panels.engineNameRequired') : bad === 'q' ? t('panels.engineNeedQ') : t('panels.engineUrlInvalid'))
+      return false
+    }
+  }
+  return true
 }
 
 function shiftLink(i: number, delta: -1 | 1) {
@@ -494,6 +648,8 @@ async function removeLink(i: number) {
 const linkVisible = ref(false)
 // altUrlExample 为其他访问方式地址的示例（写在模板属性里时方括号会干扰模板解析）
 const altUrlExample = 'https://[2001:db8::2]:8443'
+// engineUrlExample 为搜索地址的示例（花括号写在模板属性里会干扰模板解析）
+const engineUrlExample = 'https://www.google.com/search?q={q}'
 const link = ref<PanelLink>(emptyLink())
 const linkIndex = ref(-1)
 const palette = ['#0e7c66', '#2563eb', '#7c3aed', '#db2777', '#ea580c', '#b45309', '#15803d', '#0e7490', '#4f46e5', '#dc2626']
@@ -852,6 +1008,70 @@ onMounted(async () => {
 .inline-help {
   margin: 0 0 0 10px;
 }
+.engines-help {
+  margin: 0 0 12px;
+}
+.engine-default {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.engine-default-label {
+  flex: none;
+  font-size: 13px;
+}
+.engine-default-select {
+  width: 220px;
+  max-width: 100%;
+}
+.engine-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.engine-name {
+  width: 150px;
+  flex: none;
+}
+.engine-url {
+  flex: 1;
+  min-width: 0;
+}
+.engine-actions {
+  display: flex;
+  flex: none;
+}
+.engine-add {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+.bg-dim {
+  width: 100%;
+  max-width: 420px;
+  padding: 0 8px;
+}
+.auth-help {
+  width: 100%;
+}
+.footer-input {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+}
+.size-help {
+  width: 100%;
+}
+.size-opts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 16px;
+  width: 100%;
+  margin-top: 6px;
+}
 .import-search {
   margin-bottom: 10px;
 }
@@ -903,6 +1123,23 @@ onMounted(async () => {
   }
   .alt-name {
     width: auto;
+  }
+  .engine-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 6px;
+    padding-bottom: 8px;
+    border-bottom: 1px dashed var(--g-border);
+  }
+  .engine-name {
+    width: auto;
+  }
+  .engine-url {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+  .engine-default {
+    flex-wrap: wrap;
   }
   .alt-url {
     grid-column: 1 / -1;

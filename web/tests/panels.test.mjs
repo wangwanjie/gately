@@ -140,3 +140,65 @@ test('toPanel 规范化其他访问方式', () => {
   assert.deepEqual(p.links[1].alts, [])
   assert.deepEqual(emptyLink().alts, [])
 })
+
+test('搜索引擎：地址检查、增删与移动时默认选项跟随', async () => {
+  const m = await import('../src/panels.ts')
+  assert.equal(m.engineUrlProblem('https://www.google.com/search?q={q}'), '')
+  assert.equal(m.engineUrlProblem('https://www.google.com/search'), 'q')
+  assert.equal(m.engineUrlProblem('ftp://x.com/?q={q}'), 'scheme')
+  assert.equal(m.engineUrlProblem('javascript:{q}'), 'scheme')
+  assert.equal(m.engineUrlProblem('https://{q}.com/'), 'scheme')
+  for (const e of m.ENGINE_PRESETS) {
+    assert.equal(m.engineUrlProblem(e.url), '', e.name)
+  }
+  const E = (name) => ({ name, url: `https://${name}.example.com/?q={q}` })
+  let list = m.addEngine([], E('a'))
+  list = m.addEngine(list, E('b'))
+  assert.equal(m.addEngine(list, E('A')), list, '名称重复不添加')
+  assert.equal(m.addEngine(Array.from({ length: m.MAX_ENGINES }, (_, i) => E('e' + i)), E('x')).length, m.MAX_ENGINES)
+  list = m.addEngine(list, E('c'))
+  // 默认 3 = c；删除 a 后 c 变为第 2 个
+  let r = m.removeEngine(list, 3, 0)
+  assert.deepEqual(r.engines.map((e) => e.name), ['b', 'c'])
+  assert.equal(r.def, 2)
+  assert.equal(m.removeEngine(list, 3, 2).def, 0, '删除默认引擎回到本站')
+  assert.equal(m.removeEngine(list, 1, 2).def, 1)
+  assert.equal(m.removeEngine(list, 0, 1).def, 0)
+  assert.equal(m.removeEngine(list, 2, 9).engines, list)
+  r = m.moveEngine(list, 1, 0, 1)
+  assert.deepEqual(r.engines.map((e) => e.name), ['b', 'a', 'c'])
+  assert.equal(r.def, 2, '默认的 a 随之下移')
+  assert.equal(m.moveEngine(list, 2, 0, 1).def, 1, '被换上来的默认引擎位置跟随')
+  assert.equal(m.moveEngine(list, 0, 0, 1).def, 0)
+  assert.equal(m.moveEngine(list, 1, 0, -1).engines, list)
+})
+
+test('toPanel 补全搜索、背景与登录可见字段', () => {
+  const p = toPanel({ name: 'x', enable: true, links: [{ name: 'a', url: 'https://a.example.com' }] })
+  assert.deepEqual([p.engines, p.defaultEngine, p.background, p.bgDim], [[], 0, '', 0])
+  assert.equal(p.links[0].authOnly, false)
+  assert.equal(toPanel({ ...p, links: [{ ...p.links[0], authOnly: true }] }).links[0].authOnly, true)
+})
+
+test('toPanel 补全卡片尺寸与背景模糊字段', () => {
+  const p = toPanel({ name: 'x', enable: true, links: [{ name: 'a', url: 'https://a.example.com' }] })
+  assert.equal(p.bgBlur, 0)
+  assert.deepEqual([p.links[0].size, p.links[0].hideName, p.links[0].hideDesc], ['', false, false])
+  const q = toPanel({ ...p, bgBlur: 8, links: [{ ...p.links[0], size: 'small', hideName: true, hideDesc: true }] })
+  assert.equal(q.bgBlur, 8)
+  assert.deepEqual([q.links[0].size, q.links[0].hideName, q.links[0].hideDesc], ['small', true, true])
+})
+
+test('toPanel 补全标签页标题、图标与页面描述', () => {
+  const p = toPanel({ name: 'x', enable: true, links: [] })
+  assert.deepEqual([p.tabTitle, p.favicon, p.description], ['', '', ''])
+  const q = toPanel({ ...p, tabTitle: 'T', favicon: '📦', description: 'D' })
+  assert.deepEqual([q.tabTitle, q.favicon, q.description], ['T', '📦', 'D'])
+})
+
+test('toPanel 补全页脚字段', () => {
+  const p = toPanel({ name: 'x', enable: true, links: [] })
+  assert.deepEqual([p.footer, p.footerUrl, p.hideFooter], ['', '', false])
+  const q = toPanel({ ...p, footer: '© x', footerUrl: 'https://e.com', hideFooter: true })
+  assert.deepEqual([q.footer, q.footerUrl, q.hideFooter], ['© x', 'https://e.com', true])
+})
