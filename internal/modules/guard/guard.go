@@ -15,6 +15,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -553,20 +554,55 @@ func (m *Module) ban(a netip.Addr, sec int, reason, source, jailName string) {
 	})
 }
 
-// importKernelBans 接收防火墙中由诱饵端口或扫描检测规则直接加入的地址，写入封禁表（按设置递增时长）。
-func (m *Module) importKernelBans(source string, addrs []netip.Addr) {
-	s := m.cur()
-	reason, sec, name := "连接诱饵端口", s.Trap.BanSeconds, "诱饵端口"
+// kernelBanReasonMaxPorts 为封禁原因中最多列出的端口数
+const kernelBanReasonMaxPorts = 8
+
+// kernelBanReason 生成内核规则封禁的原因，ports 为该来源最近命中的端口（升序，可能为空）。
+func kernelBanReason(source string, ports []int) string {
+	shown := ports
+	if len(shown) > kernelBanReasonMaxPorts {
+		shown = shown[:kernelBanReasonMaxPorts]
+	}
+	texts := make([]string, 0, len(shown))
+	for _, p := range shown {
+		texts = append(texts, strconv.Itoa(p))
+	}
+	list := strings.Join(texts, ", ")
 	if source == banlist.SourceScan {
-		reason, sec, name = "端口扫描", s.Scan.BanSeconds, "扫描检测"
+		switch {
+		case len(ports) == 0:
+			return "端口扫描"
+		case len(ports) > len(shown):
+			return fmt.Sprintf("端口扫描（端口 %s 等 %d 个）", list, len(ports))
+		default:
+			return fmt.Sprintf("端口扫描（端口 %s）", list)
+		}
+	}
+	if len(ports) == 0 {
+		return "连接诱饵端口"
+	}
+	return fmt.Sprintf("连接诱饵端口 %s", list)
+}
+
+// importKernelBans 接收防火墙中由诱饵端口或扫描检测规则直接加入的地址，写入封禁表（按设置递增时长）。
+// ports 为内核记录的各来源最近命中的端口，写入封禁原因，方便事后判断是真实扫描还是自家设备误触。
+func (m *Module) importKernelBans(source string, addrs []netip.Addr, ports portHits) {
+	s := m.cur()
+	sec, name := s.Trap.BanSeconds, "诱饵端口"
+	if source == banlist.SourceScan {
+		sec, name = s.Scan.BanSeconds, "扫描检测"
 	}
 	var keys []string
+	// base 为不含端口的原因，用于批量通知的标题；detail 为单个地址的原因（含命中的端口）
+	base, detail := kernelBanReason(source, nil), ""
 	for _, a := range addrs {
+		reason := kernelBanReason(source, ports[banlist.KeyFor(a)])
 		e, added, err := banlist.Default.Ban(banlist.KeyFor(a), s.banOptions(sec, reason, source))
 		if err != nil || !added {
 			continue
 		}
 		keys = append(keys, e.Key)
+		detail = reason
 		m.logs.Logger(name).Warnf("封禁 %s（%s，第 %d 次）", e.Key, reason, e.Count)
 	}
 	if len(keys) == 0 {
@@ -581,13 +617,18 @@ func (m *Module) importKernelBans(source string, addrs []netip.Addr) {
 	if len(keys) > len(shown) {
 		msg = fmt.Sprintf("%s 等 %d 个地址", msg, len(keys))
 	}
+	if len(keys) == 1 {
+		// 只有一个地址时把命中的端口一并写进通知
+		msg = fmt.Sprintf("%s：%s", keys[0], detail)
+		base = detail
+	}
 	events.Publish(events.Event{
 		Type:    events.GuardBanned,
 		Source:  name,
 		Level:   events.LevelWarn,
-		Title:   fmt.Sprintf("入侵防护因%s封禁了 %d 个 IP", reason, len(keys)),
+		Title:   fmt.Sprintf("入侵防护因%s封禁了 %d 个 IP", base, len(keys)),
 		Message: msg,
-		Fields:  map[string]string{"ip": keys[0], "reason": reason, "count": fmt.Sprint(len(keys))},
+		Fields:  map[string]string{"ip": keys[0], "reason": base, "count": fmt.Sprint(len(keys))},
 	})
 }
 
