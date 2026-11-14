@@ -15,8 +15,10 @@
       <!-- ============ 账号与安全 ============ -->
       <el-tab-pane name="account">
         <template #label><span class="tab-label"><UserRound :size="15" />{{ t('settings.tabs.account') }}</span></template>
+        <SecurityCenter @go="goFix" />
+
         <div class="grid-2">
-          <div class="g-card">
+          <div id="sec-account" class="g-card">
             <div class="g-card-head">
               <div class="g-card-title"><KeyRound :size="16" />{{ t('settings.admin.title') }}</div>
             </div>
@@ -30,6 +32,7 @@
                 </el-form-item>
                 <el-form-item :label="t('settings.admin.newPassword')" required>
                   <el-input v-model="account.newPassword" type="password" show-password :placeholder="t('settings.admin.newPasswordPlaceholder')" autocomplete="new-password" />
+                  <PasswordStrength :password="account.newPassword" :username="account.username" />
                 </el-form-item>
                 <el-form-item :label="t('settings.admin.confirmPassword')" required>
                   <el-input v-model="account.confirm" type="password" show-password autocomplete="new-password" />
@@ -42,7 +45,7 @@
             </div>
           </div>
 
-          <div class="g-card">
+          <div id="sec-twofactor" class="g-card">
             <div class="g-card-head">
               <div class="g-card-title"><Smartphone :size="16" />{{ t('settings.totp.title') }}</div>
               <StatusBadge :type="totp.enabled ? 'ok' : 'off'" :text="totp.enabled ? t('common.enabled') : t('settings.notEnabled')" />
@@ -116,11 +119,11 @@
           </div>
         </div>
 
-        <PasskeyManager />
+        <PasskeyManager @changed="loadSecurity" />
 
         <ReadonlyUsers />
 
-        <div v-if="form" class="g-card">
+        <div v-if="form" id="sec-loginprotect" class="g-card">
           <div class="g-card-head">
             <div class="g-card-title"><LockKeyhole :size="16" />{{ t('settings.loginProtect.title') }}</div>
           </div>
@@ -137,6 +140,12 @@
               <el-form-item :label="t('settings.loginProtect.lockMinutes')">
                 <el-input-number v-model="form.lockMinutes" :min="0" :max="10080" />
                 <span class="help">{{ t('settings.loginProtect.lockMinutesHelp') }}</span>
+              </el-form-item>
+              <!-- 陌生来源全局失败预算：抵御靠大量不同地址分散尝试、绕过单 IP 限流的爆破 -->
+              <el-form-item :label="t('security.limit.label')">
+                <el-switch v-model="globalLimitOn" />
+                <el-input-number v-if="globalLimitOn" v-model="globalLimitValue" :min="1" :max="10000" class="limit-num" />
+                <div class="form-help">{{ t('security.limit.help') }}</div>
               </el-form-item>
             </el-form>
           </div>
@@ -218,7 +227,7 @@
           </div>
           <div class="g-card-body">
             <el-form :model="form" label-width="140px" :label-position="labelPosition">
-              <el-form-item :label="t('settings.restrict.safePath')">
+              <el-form-item id="sec-entry" :label="t('settings.restrict.safePath')">
                 <el-input v-model="form.safePath" :placeholder="t('settings.restrict.safePathPlaceholder')" class="w-280 mono">
                   <template #append>
                     <el-button :icon="Sparkles" :aria-label="t('settings.restrict.random')" @click="randomEntry" />
@@ -584,6 +593,10 @@ import { useListText, splitLines } from '../composables/useListText'
 import { copyText } from '../composables/useClipboard'
 import OtpInput from '../components/OtpInput.vue'
 import PasskeyManager from '../components/PasskeyManager.vue'
+import SecurityCenter from '../components/SecurityCenter.vue'
+import PasswordStrength from '../components/PasswordStrength.vue'
+import { fixTarget } from '../security'
+import { loadSecurity } from '../composables/useSecurity'
 import ReadonlyUsers from '../components/ReadonlyUsers.vue'
 import OAuthProviders from '../components/OAuthProviders.vue'
 import StatusBadge from '../components/StatusBadge.vue'
@@ -611,11 +624,61 @@ watch(tab, (t) => {
   router.replace({ query: { ...route.query, tab: t } })
 })
 
+// 安全评分的“去处理”：切换到对应页签，滚动到相关设置并短暂高亮
+function goFix(id: string) {
+  const target = fixTarget(id)
+  focusAnchor(target.tab, target.anchor)
+}
+
+function focusAnchor(tabName: string, anchor: string) {
+  tab.value = tabName
+  // 页签内容在切换后才渲染，等两帧再定位
+  nextTick(() => {
+    setTimeout(() => {
+      const el = document.getElementById(anchor)
+      if (!el) {
+        return
+      }
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      el.classList.add('sec-flash')
+      setTimeout(() => el.classList.remove('sec-flash'), 1800)
+    }, 120)
+  })
+}
+
+// 顶部加固提示跳转时带有 focus 锚点：定位后移除参数，刷新页面不会重复滚动
+onMounted(() => {
+  const focus = route.query.focus
+  if (typeof focus === 'string' && focus.startsWith('sec-')) {
+    focusAnchor(tab.value, focus)
+    const { focus: _f, ...rest } = route.query
+    router.replace({ query: rest })
+  }
+})
+
 // ---------- 全局设置 ----------
 const form = ref<SystemSettings>()
 const savedJSON = ref('')
 const saving = ref(false)
 const dirty = computed(() => !!form.value && JSON.stringify(normalized(form.value)) !== savedJSON.value)
+
+// 陌生来源失败预算：0 为默认值 20，负数为关闭
+const globalLimitOn = computed({
+  get: () => (form.value?.loginGlobalLimit ?? 0) >= 0,
+  set: (v: boolean) => {
+    if (form.value) {
+      form.value.loginGlobalLimit = v ? 0 : -1
+    }
+  },
+})
+const globalLimitValue = computed({
+  get: () => ((form.value?.loginGlobalLimit ?? 0) > 0 ? form.value!.loginGlobalLimit : 20),
+  set: (v: number) => {
+    if (form.value) {
+      form.value.loginGlobalLimit = v === 20 ? 0 : v
+    }
+  },
+})
 
 function normalized(s: SystemSettings) {
   return {
@@ -718,6 +781,8 @@ async function saveSettings() {
     applySettings(r)
     ElMessage.success(r.restartRequired ? t('settings.save.savedNeedRestart') : t('settings.save.saved'))
     loadInfo()
+    // 安全入口、锁定策略等会影响安全评分
+    loadSecurity()
   } catch (e) {
     ElMessage.error((e as Error).message)
   } finally {
@@ -1079,6 +1144,7 @@ async function submitTOTP() {
     await api.post(enabling ? '/api/account/totp/enable' : '/api/account/totp/disable', { password: totp.password, code: totp.code })
     totp.enabled = enabling
     totp.dialog = false
+    loadSecurity()
     ElMessage.success(t(enabling ? 'settings.totp.enabledMsg' : 'settings.totp.disabledMsg'))
   } catch (e) {
     ElMessage.error((e as Error).message)
@@ -1680,5 +1746,25 @@ div.warns {
   .settings-tabs :deep(.el-tabs__item) {
     padding: 0 12px;
   }
+}
+
+/* 从安全评分跳转过来时短暂高亮目标设置 */
+.sec-flash {
+  animation: sec-flash 1.8s ease;
+  border-radius: var(--g-radius);
+}
+@keyframes sec-flash {
+  0%,
+  60% {
+    box-shadow: 0 0 0 3px var(--el-color-primary-light-5);
+    background-color: var(--el-color-primary-light-9);
+  }
+  100% {
+    box-shadow: 0 0 0 3px transparent;
+    background-color: transparent;
+  }
+}
+.limit-num {
+  margin-left: 12px;
 }
 </style>

@@ -195,6 +195,8 @@ export interface SystemSettings {
   trustedProxies: string[] | null
   maxLoginFailures: number
   lockMinutes: number
+  // 陌生来源 10 分钟内累计的登录失败上限：0 为默认 20，负数为关闭
+  loginGlobalLimit: number
   timeZone: string
   language: string
   dnsServers: string[] | null
