@@ -176,6 +176,24 @@ func (a *authenticator) passkeyRP(r *http.Request) (string, error) {
 	return h, nil
 }
 
+// passkeyHostAllowed 判断访问域名能否使用 Passkey：只有站点的精确域名与 OIDC 签发者域名可以。
+// RP ID 取单点登录父域时，域内任一子域的页面都能为它发起 Passkey 验证；默认站点与通配域名站点会接住任意子域名，
+// 攻击者控制某个子域名的页面（例如 DNS 指向别处的子域名）后，可以在自己的页面上让访客确认 Passkey，
+// 再以同样的 Host 经这类站点完成登录拿到会话，所以它们不提供 Passkey。
+func passkeyHostAllowed(r *http.Request, s Site) bool {
+	if s.scope == "__oidc" {
+		// OIDC 签发者域名上的虚拟站点：调用方已确认请求的域名是签发者域名
+		return true
+	}
+	h := hostOnly(r.Host)
+	for _, d := range s.Domains {
+		if strings.EqualFold(d, h) && !strings.ContainsAny(d, "*{}") {
+			return true
+		}
+	}
+	return false
+}
+
 // passkeyOrigin 要求请求带有同域名的 Origin 头（浏览器对 JSON 的 POST 总会带），返回 Origin 中的主机（含端口）用于校验 clientData。
 // 经反向代理转发导致 Host 缺少端口时，以 Origin 为准；域名部分仍必须与请求一致。
 func passkeyOrigin(r *http.Request) (string, bool) {
@@ -236,7 +254,7 @@ type pubKeyCred struct {
 
 // handlePasskey 分发认证保留路径下 /passkey 开头的请求：管理页面与登录、注册接口。
 func (a *authenticator) handlePasskey(w http.ResponseWriter, r *http.Request, s Site, ip string) {
-	if !a.passkeyOn.Load() || !s.SharedUsers {
+	if !a.passkeyOn.Load() || !s.SharedUsers || !passkeyHostAllowed(r, s) {
 		http.NotFound(w, r)
 		return
 	}
