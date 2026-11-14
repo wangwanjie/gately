@@ -1,7 +1,9 @@
 package webservice
 
 import (
+	"crypto/sha256"
 	"encoding/base64"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"net/http"
@@ -17,6 +19,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/wangwanjie/gately/internal/crud"
+	"github.com/wangwanjie/gately/internal/i18n"
 	"github.com/wangwanjie/gately/internal/stunaddr"
 	"github.com/wangwanjie/gately/internal/webpage"
 )
@@ -40,7 +43,28 @@ const (
 	// maxPanelAlts 为每个链接的其他访问方式数量上限，maxPanelAltName 为其名称的最多字符数
 	maxPanelAlts    = 8
 	maxPanelAltName = 20
+	// maxPanelEngines 为每个面板的搜索引擎数量上限，maxPanelEngineName 为其名称的最多字符数
+	maxPanelEngines    = 12
+	maxPanelEngineName = 20
+	// maxPanelBackground 为背景图片 data:image 内联图片的字节上限；内联图片由 panelBgPath 路径按需输出并可被浏览器缓存，
+	// 不随每次页面一起下发，所以可以比图标大
+	maxPanelBackground = 1 << 20
+	// maxPanelBgDim 为背景遮罩浓度上限（百分比），maxPanelBgBlur 为背景模糊半径上限（像素）
+	maxPanelBgDim  = 90
+	maxPanelBgBlur = 20
 )
+
+// 链接卡片的尺寸：默认大卡片（图标加标题、描述），小卡片只显示图标。
+const (
+	PanelSizeLarge = ""
+	PanelSizeSmall = "small"
+)
+
+// panelLangCookie 记录访客在页面上选择的语言，没有时按浏览器的 Accept-Language。
+const panelLangCookie = "gately_panel_lang"
+
+// panelBgPath 为面板站点输出内联背景图片的路径，页面中的地址带 ?v=图片指纹，图片可长期缓存。
+const panelBgPath = "/__gately_panel/bg"
 
 // panelBuiltinPrefix 为内置图标的写法前缀，例如 builtin:jellyfin，图标列表见 webpage.BuiltinIcons
 const panelBuiltinPrefix = "builtin:"
@@ -70,10 +94,29 @@ type Panel struct {
 	Subtitle string `json:"subtitle"`
 	// Icon 为页面图标，写法与链接图标相同，为空时使用默认图标
 	Icon string `json:"icon"`
+	// TabTitle 为浏览器标签页标题，为空时用页面标题；Favicon 为标签页图标（写法同 Icon，内置图标会画在底色方块上），
+	// 为空时用页面图标；Description 为页面描述（meta description，搜索与分享预览时显示），不显示在页面上
+	TabTitle    string `json:"tabTitle"`
+	Favicon     string `json:"favicon"`
+	Description string `json:"description"`
+	// Footer 为页脚文字，为空时显示 Gately 标志与名称；FooterURL 为页脚文字的链接（http/https），为空时不加链接；
+	// HideFooter 为 true 时不显示页脚
+	Footer     string `json:"footer"`
+	FooterURL  string `json:"footerUrl"`
+	HideFooter bool   `json:"hideFooter"`
 	// Theme 为 ""（跟随访客系统）、light、dark
 	Theme string `json:"theme"`
 	// Skin 为皮肤（色系 ID，与管理界面的主题配色相同），为空时用默认色系。访客可在页面上换肤，选择保存在浏览器中
 	Skin string `json:"skin"`
+	// Engines 为页面搜索框可选的搜索引擎，按列表顺序显示在“本站”之后；DefaultEngine 为默认选项：0 为本站（过滤本页链接），n 为 Engines[n-1]
+	Engines       []PanelEngine `json:"engines"`
+	DefaultEngine int           `json:"defaultEngine"`
+	// Background 为页面背景图片：http(s) 图片地址，或 data:image 内联图片，为空时用默认渐变背景；
+	// BgDim 为盖在图片上的底色遮罩浓度（0-90），避免文字被图片淹没
+	Background string `json:"background"`
+	BgDim      int    `json:"bgDim"`
+	// BgBlur 为背景图片的模糊半径（0-20 像素）
+	BgBlur int `json:"bgBlur"`
 	// LANCIDRs 为额外视为内网的访客地址（IP 或 CIDR）。回环、私有地址（10/8、172.16/12、192.168/16、fc00::/7）
 	// 与链路本地地址始终视为内网；经 Tailscale、ZeroTier 等组网访问时可在这里加上对应网段
 	LANCIDRs []string `json:"lanCidrs"`
@@ -101,6 +144,14 @@ type PanelLink struct {
 	Color string `json:"color"`
 	// SameTab 为 true 时在当前页打开，默认在新标签页打开
 	SameTab bool `json:"sameTab"`
+	// Size 为卡片尺寸：空为大卡片（图标加标题、描述），small 为小卡片（只显示图标，名称在鼠标悬停时提示）
+	Size string `json:"size"`
+	// HideName、HideDesc 只对大卡片生效：隐藏标题、隐藏描述（没有描述时的地址也一并隐藏）
+	HideName bool `json:"hideName"`
+	HideDesc bool `json:"hideDesc"`
+	// AuthOnly 为 true 时只对已登录的访客显示：未登录时页面中没有该链接（地址、名称都不下发）。
+	// 站点需启用网页认证并设为“仅对指定路径认证”，让未登录访客也能看到面板；没有启用认证的站点上这类链接始终不显示
+	AuthOnly bool `json:"authOnly"`
 	// Hide 为 true 时不在页面中显示
 	Hide bool `json:"hide"`
 }
@@ -113,10 +164,19 @@ type PanelAlt struct {
 	URL string `json:"url"`
 }
 
+// PanelEngine 是一个搜索引擎。
+type PanelEngine struct {
+	// Name 为下拉框中显示的名称，如 Google、GitHub
+	Name string `json:"name"`
+	// URL 为搜索地址，用 {q} 表示关键词，例如 https://www.google.com/search?q={q}。关键词由访客在浏览器中输入并编码
+	URL string `json:"url"`
+}
+
 // clone 深拷贝面板：链接与其他访问方式的底层数组都复制一份。validate 会就地规范化字段，
 // 载入面板库时不能写到配置或正在服务的面板共用的数组上，否则与访客请求并发读写
 func (p Panel) clone() Panel {
 	p.LANCIDRs = slices.Clone(p.LANCIDRs)
+	p.Engines = slices.Clone(p.Engines)
 	p.Links = slices.Clone(p.Links)
 	for i := range p.Links {
 		p.Links[i].Alts = slices.Clone(p.Links[i].Alts)
@@ -286,6 +346,64 @@ func validatePanelIcon(icon string) (int, error) {
 	return len(icon), nil
 }
 
+// validatePanelEngineURL 校验搜索引擎地址：http(s) 协议，必须含 {q}，且第一个 {q} 之前已写完主机并进入路径或查询串
+// （https://example.com/s?q={q}）。关键词只能落在路径、查询串或片段中：写在主机或用户信息位置时，
+// 访客输入的文字会决定打开哪个网站。不允许其他变量与花括号。
+func validatePanelEngineURL(raw string) error {
+	if len(raw) > maxPanelURLLen {
+		return fmt.Errorf("地址不能超过 %d 个字符", maxPanelURLLen)
+	}
+	if !strings.Contains(raw, "{q}") {
+		return errors.New("搜索地址需包含 {q} 代表关键词，例如 https://www.google.com/search?q={q}")
+	}
+	if strings.ContainsAny(strings.ReplaceAll(raw, "{q}", ""), "{}") {
+		return errors.New("搜索地址只支持 {q} 一个变量")
+	}
+	if !hasHTTPPrefix(raw) {
+		return errors.New("搜索地址需以 http:// 或 https:// 开头")
+	}
+	head, _, _ := strings.Cut(raw, "{q}")
+	hu, err := url.Parse(head)
+	if err != nil || (hu.Path == "" && hu.RawQuery == "" && !hu.ForceQuery && !strings.Contains(head, "#")) {
+		return errors.New("{q} 需写在路径或查询参数中，例如 https://www.google.com/search?q={q}")
+	}
+	// 用示例关键词展开后整体校验：完整 URL、主机合法、没有空白与密码
+	return validatePanelURL(strings.ReplaceAll(raw, "{q}", "test"))
+}
+
+// validatePanelBackground 校验背景图片写法，返回其占用的字节数（内联图片计入面板的图片总量）。
+func validatePanelBackground(bg string) (int, error) {
+	switch {
+	case bg == "":
+		return 0, nil
+	case strings.HasPrefix(bg, "data:"):
+		if len(bg) > maxPanelBackground {
+			return 0, fmt.Errorf("背景图片不能超过 %d KB，请压缩后再上传，或改用图片地址", maxPanelBackground>>10)
+		}
+		m := panelDataImageRe.FindStringSubmatch(bg)
+		if m == nil {
+			return 0, errors.New("背景图片只支持 PNG、JPEG、GIF、WebP、SVG 图片")
+		}
+		if _, err := base64.StdEncoding.DecodeString(m[2]); err != nil {
+			return 0, errors.New("背景图片的数据无效")
+		}
+		return len(bg), nil
+	case hasHTTPPrefix(bg):
+		if len(bg) > maxPanelURLLen {
+			return 0, fmt.Errorf("背景图片地址不能超过 %d 个字符", maxPanelURLLen)
+		}
+		u, err := url.Parse(bg)
+		if err != nil || u.Host == "" || strings.ContainsFunc(bg, func(r rune) bool { return unicode.IsSpace(r) || unicode.IsControl(r) }) {
+			return 0, errors.New("背景图片地址无效")
+		}
+		if u.User != nil {
+			return 0, errors.New("背景图片地址不能包含用户名或密码")
+		}
+		return 0, nil
+	}
+	return 0, errors.New("背景图片需为 http(s) 图片地址或上传的图片")
+}
+
 // hasHTTPPrefix 判断字符串是否以 http:// 或 https:// 开头（不区分大小写）。
 func hasHTTPPrefix(s string) bool {
 	l := strings.ToLower(s)
@@ -298,6 +416,11 @@ func (p *Panel) validate() error {
 	p.Title = strings.TrimSpace(p.Title)
 	p.Subtitle = strings.TrimSpace(p.Subtitle)
 	p.Icon = strings.TrimSpace(p.Icon)
+	p.TabTitle = strings.TrimSpace(p.TabTitle)
+	p.Favicon = strings.TrimSpace(p.Favicon)
+	p.Description = strings.TrimSpace(p.Description)
+	p.Footer = strings.TrimSpace(p.Footer)
+	p.FooterURL = strings.TrimSpace(p.FooterURL)
 	p.Remark = strings.TrimSpace(p.Remark)
 	if p.Name == "" {
 		return errors.New("请填写面板名称")
@@ -311,6 +434,24 @@ func (p *Panel) validate() error {
 	if err := runeLimit(p.Subtitle, "副标题", maxPanelTextLen); err != nil {
 		return err
 	}
+	if err := runeLimit(p.TabTitle, "标签页标题", maxPanelTitleLen); err != nil {
+		return err
+	}
+	if err := runeLimit(p.Description, "页面描述", 2*maxPanelTextLen); err != nil {
+		return err
+	}
+	if err := runeLimit(p.Footer, "页脚文字", maxPanelTextLen); err != nil {
+		return err
+	}
+	if p.FooterURL != "" {
+		// 页脚链接只允许网页地址，且不能带密码
+		if !hasHTTPPrefix(p.FooterURL) {
+			return errors.New("页脚链接需以 http:// 或 https:// 开头")
+		}
+		if err := validatePanelURL(p.FooterURL); err != nil {
+			return fmt.Errorf("页脚链接: %w", err)
+		}
+	}
 	switch p.Theme {
 	case "", "light", "dark":
 	default:
@@ -323,6 +464,26 @@ func (p *Panel) validate() error {
 	total, err := validatePanelIcon(p.Icon)
 	if err != nil {
 		return fmt.Errorf("页面图标: %w", err)
+	}
+	favSize, err := validatePanelIcon(p.Favicon)
+	if err != nil {
+		return fmt.Errorf("标签页图标: %w", err)
+	}
+	total += favSize
+	p.Background = strings.TrimSpace(p.Background)
+	bgSize, err := validatePanelBackground(p.Background)
+	if err != nil {
+		return err
+	}
+	total += bgSize
+	if p.BgDim < 0 || p.BgDim > maxPanelBgDim {
+		return fmt.Errorf("背景遮罩需在 0 到 %d 之间", maxPanelBgDim)
+	}
+	if p.BgBlur < 0 || p.BgBlur > maxPanelBgBlur {
+		return fmt.Errorf("背景模糊需在 0 到 %d 之间", maxPanelBgBlur)
+	}
+	if err := p.validateEngines(); err != nil {
+		return err
 	}
 	p.LANCIDRs = uniqueList(p.LANCIDRs)
 	if _, err := parsePrefixes(p.LANCIDRs); err != nil {
@@ -345,6 +506,37 @@ func (p *Panel) validate() error {
 	}
 	if total > maxPanelIconsTotal {
 		return fmt.Errorf("面板中的图标合计不能超过 %d MB，请改用图标地址或更小的图片", maxPanelIconsTotal>>20)
+	}
+	return nil
+}
+
+// validateEngines 校验搜索引擎列表：数量、名称（不重复）、地址，默认选项在范围内。
+func (p *Panel) validateEngines() error {
+	if len(p.Engines) > maxPanelEngines {
+		return fmt.Errorf("搜索引擎最多 %d 个", maxPanelEngines)
+	}
+	seen := map[string]bool{}
+	for i := range p.Engines {
+		e := &p.Engines[i]
+		e.Name = strings.TrimSpace(e.Name)
+		e.URL = strings.TrimSpace(e.URL)
+		if e.Name == "" {
+			return errors.New("请填写搜索引擎的名称")
+		}
+		if err := runeLimit(e.Name, "搜索引擎名称", maxPanelEngineName); err != nil {
+			return err
+		}
+		key := strings.ToLower(e.Name)
+		if seen[key] {
+			return fmt.Errorf("搜索引擎 %s 重复", e.Name)
+		}
+		seen[key] = true
+		if err := validatePanelEngineURL(e.URL); err != nil {
+			return fmt.Errorf("搜索引擎 %s: %w", e.Name, err)
+		}
+	}
+	if p.DefaultEngine < 0 || p.DefaultEngine > len(p.Engines) {
+		return errors.New("默认搜索引擎无效")
 	}
 	return nil
 }
@@ -400,6 +592,11 @@ func (l *PanelLink) validate() (int, error) {
 			return 0, fmt.Errorf("访问方式 %s: %w", a.Name, err)
 		}
 	}
+	switch l.Size {
+	case PanelSizeLarge, PanelSizeSmall:
+	default:
+		return 0, errors.New("卡片尺寸无效")
+	}
 	if l.Color != "" && !panelColorRe.MatchString(l.Color) {
 		return 0, errors.New("颜色需为 #rrggbb 格式")
 	}
@@ -412,6 +609,24 @@ func (l *PanelLink) validate() (int, error) {
 type compiledPanel struct {
 	Panel
 	lan []netip.Prefix
+	// bg 为内联背景图片解码后的内容，bgMime 为其类型，bgTag 为内容指纹（用作 ETag 与页面中图片地址的版本）；背景为图片地址或没有背景时为空
+	bg     []byte
+	bgMime string
+	bgTag  string
+}
+
+// decodeBackground 解码内联背景图片（已通过 validatePanelBackground 校验）。
+func decodeBackground(bg string) (data []byte, mime, tag string) {
+	m := panelDataImageRe.FindStringSubmatch(bg)
+	if m == nil {
+		return nil, "", ""
+	}
+	data, err := base64.StdEncoding.DecodeString(m[2])
+	if err != nil {
+		return nil, "", ""
+	}
+	sum := sha256.Sum256(data)
+	return data, strings.TrimPrefix(bg[:strings.IndexByte(bg, ';')], "data:"), hex.EncodeToString(sum[:8])
 }
 
 // panelStore 为面板库，全部监听的站点共用；面板修改后整体替换，站点无需重建。
@@ -433,6 +648,7 @@ func (s *panelStore) set(list []Panel) {
 	for _, src := range list {
 		p := src.clone()
 		p.Icon = dropUnknownBuiltin(p.Icon)
+		p.Favicon = dropUnknownBuiltin(p.Favicon)
 		for i := range p.Links {
 			p.Links[i].Icon = dropUnknownBuiltin(p.Links[i].Icon)
 		}
@@ -441,7 +657,9 @@ func (s *panelStore) set(list []Panel) {
 			continue
 		}
 		lan, _ := parsePrefixes(p.LANCIDRs)
-		panels[p.Key] = &compiledPanel{Panel: p, lan: lan}
+		cp := &compiledPanel{Panel: p, lan: lan}
+		cp.bg, cp.bgMime, cp.bgTag = decodeBackground(p.Background)
+		panels[p.Key] = cp
 	}
 	s.mu.Lock()
 	s.panels = panels
@@ -505,16 +723,37 @@ func linkAddress(u *url.URL) string {
 	return u.Opaque
 }
 
-// view 生成页面内容。q 用于展开链接地址中的变量；lan 为使用内网地址。
-func (p *compiledPanel) view(q redirectRequest, lan, forced, preview bool) webpage.PanelView {
-	v := webpage.PanelView{Title: p.Title, Subtitle: p.Subtitle, Theme: p.Theme, Skin: p.Skin, LAN: lan, Forced: forced, Preview: preview}
+// view 生成页面内容。q 用于展开链接地址中的变量；lan 为使用内网地址；authed 为访客已登录，
+// 未登录时“登录后可见”的链接不进入页面，只统计被隐藏的个数。
+func (p *compiledPanel) view(q redirectRequest, lan, forced, preview, authed bool) webpage.PanelView {
+	v := webpage.PanelView{Title: p.Title, Subtitle: p.Subtitle, Theme: p.Theme, Skin: p.Skin, LAN: lan, Forced: forced, Preview: preview, BgDim: p.BgDim, BgBlur: p.BgBlur}
+	for _, e := range p.Engines {
+		v.Engines = append(v.Engines, webpage.PanelEngine{Name: e.Name, URL: e.URL})
+	}
+	v.DefaultEngine = p.DefaultEngine
+	// 内联背景图片由站点的专用路径输出（可缓存，页面不带图片数据）；预览放在 srcdoc iframe 中取不到站点路径，
+	// 预览用的面板没有解码结果，直接内联
+	if p.bg != nil {
+		v.Background = panelBgPath + "?v=" + p.bgTag
+	} else {
+		v.Background = p.Background
+	}
 	if v.Title == "" {
 		v.Title = p.Name
 	}
 	v.Icon = panelIcon(p.Icon, "")
+	v.TabTitle, v.Description = p.TabTitle, p.Description
+	v.Footer, v.FooterURL, v.HideFooter = p.Footer, p.FooterURL, p.HideFooter
+	if p.Favicon != "" {
+		v.Favicon = panelIcon(p.Favicon, "")
+	}
 	order := map[string]int{}
 	for _, l := range p.Links {
 		if l.Hide {
+			continue
+		}
+		if l.AuthOnly && !authed {
+			v.Hidden++
 			continue
 		}
 		if l.LANURL != "" {
@@ -524,7 +763,7 @@ func (p *compiledPanel) view(q redirectRequest, lan, forced, preview bool) webpa
 		if lan && l.LANURL != "" {
 			raw = l.LANURL
 		}
-		link := webpage.PanelLink{Name: l.Name, Description: l.Description, NewTab: !l.SameTab, Icon: panelIcon(l.Icon, l.Color)}
+		link := webpage.PanelLink{Name: l.Name, Description: l.Description, NewTab: !l.SameTab, Icon: panelIcon(l.Icon, l.Color), Locked: l.AuthOnly, Small: l.Size == PanelSizeSmall, HideName: l.HideName, HideDesc: l.HideDesc}
 		// 变量暂无值（例如 STUN 规则还没有公网地址）或展开后不再是允许的地址时，卡片显示为暂不可用
 		if href, ok := expandPanelURL(raw, q); ok {
 			if u, err := url.Parse(href); err == nil {
@@ -587,6 +826,10 @@ func panelIcon(icon, color string) webpage.PanelIcon {
 // newPanel 返回导航面板站点的处理器：只在根路径（与 /index.html）输出页面，?net= 切换内外网后跳回原路径。
 func (h *siteHandler) newPanel(s Site) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == panelBgPath {
+			h.servePanelBackground(w, r, s)
+			return
+		}
 		if r.URL.Path != "/" && r.URL.Path != "/index.html" {
 			writeNotFound(h.errPage, w, r, "页面不存在", "请求的页面不存在。")
 			return
@@ -612,7 +855,22 @@ func (h *siteHandler) newPanel(s Site) http.Handler {
 		}
 		lan, forced := p.network(r)
 		q := redirectRequest{r: r, wildcard: wildcardPart(s.Domains, hostOnly(r.Host))}
-		body, csp := webpage.RenderPanel(r, p.view(q, lan, forced, false))
+		authed := panelAuthed(r)
+		v := p.view(q, lan, forced, false, authed)
+		if authed {
+			v.User, _ = r.Context().Value(ctxKeyPanelUser{}).(string)
+		}
+		v.Lang = panelLang(r)
+		// 面板对未登录访客开放且站点启用了网页认证时，页面提供登录入口；登录后回到面板，退出后回到登录页
+		if h.site.WebAuth && !h.needAuth(h.matchRule(r.URL.Path)) {
+			base := h.site.authPrefix()
+			if authed {
+				v.LogoutURL = base + "/logout"
+			} else {
+				v.LoginURL = base + "/login?next=" + url.QueryEscape("/")
+			}
+		}
+		body, csp := webpage.RenderPanel(r, v)
 		hd := w.Header()
 		hd.Set("Content-Type", "text/html; charset=utf-8")
 		// 页面内容随访客地址与 Cookie 变化，不能被缓存
@@ -626,6 +884,67 @@ func (h *siteHandler) newPanel(s Site) http.Handler {
 			_, _ = w.Write(body)
 		}
 	})
+}
+
+// panelLang 返回访客在页面上选择的语言（Cookie），没有选择或语言不受支持时返回空，由页面按浏览器语言决定。
+func panelLang(r *http.Request) string {
+	c, err := r.Cookie(panelLangCookie)
+	if err != nil {
+		return ""
+	}
+	for _, l := range i18n.AllLangs {
+		if c.Value == l {
+			return i18n.Normalize(l)
+		}
+	}
+	return ""
+}
+
+// ctxKeyPanelAuthed 标记请求已通过站点认证（见 panelAuthed），由 ServeHTTP 在认证后写入。
+type ctxKeyPanelAuthed struct{}
+
+// ctxKeyPanelUser 记录已登录访客的名称，用于页头的用户菜单。
+type ctxKeyPanelUser struct{}
+
+// panelAuthed 判断导航面板的访客是否已登录：通过了站点的认证，或在无需认证的路径上带有有效的网页登录会话。
+// 经分享链接放行的访客不算已登录。
+func panelAuthed(r *http.Request) bool {
+	v, _ := r.Context().Value(ctxKeyPanelAuthed{}).(bool)
+	return v
+}
+
+// servePanelBackground 输出面板的内联背景图片。图片按内容指纹版本化，浏览器可缓存；
+// 内容来自管理员保存的 data:image，用 CSP sandbox 与 nosniff 保证即使被直接打开，SVG 中的脚本也不会运行。
+func (h *siteHandler) servePanelBackground(w http.ResponseWriter, r *http.Request, s Site) {
+	if r.Method != http.MethodGet && r.Method != http.MethodHead {
+		w.Header().Set("Allow", "GET, HEAD")
+		writeErrorPage(h.errPage, w, r, http.StatusMethodNotAllowed, "不支持的请求方法", "导航面板只支持 GET 请求。")
+		return
+	}
+	var p *compiledPanel
+	if h.auth != nil {
+		p, _ = h.auth.panels.get(s.Panel)
+	}
+	if p == nil || !p.Enable || p.bg == nil {
+		writeNotFound(h.errPage, w, r, "页面不存在", "请求的页面不存在。")
+		return
+	}
+	etag := `"` + p.bgTag + `"`
+	hd := w.Header()
+	hd.Set("Content-Type", p.bgMime)
+	hd.Set("ETag", etag)
+	hd.Set("Cache-Control", "private, max-age=86400")
+	hd.Set("X-Content-Type-Options", "nosniff")
+	hd.Set("Content-Security-Policy", "default-src 'none'; sandbox")
+	if r.Header.Get("If-None-Match") == etag {
+		w.WriteHeader(http.StatusNotModified)
+		return
+	}
+	hd.Set("Content-Length", strconv.Itoa(len(p.bg)))
+	w.WriteHeader(http.StatusOK)
+	if r.Method != http.MethodHead {
+		_, _ = w.Write(p.bg)
+	}
 }
 
 // setPanelNet 记录访客选择的内网或外网，auto 或其他值清除选择、恢复自动判断。
