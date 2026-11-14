@@ -167,6 +167,8 @@
   "httpPortServeTag": "HTTP :{port}",
   "optSniFromHost": "使用访问域名作为 SNI",
   "optSniFromHostHelp": "仅 HTTPS 后端：握手时发送访客请求的域名并按它校验证书，后端按 SNI 分流时（如 frp 的 vhost_https）需要开启，相当于 nginx 的 proxy_ssl_server_name on",
+  "optH2C": "http:// 后端使用明文 HTTP/2（h2c）",
+  "optH2CHelp": "适用于只讲 h2c 的后端，如 gRPC 服务（NetBird 管理/信令等）。后端必须支持 h2c，否则请求失败；该连接上不能使用 WebSocket 升级等 HTTP/1.1 特性。HTTPS 后端会自动协商 HTTP/2，无需此选项。",
   "optPassAuthCookies": "转发 Gately 登录 Cookie",
   "optPassAuthCookiesHelp": "登录由后端 Gately 负责：本站点不开认证，后端 Gately 签发的单点登录与会话 Cookie 原样转给它。只在后端是自己的 Gately 时开启",
   "locations": "分路径后端",

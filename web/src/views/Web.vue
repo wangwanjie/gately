@@ -146,6 +146,7 @@
                 <el-tag v-if="item.item.site.ipMode" size="small" type="info">{{ item.item.site.ipMode === 'whitelist' ? t('web.whitelist') : t('web.blacklist') }}</el-tag>
                 <el-tag v-if="item.item.site.ipDenyList?.length || item.item.site.ipDenySets?.length" size="small" type="info">{{ t('web.ipDenyTag') }}</el-tag>
                 <el-tag v-if="item.item.site.sendProxyProtocol" size="small" type="info">PROXY v2</el-tag>
+                <el-tag v-if="item.item.site.upstreamH2c" size="small" type="info">h2c</el-tag>
                 <el-tag v-if="downCount(l, item.item) > 0" size="small" type="danger">{{ t('web.upstreamsDown', { count: downCount(l, item.item) }) }}</el-tag>
                 <el-tag v-if="item.item.site.insecureSkipVerify" size="small" type="info">{{ t('web.skipVerifyTag') }}</el-tag>
                 <el-tag v-if="item.item.site.waf && wafAvailable" size="small" :type="wafInstances.some((w) => w.key === item.item.site.waf) ? 'danger' : 'info'">
@@ -762,6 +763,7 @@ interface Site {
   forwardedHeaders: boolean
   // 连接 HTTPS 后端时使用访客域名作为 SNI（后端按 SNI 分流时需要）
   upstreamSniFromHost: boolean
+  upstreamH2c: boolean
   // 后端是负责认证的另一台 Gately 时，把 Gately 登录 Cookie 原样转发给它
   passAuthCookies: boolean
   locations: Location[]
@@ -1117,6 +1119,7 @@ function emptySite(): Site {
     sendProxyProtocol: false,
     forwardedHeaders: true,
     upstreamSniFromHost: false,
+    upstreamH2c: false,
     passAuthCookies: false,
     locations: [],
     userRoutes: [],

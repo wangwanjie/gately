@@ -64,6 +64,7 @@ const items = [
   { id: 'forwarded', label: 'web.optForwarded' },
   { id: 'sendProxy', label: 'web.optSendProxy' },
   { id: 'sniFromHost', label: 'web.optSniFromHost' },
+  { id: 'h2c', label: 'web.optH2C' },
   { id: 'passAuthCookies', label: 'web.optPassAuthCookies' },
 ]
 </script>
