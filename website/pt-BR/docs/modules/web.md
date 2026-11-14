@@ -240,6 +240,8 @@ Ative Troca de senha pelo próprio usuário na página Usuários de autenticaç�
 
 O "Controle de acesso por IP" na página "Segurança" do site pode ficar desativado, como lista de permissão ou como lista de bloqueio. A lista recebe um IP ou sub-rede por linha (como `192.168.1.0/24`) e também pode referenciar listas de IP assinadas.
 
+A «Lista de bloqueio prioritário» (`ipDenyList` / `ipDenySets`) na página «Segurança» do site funciona independentemente do modo de acesso: uma origem que coincidir é sempre recusada, verificada antes da lista de permitidos e da de bloqueados, e regras de caminho não a anulam; um endereço que também esteja na lista de permitidos é recusado do mesmo jeito. Para bloquear primeiro, coloque uma lista assinada de IPs maliciosos na lista de bloqueio prioritário e deixe passar suas próprias sub-redes com a lista de permitidos.
+
 ### Ao negar
 
 **Ao negar**, na aba Segurança do site, define o que acontece com requisições rejeitadas por um banimento, pelo controle de acesso por IP (incluindo regras de caminho) ou pelo filtro de países: por padrão **Retornar 403**; **Fechar conexão** não envia nada e derruba a requisição, registrada como 444, igual a um site Fechar conexão. Com uma lista de permitidos, seus próprios IPs passam e o restante é derrubado. Limite de taxa (429) e bloqueios do WAF não mudam.

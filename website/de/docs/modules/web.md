@@ -240,6 +240,8 @@ Aktivieren Sie auf der Seite Auth-Benutzer die Option Passwort selbst ändern, d
 
 „IP-Zugriffskontrolle“ auf der Seite „Sicherheit“ der Site kann aus, Allowlist oder Blocklist sein. Die Liste nimmt je Zeile eine IP oder ein Subnetz auf (etwa `192.168.1.0/24`); zusätzlich lassen sich abonnierte IP-Listen einbinden.
 
+Die „Vorrangige Sperrliste“ (`ipDenyList` / `ipDenySets`) auf der Seite „Sicherheit“ der Site arbeitet unabhängig vom Zugriffsmodus: Eine passende Quelle wird immer abgelehnt, noch vor Zulassungs- und Sperrliste, und Pfadregeln können das nicht überschreiben; eine Adresse, die auch in der Zulassungsliste steht, wird ebenfalls abgelehnt. Für „erst sperren, dann zulassen“ trägt man eine abonnierte Liste bösartiger IPs in die vorrangige Sperrliste ein und lässt eigene Subnetze über die Zulassungsliste durch.
+
 ### Bei Ablehnung
 
 **Bei Ablehnung** im Tab Sicherheit der Site legt fest, wie Anfragen behandelt werden, die durch eine Sperre, die IP-Zugriffskontrolle (einschließlich Pfadregeln) oder den Länderfilter abgelehnt werden: standardmäßig **403 zurückgeben**; **Verbindung schließen** sendet nichts und bricht die Anfrage ab, protokolliert als 444, wie bei einer Site vom Typ Verbindung schließen. Zusammen mit einer Allowlist kommen eigene IPs durch, alle anderen werden abgewiesen. Ratenbegrenzung (429) und WAF-Blockaden bleiben unverändert.
