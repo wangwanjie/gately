@@ -70,7 +70,7 @@
     "portsHelp": "Ports a client may ask to open, such as tcp/22 or udp/51820, separated by commas. A bare port number means TCP. Every port in the client's -A option must be in this list. Can be left empty when firewall blocking is off; the rule then only gets grants from a Web site's Release after login.",
     "firewall": "Firewall blocking",
     "firewallTag": "Firewall blocking",
-    "firewallHelp": "When on, these ports are blocked in the system firewall and only addresses that knocked successfully are let through, which protects services such as this host's sshd (Linux only). When off, the firewall is left alone and the rule only serves \"Require knock\" in Port Forwarding, Protocol Routing and STUN.",
+    "firewallHelp": "When on, these ports are blocked in the system firewall and only addresses that knocked successfully are let through, which protects services such as this host's sshd (Linux only). When off, the firewall is left alone and the rule only serves \"Require knock\" in Web sites, Port Forwarding, Protocol Routing and STUN.",
     "firewallWarn": "Before turning this on, make sure you can still log in to this host from the LAN (knock-exempt by default in the global settings) or another way: if Gately is killed, the blocking rules stay until Gately starts again. Established connections are not affected.",
     "encKey": "Encryption key",
     "hmacKey": "HMAC key",

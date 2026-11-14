@@ -2639,6 +2639,16 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `field` | string |
 | `header` | string |
 
+### webservice.KnockGrant
+
+| 필드 | 타입 |
+| --- | --- |
+| `minutes` | integer |
+| `probeV4` | string |
+| `probeV6` | string |
+| `rule` | string |
+| `v6Prefix` | integer |
+
 ### webservice.Listener
 
 | 필드 | 타입 |
@@ -2924,6 +2934,9 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `ipSets` | Array of string |
 | `keepPath` | boolean |
 | `key` | string |
+| `knock` | string |
+| `knockGrant` | `webservice.KnockGrant` |
+| `knockLan` | boolean |
 | `lbPolicy` | string |
 | `listDir` | boolean |
 | `locations` | Array of `webservice.Location` |

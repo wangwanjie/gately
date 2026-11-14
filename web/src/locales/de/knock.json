@@ -70,7 +70,7 @@
     "portsHelp": "Ports, deren Öffnung ein Client anfordern darf, etwa tcp/22 oder udp/51820, durch Kommas getrennt. Eine bloße Portnummer gilt als TCP. Alle Ports der -A-Option des Clients müssen in dieser Liste stehen. Kann leer bleiben, wenn die Firewall-Sperre aus ist; die Regel erhält Freigaben dann nur über „Nach Anmeldung freigeben“ einer Webseite.",
     "firewall": "Firewall-Sperre",
     "firewallTag": "Firewall-Sperre",
-    "firewallHelp": "Wenn aktiv, werden diese Ports in der System-Firewall blockiert und nur Adressen durchgelassen, die erfolgreich geklopft haben. Das schützt Dienste wie den sshd dieses Hosts (nur Linux). Wenn aus, bleibt die Firewall unverändert und die Regel dient nur „Klopfen erforderlich“ bei Portweiterleitung, Protokoll-Routing und STUN.",
+    "firewallHelp": "Wenn aktiv, werden diese Ports in der System-Firewall blockiert und nur Adressen durchgelassen, die erfolgreich geklopft haben. Das schützt Dienste wie den sshd dieses Hosts (nur Linux). Wenn aus, bleibt die Firewall unverändert und die Regel dient nur „Klopfen erforderlich“ bei Webseiten, Portweiterleitung, Protokoll-Routing und STUN.",
     "firewallWarn": "Stellen Sie vor dem Aktivieren sicher, dass Sie sich aus dem LAN (standardmäßig vom Klopfen ausgenommen, siehe globale Einstellungen) oder anderweitig an diesem Host anmelden können: Wird Gately zwangsbeendet, bleiben die Sperrregeln bis zum nächsten Start von Gately bestehen. Bestehende Verbindungen bleiben unberührt.",
     "encKey": "Verschlüsselungsschlüssel",
     "hmacKey": "HMAC-Schlüssel",

@@ -2639,6 +2639,16 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `field` | string |
 | `header` | string |
 
+### webservice.KnockGrant
+
+| Field | Type |
+| --- | --- |
+| `minutes` | integer |
+| `probeV4` | string |
+| `probeV6` | string |
+| `rule` | string |
+| `v6Prefix` | integer |
+
 ### webservice.Listener
 
 | Field | Type |
@@ -2924,6 +2934,9 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `ipSets` | Array of string |
 | `keepPath` | boolean |
 | `key` | string |
+| `knock` | string |
+| `knockGrant` | `webservice.KnockGrant` |
+| `knockLan` | boolean |
 | `lbPolicy` | string |
 | `listDir` | boolean |
 | `locations` | Array of `webservice.Location` |

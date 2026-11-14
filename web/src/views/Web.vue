@@ -145,6 +145,8 @@
                 <el-tag v-if="item.item.site.userRoutes?.length" size="small" type="info">{{ t('web.userRoutesTag', { count: item.item.site.userRoutes.length }) }}</el-tag>
                 <el-tag v-if="item.item.site.ipMode" size="small" type="info">{{ item.item.site.ipMode === 'whitelist' ? t('web.whitelist') : t('web.blacklist') }}</el-tag>
                 <el-tag v-if="item.item.site.ipDenyList?.length || item.item.site.ipDenySets?.length" size="small" type="info">{{ t('web.ipDenyTag') }}</el-tag>
+                <el-tag v-if="item.item.site.knock" size="small" type="info" data-test="site-knock-tag">{{ t('siteKnock.admissionTag') }}</el-tag>
+                <el-tag v-if="item.item.site.knockGrant?.rule" size="small" type="success" data-test="site-knock-grant-tag">{{ t('siteKnock.grantTag') }}</el-tag>
                 <el-tag v-if="item.item.site.sendProxyProtocol" size="small" type="info">PROXY v2</el-tag>
                 <el-tag v-if="item.item.site.upstreamH2c" size="small" type="info">h2c</el-tag>
                 <el-tag v-if="downCount(l, item.item) > 0" size="small" type="danger">{{ t('web.upstreamsDown', { count: downCount(l, item.item) }) }}</el-tag>
@@ -530,6 +532,8 @@
                 </el-option>
               </el-select>
             </el-form-item>
+            <!-- 敲门准入与登录后放行：敲门模块未启用且站点没有设置时不显示 -->
+            <SiteKnock v-if="knockAvailable || site.knock || site.knockGrant.rule" v-model:site="site" :listener="siteAccessListener" :is-default="siteIsDefault" />
             <SiteAccess v-model:site="site" :tls="siteTls" :port="sitePort" :ip-lists="ipLists" />
             <el-form-item :label="t('web.denyAction')">
               <el-radio-group v-model="site.denyClose">
@@ -741,6 +745,8 @@ import SiteStats from '../components/SiteStats.vue'
 import SiteConns from '../components/SiteConns.vue'
 import SiteLogDialog from '../components/SiteLogDialog.vue'
 import SiteAccess, { type PathRule, type ShareLink } from '../components/SiteAccess.vue'
+import SiteKnock from '../components/SiteKnock.vue'
+import { emptyKnockGrant, type KnockGrant } from '../siteKnock'
 import StatusBadge, { type StatusType } from '../components/StatusBadge.vue'
 import LogCard from '../components/LogCard.vue'
 import CopyHint from '../components/CopyHint.vue'
@@ -827,6 +833,11 @@ interface Site {
   countries: string[] | null
   // denyClose 为 true 时访问控制拒绝的请求直接断开连接（记为 444），不返回 403
   denyClose: boolean
+  // knock 为准入的敲门规则 key：来源地址须持有该规则的有效授权才能访问；knockLan 为局域网地址免放行
+  knock?: string
+  knockLan?: boolean
+  // knockGrant 为放行入口：访客通过本站点认证后为其地址登记敲门授权
+  knockGrant: KnockGrant
   rules: PathRule[]
   shareLinks: ShareLink[]
   lbPolicy: string
@@ -951,6 +962,13 @@ let siteOwner: ListenerView | null = null
 // 分享链接地址需要所属监听器的协议与端口，随所选的所属监听变化
 const siteTls = ref(false)
 const sitePort = ref(0)
+// siteAccessListener 为站点所属监听的访问协议与端口，用于拼出放行入口地址
+const siteAccessListener = computed(() => {
+  const l = listeners.value.find((x) => x.key === siteOwnerKey.value)
+  return { tls: siteTls.value, port: sitePort.value, accessScheme: l?.accessScheme, accessPort: l?.accessPort }
+})
+// knockAvailable 表示敲门模块已启用，站点可以选择敲门准入与放行入口
+const knockAvailable = computed(() => navModuleEnabled('knock'))
 // siteIndex 为编辑中的站点在所属监听中的下标，新建与复制为 -1
 const siteIndex = ref(-1)
 // 复制监听、站点时的模板，普通新增与编辑时为 null
@@ -1177,6 +1195,9 @@ function emptySite(): Site {
     countryMode: '',
     countries: [],
     denyClose: false,
+    knock: '',
+    knockLan: false,
+    knockGrant: emptyKnockGrant(),
     rules: [],
     shareLinks: [],
     lbPolicy: '',
@@ -1865,6 +1886,12 @@ function openSite(l: ListenerView, row?: SiteRow, copy = false) {
   draft.cache = { ...defaults.cache, ...(draft.cache ?? {}) }
   draft.cache.rules = (draft.cache.rules ?? []).map((r) => ({ ...r }))
   draft.errorPage = normalizeErrorPage(draft.errorPage)
+  draft.knock = draft.knock ?? ''
+  draft.knockLan = !!draft.knockLan
+  draft.knockGrant = { ...emptyKnockGrant(), ...(draft.knockGrant ?? {}) }
+  // 未开启放行入口时后端返回的时长与前缀为 0，开启时按默认值填写
+  draft.knockGrant.minutes = draft.knockGrant.minutes || 360
+  draft.knockGrant.v6Prefix = draft.knockGrant.v6Prefix || 64
   if (row && copy && !row.isDefault) {
     copySiteFrom.value = { key: row.site.key ?? '', name: siteTitle(row) }
     copySiteSource = { listener: l.key ?? '', index: row.index }

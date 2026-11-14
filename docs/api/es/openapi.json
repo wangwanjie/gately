@@ -3900,6 +3900,26 @@
         },
         "type": "object"
       },
+      "webservice.KnockGrant": {
+        "properties": {
+          "minutes": {
+            "type": "integer"
+          },
+          "probeV4": {
+            "type": "string"
+          },
+          "probeV6": {
+            "type": "string"
+          },
+          "rule": {
+            "type": "string"
+          },
+          "v6Prefix": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
       "webservice.Listener": {
         "properties": {
           "acceptProxyProtocol": {
@@ -4597,6 +4617,15 @@
           },
           "key": {
             "type": "string"
+          },
+          "knock": {
+            "type": "string"
+          },
+          "knockGrant": {
+            "$ref": "#/components/schemas/webservice.KnockGrant"
+          },
+          "knockLan": {
+            "type": "boolean"
           },
           "lbPolicy": {
             "type": "string"

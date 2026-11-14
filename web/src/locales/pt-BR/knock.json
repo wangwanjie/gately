@@ -70,7 +70,7 @@
     "portsHelp": "Portas que um cliente pode pedir para abrir, como tcp/22 ou udp/51820, separadas por vírgulas. Apenas o número da porta é tratado como TCP. Todas as portas da opção -A do cliente precisam estar nesta lista. Pode ficar vazio quando o bloqueio no firewall estiver desligado; a regra então só recebe liberações pelo \"Liberar após login\" de um site web.",
     "firewall": "Bloqueio no firewall",
     "firewallTag": "Bloqueio no firewall",
-    "firewallHelp": "Ativado, essas portas são bloqueadas no firewall do sistema e só passam os endereços que bateram com sucesso, protegendo serviços como o sshd deste host (somente Linux). Desativado, o firewall não é alterado e a regra serve apenas para \"Exigir batida\" no redirecionamento de portas, no roteamento por protocolo e no STUN.",
+    "firewallHelp": "Ativado, essas portas são bloqueadas no firewall do sistema e só passam os endereços que bateram com sucesso, protegendo serviços como o sshd deste host (somente Linux). Desativado, o firewall não é alterado e a regra serve apenas para \"Exigir batida\" nos sites web, no redirecionamento de portas, no roteamento por protocolo e no STUN.",
     "firewallWarn": "Antes de ativar, confirme que você consegue entrar neste host pela rede local (isenta de batida por padrão nas configurações globais) ou de outra forma: se o Gately for encerrado à força, as regras de bloqueio permanecem até o Gately iniciar de novo. As conexões já estabelecidas não são afetadas.",
     "encKey": "Chave de criptografia",
     "hmacKey": "Chave HMAC",
