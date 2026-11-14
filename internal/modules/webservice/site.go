@@ -1062,7 +1062,7 @@ func (h *siteHandler) serveInner(rec http.ResponseWriter, r *http.Request) {
 	// 管理员经本站点访问后台时，向单点登录域签发后台登录免认证的桥接凭据（见 adminpass.go）
 	h.auth.issueAdminBridge(rec, r)
 	// 后台登录免认证的跳转握手：后台入口域名签发票据，站点兑换票据（见 adminhandshake.go）
-	if h.auth.serveAdminTicket(rec, r) || h.auth.serveAdminLogin(rec, r, h.site) {
+	if h.auth.serveAdminTicket(rec, r) || h.auth.serveAdminLogin(rec, r, h.site) || h.auth.serveAdminStart(rec, r, h.site) {
 		return
 	}
 	if h.site.CORS {

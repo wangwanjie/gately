@@ -370,10 +370,6 @@ func (a *authenticator) checkUser(w http.ResponseWriter, r *http.Request, s Site
 			}
 		}
 		if isBrowser(r) {
-			// 站点与后台不在同一单点登录域时，先经后台入口握手取得免认证凭据（见 adminhandshake.go）
-			if s.AdminPass && a.startAdminHandshake(w, r, s) {
-				return visitor{}, false
-			}
 			target := authPath + "/login?next=" + url.QueryEscape(r.URL.RequestURI())
 			http.Redirect(w, r, target, http.StatusFound)
 			return visitor{}, false
@@ -412,10 +408,6 @@ func (a *authenticator) checkUser(w http.ResponseWriter, r *http.Request, s Site
 			a.rememberBasic(s, name, pass, shared)
 			return v, true
 		}
-	}
-	// 没有提供凭据的浏览器页面请求：先尝试经后台入口握手，取得免认证凭据后无需弹出认证框
-	if s.AdminPass && r.Header.Get("Authorization") == "" && a.startAdminHandshake(w, r, s) {
-		return visitor{}, false
 	}
 	w.Header().Set("WWW-Authenticate", `Basic realm="Gately", charset="UTF-8"`)
 	http.Error(w, "401 Unauthorized", http.StatusUnauthorized)

@@ -20,9 +20,9 @@ import (
 // 后台登录免认证的跨父域握手（Settings.AdminPassEntry）。
 //
 // 单点登录域只能覆盖一个父域：Cookie 不能跨注册域共享。站点与后台不在同一父域时（例如后台在 vanjay.cn，
-// 站点在 thevast.uk），浏览器访问站点时改由跳转握手取得凭据，流程与第三方登录相同：
+// 站点在 thevast.uk），管理员在站点上访问 /__gately_auth/admin-start 时改由跳转握手取得凭据（普通访客的请求不会自动跳转，后台域名不会暴露给他们），流程与第三方登录相同：
 //
-//  1. 站点（开启后台登录免认证、域名为精确域名）发现浏览器没有凭据，签发带签名的 state（站点来源、原路径、随机数的哈希），
+//  1. 站点（开启后台登录免认证、域名为精确域名）收到 admin-start 请求，签发带签名的 state（站点来源、原路径、随机数的哈希），
 //     把随机数写进站点自己的 Cookie，跳转到后台入口域名上的 admin-ticket。
 //  2. 入口域名（只响应 AdminPassEntry 中的域名）校验 state 与来源域名，若请求带有管理员后台登录态，
 //     在内存中登记一张一次性票据（128 位随机编号，只含编号，凭据本体不出现在网址里），跳回站点的 admin-login。
@@ -38,15 +38,14 @@ const (
 	// adminTicketPath 在后台入口域名上签发票据，adminLoginPath 在站点上兑换票据
 	adminTicketPath = authPath + "/admin-ticket"
 	adminLoginPath  = authPath + "/admin-login"
-	// adminHSCookie 把握手绑定到发起它的浏览器；同时作为失败后一段时间内不再重复握手的标记
+	// adminStartPath 由管理员主动访问，在站点上发起握手；普通访客的请求不会自动跳转到后台入口
+	adminStartPath = authPath + "/admin-start"
+	// adminHSCookie 把握手绑定到发起它的浏览器
 	adminHSCookie = "gately_admin_hs"
-	// adminStateTTL 为 state 有效期，adminTicketTTL 为票据有效期，adminHSMaxAge 为握手标记 Cookie 的存活时间
+	// adminStateTTL 为 state 有效期，adminTicketTTL 为票据有效期，adminHSMaxAge 为握手 Cookie 的存活时间
 	adminStateTTL  = 5 * time.Minute
 	adminTicketTTL = 60 * time.Second
 	adminHSMaxAge  = 120
-	// adminHSNoneMaxAge 为入口确认“没有登录后台”后不再握手的时长：普通访客每小时最多被带去入口一次；
-	// 不宜更长，先打开站点、后登录后台的管理员要等标记过期（或清除站点 Cookie）才会再次握手
-	adminHSNoneMaxAge = 3600
 	// maxAdminTickets 限制同时存在的票据数：签发需要管理员登录态，达到上限只会出现在异常情况
 	maxAdminTickets = 256
 )
@@ -198,11 +197,12 @@ func randomTicketID() string {
 	return hex.EncodeToString(b)
 }
 
-// startAdminHandshake 在站点上发起握手：浏览器的页面导航既没有桥接凭据也没有认证时，跳转到后台入口。
-// 发起了跳转返回 true。没有配置入口、站点不是精确域名、非页面导航、近期已经握手过（Cookie 存在）时不处理。
-func (a *authenticator) startAdminHandshake(w http.ResponseWriter, r *http.Request, s Site) bool {
+// serveAdminStart 处理站点上的 admin-start：管理员主动访问该地址时发起握手，跳转到后台入口。
+// 普通访客不会被带去后台入口，后台域名因此不会出现在他们的跳转里。
+// 已处理返回 true；没有配置入口、站点未开启、站点不是精确域名、非页面导航时返回 false，由调用方继续处理。
+func (a *authenticator) serveAdminStart(w http.ResponseWriter, r *http.Request, s Site) bool {
 	entry := a.hs.entry.Load()
-	if entry == nil || !s.adminHS {
+	if entry == nil || !s.adminHS || r.URL.Path != adminStartPath {
 		return false
 	}
 	if r.Method != http.MethodGet || !isBrowser(r) {
@@ -215,14 +215,8 @@ func (a *authenticator) startAdminHandshake(w http.ResponseWriter, r *http.Reque
 	if d := r.Header.Get("Sec-Fetch-Dest"); d != "" && d != "document" {
 		return false
 	}
-	if strings.HasPrefix(r.URL.Path, authPath) {
-		return false
-	}
 	// 后台入口本身不握手
 	if hostOnly(r.Host) == entry.host {
-		return false
-	}
-	if _, err := r.Cookie(adminHSCookie); err == nil {
 		return false
 	}
 	origin, ok := siteOrigin(r, s)
@@ -230,7 +224,7 @@ func (a *authenticator) startAdminHandshake(w http.ResponseWriter, r *http.Reque
 		return false
 	}
 	nonce := randomTicketID()
-	state := a.signBlob("admin-state", adminState{Origin: origin, Next: safeNext(r.URL.RequestURI()), NonceHash: nonceHash(nonce)}, adminStateTTL)
+	state := a.signBlob("admin-state", adminState{Origin: origin, Next: safeNext(r.URL.Query().Get("next")), NonceHash: nonceHash(nonce)}, adminStateTTL)
 	http.SetCookie(w, &http.Cookie{
 		Name: adminHSCookie, Value: nonce, Path: "/", MaxAge: adminHSMaxAge,
 		HttpOnly: true, Secure: requestIsHTTPS(r), SameSite: http.SameSiteLaxMode,
@@ -330,13 +324,7 @@ func (a *authenticator) serveAdminLogin(w http.ResponseWriter, r *http.Request, 
 	hsNoStore(w)
 	q := r.URL.Query()
 	if q.Get("none") == "1" {
-		// 入口确认没有登录后台：回到原路径，握手标记 Cookie 延长到 1 小时，期间站点不再重复握手
-		if c, err := r.Cookie(adminHSCookie); err == nil && c.Value != "" {
-			http.SetCookie(w, &http.Cookie{
-				Name: adminHSCookie, Value: c.Value, Path: "/", MaxAge: adminHSNoneMaxAge,
-				HttpOnly: true, Secure: requestIsHTTPS(r), SameSite: http.SameSiteLaxMode,
-			})
-		}
+		// 入口确认没有登录后台：回到原路径，由站点按原有方式认证
 		http.Redirect(w, r, safeNext(q.Get("next")), http.StatusFound)
 		return true
 	}
