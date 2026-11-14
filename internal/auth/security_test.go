@@ -304,7 +304,7 @@ func TestTrackedMapBounded(t *testing.T) {
 	var rejected int
 	for i := 0; i < maxTracked+500; i++ {
 		key := fmt.Sprintf("10.%d.%d.%d", i>>16&255, i>>8&255, i&255)
-		if err := m.reserve(key, false); err != nil {
+		if err := m.reserve(key, true, false); err != nil {
 			rejected++
 			continue
 		}
@@ -320,8 +320,12 @@ func TestTrackedMapBounded(t *testing.T) {
 		t.Fatalf("表满后新来源应被拒绝，实际拒绝 %d", rejected)
 	}
 	// 已在表里的来源不受影响：能继续被判断为锁定或放行
-	if err := m.reserve("10.0.0.0", false); err != nil && !errors.Is(err, ErrLocked) {
+	if err := m.reserve("10.0.0.0", true, false); err != nil && !errors.Is(err, ErrLocked) {
 		t.Fatalf("已跟踪来源应得到锁定判断而非繁忙: %v", err)
+	}
+	// 常用地址（unknown=false）在表满时照常登记，不会被陌生来源填满的限流表挡在外面
+	if err := m.reserve("192.0.2.1", false, false); err != nil {
+		t.Fatalf("表满时常用地址应可登录: %v", err)
 	}
 }
 
@@ -456,6 +460,27 @@ func TestGlobalBudgetAppliesToPasskey(t *testing.T) {
 	_, _, _ = m.LoginPasskey("24.0.0.2", "nope", verify)
 	if _, _, err := m.LoginPasskey("24.0.0.3", "nope", verify); !errors.Is(err, ErrBusy) {
 		t.Fatalf("Passkey 登录同样受全局预算限制: %v", err)
+	}
+}
+
+// 全局预算耗尽后，被拒绝的陌生来源不建立限流记录：攻击者无法借零成本的拒绝填满限流表，
+// 表满后常用地址也照常可以登录。
+func TestGlobalBudgetRejectsDoNotFillTable(t *testing.T) {
+	m := newStrongManager(t)
+	useClock(m)
+	m.SetGlobalLimit(2, knownSet("9.9.9.9"), nil)
+	failN(m, "25.0.0.1", 2)
+	for i := 0; i < maxTracked+100; i++ {
+		_, _, _ = m.Login(fmt.Sprintf("2001:db8:%x:%x::1", i>>16, i&0xffff), "admin", "x")
+	}
+	m.mu.RLock()
+	n := len(m.fails)
+	m.mu.RUnlock()
+	if n > 10 {
+		t.Fatalf("预算耗尽后被拒绝的来源不应建立记录: %d", n)
+	}
+	if _, _, err := m.Login("9.9.9.9", "admin", strongPass); err != nil {
+		t.Fatalf("常用地址应可登录: %v", err)
 	}
 }
 
