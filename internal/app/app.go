@@ -324,6 +324,10 @@ func (a *App) Handler() http.Handler {
 	rec.add("PUT /api/account", a.handleAccount, "")
 	rec.add("POST /api/account/sessions/revoke", a.handleRevokeSessions, "")
 	rec.add("PUT /api/account/ui-language", a.handleUILanguage, "")
+	rec.add("GET /api/system/security", a.handleSecurityStatus, "")
+	rec.add("POST /api/account/password-check", a.handlePasswordCheck, "")
+	rec.add("GET /api/account/password-login", a.handlePasswordLoginGet, "")
+	rec.add("PUT /api/account/password-login", a.handlePasswordLoginSet, "")
 	rec.add("GET /api/account/passkeys", a.handlePasskeyList, "")
 	rec.add("POST /api/account/passkeys/begin", a.handlePasskeyBegin, "")
 	rec.add("POST /api/account/passkeys", a.handlePasskeyRegister, "")
@@ -590,7 +594,7 @@ func (a *App) handleLogin(w http.ResponseWriter, r *http.Request) {
 		events.Publish(events.Event{Type: events.AuthFailed, Source: "管理后台", Level: events.LevelWarn,
 			Title: "管理后台登录失败", Message: fmt.Sprintf("来自 %s 的登录失败：%v", ip, err), Fields: map[string]string{"ip": ip}})
 		status := http.StatusUnauthorized
-		if errors.Is(err, auth.ErrLocked) {
+		if errors.Is(err, auth.ErrLocked) || errors.Is(err, auth.ErrBusy) {
 			status = http.StatusTooManyRequests
 		}
 		httpx.Error(w, status, "%v", err)
@@ -648,9 +652,14 @@ func (a *App) handleSession(w http.ResponseWriter, r *http.Request) {
 		role = auth.RoleAdmin
 	}
 	// disabledModules 为已关闭的功能模块，absentModules 为没有编译进来的模块，前端据此隐藏导航与页面
-	// defaultPassword 为主账号仍在使用默认密码，前端据此提醒管理员修改
+	// passwordIssue 为主账号密码的问题（default 默认密码、weak 强度不足），前端据此强制管理员修改密码；
+	// defaultPassword 为旧版字段，与 passwordIssue == "default" 等价
+	issue := ""
+	if role == auth.RoleAdmin {
+		issue = a.auth.PasswordIssue()
+	}
 	httpx.OK(w, map[string]any{"username": auth.UserFromContext(r.Context()), "role": role, "disabledModules": a.disabledModuleIDs(),
-		"absentModules": a.absentModuleIDs(), "defaultPassword": role == auth.RoleAdmin && a.auth.UsingDefaultPassword()})
+		"absentModules": a.absentModuleIDs(), "defaultPassword": issue == "default", "passwordIssue": issue})
 }
 
 type moduleInfo struct {

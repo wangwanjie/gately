@@ -779,15 +779,15 @@ func TestGlobalMetrics(t *testing.T) {
 // 只读账号可查看但不能修改，也不能访问高危接口；重置密码或删除后会话失效
 func TestReadonlyUser(t *testing.T) {
 	_, srv, admin := loginApp(t)
-	if code, body := doJSON(t, admin, "POST", srv.URL+"/api/account/users", map[string]string{"username": "viewer", "password": "viewer-pass-1"}); code != 200 {
+	if code, body := doJSON(t, admin, "POST", srv.URL+"/api/account/users", map[string]string{"username": "viewer", "password": "tide-Lamp-47-oak"}); code != 200 {
 		t.Fatalf("创建只读账号失败 %d %s", code, body)
 	}
-	if code, _ := doJSON(t, admin, "POST", srv.URL+"/api/account/users", map[string]string{"username": "viewer", "password": "viewer-pass-1"}); code != 400 {
+	if code, _ := doJSON(t, admin, "POST", srv.URL+"/api/account/users", map[string]string{"username": "viewer", "password": "tide-Lamp-47-oak"}); code != 400 {
 		t.Fatalf("重复用户名应被拒绝，实际 %d", code)
 	}
 	jar, _ := cookiejar.New(nil)
 	ro := &http.Client{Jar: jar, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}
-	if code, body := doJSON(t, ro, "POST", srv.URL+"/api/login", map[string]string{"username": "viewer", "password": "viewer-pass-1"}); code != 200 {
+	if code, body := doJSON(t, ro, "POST", srv.URL+"/api/login", map[string]string{"username": "viewer", "password": "tide-Lamp-47-oak"}); code != 200 {
 		t.Fatalf("只读账号登录失败 %d %s", code, body)
 	}
 	if code, body := doJSON(t, ro, "GET", srv.URL+"/api/session", nil); code != 200 || !bytes.Contains(body, []byte(`"readonly"`)) {
@@ -837,13 +837,13 @@ func TestReadonlyUser(t *testing.T) {
 		t.Error("管理员会话应标记为后台请求")
 	}
 	// 重置密码后，旧会话立即失效
-	if code, _ := doJSON(t, admin, "PUT", srv.URL+"/api/account/users/viewer", map[string]string{"password": "viewer-pass-2"}); code != 200 {
+	if code, _ := doJSON(t, admin, "PUT", srv.URL+"/api/account/users/viewer", map[string]string{"password": "oak-Lamp-91-tide"}); code != 200 {
 		t.Fatalf("重置密码失败 %d", code)
 	}
 	if code, _ := doJSON(t, ro, "GET", srv.URL+"/api/session", nil); code != 401 {
 		t.Fatalf("重置密码后旧会话应失效，实际 %d", code)
 	}
-	if code, _ := doJSON(t, ro, "POST", srv.URL+"/api/login", map[string]string{"username": "viewer", "password": "viewer-pass-2"}); code != 200 {
+	if code, _ := doJSON(t, ro, "POST", srv.URL+"/api/login", map[string]string{"username": "viewer", "password": "oak-Lamp-91-tide"}); code != 200 {
 		t.Fatalf("新密码登录失败 %d", code)
 	}
 	if code, _ := doJSON(t, admin, "DELETE", srv.URL+"/api/account/users/viewer", nil); code != 200 {
@@ -1138,12 +1138,12 @@ func TestSwitchUILanguage(t *testing.T) {
 	}
 
 	// 只读账号：登录不记录界面语言，也不能调用接口
-	if code, body := doJSON(t, admin, "POST", srv.URL+"/api/account/users", map[string]string{"username": "viewer", "password": "viewer-pass-1"}); code != 200 {
+	if code, body := doJSON(t, admin, "POST", srv.URL+"/api/account/users", map[string]string{"username": "viewer", "password": "tide-Lamp-47-oak"}); code != 200 {
 		t.Fatalf("创建只读账号失败 %d %s", code, body)
 	}
 	jar, _ := cookiejar.New(nil)
 	ro := &http.Client{Jar: jar}
-	if code := postWithLang(t, ro, "POST", srv.URL+"/api/login", "ja", `{"username":"viewer","password":"viewer-pass-1"}`); code != 200 {
+	if code := postWithLang(t, ro, "POST", srv.URL+"/api/login", "ja", `{"username":"viewer","password":"tide-Lamp-47-oak"}`); code != 200 {
 		t.Fatalf("只读账号登录失败 %d", code)
 	}
 	if code := postWithLang(t, ro, "PUT", srv.URL+"/api/account/ui-language", "ja", `{"language":"ja"}`); code != 403 {

@@ -84,7 +84,8 @@ func (a *App) handleThirdProviders(w http.ResponseWriter, r *http.Request) {
 			out = append(out, item{Key: p.Key, Name: p.DisplayName(), Type: p.Type, URL: cfg.CallbackBase + thirdauth.StartPath + "?p=" + url.QueryEscape(p.Key)})
 		}
 	}
-	resp := map[string]any{"providers": out}
+	// passwordLogin 为 false 表示管理员已关闭密码登录，登录页据此隐藏账号密码表单
+	resp := map[string]any{"providers": out, "passwordLogin": !a.auth.PasswordLoginOff()}
 	// 经统一网关访问且可用飞牛登录态登录时，登录页显示“使用飞牛账号登录”
 	if user, ok := a.gatewaySSOUser(r); ok {
 		resp["fnosUser"] = user

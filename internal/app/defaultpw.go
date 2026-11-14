@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/wangwanjie/gately/internal/auth"
 	"github.com/wangwanjie/gately/internal/httpx"
 )
 
@@ -45,11 +46,47 @@ func isSecurityConfigWrite(method, path string) bool {
 	return false
 }
 
-// defaultPasswordGuard 在管理员仍使用默认密码时拒绝修改安全相关配置，要求先改掉默认密码。
+// passwordFixExempt 是密码存在问题时仍然放行的写操作：修改密码本身、密码强度预检、界面语言、首次引导、退出所有设备。
+func passwordFixExempt(method, path string) bool {
+	switch method + " " + path {
+	case "PUT /api/account", "PUT /api/account/ui-language", "POST /api/account/password-check",
+		"POST /api/system/onboarding/dismiss", "POST /api/account/sessions/revoke":
+		return true
+	}
+	return false
+}
+
+// defaultPasswordGuard 在管理员密码仍是默认密码或强度不足时限制写操作，迫使先修改密码：
+//   - 登录会话：除修改密码等少数操作外，拒绝一切写操作；
+//   - API 令牌：保持自动化可用，只拒绝安全相关配置的修改。
+//
+// 读操作不受影响，页面仍可正常浏览；修改密码后旧会话全部失效，重新登录即恢复。
 func (a *App) defaultPasswordGuard(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if isSecurityConfigWrite(r.Method, r.URL.Path) && a.auth.UsingDefaultPassword() {
-			httpx.Error(w, http.StatusForbidden, "当前仍在使用默认密码，请先修改管理员密码，再修改安全相关配置")
+		if r.Method == http.MethodGet || r.Method == http.MethodHead || r.Method == http.MethodOptions {
+			next.ServeHTTP(w, r)
+			return
+		}
+		issue := a.auth.PasswordIssue()
+		if issue == "" || passwordFixExempt(r.Method, r.URL.Path) {
+			next.ServeHTTP(w, r)
+			return
+		}
+		viaToken := strings.HasPrefix(auth.UserFromContext(r.Context()), "api-token:")
+		switch {
+		case !viaToken:
+			if issue == "default" {
+				httpx.Error(w, http.StatusForbidden, "当前仍在使用默认密码，请先修改管理员密码")
+			} else {
+				httpx.Error(w, http.StatusForbidden, "当前管理员密码强度不足，请先修改管理员密码")
+			}
+			return
+		case isSecurityConfigWrite(r.Method, r.URL.Path):
+			if issue == "default" {
+				httpx.Error(w, http.StatusForbidden, "当前仍在使用默认密码，请先修改管理员密码，再修改安全相关配置")
+			} else {
+				httpx.Error(w, http.StatusForbidden, "当前管理员密码强度不足，请先修改管理员密码，再修改安全相关配置")
+			}
 			return
 		}
 		next.ServeHTTP(w, r)

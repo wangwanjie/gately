@@ -444,10 +444,10 @@ func TestHandshakeEntryRequiresAdmin(t *testing.T) {
 			t.Errorf("%s 应返回未登录: %d %s", name, resp.StatusCode, resp.Header.Get("Location"))
 		}
 	}
-	if err := e.env.m.AddUser("viewer", "viewer-pass-1"); err != nil {
+	if err := e.env.m.AddUser("viewer", "tide-Lamp-47-oak"); err != nil {
 		t.Fatal(err)
 	}
-	vt, _, _ := e.env.m.Login("1.1.1.9", "viewer", "viewer-pass-1")
+	vt, _, _ := e.env.m.Login("1.1.1.9", "viewer", "tide-Lamp-47-oak")
 	resp := e.ticketReq("admin.a.test", st, map[string]string{"Cookie": auth.CookieName + "=" + vt})
 	if !strings.Contains(resp.Header.Get("Location"), "none=1") {
 		t.Errorf("只读账号不应得到票据: %s", resp.Header.Get("Location"))

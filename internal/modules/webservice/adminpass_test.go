@@ -244,10 +244,10 @@ func TestAdminPassRevocation(t *testing.T) {
 		t.Fatalf("退出所有设备后应要求认证: %d", resp.StatusCode)
 	}
 
-	if err := env.m.AddUser("viewer", "viewer-pass-1"); err != nil {
+	if err := env.m.AddUser("viewer", "tide-Lamp-47-oak"); err != nil {
 		t.Fatal(err)
 	}
-	vt, _, err := env.m.Login("1.1.1.3", "viewer", "viewer-pass-1")
+	vt, _, err := env.m.Login("1.1.1.3", "viewer", "tide-Lamp-47-oak")
 	if err != nil {
 		t.Fatal(err)
 	}
