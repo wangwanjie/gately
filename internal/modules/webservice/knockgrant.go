@@ -133,10 +133,14 @@ func (s *Site) probeHost(raw string) (string, error) {
 
 // knockGrantable 判断地址能否登记放行：回环、内网、链路本地等地址不放行。经隧道或未开启 PROXY 协议的转发进来时，
 // 所有访客都显示为这类地址，放行它等于放行所有人；内网访客用准入站点的“局域网地址无需放行”。
+// 运营商级 NAT 段 100.64.0.0/10 同样不放行：Tailscale、NetBird 等组网用这一段，经它们转发进来的访客也都显示为这类地址。
 func knockGrantable(a netip.Addr) bool {
 	return a.IsValid() && !a.IsUnspecified() && !a.IsLoopback() && !a.IsMulticast() && !a.IsPrivate() &&
-		!a.IsLinkLocalUnicast() && !a.IsLinkLocalMulticast() && !a.IsInterfaceLocalMulticast()
+		!a.IsLinkLocalUnicast() && !a.IsLinkLocalMulticast() && !a.IsInterfaceLocalMulticast() && !cgnatPrefix.Contains(a)
 }
+
+// cgnatPrefix 为运营商级 NAT 共享地址段（RFC 6598）。
+var cgnatPrefix = netip.MustParsePrefix("100.64.0.0/10")
 
 // knockLAN 判断地址是否属于局域网（准入站点开启“局域网地址无需放行”时免放行）。回环地址不算：
 // 同机的 frpc、cloudflared 等转发进来的访客都显示为回环地址。
