@@ -25,5 +25,14 @@
   "emailLabel": "E-mail",
   "displayNameLabel": "Nom affiché",
   "groupsLabel": "Groupes",
-  "applyHelp": "Cliquez sur OK pour revenir aux paramètres globaux ; les modifications s’appliquent après l’enregistrement des paramètres globaux."
+  "applyHelp": "Cliquez sur OK pour revenir aux paramètres globaux ; les modifications s’appliquent après l’enregistrement des paramètres globaux.",
+  "passkeys": "Passkeys",
+  "passkeyCount": "{count} Passkey",
+  "passkeyNone": "Aucune Passkey enregistrée",
+  "passkeyCreated": "Enregistrée {time}",
+  "passkeyLastUsed": "Dernière utilisation {time}",
+  "passkeyHelp": "Les Passkeys ne peuvent être enregistrées que par l'utilisateur sur le site ; ici, on peut seulement les supprimer (par exemple après la perte d'un appareil). La suppression est immédiate, sans cliquer sur Enregistrer.",
+  "passkeyDeleteTitle": "Supprimer la Passkey",
+  "passkeyDeleteConfirm": "Supprimer la Passkey « {name} » de l'utilisateur {user} ? Elle ne pourra plus servir à se connecter.",
+  "passkeyDeleted": "Passkey supprimée"
 }

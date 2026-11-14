@@ -25,5 +25,14 @@
   "emailLabel": "이메일",
   "displayNameLabel": "표시 이름",
   "groupsLabel": "그룹",
-  "applyHelp": "확인을 누르면 전역 설정으로 돌아가며, 전역 설정을 저장해야 적용됩니다."
+  "applyHelp": "확인을 누르면 전역 설정으로 돌아가며, 전역 설정을 저장해야 적용됩니다.",
+  "passkeys": "Passkey",
+  "passkeyCount": "Passkey {count}개",
+  "passkeyNone": "등록된 Passkey가 없습니다",
+  "passkeyCreated": "등록 {time}",
+  "passkeyLastUsed": "최근 사용 {time}",
+  "passkeyHelp": "Passkey는 사용자가 사이트에서 직접 등록하며, 여기서는 삭제만 할 수 있습니다(예: 기기 분실). 삭제는 저장을 누르지 않아도 즉시 적용됩니다.",
+  "passkeyDeleteTitle": "Passkey 삭제",
+  "passkeyDeleteConfirm": "사용자 {user}의 Passkey \"{name}\"을(를) 삭제하시겠습니까? 삭제 후에는 이 Passkey로 로그인할 수 없습니다.",
+  "passkeyDeleted": "Passkey를 삭제했습니다"
 }

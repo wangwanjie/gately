@@ -12,6 +12,15 @@ export interface AuthUser {
   displayName?: string
   groups?: string[]
   hasPassword?: boolean
+  // 用户自助注册的 Passkey（只读，已脱敏）：只能由用户自己添加，管理员只能删除
+  passkeys?: PasskeyInfo[]
+}
+
+export interface PasskeyInfo {
+  id: string
+  name: string
+  createdAt: string
+  lastUsed?: string
 }
 
 export const SECRET_MASK = '********'
@@ -23,5 +32,5 @@ export function fromAPI(list: AuthUser[] | null | undefined): AuthUser[] {
 
 // toAPI 去掉编辑用字段；已设置密码且未输入新密码时提交占位符
 export function toAPI(list: AuthUser[]): AuthUser[] {
-  return list.map(({ hasPassword, ...u }) => ({ ...u, password: u.password === '' && hasPassword ? SECRET_MASK : u.password }))
+  return list.map(({ hasPassword, passkeys, ...u }) => ({ ...u, password: u.password === '' && hasPassword ? SECRET_MASK : u.password }))
 }

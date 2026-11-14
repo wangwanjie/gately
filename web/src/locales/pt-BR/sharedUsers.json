@@ -25,5 +25,14 @@
   "emailLabel": "E-mail",
   "displayNameLabel": "Nome de exibição",
   "groupsLabel": "Grupos",
-  "applyHelp": "Clique em OK para voltar às configurações globais; as alterações valem após salvar as configurações globais."
+  "applyHelp": "Clique em OK para voltar às configurações globais; as alterações valem após salvar as configurações globais.",
+  "passkeys": "Passkeys",
+  "passkeyCount": "{count} Passkey(s)",
+  "passkeyNone": "Nenhuma Passkey registrada",
+  "passkeyCreated": "Registrada {time}",
+  "passkeyLastUsed": "Último uso {time}",
+  "passkeyHelp": "As Passkeys só podem ser registradas pelo próprio usuário no site; aqui só é possível excluí-las (por exemplo, após perder um dispositivo). A exclusão vale imediatamente, sem clicar em Salvar.",
+  "passkeyDeleteTitle": "Excluir Passkey",
+  "passkeyDeleteConfirm": "Excluir a Passkey \"{name}\" do usuário {user}? Ela não poderá mais ser usada para entrar.",
+  "passkeyDeleted": "Passkey excluída"
 }

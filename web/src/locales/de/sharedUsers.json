@@ -25,5 +25,14 @@
   "emailLabel": "E-Mail",
   "displayNameLabel": "Anzeigename",
   "groupsLabel": "Gruppen",
-  "applyHelp": "Mit OK zurück zu den globalen Einstellungen; Änderungen gelten nach dem Speichern der globalen Einstellungen."
+  "applyHelp": "Mit OK zurück zu den globalen Einstellungen; Änderungen gelten nach dem Speichern der globalen Einstellungen.",
+  "passkeys": "Passkeys",
+  "passkeyCount": "{count} Passkey(s)",
+  "passkeyNone": "Keine Passkeys registriert",
+  "passkeyCreated": "Registriert {time}",
+  "passkeyLastUsed": "Zuletzt verwendet {time}",
+  "passkeyHelp": "Passkeys kann nur der Benutzer selbst auf der Site registrieren; hier lassen sie sich nur löschen (z. B. bei Geräteverlust). Das Löschen wirkt sofort, ohne auf Speichern zu klicken.",
+  "passkeyDeleteTitle": "Passkey löschen",
+  "passkeyDeleteConfirm": "Passkey „{name}“ von Benutzer {user} löschen? Er kann dann nicht mehr zur Anmeldung verwendet werden.",
+  "passkeyDeleted": "Passkey gelöscht"
 }

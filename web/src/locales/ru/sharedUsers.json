@@ -25,5 +25,14 @@
   "emailLabel": "Email",
   "displayNameLabel": "Отображаемое имя",
   "groupsLabel": "Группы",
-  "applyHelp": "Нажмите OK, чтобы вернуться к глобальным настройкам; изменения вступят в силу после их сохранения."
+  "applyHelp": "Нажмите OK, чтобы вернуться к глобальным настройкам; изменения вступят в силу после их сохранения.",
+  "passkeys": "Passkey",
+  "passkeyCount": "Passkey: {count}",
+  "passkeyNone": "Passkey не зарегистрированы",
+  "passkeyCreated": "Зарегистрирован {time}",
+  "passkeyLastUsed": "Последнее использование {time}",
+  "passkeyHelp": "Passkey регистрирует сам пользователь на сайте; здесь их можно только удалить (например, при потере устройства). Удаление применяется сразу, без нажатия «Сохранить».",
+  "passkeyDeleteTitle": "Удалить Passkey",
+  "passkeyDeleteConfirm": "Удалить Passkey «{name}» пользователя {user}? Войти с ним больше будет нельзя.",
+  "passkeyDeleted": "Passkey удалён"
 }
