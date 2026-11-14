@@ -51,6 +51,10 @@ func (m *Manager) IssueBridge(token string) (value string, exp time.Time, ok boo
 	if err := json.Unmarshal(raw, &pl); err != nil {
 		return "", time.Time{}, false
 	}
+	// 旧版令牌不带密码版本，签出的凭据在 VerifyBridge 中永远无效：不签发，避免每个请求都重复签发并写 Cookie
+	if pl.Ver == "" {
+		return "", time.Time{}, false
+	}
 	m.mu.RLock()
 	secret := m.acc.SessionSecret
 	m.mu.RUnlock()
