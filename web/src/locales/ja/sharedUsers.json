@@ -25,5 +25,14 @@
   "emailLabel": "メール",
   "displayNameLabel": "表示名",
   "groupsLabel": "グループ",
-  "applyHelp": "「OK」でグローバル設定に戻ります。グローバル設定を保存すると反映されます。"
+  "applyHelp": "「OK」でグローバル設定に戻ります。グローバル設定を保存すると反映されます。",
+  "passkeys": "Passkey",
+  "passkeyCount": "Passkey {count} 件",
+  "passkeyNone": "Passkey は未登録です",
+  "passkeyCreated": "登録日時 {time}",
+  "passkeyLastUsed": "最終使用 {time}",
+  "passkeyHelp": "Passkey はユーザー本人がサイト上で登録します。ここでは削除のみ可能です（端末の紛失時など）。削除は保存ボタンを押さなくてもすぐに反映されます。",
+  "passkeyDeleteTitle": "Passkey を削除",
+  "passkeyDeleteConfirm": "ユーザー {user} の Passkey「{name}」を削除しますか？削除後はこの Passkey でログインできなくなります。",
+  "passkeyDeleted": "Passkey を削除しました"
 }

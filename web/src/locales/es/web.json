@@ -261,5 +261,7 @@
   "panelPlaceholder": "Selecciona un panel de navegación",
   "panelManage": "Gestionar paneles de navegación",
   "panelNone": "Aún no hay paneles de navegación. Crea uno antes en Web → Paneles de navegación.",
-  "panelHelp": "La ruta raíz del sitio muestra el panel elegido. El control de acceso y la autenticación se aplican como siempre; los cambios del panel surten efecto al guardarlos."
+  "panelHelp": "La ruta raíz del sitio muestra el panel elegido. El control de acceso y la autenticación se aplican como siempre; los cambios del panel surten efecto al guardarlos.",
+  "passkeyLogin": "Inicio de sesión con Passkey",
+  "passkeyLoginHelp": "Al activarlo, los usuarios compartidos pueden abrir {site} en los sitios que usan usuarios compartidos (o {oidc} en el dominio emisor de OIDC), verificar su usuario, contraseña (y código de verificación) y registrar una Passkey. Después podrán iniciar sesión desde la página de acceso con huella, rostro o PIN, sin contraseña ni código. Con un dominio de inicio de sesión único, la Passkey sirve en todos los sitios de ese dominio; si no, solo en el dominio donde se registró. Requiere HTTPS (o localhost) y acceso por nombre de dominio; no se admiten direcciones IP. Solo se guarda la clave pública y los administradores pueden eliminar Passkeys en la edición del usuario"
 }

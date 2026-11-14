@@ -21,6 +21,10 @@
               <el-switch v-model="form.selfServicePassword" />
               <div class="form-help">{{ t('web.selfServicePasswordHelp', { site: '/__gately_auth/password', oidc: '/__gately_oidc/password' }) }}</div>
             </el-form-item>
+            <el-form-item :label="t('web.passkeyLogin')">
+              <el-switch v-model="form.passkeyLogin" />
+              <div class="form-help">{{ t('web.passkeyLoginHelp', { site: '/__gately_auth/passkey', oidc: '/__gately_oidc/passkey' }) }}</div>
+            </el-form-item>
           </el-form>
         </div>
       </div>
@@ -151,6 +155,7 @@ interface UsersReply {
   authUsers: AuthUser[] | null
   ssoDomain: string
   selfServicePassword: boolean
+  passkeyLogin: boolean
   oidc: Partial<OIDCSettings> | null
   sites: UserSite[] | null
 }
@@ -159,6 +164,7 @@ interface UsersForm {
   authUsers: AuthUser[]
   ssoDomain: string
   selfServicePassword: boolean
+  passkeyLogin: boolean
   oidc: OIDCSettings
 }
 
@@ -274,7 +280,7 @@ function snapshot(): string {
     return ''
   }
   const f = form.value
-  return JSON.stringify({ users: toAPI(f.authUsers), sso: f.ssoDomain.trim(), self: f.selfServicePassword, oidc: oidcToAPI(f.oidc), sites: changedSites() })
+  return JSON.stringify({ users: toAPI(f.authUsers), sso: f.ssoDomain.trim(), self: f.selfServicePassword, passkey: f.passkeyLogin, oidc: oidcToAPI(f.oidc), sites: changedSites() })
 }
 
 const dirty = computed(() => !!form.value && snapshot() !== savedJSON.value)
@@ -285,6 +291,7 @@ function apply(r: UsersReply) {
     authUsers: fromAPI(r.authUsers),
     ssoDomain: r.ssoDomain ?? '',
     selfServicePassword: !!r.selfServicePassword,
+    passkeyLogin: !!r.passkeyLogin,
     oidc: oidcFromAPI(r.oidc),
   }
   sites.value = r.sites ?? []
@@ -328,7 +335,7 @@ async function save() {
   }
   saving.value = true
   try {
-    const body = { authUsers: toAPI(f.authUsers), ssoDomain: f.ssoDomain.trim(), selfServicePassword: f.selfServicePassword, oidc: oidcToAPI(f.oidc), sites: changedSites() }
+    const body = { authUsers: toAPI(f.authUsers), ssoDomain: f.ssoDomain.trim(), selfServicePassword: f.selfServicePassword, passkeyLogin: f.passkeyLogin, oidc: oidcToAPI(f.oidc), sites: changedSites() }
     apply(await api.put<UsersReply>('/api/webservice/users', body))
     ElMessage.success(t('common.saved'))
   } catch (e) {

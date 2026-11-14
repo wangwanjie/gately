@@ -261,5 +261,7 @@
   "panelPlaceholder": "Choisir un panneau de navigation",
   "panelManage": "Gérer les panneaux de navigation",
   "panelNone": "Aucun panneau de navigation. Créez-en d’abord un dans Web → Panneaux de navigation.",
-  "panelHelp": "La racine du site affiche le panneau choisi. Le contrôle d’accès et l’authentification s’appliquent normalement ; les modifications du panneau prennent effet dès l’enregistrement."
+  "panelHelp": "La racine du site affiche le panneau choisi. Le contrôle d’accès et l’authentification s’appliquent normalement ; les modifications du panneau prennent effet dès l’enregistrement.",
+  "passkeyLogin": "Connexion par Passkey",
+  "passkeyLoginHelp": "Une fois activée, les utilisateurs partagés peuvent ouvrir {site} sur les sites qui utilisent les utilisateurs partagés (ou {oidc} sur le domaine émetteur OIDC), vérifier leur nom d'utilisateur, mot de passe (et code de vérification) puis enregistrer une Passkey. Ils se connectent ensuite depuis la page de connexion par empreinte, visage ou code PIN, sans mot de passe ni code. Avec un domaine d'authentification unique, la Passkey fonctionne sur tous les sites de ce domaine ; sinon uniquement sur le domaine d'enregistrement. HTTPS (ou localhost) et un accès par nom de domaine sont requis ; les adresses IP ne sont pas prises en charge. Seule la clé publique est stockée et les administrateurs peuvent supprimer les Passkeys dans l'éditeur d'utilisateur"
 }

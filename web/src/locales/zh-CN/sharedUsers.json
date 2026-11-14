@@ -25,5 +25,14 @@
   "emailLabel": "邮箱",
   "displayNameLabel": "显示名",
   "groupsLabel": "分组",
-  "applyHelp": "点「确定」后回到全局设置，保存全局设置才会生效。"
+  "applyHelp": "点「确定」后回到全局设置，保存全局设置才会生效。",
+  "passkeys": "Passkey",
+  "passkeyCount": "{count} 个 Passkey",
+  "passkeyNone": "尚未注册 Passkey",
+  "passkeyCreated": "注册于 {time}",
+  "passkeyLastUsed": "最近使用 {time}",
+  "passkeyHelp": "Passkey 只能由用户在站点上自助注册，这里只能删除（例如设备丢失）；删除立即生效，无需点击保存。",
+  "passkeyDeleteTitle": "删除 Passkey",
+  "passkeyDeleteConfirm": "确定删除用户 {user} 的 Passkey“{name}”吗？删除后该 Passkey 立即无法登录。",
+  "passkeyDeleted": "已删除 Passkey"
 }

@@ -6,6 +6,7 @@
       <div class="item-head">
         <span class="name" :class="{ unnamed: !u.name.trim() }">{{ u.name.trim() || t('sharedUsers.unnamed') }}</span>
         <el-tag v-if="u.totpSecret" size="small" type="success">{{ t('sharedUsers.totpOn') }}</el-tag>
+        <el-tag v-if="u.passkeys?.length" size="small" type="success">{{ t('sharedUsers.passkeyCount', { count: u.passkeys.length }) }}</el-tag>
         <el-tag v-if="!u.password && !u.hasPassword" size="small" type="warning">{{ t('sharedUsers.noPassword') }}</el-tag>
         <el-tag v-for="g in u.groups ?? []" :key="g" size="small" type="info">{{ g }}</el-tag>
         <span class="actions">
@@ -53,6 +54,20 @@
             </el-button>
             <el-button v-if="draft.totpSecret" size="small" :loading="totpShowing" @click="showTOTP">{{ t('sharedUsers.totpShow') }}</el-button>
             <el-button v-if="draft.totpSecret" size="small" text type="danger" @click="draft.totpSecret = ''">{{ t('sharedUsers.totpDisable') }}</el-button>
+          </div>
+        </el-form-item>
+        <!-- Passkey 只能由用户在站点上自助注册，管理员只能删除（例如设备丢失）；删除立即生效，不随下方的保存设置 -->
+        <el-form-item v-if="draft.id" :label="t('sharedUsers.passkeys')">
+          <div class="passkeys">
+            <div v-if="!draft.passkeys?.length" class="form-help pk-none">{{ t('sharedUsers.passkeyNone') }}</div>
+            <div v-for="p in draft.passkeys ?? []" :key="p.id" class="pk-item">
+              <div class="pk-main">
+                <span class="pk-name">{{ p.name }}</span>
+                <span class="pk-meta">{{ t('sharedUsers.passkeyCreated', { time: fmtTime(p.createdAt) }) }}<template v-if="p.lastUsed"> · {{ t('sharedUsers.passkeyLastUsed', { time: fmtTime(p.lastUsed) }) }}</template></span>
+              </div>
+              <el-button text size="small" type="danger" :icon="Trash2" :loading="pkDeleting === p.id" @click="removePasskey(p)">{{ t('common.delete') }}</el-button>
+            </div>
+            <div class="form-help">{{ t('sharedUsers.passkeyHelp') }}</div>
           </div>
         </el-form-item>
         <!-- 可选的身份信息：OIDC 身份提供方把它们作为 email、name、groups 声明提供给应用 -->
@@ -103,13 +118,13 @@
 <script setup lang="ts">
 import { computed, ref, toRaw, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { Pencil, Plus, Trash2 } from 'lucide-vue-next'
 import QRCode from 'qrcode'
 import { api } from '../api'
 import { useFormLayout } from '../composables/useIsMobile'
 import { SECRET_MASK, fetchSecret } from '../secrets'
-import type { AuthUser } from '../sharedUsers'
+import type { AuthUser, PasskeyInfo } from '../sharedUsers'
 
 const { t } = useI18n()
 const { isMobile, labelPosition } = useFormLayout()
@@ -178,6 +193,44 @@ function applyEditor() {
     Object.assign(model.value[editingIndex.value], d)
   }
   editorVisible.value = false
+}
+
+const pkDeleting = ref('')
+
+function fmtTime(s: string): string {
+  const d = new Date(s)
+  return isNaN(d.getTime()) ? '' : d.toLocaleString()
+}
+
+// removePasskey 删除用户的一个 Passkey，立即保存（不随设置的保存按钮）；成功后同步编辑副本与列表中的用户
+async function removePasskey(p: PasskeyInfo) {
+  const d = draft.value
+  if (!d?.id) {
+    return
+  }
+  try {
+    await ElMessageBox.confirm(t('sharedUsers.passkeyDeleteConfirm', { name: p.name, user: d.name }), t('sharedUsers.passkeyDeleteTitle'), {
+      type: 'warning',
+      confirmButtonText: t('common.delete'),
+      cancelButtonText: t('common.cancel'),
+    })
+  } catch {
+    return
+  }
+  pkDeleting.value = p.id
+  try {
+    await api.del(`/api/webservice/users/${encodeURIComponent(d.id)}/passkeys/${encodeURIComponent(p.id)}`)
+    d.passkeys = (d.passkeys ?? []).filter((x) => x.id !== p.id)
+    const orig = model.value.find((u) => u.id === d.id)
+    if (orig) {
+      orig.passkeys = (orig.passkeys ?? []).filter((x) => x.id !== p.id)
+    }
+    ElMessage.success(t('sharedUsers.passkeyDeleted'))
+  } catch (e) {
+    ElMessage.error((e as Error).message)
+  } finally {
+    pkDeleting.value = ''
+  }
 }
 
 // totpURL 生成验证器 App 使用的 otpauth 地址，格式与后端 auth.TOTPURL 一致
@@ -292,6 +345,38 @@ async function setupTOTP() {
   align-items: center;
   gap: 6px;
   flex-wrap: wrap;
+}
+.passkeys {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.pk-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--g-border);
+  border-radius: 8px;
+  padding: 4px 8px;
+}
+.pk-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.pk-name {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.pk-meta {
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
+  line-height: 1.5;
+}
+.pk-none {
+  margin-top: 0;
 }
 .qr-wrap {
   display: flex;

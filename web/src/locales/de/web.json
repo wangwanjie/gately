@@ -261,5 +261,7 @@
   "panelPlaceholder": "Navigationspanel wählen",
   "panelManage": "Navigationspanels verwalten",
   "panelNone": "Noch keine Navigationspanels. Erstellen Sie zuerst eines unter Web → Navigationspanels.",
-  "panelHelp": "Der Stammpfad der Site zeigt das gewählte Panel. Zugriffskontrolle und Authentifizierung gelten wie gewohnt; Änderungen am Panel wirken sofort nach dem Speichern."
+  "panelHelp": "Der Stammpfad der Site zeigt das gewählte Panel. Zugriffskontrolle und Authentifizierung gelten wie gewohnt; Änderungen am Panel wirken sofort nach dem Speichern.",
+  "passkeyLogin": "Passkey-Anmeldung",
+  "passkeyLoginHelp": "Wenn aktiviert, können gemeinsame Benutzer auf Sites mit gemeinsamen Benutzern {site} (bzw. {oidc} auf der OIDC-Aussteller-Domain) öffnen, Benutzername, Passwort (und Bestätigungscode) bestätigen und einen Passkey registrieren. Danach melden sie sich auf der Anmeldeseite per Fingerabdruck, Gesicht oder PIN an, ohne Passwort und Code. Mit einer Single-Sign-On-Domain gilt der Passkey auf allen Sites dieser Domain, sonst nur auf der Domain der Registrierung. Erfordert HTTPS (oder localhost) und Zugriff über einen Domainnamen; IP-Adressen werden nicht unterstützt. Gespeichert wird nur der öffentliche Schlüssel; Administratoren können Passkeys in der Benutzerbearbeitung löschen"
 }

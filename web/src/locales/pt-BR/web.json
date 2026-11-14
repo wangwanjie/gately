@@ -261,5 +261,7 @@
   "panelPlaceholder": "Selecione um painel de navegação",
   "panelManage": "Gerenciar painéis de navegação",
   "panelNone": "Ainda não há painéis de navegação. Crie um antes em Web → Painéis de navegação.",
-  "panelHelp": "O caminho raiz do site mostra o painel escolhido. Controle de acesso e autenticação valem normalmente; mudanças no painel valem assim que salvas."
+  "panelHelp": "O caminho raiz do site mostra o painel escolhido. Controle de acesso e autenticação valem normalmente; mudanças no painel valem assim que salvas.",
+  "passkeyLogin": "Login com Passkey",
+  "passkeyLoginHelp": "Quando ativado, os usuários compartilhados podem abrir {site} nos sites que usam usuários compartilhados (ou {oidc} no domínio emissor OIDC), confirmar usuário, senha (e código de verificação) e registrar uma Passkey. Depois entram pela página de login com impressão digital, rosto ou PIN, sem senha nem código. Com um domínio de login único, a Passkey vale em todos os sites desse domínio; caso contrário, só no domínio onde foi registrada. Exige HTTPS (ou localhost) e acesso por nome de domínio; endereços IP não são suportados. Apenas a chave pública é armazenada e os administradores podem excluir Passkeys na edição do usuário"
 }

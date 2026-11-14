@@ -25,5 +25,14 @@
   "emailLabel": "Email",
   "displayNameLabel": "Display name",
   "groupsLabel": "Groups",
-  "applyHelp": "Click OK to return to Global settings; changes take effect after you save Global settings."
+  "applyHelp": "Click OK to return to Global settings; changes take effect after you save Global settings.",
+  "passkeys": "Passkeys",
+  "passkeyCount": "{count} Passkey(s)",
+  "passkeyNone": "No Passkeys registered",
+  "passkeyCreated": "Registered {time}",
+  "passkeyLastUsed": "Last used {time}",
+  "passkeyHelp": "Passkeys can only be registered by users on the site; here you can only delete them (for example after losing a device). Deletion takes effect immediately without clicking Save.",
+  "passkeyDeleteTitle": "Delete Passkey",
+  "passkeyDeleteConfirm": "Delete the Passkey \"{name}\" of user {user}? It can no longer be used to sign in.",
+  "passkeyDeleted": "Passkey deleted"
 }

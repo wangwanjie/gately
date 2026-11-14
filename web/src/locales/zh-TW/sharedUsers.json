@@ -25,5 +25,14 @@
   "emailLabel": "電子郵件",
   "displayNameLabel": "顯示名稱",
   "groupsLabel": "群組",
-  "applyHelp": "按「確定」後回到全域設定，儲存全域設定才會生效。"
+  "applyHelp": "按「確定」後回到全域設定，儲存全域設定才會生效。",
+  "passkeys": "Passkey",
+  "passkeyCount": "{count} 個 Passkey",
+  "passkeyNone": "尚未註冊 Passkey",
+  "passkeyCreated": "註冊於 {time}",
+  "passkeyLastUsed": "最近使用 {time}",
+  "passkeyHelp": "Passkey 只能由使用者在站點上自助註冊，這裡只能刪除（例如裝置遺失）；刪除立即生效，無需點擊儲存。",
+  "passkeyDeleteTitle": "刪除 Passkey",
+  "passkeyDeleteConfirm": "確定刪除使用者 {user} 的 Passkey「{name}」嗎？刪除後該 Passkey 立即無法登入。",
+  "passkeyDeleted": "已刪除 Passkey"
 }

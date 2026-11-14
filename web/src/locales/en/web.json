@@ -261,5 +261,7 @@
   "panelPlaceholder": "Select a navigation panel",
   "panelManage": "Manage navigation panels",
   "panelNone": "No navigation panels yet. Create one in Web → Navigation panels first.",
-  "panelHelp": "The site's root path serves the selected panel. Access control and authentication apply as usual; changes to the panel take effect as soon as they are saved."
+  "panelHelp": "The site's root path serves the selected panel. Access control and authentication apply as usual; changes to the panel take effect as soon as they are saved.",
+  "passkeyLogin": "Passkey sign-in",
+  "passkeyLoginHelp": "When enabled, shared users can open {site} on sites that use shared users (or {oidc} on the OIDC issuer domain), verify their username, password (and verification code) and register a Passkey. They can then sign in from the login page with a fingerprint, face or PIN, without the password or verification code. With a single sign-on domain a Passkey works on every site under it, otherwise only on the domain where it was registered. Requires HTTPS (or localhost) and access by domain name; IP addresses are not supported. Only the public key is stored, and administrators can delete Passkeys in the user editor"
 }

@@ -25,5 +25,14 @@
   "emailLabel": "Correo",
   "displayNameLabel": "Nombre visible",
   "groupsLabel": "Grupos",
-  "applyHelp": "Pulsa Aceptar para volver a la configuración global; los cambios se aplican al guardar la configuración global."
+  "applyHelp": "Pulsa Aceptar para volver a la configuración global; los cambios se aplican al guardar la configuración global.",
+  "passkeys": "Passkeys",
+  "passkeyCount": "{count} Passkey",
+  "passkeyNone": "No hay Passkeys registradas",
+  "passkeyCreated": "Registrada {time}",
+  "passkeyLastUsed": "Último uso {time}",
+  "passkeyHelp": "Las Passkeys solo las registra el propio usuario en el sitio; aquí solo se pueden eliminar (por ejemplo, tras perder un dispositivo). La eliminación se aplica de inmediato sin pulsar Guardar.",
+  "passkeyDeleteTitle": "Eliminar Passkey",
+  "passkeyDeleteConfirm": "¿Eliminar la Passkey \"{name}\" del usuario {user}? Ya no podrá usarse para iniciar sesión.",
+  "passkeyDeleted": "Passkey eliminada"
 }
