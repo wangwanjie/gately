@@ -442,6 +442,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | GET | `/api/webservice/panels/icons` | `webservice:read` | Icônes intégrées des panneaux de navigation |
 | GET | `/api/webservice/users` | `webservice:read` | Lire les utilisateurs partagés et le fournisseur d'identité OIDC |
 | PUT | `/api/webservice/users` | `webservice:write` | Enregistrer utilisateurs partagés et fournisseur d'identité OIDC, configurer les sites en masse |
+| DELETE | `/api/webservice/users/{id}/passkeys/{cred}` | `webservice:write` | Supprime une Passkey d'un utilisateur partagé (id est l'ID de l'utilisateur partagé, cred l'identifiant de la Passkey) ; les Passkeys ne peuvent être enregistrées que par les utilisateurs eux-mêmes, les administrateurs peuvent seulement les supprimer, par exemple en cas de perte d'un appareil |
 | POST | `/api/webservice/sites/batch` | `webservice:write` | Opérations groupées sur les sites : activer, désactiver, supprimer, ajouter, retirer ou remplacer des domaines, modifier certaines options ou déplacer vers un autre écouteur ; l'enregistrement n'a lieu que si tous les sites passent la validation, rien n'est modifié si l'un d'eux échoue |
 | GET | `/api/webservice/cache` | `webservice:read` | Nombre d'entrées et taille du cache de réponses du site (?listener=&site=) |
 | POST | `/api/webservice/cache/purge` | `webservice:write` | Vide le cache de réponses du site : laissez path vide pour tout vider, sinon seules les entrées dont le chemin correspond sont supprimées (même syntaxe que les chemins des règles de cache, * pris en charge) |
@@ -2382,6 +2383,19 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `failClosed` | boolean |
 | `timeoutMs` | integer |
 
+### webauthn.Credential
+
+| Champ | Type |
+| --- | --- |
+| `createdAt` | Heure (RFC 3339) |
+| `id` | string |
+| `lastUsed` | Heure (RFC 3339) |
+| `name` | string |
+| `rpId` | string |
+| `signCount` | integer |
+| `x` | string |
+| `y` | string |
+
 ### webhook.Config
 
 | Champ | Type |
@@ -2415,6 +2429,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `groups` | Tableau de string |
 | `id` | string |
 | `name` | string |
+| `passkeys` | Tableau de `webauthn.Credential` |
 | `password` | string |
 | `remark` | string |
 | `totpSecret` | string |
@@ -2848,6 +2863,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `oauthCallbackBase` | string |
 | `oauthProviders` | Tableau de `thirdauth.Provider` |
 | `oidc` | `webservice.OIDCSettings` |
+| `passkeyLogin` | boolean |
 | `realIPFrom` | Tableau de string |
 | `realIPHeaders` | Tableau de string |
 | `realPortHeader` | string |
@@ -3172,6 +3188,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | --- | --- |
 | `authUsers` | Tableau de `webservice.AuthUser` |
 | `oidc` | `webservice.OIDCSettings` |
+| `passkeyLogin` | boolean |
 | `selfServicePassword` | boolean |
 | `sites` | Tableau de `webservice.SiteSharedUsers` |
 | `ssoDomain` | string |
@@ -3182,6 +3199,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | --- | --- |
 | `authUsers` | Tableau de `webservice.AuthUser` |
 | `oidc` | `webservice.OIDCSettings` |
+| `passkeyLogin` | boolean |
 | `selfServicePassword` | boolean |
 | `sites` | Tableau de `webservice.UserSite` |
 | `ssoDomain` | string |

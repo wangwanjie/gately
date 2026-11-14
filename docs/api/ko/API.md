@@ -442,6 +442,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/webservice/panels/icons` | `webservice:read` | 내비게이션 패널 내장 아이콘 목록 |
 | GET | `/api/webservice/users` | `webservice:read` | 공유 사용자와 OIDC ID 공급자 조회 |
 | PUT | `/api/webservice/users` | `webservice:write` | 공유 사용자와 OIDC ID 공급자 저장, 사이트 일괄 설정 |
+| DELETE | `/api/webservice/users/{id}/passkeys/{cred}` | `webservice:write` | 공유 사용자의 Passkey를 삭제합니다(id는 공유 사용자 ID, cred는 Passkey 식별자). Passkey는 사용자 본인만 등록할 수 있고 관리자는 삭제만 가능합니다(예: 기기 분실 시) |
 | POST | `/api/webservice/sites/batch` | `webservice:write` | 사이트 일괄 작업: 활성화·비활성화, 삭제, 도메인 추가·삭제·교체, 일부 옵션 변경, 다른 리스너로 이동. 모든 사이트가 검증을 통과해야 저장되며 하나라도 실패하면 아무것도 변경하지 않습니다 |
 | GET | `/api/webservice/cache` | `webservice:read` | 사이트 응답 캐시의 항목 수와 사용량(?listener=&site=) |
 | POST | `/api/webservice/cache/purge` | `webservice:write` | 사이트의 응답 캐시를 비웁니다. path를 비우면 전체, 지정하면 경로가 일치하는 항목만 비웁니다(캐시 규칙 경로와 같은 형식, * 지원) |
@@ -2382,6 +2383,19 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `failClosed` | boolean |
 | `timeoutMs` | integer |
 
+### webauthn.Credential
+
+| 필드 | 타입 |
+| --- | --- |
+| `createdAt` | 시간 (RFC 3339) |
+| `id` | string |
+| `lastUsed` | 시간 (RFC 3339) |
+| `name` | string |
+| `rpId` | string |
+| `signCount` | integer |
+| `x` | string |
+| `y` | string |
+
 ### webhook.Config
 
 | 필드 | 타입 |
@@ -2415,6 +2429,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `groups` | Array of string |
 | `id` | string |
 | `name` | string |
+| `passkeys` | Array of `webauthn.Credential` |
 | `password` | string |
 | `remark` | string |
 | `totpSecret` | string |
@@ -2848,6 +2863,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `oauthCallbackBase` | string |
 | `oauthProviders` | Array of `thirdauth.Provider` |
 | `oidc` | `webservice.OIDCSettings` |
+| `passkeyLogin` | boolean |
 | `realIPFrom` | Array of string |
 | `realIPHeaders` | Array of string |
 | `realPortHeader` | string |
@@ -3172,6 +3188,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | --- | --- |
 | `authUsers` | Array of `webservice.AuthUser` |
 | `oidc` | `webservice.OIDCSettings` |
+| `passkeyLogin` | boolean |
 | `selfServicePassword` | boolean |
 | `sites` | Array of `webservice.SiteSharedUsers` |
 | `ssoDomain` | string |
@@ -3182,6 +3199,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | --- | --- |
 | `authUsers` | Array of `webservice.AuthUser` |
 | `oidc` | `webservice.OIDCSettings` |
+| `passkeyLogin` | boolean |
 | `selfServicePassword` | boolean |
 | `sites` | Array of `webservice.UserSite` |
 | `ssoDomain` | string |

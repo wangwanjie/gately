@@ -236,6 +236,18 @@ Turn on Self-service password change on the Auth users page and shared users can
 - A wrong current password or code counts toward the same rate limit and automatic ban as failed logins, and forms submitted from other websites are rejected; the web service log records the user and source IP;
 - The same page can also change the password of [shared file users](/en/docs/modules/tools#shared-users). Each kind of account has its own switch; with both on, the page lets the user pick the account type. Accounts of the two kinds with the same name are independent.
 
+### Passkey sign-in {#passkey}
+
+Turn on Passkey sign-in on the Auth users page and shared users can sign in with a fingerprint, face or device PIN instead of typing a password:
+
+- Visit `https://site-domain/__gately_auth/passkey` on a site with Use shared users enabled (the Manage Passkeys link on the login page points here); users of [OIDC single sign-on](/en/docs/modules/oidc) use `/__gately_oidc/passkey` on the issuer domain. Verify with the username and password first (users with TOTP also enter a verification code), then add, view or delete your own Passkeys, up to 10 per user;
+- Afterwards click Sign in with Passkey on the login page, let the browser list the available Passkeys and confirm with fingerprint, face or PIN. No password or verification code is required (a Passkey includes user verification). The login page of the OIDC issuer domain works the same way and continues the original authorization;
+- With a single sign-on domain configured, the Passkey belongs to that domain: register once on any site under it and it works on all of them. Without one it is only valid on the site domain where it was registered. After the single sign-on domain changes, old Passkeys must be registered again;
+- HTTPS (or localhost) and access by domain name are required, IP addresses do not work; when the browser lacks Passkey support the login page hides the entry;
+- Only the public key is stored, the private key stays on the user's device. Registering, viewing and deleting all require verifying the password first, authenticators that report a signature counter are checked for cloning, failed sign-ins share the rate limit and automatic ban with password sign-ins, and requests from other websites are rejected;
+- When a device is lost, an administrator can open the user on the Auth users page and delete its Passkey (effective immediately). Passkeys can only be registered by the users themselves. Changing a password does not delete Passkeys, so delete them too when revoking access;
+- The web service log records the registration, deletion, sign-in and failed attempts of Passkeys with the source IP.
+
 ## Access control
 
 ### IP allowlist and blocklist

@@ -442,6 +442,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | GET | `/api/webservice/panels/icons` | `webservice:read` | Eingebaute Symbole für Navigationspanels |
 | GET | `/api/webservice/users` | `webservice:read` | Gemeinsame Benutzer und OIDC-Identitätsanbieter lesen |
 | PUT | `/api/webservice/users` | `webservice:write` | Gemeinsame Benutzer und OIDC-Identitätsanbieter speichern, Sites gesammelt einstellen |
+| DELETE | `/api/webservice/users/{id}/passkeys/{cred}` | `webservice:write` | Löscht einen Passkey eines gemeinsamen Benutzers (id ist die ID des Benutzers, cred die Passkey-ID); Passkeys können nur vom Benutzer selbst registriert werden, Administratoren können sie nur löschen, z. B. bei Geräteverlust |
 | POST | `/api/webservice/sites/batch` | `webservice:write` | Sammelaktionen für Sites: aktivieren, deaktivieren, löschen, Domains hinzufügen, entfernen oder ersetzen, einige Optionen ändern oder zu einem anderen Listener verschieben; gespeichert wird nur, wenn alle Sites die Prüfung bestehen, schlägt eine fehl, wird nichts geändert |
 | GET | `/api/webservice/cache` | `webservice:read` | Anzahl der Einträge und Größe des Antwort-Caches der Site (?listener=&site=) |
 | POST | `/api/webservice/cache/purge` | `webservice:write` | Leert den Antwort-Cache der Site: path leer lassen, um alles zu leeren, sonst nur Einträge, deren Pfad passt (gleiche Schreibweise wie Pfade von Cache-Regeln, * wird unterstützt) |
@@ -2382,6 +2383,19 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `failClosed` | boolean |
 | `timeoutMs` | integer |
 
+### webauthn.Credential
+
+| Feld | Typ |
+| --- | --- |
+| `createdAt` | Zeit (RFC 3339) |
+| `id` | string |
+| `lastUsed` | Zeit (RFC 3339) |
+| `name` | string |
+| `rpId` | string |
+| `signCount` | integer |
+| `x` | string |
+| `y` | string |
+
 ### webhook.Config
 
 | Feld | Typ |
@@ -2415,6 +2429,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `groups` | Array von string |
 | `id` | string |
 | `name` | string |
+| `passkeys` | Array von `webauthn.Credential` |
 | `password` | string |
 | `remark` | string |
 | `totpSecret` | string |
@@ -2848,6 +2863,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `oauthCallbackBase` | string |
 | `oauthProviders` | Array von `thirdauth.Provider` |
 | `oidc` | `webservice.OIDCSettings` |
+| `passkeyLogin` | boolean |
 | `realIPFrom` | Array von string |
 | `realIPHeaders` | Array von string |
 | `realPortHeader` | string |
@@ -3172,6 +3188,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | --- | --- |
 | `authUsers` | Array von `webservice.AuthUser` |
 | `oidc` | `webservice.OIDCSettings` |
+| `passkeyLogin` | boolean |
 | `selfServicePassword` | boolean |
 | `sites` | Array von `webservice.SiteSharedUsers` |
 | `ssoDomain` | string |
@@ -3182,6 +3199,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | --- | --- |
 | `authUsers` | Array von `webservice.AuthUser` |
 | `oidc` | `webservice.OIDCSettings` |
+| `passkeyLogin` | boolean |
 | `selfServicePassword` | boolean |
 | `sites` | Array von `webservice.UserSite` |
 | `ssoDomain` | string |

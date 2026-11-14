@@ -442,6 +442,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | GET | `/api/webservice/panels/icons` | `webservice:read` | Ícones embutidos dos painéis de navegação |
 | GET | `/api/webservice/users` | `webservice:read` | Ler usuários compartilhados e provedor de identidade OIDC |
 | PUT | `/api/webservice/users` | `webservice:write` | Salvar usuários compartilhados e provedor de identidade OIDC, configurar sites em lote |
+| DELETE | `/api/webservice/users/{id}/passkeys/{cred}` | `webservice:write` | Exclui uma Passkey de um usuário compartilhado (id é o ID do usuário compartilhado, cred é o ID da Passkey); as Passkeys só podem ser registradas pelos próprios usuários e os administradores só podem excluí-las, por exemplo ao perder um dispositivo |
 | POST | `/api/webservice/sites/batch` | `webservice:write` | Operações em lote de sites: ativar, desativar, excluir, adicionar, remover ou substituir domínios, alterar algumas opções ou mover para outro listener; só é salvo se todos os sites passarem na validação e nada muda se algum falhar |
 | GET | `/api/webservice/cache` | `webservice:read` | Número de entradas e tamanho do cache de respostas do site (?listener=&site=) |
 | POST | `/api/webservice/cache/purge` | `webservice:write` | Limpa o cache de respostas do site: deixe path vazio para limpar tudo; caso contrário, apenas as entradas cujo caminho corresponda (mesma sintaxe dos caminhos das regras de cache, suporta *) |
@@ -2382,6 +2383,19 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `failClosed` | boolean |
 | `timeoutMs` | integer |
 
+### webauthn.Credential
+
+| Campo | Tipo |
+| --- | --- |
+| `createdAt` | Hora (RFC 3339) |
+| `id` | string |
+| `lastUsed` | Hora (RFC 3339) |
+| `name` | string |
+| `rpId` | string |
+| `signCount` | integer |
+| `x` | string |
+| `y` | string |
+
 ### webhook.Config
 
 | Campo | Tipo |
@@ -2415,6 +2429,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `groups` | Array de string |
 | `id` | string |
 | `name` | string |
+| `passkeys` | Array de `webauthn.Credential` |
 | `password` | string |
 | `remark` | string |
 | `totpSecret` | string |
@@ -2848,6 +2863,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `oauthCallbackBase` | string |
 | `oauthProviders` | Array de `thirdauth.Provider` |
 | `oidc` | `webservice.OIDCSettings` |
+| `passkeyLogin` | boolean |
 | `realIPFrom` | Array de string |
 | `realIPHeaders` | Array de string |
 | `realPortHeader` | string |
@@ -3172,6 +3188,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | --- | --- |
 | `authUsers` | Array de `webservice.AuthUser` |
 | `oidc` | `webservice.OIDCSettings` |
+| `passkeyLogin` | boolean |
 | `selfServicePassword` | boolean |
 | `sites` | Array de `webservice.SiteSharedUsers` |
 | `ssoDomain` | string |
@@ -3182,6 +3199,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | --- | --- |
 | `authUsers` | Array de `webservice.AuthUser` |
 | `oidc` | `webservice.OIDCSettings` |
+| `passkeyLogin` | boolean |
 | `selfServicePassword` | boolean |
 | `sites` | Array de `webservice.UserSite` |
 | `ssoDomain` | string |
