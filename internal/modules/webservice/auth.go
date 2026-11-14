@@ -20,6 +20,7 @@ import (
 	"github.com/wangwanjie/gately/internal/i18n"
 	"github.com/wangwanjie/gately/internal/thirdauth"
 	"github.com/wangwanjie/gately/internal/visitors"
+	"github.com/wangwanjie/gately/internal/webauthn"
 	"github.com/wangwanjie/gately/internal/webpage"
 )
 
@@ -60,6 +61,13 @@ type authenticator struct {
 	// selfAuth 为是否允许共享认证用户自助修改密码；files 为文件服务共享用户（自助改密开关保存在 fileusers.json）
 	selfAuth atomic.Bool
 	files    fileUserStore
+	// passkeyOn 为是否允许共享用户使用 Passkey；pkChal 为已下发的挑战，见 passkey.go
+	passkeyOn atomic.Bool
+	pkChal    passkeyChallenges
+	// savePasskeys 在配置锁内修改用户的 Passkey 列表：mutate 收到全部共享用户与目标用户下标，返回新的列表（不得修改传入的列表）；
+	// 返回 errNoPasskeyChange 表示无需保存。onPasskeyEvent 记录 Passkey 相关日志
+	savePasskeys   func(userID string, mutate func(all []AuthUser, i int) ([]webauthn.Credential, error)) error
+	onPasskeyEvent func(msg string)
 	// changeShared 保存共享认证用户的新密码哈希（u 为校验通过时的用户），由模块设置
 	changeShared func(u AuthUser, hash string) error
 	// onPasswordChanged 在自助修改密码成功后调用，用于记录日志
@@ -435,6 +443,10 @@ const loginSrc = `{{define "body"}}<section class="card login"{{if .Pending}} ar
 {{if .PasswordURL}}<a class="back" href="{{.PasswordURL}}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"/><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"/></svg>{{.T.changePassword}}</a>{{end}}
 {{if .Providers}}{{if .HasPassword}}<div class="or">{{.T.or}}</div>{{else}}<div class="gap"></div>{{end}}
 <div class="oauth">{{range .Providers}}<a class="btn ghost" href="{{$.StartURL}}?p={{.Key}}&next={{$.Next}}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"/><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"/></svg>{{printf $.T.loginWith .Name}}</a>{{end}}</div>{{end}}
+{{if .Passkey}}<div class="pk" id="pk-box" hidden>{{if not .Providers}}{{if .HasPassword}}<div class="or">{{.T.or}}</div>{{else}}<div class="gap"></div>{{end}}{{end}}
+<div class="alert" id="pk-err" role="alert" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg><span id="pk-msg"></span></div>
+<button type="button" class="btn ghost" id="pk-login" data-base="{{.PasskeyBase}}" data-next="{{.Next}}" data-fail="{{.T.passkeyFail}}" data-cancel="{{.T.passkeyCancel}}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4"/><path d="M14 13.12c0 2.38 0 6.38-1 8.88"/><path d="M17.29 21.02c.12-.6.43-2.3.5-3.02"/><path d="M2 12a10 10 0 0 1 18-6"/><path d="M2 16h.01"/><path d="M21.8 16c.2-2 .131-5.354 0-6"/><path d="M5 19.5C5.5 18 6 15 6 12a6 6 0 0 1 .34-2"/><path d="M8.65 22c.21-.66.45-1.32.57-2"/><path d="M9 6.8a6 6 0 0 1 9 5.2v2"/></svg>{{.T.passkeyLogin}}</button>
+<a class="back" href="{{.PasskeyBase}}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4"/><path d="M14 13.12c0 2.38 0 6.38-1 8.88"/><path d="M17.29 21.02c.12-.6.43-2.3.5-3.02"/><path d="M2 12a10 10 0 0 1 18-6"/><path d="M2 16h.01"/><path d="M21.8 16c.2-2 .131-5.354 0-6"/><path d="M5 19.5C5.5 18 6 15 6 12a6 6 0 0 1 .34-2"/><path d="M8.65 22c.21-.66.45-1.32.57-2"/><path d="M9 6.8a6 6 0 0 1 9 5.2v2"/></svg>{{.T.passkeyManage}}</a></div>{{end}}
 </section>
 {{if .Pending}}<div class="modal" role="dialog" aria-modal="true" aria-labelledby="totp-title">
 <form class="card sheet" method="post" action="{{.Action}}" data-once>
@@ -452,6 +464,11 @@ const loginSrc = `{{define "body"}}<section class="card login"{{if .Pending}} ar
 </form></div>{{end}}
 <style>
 .login .gap{height:24px}
+[hidden]{display:none!important}
+.pk{margin-top:12px}
+.pk .alert{margin:0 0 10px}
+.pk .btn.ghost{width:100%}
+.pk .back{display:flex;justify-content:center;margin-top:10px}
 body:has(.modal){overflow:hidden}
 .modal{position:fixed;inset:0;z-index:10;display:grid;place-items:center;padding:16px;overflow:auto;overscroll-behavior:contain;background:rgba(8,18,16,.42);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);animation:fade .2s ease-out both}
 @keyframes fade{from{opacity:0}to{opacity:1}}
@@ -473,6 +490,25 @@ body:has(.modal){overflow:hidden}
 </style>
 <script>
 (function(){
+` + passkeyHelpersJS + `
+  var pkb=document.getElementById('pk-login');
+  if(pkb&&pk.ok()){
+    document.getElementById('pk-box').hidden=false;
+    pkb.addEventListener('click',function(){
+      var box=document.getElementById('pk-err'),msg=document.getElementById('pk-msg'),base=pkb.dataset.base;
+      box.hidden=true;pkb.disabled=true;
+      pk.post(base+'/login/begin',{}).then(function(o){
+        return navigator.credentials.get({publicKey:{challenge:pk.d(o.challenge),rpId:o.rpId,userVerification:o.userVerification,timeout:o.timeout,allowCredentials:[]}}).then(function(c){
+          var r=c.response;
+          return pk.post(base+'/login/finish',{challenge:o.challenge,next:pkb.dataset.next,credential:{id:c.id,type:c.type,response:{clientDataJSON:pk.e(r.clientDataJSON),authenticatorData:pk.e(r.authenticatorData),signature:pk.e(r.signature)}}});
+        });
+      }).then(function(j){location.replace(j.next||'/');}).catch(function(e){
+        pkb.disabled=false;
+        msg.textContent=e&&e.server&&e.message?e.message:(e&&e.name==='NotAllowedError'?pkb.dataset.cancel:pkb.dataset.fail);
+        box.hidden=false;
+      });
+    });
+  }
   var eye=document.getElementById('eye'),pw=document.getElementById('pw');
   if(eye&&pw){eye.addEventListener('click',function(){pw.type=pw.type==='password'?'text':'password';pw.focus();});}
   document.querySelectorAll('form[data-once]').forEach(function(f){
@@ -512,6 +548,10 @@ var loginTexts = map[string]string{
 	"totpAuto":       "输满 6 位后自动提交",
 	"back":           "返回重新登录",
 	"changePassword": "修改密码",
+	"passkeyLogin":   "使用 Passkey 登录",
+	"passkeyManage":  "管理 Passkey",
+	"passkeyFail":    "Passkey 登录失败，请重试或改用密码登录",
+	"passkeyCancel":  "已取消 Passkey 验证",
 }
 
 func init() {
@@ -573,6 +613,10 @@ func (a *authenticator) handleLogin(w http.ResponseWriter, r *http.Request, s Si
 		a.handlePassword(w, r, s, ip)
 		return
 	}
+	if r.URL.Path == base+passkeyPath || strings.HasPrefix(r.URL.Path, base+passkeyPath+"/") {
+		a.handlePasskey(w, r, s, ip)
+		return
+	}
 	data := map[string]any{
 		"Host": host, "Action": base + "/login", "Next": safeNext(r.URL.Query().Get("next")), "Client": s.loginClient,
 		"HasPassword": len(s.Users) > 0 || s.SharedUsers, "Providers": a.siteProviders(s), "StartURL": oauthStart,
@@ -581,6 +625,9 @@ func (a *authenticator) handleLogin(w http.ResponseWriter, r *http.Request, s Si
 	}
 	if authKind, _ := a.selfServiceKinds(s); authKind {
 		data["PasswordURL"] = base + passwordSuffix
+	}
+	if a.passkeyOffered(r, s) {
+		data["Passkey"], data["PasskeyBase"] = true, base+passkeyPath
 	}
 	if r.URL.Path == base+"/logout" {
 		http.SetCookie(w, &http.Cookie{Name: cookieName(s), Value: "", Path: "/", MaxAge: -1})

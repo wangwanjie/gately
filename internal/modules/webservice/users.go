@@ -8,6 +8,7 @@ import (
 	"github.com/wangwanjie/gately/internal/httpx"
 	"github.com/wangwanjie/gately/internal/logbuf"
 	"github.com/wangwanjie/gately/internal/module"
+	"github.com/wangwanjie/gately/internal/webauthn"
 )
 
 // 「认证用户」页面的接口：集中管理共享用户、单点登录、自助改密与 OIDC 身份提供方，
@@ -16,10 +17,12 @@ import (
 
 // UsersSettings 为共享用户与 OIDC 身份提供方相关的设置，字段含义同 Settings 中的同名字段。
 type UsersSettings struct {
-	AuthUsers           []AuthUser   `json:"authUsers"`
-	SSODomain           string       `json:"ssoDomain"`
-	SelfServicePassword bool         `json:"selfServicePassword"`
-	OIDC                OIDCSettings `json:"oidc"`
+	AuthUsers           []AuthUser `json:"authUsers"`
+	SSODomain           string     `json:"ssoDomain"`
+	SelfServicePassword bool       `json:"selfServicePassword"`
+	// PasskeyLogin 为是否允许共享用户注册 Passkey 并用它登录
+	PasskeyLogin bool         `json:"passkeyLogin"`
+	OIDC         OIDCSettings `json:"oidc"`
 }
 
 // UserSite 是可以使用共享用户的站点（断开连接类型的站点不经过认证，不列出）。
@@ -78,7 +81,9 @@ func (m *Module) registerUsers(r module.Router) {
 		httpx.OK(w, m.usersViewLocked())
 	})
 	r.HandleFunc("PUT /users", m.handlePutUsers)
+	r.HandleFunc("DELETE /users/{id}/passkeys/{cred}", m.handleDeleteUserPasskey)
 	module.DocOf(r, "GET /users", module.Doc{Summary: "读取共享用户、OIDC 身份提供方与各站点的共享用户开关", Resp: &UsersView{}})
+	module.DocOf(r, "DELETE /users/{id}/passkeys/{cred}", module.Doc{Summary: "删除共享用户的一个 Passkey（id 为共享用户的 ID，cred 为 Passkey 标识）；用户的 Passkey 只能由用户自助注册，管理员只能删除，例如设备丢失时", Resp: &UsersView{}})
 	module.DocOf(r, "PUT /users", module.Doc{Summary: "保存共享用户与 OIDC 身份提供方，并批量设置站点是否使用共享用户", Req: &UsersRequest{}, Resp: &UsersView{}})
 }
 
@@ -89,6 +94,7 @@ func (m *Module) usersViewLocked() UsersView {
 			AuthUsers:           maskAuthUsers(s.AuthUsers),
 			SSODomain:           s.SSODomain,
 			SelfServicePassword: s.SelfServicePassword,
+			PasskeyLogin:        s.PasskeyLogin,
 			OIDC:                maskOIDC(s.OIDC),
 		},
 		Sites: []UserSite{},
@@ -180,6 +186,7 @@ func normalizeUsersSettings(s *UsersSettings, old Settings) error {
 func (m *Module) applyUsersLocked(s Settings) {
 	m.auth.shared.set(s.AuthUsers, s.SSODomain)
 	m.auth.selfAuth.Store(s.SelfServicePassword)
+	m.auth.passkeyOn.Store(s.PasskeyLogin)
 	if err := m.auth.oidc.set(s.OIDC); err != nil {
 		m.logs.Add(logbuf.LevelWarn, "", "OIDC 身份提供方未启动: "+err.Error())
 	}
@@ -242,6 +249,7 @@ func (m *Module) handlePutUsers(w http.ResponseWriter, r *http.Request) {
 	s.AuthUsers = req.AuthUsers
 	s.SSODomain = req.SSODomain
 	s.SelfServicePassword = req.SelfServicePassword
+	s.PasskeyLogin = req.PasskeyLogin
 	s.OIDC = req.OIDC
 	m.cfg.Settings = s
 	m.cfg.Listeners = listeners
@@ -256,5 +264,38 @@ func (m *Module) handlePutUsers(w http.ResponseWriter, r *http.Request) {
 	for _, l := range m.cfg.Listeners {
 		m.restartLocked(l.Key)
 	}
+	httpx.OK(w, m.usersViewLocked())
+}
+
+// handleDeleteUserPasskey 由管理员删除共享用户的 Passkey（用户设备丢失或离职时）。
+// 删除后该 Passkey 立即无法登录；用户已有的会话不受影响，需要同时踢出时请修改其密码。
+func (m *Module) handleDeleteUserPasskey(w http.ResponseWriter, r *http.Request) {
+	id, cred := r.PathValue("id"), r.PathValue("cred")
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	old := m.cfg.Settings.AuthUsers
+	i := slices.IndexFunc(old, func(u AuthUser) bool { return u.ID == id })
+	if i < 0 {
+		httpx.Error(w, http.StatusNotFound, "共享用户不存在")
+		return
+	}
+	j := slices.IndexFunc(old[i].Passkeys, func(c webauthn.Credential) bool { return c.ID == cred })
+	if j < 0 {
+		httpx.Error(w, http.StatusNotFound, "Passkey 不存在")
+		return
+	}
+	users := slices.Clone(old)
+	users[i].Passkeys = slices.Delete(slices.Clone(old[i].Passkeys), j, j+1)
+	if len(users[i].Passkeys) == 0 {
+		users[i].Passkeys = nil
+	}
+	m.cfg.Settings.AuthUsers = users
+	if err := m.saveLocked(); err != nil {
+		m.cfg.Settings.AuthUsers = old
+		httpx.Error(w, http.StatusInternalServerError, "保存失败: %v", err)
+		return
+	}
+	m.auth.shared.set(users, m.cfg.Settings.SSODomain)
+	m.logs.Logger("").Warnf("管理员删除了共享用户 %s 的一个 Passkey", old[i].Name)
 	httpx.OK(w, m.usersViewLocked())
 }
