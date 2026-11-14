@@ -1,6 +1,10 @@
 package auth
 
 import (
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/base64"
+	"encoding/json"
 	"strings"
 	"testing"
 	"time"
@@ -154,5 +158,24 @@ func BenchmarkBridgeVerify(b *testing.B) {
 		if _, ok := m.VerifyBridge(v); !ok {
 			b.Fatal("校验失败")
 		}
+	}
+}
+
+// 旧版令牌不带密码版本：仍可登录后台，但不签发桥接凭据（签出的凭据永远校验不过，只会让每个请求都重复签发）。
+func TestBridgeNotForLegacyToken(t *testing.T) {
+	m, _ := newTestManager(t)
+	m.mu.RLock()
+	acc := m.acc
+	m.mu.RUnlock()
+	body, _ := json.Marshal(payload{User: acc.Username, Exp: time.Now().Add(time.Hour).Unix(), Epoch: acc.SessionEpoch, ID: "legacy"})
+	p := base64.RawURLEncoding.EncodeToString(body)
+	mac := hmac.New(sha256.New, []byte(acc.SessionSecret))
+	mac.Write([]byte(p))
+	token := p + "." + base64.RawURLEncoding.EncodeToString(mac.Sum(nil))
+	if _, ok := m.Identify(token); !ok {
+		t.Skip("当前版本不再接受旧版令牌")
+	}
+	if v, _, ok := m.IssueBridge(token); ok || v != "" {
+		t.Fatal("旧版令牌不应签发桥接凭据")
 	}
 }
