@@ -31,7 +31,7 @@
   "passkeyNone": "尚未註冊 Passkey",
   "passkeyCreated": "註冊於 {time}",
   "passkeyLastUsed": "最近使用 {time}",
-  "passkeyHelp": "Passkey 只能由使用者在站點上自助註冊，這裡只能刪除（例如裝置遺失）；刪除立即生效，無需點擊儲存。",
+  "passkeyHelp": "Passkey 只能由使用者在站點上自助註冊，這裡只能刪除（例如裝置遺失）；刪除立即生效，無需點擊儲存。修改該使用者的密碼或 TOTP 金鑰並儲存後，其全部 Passkey 會一併刪除。",
   "passkeyDeleteTitle": "刪除 Passkey",
   "passkeyDeleteConfirm": "確定刪除使用者 {user} 的 Passkey「{name}」嗎？刪除後該 Passkey 立即無法登入。",
   "passkeyDeleted": "已刪除 Passkey"

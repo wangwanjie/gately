@@ -31,7 +31,7 @@
   "passkeyNone": "Nenhuma Passkey registrada",
   "passkeyCreated": "Registrada {time}",
   "passkeyLastUsed": "Último uso {time}",
-  "passkeyHelp": "As Passkeys só podem ser registradas pelo próprio usuário no site; aqui só é possível excluí-las (por exemplo, após perder um dispositivo). A exclusão vale imediatamente, sem clicar em Salvar.",
+  "passkeyHelp": "As Passkeys só podem ser registradas pelo próprio usuário no site; aqui só é possível excluí-las (por exemplo, após perder um dispositivo). A exclusão vale imediatamente, sem clicar em Salvar. Alterar a senha ou o segredo TOTP deste usuário e salvar também exclui todas as Passkeys dele.",
   "passkeyDeleteTitle": "Excluir Passkey",
   "passkeyDeleteConfirm": "Excluir a Passkey \"{name}\" do usuário {user}? Ela não poderá mais ser usada para entrar.",
   "passkeyDeleted": "Passkey excluída"

@@ -31,7 +31,7 @@
   "passkeyNone": "尚未注册 Passkey",
   "passkeyCreated": "注册于 {time}",
   "passkeyLastUsed": "最近使用 {time}",
-  "passkeyHelp": "Passkey 只能由用户在站点上自助注册，这里只能删除（例如设备丢失）；删除立即生效，无需点击保存。",
+  "passkeyHelp": "Passkey 只能由用户在站点上自助注册，这里只能删除（例如设备丢失）；删除立即生效，无需点击保存。修改该用户的密码或 TOTP 密钥并保存后，其全部 Passkey 会被同时删除。",
   "passkeyDeleteTitle": "删除 Passkey",
   "passkeyDeleteConfirm": "确定删除用户 {user} 的 Passkey“{name}”吗？删除后该 Passkey 立即无法登录。",
   "passkeyDeleted": "已删除 Passkey"

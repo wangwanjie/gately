@@ -31,7 +31,7 @@
   "passkeyNone": "Aucune Passkey enregistrée",
   "passkeyCreated": "Enregistrée {time}",
   "passkeyLastUsed": "Dernière utilisation {time}",
-  "passkeyHelp": "Les Passkeys ne peuvent être enregistrées que par l'utilisateur sur le site ; ici, on peut seulement les supprimer (par exemple après la perte d'un appareil). La suppression est immédiate, sans cliquer sur Enregistrer.",
+  "passkeyHelp": "Les Passkeys ne peuvent être enregistrées que par l'utilisateur sur le site ; ici, on peut seulement les supprimer (par exemple après la perte d'un appareil). La suppression est immédiate, sans cliquer sur Enregistrer. Modifier le mot de passe ou le secret TOTP de cet utilisateur puis enregistrer supprime aussi toutes ses Passkeys.",
   "passkeyDeleteTitle": "Supprimer la Passkey",
   "passkeyDeleteConfirm": "Supprimer la Passkey « {name} » de l'utilisateur {user} ? Elle ne pourra plus servir à se connecter.",
   "passkeyDeleted": "Passkey supprimée"

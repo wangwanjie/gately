@@ -5,6 +5,9 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"github.com/wangwanjie/gately/internal/auth"
+	"github.com/wangwanjie/gately/internal/webauthn"
 )
 
 // Passkey 只在站点的精确域名上提供：通配域名站点与默认站点会接住任意子域名，
@@ -42,5 +45,27 @@ func TestPasskeyExactDomainOnly(t *testing.T) {
 		if c := try(h); c != http.StatusNotFound {
 			t.Fatalf("%s 应返回 404: %d", h, c)
 		}
+	}
+}
+
+// 管理员修改共享用户的密码或 TOTP 密钥时同时删除其 Passkey（泄露处置），其他修改保留。
+func TestPasskeyDroppedOnAdminCredentialChange(t *testing.T) {
+	old, err := normalizeAuthUsers([]AuthUser{{Name: "alice", Password: "alice-password"}}, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	old[0].Passkeys = []webauthn.Credential{{ID: "cid", RPID: "a.test"}}
+	id := old[0].ID
+	keep, _ := normalizeAuthUsers([]AuthUser{{ID: id, Name: "alice", Remark: "x"}}, old)
+	if len(keep[0].Passkeys) != 1 {
+		t.Fatal("未改密码与 TOTP 时应保留 Passkey")
+	}
+	pw, _ := normalizeAuthUsers([]AuthUser{{ID: id, Name: "alice", Password: "new-password-1"}}, old)
+	if len(pw[0].Passkeys) != 0 {
+		t.Fatal("修改密码后应删除 Passkey")
+	}
+	totp, _ := normalizeAuthUsers([]AuthUser{{ID: id, Name: "alice", TOTPSecret: auth.NewTOTPSecret()}}, old)
+	if len(totp[0].Passkeys) != 0 {
+		t.Fatal("设置 TOTP 后应删除 Passkey")
 	}
 }

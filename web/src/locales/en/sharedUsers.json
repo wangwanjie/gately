@@ -31,7 +31,7 @@
   "passkeyNone": "No Passkeys registered",
   "passkeyCreated": "Registered {time}",
   "passkeyLastUsed": "Last used {time}",
-  "passkeyHelp": "Passkeys can only be registered by users on the site; here you can only delete them (for example after losing a device). Deletion takes effect immediately without clicking Save.",
+  "passkeyHelp": "Passkeys can only be registered by users on the site; here you can only delete them (for example after losing a device). Deletion takes effect immediately without clicking Save. Changing this user's password or TOTP secret and saving also deletes all of their Passkeys.",
   "passkeyDeleteTitle": "Delete Passkey",
   "passkeyDeleteConfirm": "Delete the Passkey \"{name}\" of user {user}? It can no longer be used to sign in.",
   "passkeyDeleted": "Passkey deleted"
