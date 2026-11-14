@@ -8,8 +8,16 @@ const locks = new Map<symbol, string>()
 let touchY = 0
 let touchX = 0
 
+// selfScrolling 匹配自己处理滚轮的组件：xterm 终端、Monaco/CodeMirror 编辑器用 overflow:hidden 的容器加脚本模拟滚动，
+// 按样式判断不可滚动；拦截（preventDefault）后它们会忽略这次滚轮，终端无法回看历史、vim/htop 的鼠标滚轮失效。
+// 其他自绘滚动的组件可以加 data-scroll-own 属性。
+const selfScrolling = '.xterm, .monaco-editor, .cm-editor, [data-scroll-own]'
+
 // canScroll 判断 el 在给定方向上是否还能滚动（dy/dx 为正表示向下/向右）。
 function canScroll(el: Element, dx: number, dy: number) {
+  if (el.matches(selfScrolling)) {
+    return true
+  }
   const s = getComputedStyle(el)
   if (dy !== 0 && /(auto|scroll)/.test(s.overflowY) && el.scrollHeight > el.clientHeight) {
     if ((dy < 0 && el.scrollTop > 0) || (dy > 0 && el.scrollTop + el.clientHeight < el.scrollHeight - 1)) {
