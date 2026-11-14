@@ -23,6 +23,21 @@
       <div class="form-help">{{ mode === 'whitelist' ? t('ipAccessEditor.setsWhitelistHelp') : t('ipAccessEditor.setsHelp') }}</div>
     </el-form-item>
   </template>
+  <!-- 优先拒绝名单：先于白名单、黑名单判断，与模式无关；调用方不绑定 deny-list 时不显示 -->
+  <template v-if="denyList !== undefined && denySets !== undefined">
+    <el-form-item :label="t('ipAccessEditor.ipDeny')" data-test="ip-deny">
+      <el-input v-model="denyText" type="textarea" :rows="2" class="mono" :placeholder="t('ipAccessEditor.rangePlaceholder')" />
+      <div class="form-help">{{ t('ipAccessEditor.ipDenyHelp') }}</div>
+    </el-form-item>
+    <el-form-item :label="t('ipAccessEditor.ipDenySets')" data-test="ip-deny-sets">
+      <el-select v-model="denySets" multiple filterable :placeholder="t('ipAccessEditor.setsPlaceholder')" :no-data-text="t('ipAccessEditor.setsEmpty')" class="w-full">
+        <el-option v-for="o in ipLists" :key="o.key" :label="o.name" :value="o.key">
+          <span>{{ o.name }}</span>
+          <span v-if="!o.loaded" class="opt-warn">{{ t('ipAccessEditor.setNotLoaded') }}</span>
+        </el-option>
+      </el-select>
+    </el-form-item>
+  </template>
   <!-- 需要敲门：来源地址还必须持有所选端口敲门规则的有效授权；敲门模块未编译时不显示（已设置的引用仍显示以便清除） -->
   <el-form-item v-if="knock !== undefined && (moduleBuilt('knock') || knock)" :label="t('ipAccessEditor.knock')">
     <KnockSelect v-model="knock" />
@@ -48,10 +63,14 @@ const list = defineModel<string[]>('list', { required: true })
 const sets = defineModel<string[]>('sets', { required: true })
 // knock 为端口敲门规则 key，留空表示不要求敲门；调用方不绑定时不显示该项
 const knock = defineModel<string | undefined>('knock')
+// 优先拒绝名单（手填 IP / 网段与订阅列表 key），调用方不绑定时不显示；后端空名单返回 null，调用方打开编辑器时应统一为数组
+const denyList = defineModel<string[] | undefined>('denyList')
+const denySets = defineModel<string[] | undefined>('denySets')
 
 const { t } = useI18n()
 // 输入框保留原始文本，回车可正常换行（见 useListText）
 const ipText = useListText(() => list.value, (v) => (list.value = v), { split: splitLines })
+const denyText = useListText(() => denyList.value ?? [], (v) => (denyList.value = v), { split: splitLines })
 
 // ipLists 为 Web 服务中订阅的 IP 列表
 const ipLists = ref<{ key: string; name: string; loaded: boolean }[]>([])

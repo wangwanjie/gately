@@ -51,6 +51,7 @@
           <Field :label="t('protoRoute.connections')">{{ t('protoRoute.connectionsValue', { active: it.item.stats.activeConns, total: it.item.stats.totalConns }) }}</Field>
           <Field :label="t('protoRoute.traffic')">↑ {{ formatBytes(it.item.stats.bytesIn) }} · ↓ {{ formatBytes(it.item.stats.bytesOut) }}</Field>
           <Field v-if="it.item.ipMode" :label="t('ipAccessEditor.title')">{{ it.item.ipMode === 'whitelist' ? t('ipAccessEditor.whitelist') : t('ipAccessEditor.blacklist') }}</Field>
+          <Field v-if="it.item.ipDenyList?.length || it.item.ipDenySets?.length" :label="t('ipAccessEditor.ipDeny')" mono>{{ (it.item.ipDenyList?.length ?? 0) + (it.item.ipDenySets?.length ?? 0) }}</Field>
           <Field v-if="it.item.knock" :label="t('ipAccessEditor.knock')">{{ knockRuleName(it.item.knock) }}</Field>
           <Field v-if="it.item.stats.denied" :label="t('ipAccessEditor.denied')" mono>{{ it.item.stats.denied }}</Field>
           <Field v-if="it.item.stats.knockDenied" :label="t('protoRoute.knockDenied')" mono>{{ it.item.stats.knockDenied }}</Field>
@@ -184,7 +185,7 @@
           <el-input-number v-model="editing.maxConnections" :min="0" :max="100000" />
           <span class="help">{{ t('protoRoute.useGlobalDefault') }}</span>
         </el-form-item>
-        <IPAccessEditor v-model:mode="editing.ipMode" v-model:list="editing.ipList" v-model:sets="editing.ipSets" v-model:knock="editing.knock" :note="t('protoRoute.ipAccessNote')" />
+        <IPAccessEditor v-model:mode="editing.ipMode" v-model:list="editing.ipList" v-model:sets="editing.ipSets" v-model:deny-list="editing.ipDenyList" v-model:deny-sets="editing.ipDenySets" v-model:knock="editing.knock" :note="t('protoRoute.ipAccessNote')" />
         <el-form-item :label="t('common.remark')">
           <el-input v-model="editing.remark" />
         </el-form-item>
@@ -264,6 +265,9 @@ interface Rule {
   ipMode: string
   ipList: string[]
   ipSets: string[]
+  // 优先拒绝名单：先于白名单、黑名单判断，与模式无关
+  ipDenyList?: string[]
+  ipDenySets?: string[]
   // knock 为端口敲门规则 key，非空时来源地址还必须敲门成功
   knock?: string
   remark: string
@@ -426,6 +430,8 @@ function emptyRule(): Rule {
     ipMode: '',
     ipList: [],
     ipSets: [],
+    ipDenyList: [],
+    ipDenySets: [],
     knock: '',
     remark: '',
   }
@@ -575,6 +581,8 @@ function openEditor(row?: RuleView, copy = false) {
   editing.value.ipMode = editing.value.ipMode ?? ''
   editing.value.ipList = editing.value.ipList ?? []
   editing.value.ipSets = editing.value.ipSets ?? []
+  editing.value.ipDenyList = editing.value.ipDenyList ?? []
+  editing.value.ipDenySets = editing.value.ipDenySets ?? []
   editing.value.knock = editing.value.knock ?? ''
   targetsText.value = (editing.value.targetAddresses ?? []).join('\n')
   routeForms.value = (editing.value.routes ?? []).map(toRouteForm)
