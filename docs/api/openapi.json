@@ -3340,6 +3340,37 @@
         },
         "type": "object"
       },
+      "webauthn.Credential": {
+        "properties": {
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "lastUsed": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "rpId": {
+            "type": "string"
+          },
+          "signCount": {
+            "type": "integer"
+          },
+          "x": {
+            "type": "string"
+          },
+          "y": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "webhook.Config": {
         "properties": {
           "body": {
@@ -3426,6 +3457,12 @@
           },
           "name": {
             "type": "string"
+          },
+          "passkeys": {
+            "items": {
+              "$ref": "#/components/schemas/webauthn.Credential"
+            },
+            "type": "array"
           },
           "password": {
             "type": "string"
@@ -4379,6 +4416,9 @@
           "oidc": {
             "$ref": "#/components/schemas/webservice.OIDCSettings"
           },
+          "passkeyLogin": {
+            "type": "boolean"
+          },
           "realIPFrom": {
             "items": {
               "type": "string"
@@ -5277,6 +5317,9 @@
           "oidc": {
             "$ref": "#/components/schemas/webservice.OIDCSettings"
           },
+          "passkeyLogin": {
+            "type": "boolean"
+          },
           "selfServicePassword": {
             "type": "boolean"
           },
@@ -5302,6 +5345,9 @@
           },
           "oidc": {
             "$ref": "#/components/schemas/webservice.OIDCSettings"
+          },
+          "passkeyLogin": {
+            "type": "boolean"
           },
           "selfServicePassword": {
             "type": "boolean"
@@ -52785,6 +52831,82 @@
           }
         ],
         "summary": "保存共享用户与 OIDC 身份提供方，批量设置站点",
+        "tags": [
+          "Web 服务"
+        ],
+        "x-required-scope": "webservice:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/users/{id}/passkeys/{cred}": {
+      "delete": {
+        "description": "所需权限：`webservice:write`。",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "cred",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/webservice.UsersView"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "删除共享用户的一个 Passkey（id 为共享用户的 ID，cred 为 Passkey 标识）；用户的 Passkey 只能由用户自助注册，管理员只能删除，例如设备丢失时",
         "tags": [
           "Web 服务"
         ],

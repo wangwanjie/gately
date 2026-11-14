@@ -442,6 +442,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | GET | `/api/webservice/panels/icons` | `webservice:read` | Built-in icons for navigation panels |
 | GET | `/api/webservice/users` | `webservice:read` | Read shared users and the OIDC identity provider |
 | PUT | `/api/webservice/users` | `webservice:write` | Save shared users and the OIDC identity provider, set sites in bulk |
+| DELETE | `/api/webservice/users/{id}/passkeys/{cred}` | `webservice:write` | Delete a Passkey of a shared user (id is the shared user ID, cred is the Passkey ID); Passkeys can only be registered by the users themselves, administrators can only delete them, for example when a device is lost |
 | POST | `/api/webservice/sites/batch` | `webservice:write` | Bulk site operations: enable, disable, delete, add, remove or replace domains, change some options, or move to another listener; changes are saved only if every site passes validation, and nothing changes if any site fails |
 | GET | `/api/webservice/cache` | `webservice:read` | Entry count and size of the site's response cache (?listener=&site=) |
 | POST | `/api/webservice/cache/purge` | `webservice:write` | Clear the site's response cache: leave path empty to clear everything, otherwise only entries whose path matches (same syntax as cache rule paths, * supported) |
@@ -2382,6 +2383,19 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `failClosed` | boolean |
 | `timeoutMs` | integer |
 
+### webauthn.Credential
+
+| Field | Type |
+| --- | --- |
+| `createdAt` | Time (RFC 3339) |
+| `id` | string |
+| `lastUsed` | Time (RFC 3339) |
+| `name` | string |
+| `rpId` | string |
+| `signCount` | integer |
+| `x` | string |
+| `y` | string |
+
 ### webhook.Config
 
 | Field | Type |
@@ -2415,6 +2429,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `groups` | Array of string |
 | `id` | string |
 | `name` | string |
+| `passkeys` | Array of `webauthn.Credential` |
 | `password` | string |
 | `remark` | string |
 | `totpSecret` | string |
@@ -2848,6 +2863,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `oauthCallbackBase` | string |
 | `oauthProviders` | Array of `thirdauth.Provider` |
 | `oidc` | `webservice.OIDCSettings` |
+| `passkeyLogin` | boolean |
 | `realIPFrom` | Array of string |
 | `realIPHeaders` | Array of string |
 | `realPortHeader` | string |
@@ -3172,6 +3188,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | --- | --- |
 | `authUsers` | Array of `webservice.AuthUser` |
 | `oidc` | `webservice.OIDCSettings` |
+| `passkeyLogin` | boolean |
 | `selfServicePassword` | boolean |
 | `sites` | Array of `webservice.SiteSharedUsers` |
 | `ssoDomain` | string |
@@ -3182,6 +3199,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | --- | --- |
 | `authUsers` | Array of `webservice.AuthUser` |
 | `oidc` | `webservice.OIDCSettings` |
+| `passkeyLogin` | boolean |
 | `selfServicePassword` | boolean |
 | `sites` | Array of `webservice.UserSite` |
 | `ssoDomain` | string |

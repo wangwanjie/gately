@@ -442,6 +442,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/webservice/panels/icons` | `webservice:read` | Встроенные значки панелей навигации |
 | GET | `/api/webservice/users` | `webservice:read` | Получить общих пользователей и поставщика удостоверений OIDC |
 | PUT | `/api/webservice/users` | `webservice:write` | Сохранить общих пользователей и поставщика удостоверений OIDC, массово настроить сайты |
+| DELETE | `/api/webservice/users/{id}/passkeys/{cred}` | `webservice:write` | Удаляет Passkey общего пользователя (id — ID общего пользователя, cred — идентификатор Passkey); Passkey регистрирует только сам пользователь, администратор может лишь удалять их, например при потере устройства |
 | POST | `/api/webservice/sites/batch` | `webservice:write` | Пакетные операции с сайтами: включение, отключение, удаление, добавление, удаление или замена доменов, изменение некоторых опций и перенос в другой слушатель; сохраняется только если все сайты прошли проверку, при ошибке ничего не меняется |
 | GET | `/api/webservice/cache` | `webservice:read` | Число записей и объём кэша ответов сайта (?listener=&site=) |
 | POST | `/api/webservice/cache/purge` | `webservice:write` | Очищает кэш ответов сайта: оставьте path пустым, чтобы очистить всё, иначе удаляются только записи с совпадающим путём (синтаксис как у путей правил кэша, поддерживается *) |
@@ -2382,6 +2383,19 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `failClosed` | boolean |
 | `timeoutMs` | integer |
 
+### webauthn.Credential
+
+| Поле | Тип |
+| --- | --- |
+| `createdAt` | Время (RFC 3339) |
+| `id` | string |
+| `lastUsed` | Время (RFC 3339) |
+| `name` | string |
+| `rpId` | string |
+| `signCount` | integer |
+| `x` | string |
+| `y` | string |
+
 ### webhook.Config
 
 | Поле | Тип |
@@ -2415,6 +2429,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `groups` | Массив из string |
 | `id` | string |
 | `name` | string |
+| `passkeys` | Массив из `webauthn.Credential` |
 | `password` | string |
 | `remark` | string |
 | `totpSecret` | string |
@@ -2848,6 +2863,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `oauthCallbackBase` | string |
 | `oauthProviders` | Массив из `thirdauth.Provider` |
 | `oidc` | `webservice.OIDCSettings` |
+| `passkeyLogin` | boolean |
 | `realIPFrom` | Массив из string |
 | `realIPHeaders` | Массив из string |
 | `realPortHeader` | string |
@@ -3172,6 +3188,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | --- | --- |
 | `authUsers` | Массив из `webservice.AuthUser` |
 | `oidc` | `webservice.OIDCSettings` |
+| `passkeyLogin` | boolean |
 | `selfServicePassword` | boolean |
 | `sites` | Массив из `webservice.SiteSharedUsers` |
 | `ssoDomain` | string |
@@ -3182,6 +3199,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | --- | --- |
 | `authUsers` | Массив из `webservice.AuthUser` |
 | `oidc` | `webservice.OIDCSettings` |
+| `passkeyLogin` | boolean |
 | `selfServicePassword` | boolean |
 | `sites` | Массив из `webservice.UserSite` |
 | `ssoDomain` | string |

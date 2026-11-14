@@ -3340,6 +3340,37 @@
         },
         "type": "object"
       },
+      "webauthn.Credential": {
+        "properties": {
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "lastUsed": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "rpId": {
+            "type": "string"
+          },
+          "signCount": {
+            "type": "integer"
+          },
+          "x": {
+            "type": "string"
+          },
+          "y": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "webhook.Config": {
         "properties": {
           "body": {
@@ -3426,6 +3457,12 @@
           },
           "name": {
             "type": "string"
+          },
+          "passkeys": {
+            "items": {
+              "$ref": "#/components/schemas/webauthn.Credential"
+            },
+            "type": "array"
           },
           "password": {
             "type": "string"
@@ -4379,6 +4416,9 @@
           "oidc": {
             "$ref": "#/components/schemas/webservice.OIDCSettings"
           },
+          "passkeyLogin": {
+            "type": "boolean"
+          },
           "realIPFrom": {
             "items": {
               "type": "string"
@@ -5277,6 +5317,9 @@
           "oidc": {
             "$ref": "#/components/schemas/webservice.OIDCSettings"
           },
+          "passkeyLogin": {
+            "type": "boolean"
+          },
           "selfServicePassword": {
             "type": "boolean"
           },
@@ -5302,6 +5345,9 @@
           },
           "oidc": {
             "$ref": "#/components/schemas/webservice.OIDCSettings"
+          },
+          "passkeyLogin": {
+            "type": "boolean"
           },
           "selfServicePassword": {
             "type": "boolean"
@@ -52785,6 +52831,82 @@
           }
         ],
         "summary": "Save shared users and the OIDC identity provider, set sites in bulk",
+        "tags": [
+          "Web service"
+        ],
+        "x-required-scope": "webservice:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/users/{id}/passkeys/{cred}": {
+      "delete": {
+        "description": "Required permission: `webservice:write`.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "cred",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/webservice.UsersView"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Delete a Passkey of a shared user (id is the shared user ID, cred is the Passkey ID); Passkeys can only be registered by the users themselves, administrators can only delete them, for example when a device is lost",
         "tags": [
           "Web service"
         ],

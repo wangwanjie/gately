@@ -236,6 +236,18 @@ Activez Changement de mot de passe en libre-service sur la page Utilisateurs d'a
 - Un mot de passe actuel ou un code erroné compte dans la même limitation et le même bannissement automatique que les échecs de connexion, et les formulaires envoyés depuis d'autres sites sont refusés ; le journal du service web enregistre l'utilisateur et l'IP source ;
 - La même page change aussi le mot de passe des [utilisateurs de fichiers partagés](/fr/docs/modules/tools#shared-users). Chaque type de compte a son propre interrupteur ; si les deux sont activés, la page permet de choisir le type de compte. Les comptes des deux types portant le même nom sont indépendants.
 
+### Connexion par Passkey {#passkey}
+
+Une fois « Connexion par Passkey » activée sur la page Utilisateurs d'authentification, les utilisateurs partagés peuvent se connecter par empreinte, visage ou code PIN de l'appareil au lieu de saisir un mot de passe :
+
+- Ouvrez `https://domaine-du-site/__gately_auth/passkey` sur un site où « Utiliser les utilisateurs partagés » est activé (le lien « Gérer les Passkeys » de la page de connexion y mène) ; les utilisateurs de l'[authentification unique OIDC](/fr/docs/modules/oidc) utilisent `/__gately_oidc/passkey` sur le domaine émetteur. Vérifiez d'abord votre identité avec le nom d'utilisateur et le mot de passe (avec TOTP, saisissez aussi le code), puis ajoutez, consultez ou supprimez vos Passkeys, jusqu'à 10 par utilisateur ;
+- Ensuite, cliquez sur « Se connecter avec une Passkey » sur la page de connexion, laissez le navigateur lister les Passkeys disponibles et confirmez par empreinte, visage ou PIN. Ni mot de passe ni code de vérification ne sont demandés (une Passkey inclut la vérification de l'utilisateur). La page de connexion du domaine émetteur OIDC fonctionne de la même façon et poursuit l'autorisation d'origine ;
+- Avec un domaine d'authentification unique configuré, la Passkey appartient à ce domaine : enregistrée sur un site quelconque en dessous, elle fonctionne sur tous. Sans domaine, elle n'est valable que sur le domaine du site d'enregistrement. Si le domaine d'authentification unique change, les anciennes Passkeys doivent être réenregistrées ;
+- HTTPS (ou localhost) et un accès par nom de domaine sont requis, les adresses IP ne fonctionnent pas ; si le navigateur ne prend pas en charge les Passkeys, la page de connexion masque l'entrée ;
+- Seule la clé publique est stockée, la clé privée reste sur l'appareil de l'utilisateur. Enregistrer, consulter et supprimer exigent de vérifier d'abord le mot de passe, les authentificateurs qui fournissent un compteur de signatures sont contrôlés contre le clonage, les échecs de connexion partagent la limitation et le blocage automatique des connexions par mot de passe, et les requêtes venant d'autres sites sont refusées ;
+- En cas de perte d'un appareil, un administrateur peut modifier l'utilisateur sur la page Utilisateurs d'authentification et supprimer sa Passkey (effet immédiat). Seuls les utilisateurs peuvent enregistrer leurs Passkeys. Changer le mot de passe ne supprime pas les Passkeys : supprimez-les aussi pour révoquer l'accès ;
+- Le journal du service web enregistre l'ajout, la suppression, la connexion et les échecs des Passkeys avec l'adresse IP d'origine.
+
 ## Contrôle d'accès
 
 ### Liste d'autorisation et liste de blocage d'IP

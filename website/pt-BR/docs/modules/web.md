@@ -236,6 +236,18 @@ Ative Troca de senha pelo próprio usuário na página Usuários de autenticaç�
 - Senha atual ou código incorretos contam para o mesmo limite de tentativas e bloqueio automático das falhas de login, e formulários enviados a partir de outros sites são recusados; o log do serviço web registra o usuário e o IP de origem;
 - A mesma página também troca a senha dos [usuários de arquivos compartilhados](/pt-BR/docs/modules/tools#shared-users). Cada tipo de conta tem seu próprio botão; com os dois ativados, a página permite escolher o tipo de conta. Contas dos dois tipos com o mesmo nome são independentes.
 
+### Login com Passkey {#passkey}
+
+Ao ativar Login com Passkey na página Usuários de autenticação, os usuários compartilhados podem entrar com impressão digital, rosto ou PIN do dispositivo, sem digitar a senha:
+
+- Acesse `https://dominio-do-site/__gately_auth/passkey` em um site com Usar usuários compartilhados ativado (o link Gerenciar Passkeys da página de login leva para lá); os usuários do [login único OIDC](/pt-BR/docs/modules/oidc) usam `/__gately_oidc/passkey` no domínio emissor. Primeiro confirme a identidade com usuário e senha (com TOTP, também o código de verificação) e depois adicione, veja ou exclua suas Passkeys, até 10 por usuário;
+- Em seguida, clique em Entrar com Passkey na página de login, deixe o navegador listar as Passkeys disponíveis e confirme com impressão digital, rosto ou PIN. Não são pedidos senha nem código de verificação (a Passkey já inclui verificação do usuário). A página de login do domínio emissor OIDC funciona da mesma forma e continua a autorização original;
+- Com um domínio de login único configurado, a Passkey pertence a esse domínio: registrada uma vez em qualquer site abaixo dele, vale em todos. Sem ele, só vale no domínio do site em que foi registrada. Se o domínio de login único mudar, as Passkeys antigas precisam ser registradas de novo;
+- São necessários HTTPS (ou localhost) e acesso por nome de domínio; endereços IP não funcionam. Se o navegador não suportar Passkeys, a página de login oculta a entrada;
+- Só a chave pública é armazenada; a chave privada fica no dispositivo do usuário. Registrar, ver e excluir exigem verificar antes a senha, autenticadores que informam contador de assinaturas são checados contra clonagem, logins com falha compartilham o limite de tentativas e o bloqueio automático com os logins por senha, e solicitações de outros sites são rejeitadas;
+- Se um dispositivo for perdido, um administrador pode editar o usuário na página Usuários de autenticação e excluir sua Passkey (efeito imediato). As Passkeys só podem ser registradas pelos próprios usuários. Alterar a senha não exclui as Passkeys, então exclua-as também ao revogar o acesso;
+- O log do serviço web registra cadastro, exclusão, login e tentativas com falha de Passkeys com o IP de origem.
+
 ## Controle de acesso
 
 ### Lista de IPs permitidos e bloqueados

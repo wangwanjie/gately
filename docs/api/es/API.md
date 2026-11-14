@@ -442,6 +442,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | GET | `/api/webservice/panels/icons` | `webservice:read` | Iconos integrados de los paneles de navegación |
 | GET | `/api/webservice/users` | `webservice:read` | Leer usuarios compartidos y proveedor de identidad OIDC |
 | PUT | `/api/webservice/users` | `webservice:write` | Guardar usuarios compartidos y proveedor de identidad OIDC, configurar sitios en bloque |
+| DELETE | `/api/webservice/users/{id}/passkeys/{cred}` | `webservice:write` | Elimina una Passkey de un usuario compartido (id es el ID del usuario compartido, cred es el ID de la Passkey); las Passkeys solo las registran los propios usuarios y los administradores solo pueden eliminarlas, por ejemplo si se pierde un dispositivo |
 | POST | `/api/webservice/sites/batch` | `webservice:write` | Operaciones masivas de sitios: activar, desactivar, eliminar, añadir, quitar o reemplazar dominios, cambiar algunas opciones o mover a otro listener; solo se guarda si todos los sitios pasan la validación y no se cambia nada si alguno falla |
 | GET | `/api/webservice/cache` | `webservice:read` | Número de entradas y tamaño de la caché de respuestas del sitio (?listener=&site=) |
 | POST | `/api/webservice/cache/purge` | `webservice:write` | Vacía la caché de respuestas del sitio: deja path vacío para vaciarla entera; si no, solo las entradas cuya ruta coincida (misma sintaxis que las rutas de las reglas de caché, admite *) |
@@ -2382,6 +2383,19 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `failClosed` | boolean |
 | `timeoutMs` | integer |
 
+### webauthn.Credential
+
+| Campo | Tipo |
+| --- | --- |
+| `createdAt` | Hora (RFC 3339) |
+| `id` | string |
+| `lastUsed` | Hora (RFC 3339) |
+| `name` | string |
+| `rpId` | string |
+| `signCount` | integer |
+| `x` | string |
+| `y` | string |
+
 ### webhook.Config
 
 | Campo | Tipo |
@@ -2415,6 +2429,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `groups` | Lista de string |
 | `id` | string |
 | `name` | string |
+| `passkeys` | Lista de `webauthn.Credential` |
 | `password` | string |
 | `remark` | string |
 | `totpSecret` | string |
@@ -2848,6 +2863,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `oauthCallbackBase` | string |
 | `oauthProviders` | Lista de `thirdauth.Provider` |
 | `oidc` | `webservice.OIDCSettings` |
+| `passkeyLogin` | boolean |
 | `realIPFrom` | Lista de string |
 | `realIPHeaders` | Lista de string |
 | `realPortHeader` | string |
@@ -3172,6 +3188,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | --- | --- |
 | `authUsers` | Lista de `webservice.AuthUser` |
 | `oidc` | `webservice.OIDCSettings` |
+| `passkeyLogin` | boolean |
 | `selfServicePassword` | boolean |
 | `sites` | Lista de `webservice.SiteSharedUsers` |
 | `ssoDomain` | string |
@@ -3182,6 +3199,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | --- | --- |
 | `authUsers` | Lista de `webservice.AuthUser` |
 | `oidc` | `webservice.OIDCSettings` |
+| `passkeyLogin` | boolean |
 | `selfServicePassword` | boolean |
 | `sites` | Lista de `webservice.UserSite` |
 | `ssoDomain` | string |

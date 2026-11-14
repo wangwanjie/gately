@@ -236,6 +236,18 @@ Aktivieren Sie auf der Seite Auth-Benutzer die Option Passwort selbst ändern, d
 - Ein falsches aktuelles Passwort oder ein falscher Code zählt zur selben Ratenbegrenzung und automatischen Sperre wie fehlgeschlagene Anmeldungen, von anderen Websites abgeschickte Formulare werden abgelehnt; das Log des Webdienstes vermerkt Benutzer und Quell-IP;
 - Auf derselben Seite lässt sich auch das Passwort [gemeinsamer Dateibenutzer](/de/docs/modules/tools#shared-users) ändern. Beide Kontoarten haben einen eigenen Schalter; sind beide aktiv, wählt man auf der Seite die Kontoart. Gleichnamige Konten beider Arten sind unabhängig voneinander.
 
+### Passkey-Anmeldung {#passkey}
+
+Wenn auf der Seite Authentifizierungsbenutzer „Passkey-Anmeldung“ aktiviert ist, können gemeinsame Benutzer sich per Fingerabdruck, Gesicht oder Geräte-PIN anmelden, ohne ein Passwort einzutippen:
+
+- Öffnen Sie `https://site-domain/__gately_auth/passkey` auf einer Site mit aktiviertem „Gemeinsame Benutzer verwenden“ (der Link „Passkeys verwalten“ auf der Anmeldeseite führt dorthin); Benutzer von [OIDC-Single-Sign-on](/de/docs/modules/oidc) nutzen `/__gately_oidc/passkey` auf der Aussteller-Domain. Bestätigen Sie zuerst Benutzername und Passwort (mit TOTP zusätzlich den Bestätigungscode), danach können Sie eigene Passkeys hinzufügen, ansehen oder löschen, bis zu 10 pro Benutzer;
+- Anschließend klicken Sie auf der Anmeldeseite auf „Mit Passkey anmelden“, lassen den Browser die verfügbaren Passkeys anzeigen und bestätigen per Fingerabdruck, Gesicht oder PIN. Passwort und Bestätigungscode sind nicht nötig (ein Passkey enthält die Benutzerverifizierung). Die Anmeldeseite der OIDC-Aussteller-Domain funktioniert genauso und setzt die ursprüngliche Autorisierung fort;
+- Mit konfigurierter Single-Sign-on-Domain gehört der Passkey zu dieser Domain: einmal auf einer beliebigen Site darunter registriert, gilt er auf allen. Ohne sie gilt er nur auf der Site-Domain der Registrierung. Ändert sich die Single-Sign-on-Domain, müssen alte Passkeys neu registriert werden;
+- HTTPS (oder localhost) und der Zugriff über einen Domainnamen sind erforderlich, IP-Adressen funktionieren nicht; unterstützt der Browser keine Passkeys, blendet die Anmeldeseite den Einstieg aus;
+- Gespeichert wird nur der öffentliche Schlüssel, der private Schlüssel bleibt auf dem Gerät. Registrieren, Ansehen und Löschen erfordern zuvor die Passwortprüfung, Authenticatoren mit Signaturzähler werden auf Klonen geprüft, fehlgeschlagene Anmeldungen teilen sich Ratenbegrenzung und automatische Sperre mit Passwort-Anmeldungen, Anfragen von anderen Websites werden abgelehnt;
+- Bei Geräteverlust kann ein Administrator den Benutzer auf der Seite Authentifizierungsbenutzer bearbeiten und dessen Passkey löschen (sofort wirksam). Passkeys können nur die Benutzer selbst registrieren. Eine Passwortänderung löscht Passkeys nicht – löschen Sie sie beim Entziehen des Zugangs mit;
+- Das Web-Dienst-Protokoll hält Registrierung, Löschung, Anmeldung und fehlgeschlagene Versuche mit Passkeys samt Quell-IP fest.
+
 ## Zugriffskontrolle
 
 ### IP-Allowlist und -Blocklist

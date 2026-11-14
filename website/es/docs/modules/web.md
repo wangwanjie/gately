@@ -236,6 +236,18 @@ Activa Cambio de contraseña por el usuario en la página Usuarios de autenticac
 - Una contraseña actual o un código incorrectos cuentan para el mismo límite de intentos y bloqueo automático que los inicios de sesión fallidos, y se rechazan los formularios enviados desde otros sitios web; el registro del servicio web anota el usuario y la IP de origen;
 - La misma página también cambia la contraseña de los [usuarios de archivos compartidos](/es/docs/modules/tools#shared-users). Cada tipo de cuenta tiene su propio interruptor; con ambos activados, la página permite elegir el tipo de cuenta. Las cuentas de ambos tipos con el mismo nombre son independientes.
 
+### Inicio de sesión con Passkey {#passkey}
+
+Al activar Inicio de sesión con Passkey en la página Usuarios de autenticación, los usuarios compartidos pueden iniciar sesión con huella, rostro o PIN del dispositivo en lugar de escribir la contraseña:
+
+- Visite `https://dominio-del-sitio/__gately_auth/passkey` en un sitio con Usar usuarios compartidos activado (el enlace Administrar Passkeys de la página de acceso apunta aquí); los usuarios de [OIDC con inicio de sesión único](/es/docs/modules/oidc) usan `/__gately_oidc/passkey` en el dominio emisor. Primero verifique su identidad con usuario y contraseña (con TOTP, también el código de verificación) y luego añada, consulte o elimine sus Passkeys, hasta 10 por usuario;
+- Después pulse Iniciar sesión con Passkey en la página de acceso, deje que el navegador liste las Passkeys disponibles y confirme con huella, rostro o PIN. No se pide contraseña ni código de verificación (la Passkey ya incluye verificación del usuario). La página de acceso del dominio emisor de OIDC funciona igual y continúa la autorización original;
+- Con un dominio de inicio de sesión único configurado, la Passkey pertenece a ese dominio: se registra una vez en cualquier sitio bajo él y sirve en todos. Sin él, solo es válida en el dominio del sitio donde se registró. Si el dominio de inicio de sesión único cambia, hay que registrar de nuevo las Passkeys antiguas;
+- Se requiere HTTPS (o localhost) y acceso por nombre de dominio; las direcciones IP no funcionan. Si el navegador no admite Passkeys, la página de acceso oculta la entrada;
+- Solo se guarda la clave pública; la clave privada permanece en el dispositivo del usuario. Registrar, consultar y eliminar exigen verificar antes la contraseña, los autenticadores que informan de un contador de firmas se comprueban contra la clonación, los accesos fallidos comparten el límite de intentos y el bloqueo automático con los accesos por contraseña, y se rechazan las solicitudes de otros sitios web;
+- Si se pierde un dispositivo, un administrador puede editar al usuario en la página Usuarios de autenticación y eliminar su Passkey (efecto inmediato). Las Passkeys solo las registran los propios usuarios. Cambiar la contraseña no elimina las Passkeys, así que elimínelas también al revocar el acceso;
+- El registro del servicio web anota el alta, la eliminación y el inicio de sesión con Passkey, así como los intentos fallidos con la IP de origen.
+
 ## Control de acceso
 
 ### Listas de IP permitidas y bloqueadas
