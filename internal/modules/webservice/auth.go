@@ -74,6 +74,8 @@ type authenticator struct {
 	panels *panelStore
 	// trustBasic 缓存开启了信任已认证用户的站点上验证通过的基本认证凭据，见 trustauth.go
 	trustBasic basicTrust
+	// adminPass 表示配置中有站点开启了后台登录免认证，为 true 时站点才会向单点登录域签发桥接凭据，见 adminpass.go
+	adminPass atomic.Bool
 	// marker 为认证标记密钥，backends 记录得到后端 Gately 认证标记的凭据，见 authmarker.go
 	marker   markerKey
 	backends backendTrust
@@ -330,6 +332,12 @@ func (a *authenticator) check(w http.ResponseWriter, r *http.Request, s Site) bo
 // checkUser 与 check 相同，放行时同时返回访客的身份（见 visitor），基本认证为用户名。
 func (a *authenticator) checkUser(w http.ResponseWriter, r *http.Request, s Site) (visitor, bool) {
 	ip := clientAddr(r).Addr().String()
+	// 已登录后台的管理员免认证（站点开启后台登录免认证时）；网页认证的登录页与第三方登录回调路径仍交给下面处理
+	if s.AdminPass && !(s.WebAuth && (r.URL.Path == oauthStart || r.URL.Path == oauthFinish || strings.HasPrefix(r.URL.Path, authPath))) {
+		if v, ok := a.adminPassVisitor(r, s); ok {
+			return v, true
+		}
+	}
 	if s.WebAuth {
 		switch r.URL.Path {
 		case oauthStart:

@@ -132,6 +132,9 @@ type Site struct {
 	ForwardAuth ForwardAuth `json:"forwardAuth"`
 	// AuthOptional 为 true 时，认证只作用于路径规则中标记为"必须认证"的路径，其余路径公开
 	AuthOptional bool `json:"authOptional"`
+	// AdminPass 为 true 时，已登录 Gately 管理后台的管理员访问本站点不再需要认证（基本认证、网页认证均免），
+	// 需在共享认证用户设置中配置单点登录域，且管理员经单点登录域下的站点访问后台，见 adminpass.go
+	AdminPass bool `json:"adminPass"`
 	// TrustAuthUsers 为 true 时，带有本站点 Gately 认证有效凭据（网页认证与第三方登录的会话、共享用户单点登录、
 	// 基本认证）的请求不经过 WAF，也不交给入侵防护的路径探测规则计数（issue #81，见 trustauth.go）。
 	// 需启用基本认证或网页认证；转发认证由外部服务判断身份，不适用
