@@ -164,7 +164,7 @@ Turn on "Sign in with fnOS" under "Settings → Access control" and administrato
 
 The admin UI listens on port `16680` by default. The default account is `admin` and the default password is `gately.cn`. For automated deployments, set the `GATELY_INITIAL_PASSWORD` environment variable to choose your own password instead of the default.
 
-The default password is public; while it is still in use, the admin UI keeps showing a warning at the top asking you to change it. The first sign-in shows an onboarding guide that walks you through changing the password, enabling two-factor authentication or a Passkey, running the network self-check, importing from Lucky and setting up notifications.
+The default password is public. Signing in with the default password or a weak password first opens a password change dialog that cannot be closed; you can continue only after setting a new password that meets the rules (10 to 72 bytes, not a common weak password, not containing gately or the username, and so on). See the [security model](/en/docs/guide/security) for details. After that, an onboarding guide walks you through enabling two-factor authentication or a Passkey, running the network self-check, importing from Lucky and setting up notifications.
 
 ## Reset password and two-factor authentication {#reset}
 

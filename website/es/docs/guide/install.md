@@ -164,7 +164,7 @@ Activa «Iniciar sesión con fnOS» en «Ajustes → Control de acceso» y los a
 
 La interfaz de administración escucha por defecto en el puerto `16680`. El usuario predeterminado es `admin` y la contraseña predeterminada, `gately.cn`. En despliegues automatizados puedes fijar otra contraseña inicial con la variable de entorno `GATELY_INITIAL_PASSWORD`.
 
-La contraseña predeterminada es pública; mientras sigas usándola, la interfaz de administración mostrará en la parte superior un aviso para que la cambies. El primer inicio de sesión muestra una guía de bienvenida que te propone, paso a paso, cambiar la contraseña, activar la autenticación de dos factores o una passkey, ejecutar el autodiagnóstico de red, importar desde Lucky y configurar las notificaciones.
+La contraseña predeterminada es pública. Al iniciar sesión con ella o con una contraseña poco segura, primero aparece un diálogo de cambio de contraseña que no se puede cerrar; para continuar hay que elegir una nueva que cumpla las reglas (de 10 a 72 bytes, que no sea una contraseña débil común ni contenga gately o el nombre de usuario, etc.), consulta el [Modelo de seguridad](/es/docs/guide/security). Después aparece una guía de bienvenida que te propone, paso a paso, activar la autenticación de dos factores o una passkey, ejecutar el autodiagnóstico de red, importar desde Lucky y configurar las notificaciones.
 
 ## Restablecer la contraseña y la autenticación de dos factores {#reset}
 

@@ -10,6 +10,7 @@ Prevención de intrusiones al estilo de fail2ban: Gately detecta ataques de fuer
 - **Fallos de handshake TLS**: cuenta los fallos de handshake en los listeners HTTPS del servicio web por tipo de fallo (corte a mitad, reinicio, tiempo agotado, no es TLS o error de protocolo, no negociable, dominio desconocido y más), listener y número de veces; detiene escaneos que cortan durante el handshake y nunca envían una petición HTTP;
 - **Puertos trampa**: trampas en puertos que este equipo no usa (por defecto 23, 135, 1433, 3389, 5900, 6379 y otros). Cualquier origen que se conecte queda bloqueado;
 - **Detección de escaneos**: se bloquea el origen que se conecta a puertos cerrados de este equipo más veces por minuto que el umbral;
+- **Registro de los puertos alcanzados**: cuando los puertos trampa y la detección de escaneos del kernel bloquean un origen, el motivo del bloqueo, el registro de ejecución y la notificación incluyen los puertos que alcanzó, para ver qué estaba buscando;
 - **Una sola lista de bloqueos**: aquí se gestionan los bloqueos manuales (incluidas redes CIDR y bloqueos permanentes) y los bloqueos automáticos por fallos de autenticación del servicio web. Los bloqueos manuales no pueden incluir direcciones de loopback, porque todas las conexiones reenviadas a través de esta máquina aparecen con esa dirección. Los bloqueos se guardan y se restauran tras reiniciar;
 - **Bloqueos progresivos**: si una dirección vuelve a bloquearse en 30 días, la duración se duplica hasta un máximo;
 - **Lista blanca**: por defecto se ignoran las direcciones de la LAN, de loopback, de 100.64.0.0/10 (Tailscale) y las redes IPv6 /64 de las interfaces de este equipo (los bloqueos son por /64, así que los dispositivos con IPv6 pública de la misma LAN no caen junto con el infractor), y puedes añadir IP o redes. Una sola dirección IPv6 de la lista blanca protege todo su /64.
@@ -32,9 +33,12 @@ Con «Sincronizar con el cortafuegos» activado, Gately crea su propia tabla `in
 
 - La cadena `prerouting` (prioridad -190, después del seguimiento de conexiones y antes del NAT de destino) descarta los paquetes que llegan de direcciones bloqueadas, tanto los dirigidos a este equipo como los reenviados a contenedores o dispositivos de la LAN. Las respuestas a las conexiones que abre este equipo (DNS, repositorios, etc.) siguen pasando aunque el otro extremo esté bloqueado. En IPv6 se bloquea por /64;
 - La cadena `input` solo mira las conexiones nuevas a este equipo, para los puertos trampa y la detección de escaneos. Las direcciones de la lista blanca no participan;
+- Con los puertos trampa o la detección de escaneos activados, la cadena `input` escribe cada dirección de origen + puerto alcanzado en los conjuntos `port4` / `port6` (se guardan los últimos 5 minutos, hasta 16384 entradas por familia de direcciones), y al bloquear se indican a partir de ellos los puertos alcanzados;
 - La tabla completa se elimina al desactivar la sincronización o al detener Gately. Si otro programa la borra, Gately la vuelve a escribir en menos de 10 segundos.
 
-Si el kernel no tiene nf_tables (por ejemplo, Synology DSM), se usan iptables (legacy) e ipset, también sin tocar las reglas existentes: la primera regla de `PREROUTING` e `INPUT` en la tabla mangle salta a las cadenas propias de Gately `GATELY_PRE` y `GATELY_IN`, que hacen lo mismo que las dos cadenas anteriores; las direcciones individuales bloqueadas van a los conjuntos de ipset `gately_ban4` / `gately_ban6` (IPv6 por /64), y los bloqueos de redes y permanentes son reglas de la cadena `GATELY_DENY`. Si un programa como el cortafuegos de Synology pone sus reglas delante, los saltos vuelven al principio en menos de 10 segundos, y las cadenas borradas se escriben de nuevo. La detección de escaneo cuenta con el módulo recent, con un umbral máximo de 255 por minuto.
+Si el kernel no tiene nf_tables (por ejemplo, Synology DSM), se usan iptables (legacy) e ipset, también sin tocar las reglas existentes: la primera regla de `PREROUTING` e `INPUT` en la tabla mangle salta a las cadenas propias de Gately `GATELY_PRE` y `GATELY_IN`, que hacen lo mismo que las dos cadenas anteriores; las direcciones individuales bloqueadas van a los conjuntos de ipset `gately_ban4` / `gately_ban6` (IPv6 por /64), y los bloqueos de redes y permanentes son reglas de la cadena `GATELY_DENY`. Si un programa como el cortafuegos de Synology pone sus reglas delante, los saltos vuelven al principio en menos de 10 segundos, y las cadenas borradas se escriben de nuevo. La detección de escaneo cuenta con el módulo recent, con un umbral máximo de 255 por minuto. Los puertos alcanzados se registran en los conjuntos de ipset de tipo `hash:ip,port` `gately_port4` / `gately_port6` (también 5 minutos, hasta 16384 entradas por familia).
+
+Si el kernel o nft no admiten los conjuntos que registran puertos (por ejemplo, un firmware reducido sin `hash:ip,port`), Gately deja de registrar puertos y lo avisa una vez en el registro de ejecución; el motivo de los bloqueos ya no incluye puertos, y los puertos trampa, la detección de escaneos y los demás bloqueos siguen funcionando. Cada vez que se reescriben las reglas se vuelve a intentar.
 
 «Ver reglas» en la página muestra todas las reglas vigentes.
 
@@ -154,7 +158,7 @@ El servicio web y el WAF solo conocen la dirección real del cliente mediante el
 
 ## Notificaciones
 
-Los bloqueos generan el evento `Prevención de intrusiones: IP bloqueada`, al que puedes suscribirte en el [Centro de notificaciones](/es/docs/modules/notify). Las direcciones que los puertos trampa y la detección de escaneos bloquean en una misma comprobación se agrupan en una sola notificación.
+Los bloqueos generan el evento `Prevención de intrusiones: IP bloqueada`, al que puedes suscribirte en el [Centro de notificaciones](/es/docs/modules/notify). Las direcciones que los puertos trampa y la detección de escaneos bloquean en una misma comprobación se agrupan en una sola notificación, que también enumera los puertos alcanzados cuando se han registrado.
 
 ## Verificación
 

@@ -164,7 +164,7 @@ Ative "Entrar com o fnOS" em "Configurações → Controle de acesso" e os admin
 
 A interface de administração escuta por padrão na porta `16680`. A conta padrão é `admin` e a senha padrão é `gately.cn`. Em implantações automatizadas, você pode definir outra senha inicial com a variável de ambiente `GATELY_INITIAL_PASSWORD` no lugar da senha padrão.
 
-A senha padrão é pública; enquanto ela estiver em uso, um aviso fixo no topo da interface de administração pede para alterá-la. No primeiro acesso aparece um assistente de configuração inicial que sugere, em sequência, alterar a senha, ativar a autenticação em dois fatores ou uma passkey, executar o autodiagnóstico de rede, importar do Lucky e configurar notificações.
+A senha padrão é pública. Ao entrar com a senha padrão ou com uma senha fraca, abre-se primeiro uma janela de troca de senha que não pode ser fechada; só é possível continuar depois de definir uma nova senha que siga as regras (10 a 72 bytes, que não seja uma senha fraca comum nem contenha gately ou o nome de usuário etc.), veja o [Modelo de segurança](/pt-BR/docs/guide/security). Em seguida aparece um assistente de configuração inicial que sugere, em sequência, ativar a autenticação em dois fatores ou uma passkey, executar o autodiagnóstico de rede, importar do Lucky e configurar notificações.
 
 ## Redefinir a senha e a autenticação em dois fatores {#reset}
 

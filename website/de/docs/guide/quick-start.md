@@ -21,15 +21,15 @@ Installieren Sie stattdessen die native App: Sie öffnet sich über das Desktop-
 
 ## 2. Anmelden
 
-Öffnen Sie `http://<geräte-ip>:16680` im Browser. Der Benutzername lautet `admin`, das Standardpasswort `gately.cn`. Das Standardpasswort ist öffentlich bekannt; bis Sie es ändern, zeigt die Verwaltungsoberfläche oben einen dauerhaften Hinweis an.
+Öffnen Sie `http://<geräte-ip>:16680` im Browser. Der Benutzername lautet `admin`, das Standardpasswort `gately.cn`. Das Standardpasswort ist öffentlich bekannt: Nach der Anmeldung erscheint ein Dialog zur Passwortänderung, und Sie können erst weiterarbeiten, wenn Sie ein neues, schwer zu erratendes Passwort mit mindestens 10 Zeichen gesetzt haben.
 
 ## 3. Grundlegende Härtung
 
 Gehen Sie direkt nach der Anmeldung zu „Einstellungen“ und:
 
-1. ändern Sie das Administratorpasswort;
-2. aktivieren Sie die Zwei-Faktor-Authentifizierung (TOTP);
-3. richten Sie nach Bedarf einen sicheren Einstiegspfad, den Zugriff nur aus dem LAN oder HTTPS für die Verwaltungsoberfläche ein.
+1. aktivieren Sie die Zwei-Faktor-Authentifizierung (TOTP) oder registrieren Sie einen Passkey;
+2. richten Sie nach Bedarf einen sicheren Einstiegspfad, den Zugriff nur aus dem LAN oder HTTPS für die Verwaltungsoberfläche ein;
+3. prüfen Sie die Sicherheitsbewertung oben unter „Einstellungen → Konto & Sicherheit“ und beheben Sie die markierten Punkte.
 
 Weitere Empfehlungen finden Sie im [Härtungsleitfaden](/de/docs/guide/hardening).
 

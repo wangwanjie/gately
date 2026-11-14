@@ -6,7 +6,7 @@ No. Gately no se conecta a ningún servidor del proyecto y no envía informació
 
 ## ¿Cuáles son el usuario y la contraseña predeterminados?
 
-El usuario predeterminado es `admin` y la contraseña predeterminada, `gately.cn`. Esta contraseña es pública: cámbiala en «Ajustes → Cuenta y seguridad» nada más iniciar sesión; hasta entonces, la interfaz de administración muestra un aviso en la parte superior. Si al desplegar definiste la variable de entorno `GATELY_INITIAL_PASSWORD`, la contraseña es la que indicaste.
+El usuario predeterminado es `admin` y la contraseña predeterminada, `gately.cn`. Esta contraseña es pública: al iniciar sesión con ella aparece un diálogo de cambio de contraseña, y para seguir usando Gately hay que elegir una nueva que cumpla las reglas (al menos 10 caracteres, que no sea una contraseña débil común, etc.). Si al desplegar definiste la variable de entorno `GATELY_INITIAL_PASSWORD`, la contraseña es la que indicaste; si tiene menos de 10 caracteres o no es lo bastante segura, también se pedirá cambiarla en el primer inicio de sesión.
 
 ## ¿Qué hago si olvido la contraseña del administrador?
 

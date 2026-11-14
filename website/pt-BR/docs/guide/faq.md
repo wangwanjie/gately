@@ -6,7 +6,7 @@ Não. O Gately não se conecta a nenhum servidor do projeto e não envia informa
 
 ## Qual é a conta e a senha padrão?
 
-A conta padrão é `admin` e a senha padrão é `gately.cn`. Essa senha é pública: altere-a logo depois de entrar, em "Configurações → Conta e segurança"; até lá, um aviso fica fixo no topo da interface de administração. Se a variável de ambiente `GATELY_INITIAL_PASSWORD` foi definida na implantação, vale a senha dela.
+A conta padrão é `admin` e a senha padrão é `gately.cn`. Essa senha é pública: ao entrar com ela, abre-se uma janela de troca de senha, e só é possível continuar depois de definir uma nova senha que siga as regras (no mínimo 10 caracteres, que não seja uma senha fraca comum etc.). Se a variável de ambiente `GATELY_INITIAL_PASSWORD` foi definida na implantação, vale a senha dela; se ela tiver menos de 10 caracteres ou for fraca, a troca também será exigida no primeiro login.
 
 ## Esqueci a senha do administrador. O que fazer?
 

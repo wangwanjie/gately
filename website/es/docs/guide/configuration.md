@@ -14,7 +14,7 @@
 
 | Variable de entorno | Descripción |
 | --- | --- |
-| `GATELY_INITIAL_PASSWORD` | Contraseña inicial del administrador en el primer arranque (8 caracteres como mínimo); si no se define, se usa la contraseña predeterminada `gately.cn`. No tiene efecto si la cuenta ya existe |
+| `GATELY_INITIAL_PASSWORD` | Contraseña inicial del administrador en el primer arranque (8 caracteres como mínimo); si no se define, se usa la contraseña predeterminada `gately.cn`. No tiene efecto si la cuenta ya existe. Si tiene menos de 10 caracteres o no es lo bastante segura, se pedirá cambiarla en el primer inicio de sesión |
 | `GATELY_LANG` | Código de idioma que se lee primero cuando el idioma del servidor es «Seguir el sistema»; después se leen `LC_ALL`, `LC_MESSAGES` y `LANG`, en ese orden |
 
 ## Directorio de configuración

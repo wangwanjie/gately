@@ -21,15 +21,15 @@ Installez plutôt l'application native : elle s'ouvre depuis l'icône du bureau 
 
 ## 2. Se connecter
 
-Ouvrez `http://<ip-de-l-appareil>:16680` dans un navigateur. Le nom d'utilisateur est `admin` et le mot de passe par défaut est `gately.cn`. Ce mot de passe est public : tant que vous ne l'avez pas changé, un avertissement reste affiché en haut de l'interface d'administration.
+Ouvrez `http://<ip-de-l-appareil>:16680` dans un navigateur. Le nom d'utilisateur est `admin` et le mot de passe par défaut est `gately.cn`. Ce mot de passe est public : après la connexion, une boîte de dialogue demande de le remplacer par un nouveau mot de passe d'au moins 10 caractères, difficile à deviner, avant de pouvoir continuer.
 
 ## 3. Appliquer un durcissement de base
 
 Dès la connexion, ouvrez « Paramètres » et :
 
-1. Changez le mot de passe de l'administrateur ;
-2. Activez l'authentification à deux facteurs (TOTP) ;
-3. Définissez un chemin d'accès secret, un accès limité au réseau local ou le HTTPS de l'interface d'administration selon vos besoins.
+1. Activez l'authentification à deux facteurs (TOTP), ou enregistrez une passkey ;
+2. Définissez un chemin d'accès secret, un accès limité au réseau local ou le HTTPS de l'interface d'administration selon vos besoins ;
+3. Consultez le score de sécurité en haut de « Paramètres → Compte et sécurité » et traitez les points signalés.
 
 Consultez le [guide de durcissement](/fr/docs/guide/hardening) pour d'autres recommandations.
 

@@ -4,8 +4,10 @@ The admin UI controls DNS, certificates and ports. Work through the following ch
 
 ## Admin UI
 
-- [ ] Change the administrator password after the first sign-in
+- [ ] Change the administrator password when prompted after the first sign-in (the default password or a weak password must be changed first), then check the security score under "Settings → Account & Security" and resolve the flagged items
 - [ ] Enable two-factor authentication (TOTP), or register a Passkey
+- [ ] After registering a Passkey, you can turn off password login so the administrator account can only sign in with a Passkey or a third-party login and the password can no longer be brute-forced; if you lose all Passkeys, run `gately reset-password` to turn it back on
+- [ ] When the admin port is open to the internet, keep the "Unfamiliar-address failure budget" on (20 failures per 10 minutes by default), and rename the administrator to something other than admin that is hard to guess
 - [ ] When family members or colleagues only need to view things, create read-only accounts for them instead of sharing the administrator password
 - [ ] Set a secure entrance path so the admin UI is reachable only through a custom path
 - [ ] Enable "LAN-only access", and use a VPN (such as [Tailscale](/en/docs/modules/tunnels)) when you need remote administration

@@ -10,6 +10,7 @@ Prevenção de intrusão no estilo fail2ban: o Gately encontra tentativas de for
 - **Falhas de handshake TLS**: conta as falhas de handshake nos listeners HTTPS do serviço web por tipo de falha (corte no meio, reinício, tempo esgotado, não é TLS ou erro de protocolo, não negociável, domínio desconhecido e mais), listener e número de vezes; barra varreduras que cortam durante o handshake e nunca enviam uma requisição HTTP;
 - **Portas armadilha**: armadilhas em portas que este host não usa (por padrão 23, 135, 1433, 3389, 5900, 6379 e outras). Qualquer origem que se conecte é bloqueada;
 - **Detecção de varredura de portas**: a origem que se conecta a portas fechadas deste host mais vezes por minuto que o limite é bloqueada;
+- **Registro das portas atingidas**: nos bloqueios das portas armadilha e da detecção de varredura feitos no kernel, o motivo do bloqueio, o log de execução e a notificação trazem as portas que a origem atingiu, o que ajuda a identificar o alvo da varredura;
 - **Uma única lista de bloqueio**: aqui ficam os bloqueios manuais (incluindo redes CIDR e bloqueios permanentes) e os bloqueios automáticos por falhas de autenticação do serviço web. Bloqueios manuais não podem incluir endereços de loopback, pois todas as conexões encaminhadas por esta máquina aparecem com esse endereço. Os bloqueios são salvos e restaurados após reiniciar;
 - **Bloqueios progressivos**: se um endereço for bloqueado de novo em 30 dias, a duração dobra até um máximo;
 - **Lista de permissões**: endereços da LAN, de loopback, de 100.64.0.0/10 (Tailscale) e as redes IPv6 /64 das interfaces deste host são ignorados por padrão (o bloqueio é por /64, então dispositivos com IPv6 público da mesma LAN não são bloqueados junto com o infrator), e você pode adicionar IPs ou redes. Um único endereço IPv6 na lista protege todo o seu /64.
@@ -32,9 +33,12 @@ Com "Sincronizar com o firewall" ligado, o Gately cria a própria tabela `inet g
 
 - A cadeia `prerouting` (prioridade -190, depois do rastreamento de conexões e antes do NAT de destino) descarta os pacotes vindos de endereços bloqueados, sejam para este host ou encaminhados a um contêiner ou dispositivo da LAN. As respostas às conexões que o próprio host abre (DNS, espelhos de pacotes etc.) continuam passando mesmo que o outro lado esteja bloqueado. No IPv6 o bloqueio é por /64;
 - A cadeia `input` só olha as conexões novas a este host, para as portas armadilha e a detecção de varredura. Endereços da lista de permissões ficam de fora;
+- Com as portas armadilha ou a detecção de varredura ativadas, a cadeia `input` grava cada par endereço de origem + porta atingida nos conjuntos `port4` / `port6` (mantidos por 5 minutos, até 16384 entradas por família de endereços), de onde saem as portas atingidas incluídas no bloqueio;
 - A tabela inteira é excluída ao desligar a sincronização ou parar o Gately. Se outro programa a remover, o Gately a regrava em até 10 segundos.
 
-Quando o kernel não tem nf_tables (por exemplo, Synology DSM), são usados iptables (legacy) e ipset, também sem mexer nas regras existentes: a primeira regra de `PREROUTING` e `INPUT` na tabela mangle salta para as cadeias próprias do Gately `GATELY_PRE` e `GATELY_IN`, que fazem o mesmo que as duas cadeias acima; os endereços únicos bloqueados ficam nos conjuntos do ipset `gately_ban4` / `gately_ban6` (IPv6 por /64), e os bloqueios de redes e permanentes viram regras da cadeia `GATELY_DENY`. Se um programa como o firewall do Synology colocar as próprias regras na frente, os saltos voltam ao início em até 10 segundos, e cadeias apagadas são gravadas de novo. A detecção de varredura conta com o módulo recent, com limite máximo de 255 por minuto.
+Quando o kernel não tem nf_tables (por exemplo, Synology DSM), são usados iptables (legacy) e ipset, também sem mexer nas regras existentes: a primeira regra de `PREROUTING` e `INPUT` na tabela mangle salta para as cadeias próprias do Gately `GATELY_PRE` e `GATELY_IN`, que fazem o mesmo que as duas cadeias acima; os endereços únicos bloqueados ficam nos conjuntos do ipset `gately_ban4` / `gately_ban6` (IPv6 por /64), e os bloqueios de redes e permanentes viram regras da cadeia `GATELY_DENY`. Se um programa como o firewall do Synology colocar as próprias regras na frente, os saltos voltam ao início em até 10 segundos, e cadeias apagadas são gravadas de novo. A detecção de varredura conta com o módulo recent, com limite máximo de 255 por minuto. As portas atingidas ficam nos conjuntos do ipset do tipo `hash:ip,port` `gately_port4` / `gately_port6` (também mantidos por 5 minutos, até 16384 entradas por família).
+
+Se o kernel ou o nft não suportar conjuntos que registram portas (por exemplo, um firmware enxuto sem `hash:ip,port`), o Gately deixa de registrar as portas e avisa uma vez no log de execução; o motivo do bloqueio deixa de trazer as portas, e as portas armadilha, a detecção de varredura e os demais bloqueios continuam funcionando normalmente. A cada nova gravação das regras, o registro é tentado de novo.
 
 "Ver regras" na página mostra todas as regras em vigor.
 
@@ -154,7 +158,7 @@ O serviço web e o WAF só conhecem o endereço real do cliente pelo protocolo P
 
 ## Notificações
 
-Os bloqueios geram o evento `Prevenção de intrusão: IP bloqueado`, que você pode assinar na [Central de notificações](/pt-BR/docs/modules/notify). Endereços bloqueados pelas portas armadilha e pela detecção de varredura na mesma verificação são reunidos em uma notificação.
+Os bloqueios geram o evento `Prevenção de intrusão: IP bloqueado`, que você pode assinar na [Central de notificações](/pt-BR/docs/modules/notify). Endereços bloqueados pelas portas armadilha e pela detecção de varredura na mesma verificação são reunidos em uma notificação, que lista também as portas atingidas quando elas foram registradas.
 
 ## Verificação
 

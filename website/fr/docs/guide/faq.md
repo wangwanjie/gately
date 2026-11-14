@@ -6,7 +6,7 @@ Non. Gately ne se connecte à aucun serveur du projet et ne remonte aucune infor
 
 ## Quels sont le compte et le mot de passe par défaut ?
 
-Le compte par défaut est `admin` et le mot de passe par défaut `gately.cn`. Ce mot de passe est public : changez-le dans « Paramètres → Compte et sécurité » dès la première connexion ; d'ici là, un avertissement reste affiché en haut de l'interface d'administration. Si la variable d'environnement `GATELY_INITIAL_PASSWORD` a été définie lors du déploiement, c'est ce mot de passe qui s'applique.
+Le compte par défaut est `admin` et le mot de passe par défaut `gately.cn`. Ce mot de passe est public : après une connexion avec le mot de passe par défaut, une boîte de dialogue de changement de mot de passe s'ouvre, et il faut choisir un nouveau mot de passe conforme aux règles (10 caractères minimum, pas un mot de passe faible courant, etc.) pour continuer. Si la variable d'environnement `GATELY_INITIAL_PASSWORD` a été définie lors du déploiement, c'est ce mot de passe qui s'applique ; s'il compte moins de 10 caractères ou n'est pas assez robuste, son changement est aussi exigé à la première connexion.
 
 ## Que faire si j'ai oublié le mot de passe administrateur ?
 

@@ -9,8 +9,9 @@ Single Packet Authorization (SPA), kompatibel mit [fwknop](https://www.cipherdyn
 - **Firewall-Blockierung**: Geschützte Ports werden in die System-Firewall geschrieben (nftables, bei Kernen ohne nf_tables iptables + ipset) und nur für erfolgreich klopfende Adressen geöffnet. So lassen sich auch der lokale sshd und andere Dienste schützen, die nicht über Gately laufen;
 - **Gately-Einstiege nach Knock freigeben**: Regeln von Portweiterleitung, Protokollrouting und der eingebauten STUN-Weiterleitung sowie einzelne Routen des Protokollroutings können „Knock erforderlich“ wählen; Gately entscheidet selbst, ohne Firewall-Rechte. Das funktioniert auch unter Windows, macOS und in Containern ohne `NET_ADMIN`;
 - **Nur ein Port**: Das Protokollrouting erkennt per TCP gesendete Knock-Pakete (`fwknop -P tcp`); derselbe Port nimmt Knocks an und gibt je nach Ergebnis Routen wie SSH frei;
+- **Freigabe nach Web-Anmeldung**: Eine Site des Web-Dienstes kann als Freigabe-Eingang dienen. Nach bestandener Site-Authentifizierung erhält die Quell-IP des Besuchers eine Freigabe der Port-Knocking-Regel, ganz ohne Client. Sites können auch einen Klopf-Zugang verlangen, siehe [Klopf-Zugang und Freigabe nach Anmeldung beim Web-Dienst](/de/docs/modules/web#knock);
 - **Zusammenspiel mit dem Einbruchschutz**: Abgelehnte Knocks lösen das Ereignis „Port-Knocking abgelehnt“ aus; die eingebaute Vorlage „Port-Knocking fehlgeschlagen“ des Einbruchschutzes sperrt Quellen nach Anzahl. Knocks bereits gesperrter Adressen werden sofort verworfen;
-- Übersicht der aktuellen Freigaben (Restzeit, widerrufbar); erfolgreiche und abgelehnte Knocks stehen im Laufprotokoll und lassen sich in der Benachrichtigungszentrale abonnieren.
+- Übersicht der aktuellen Freigaben (Herkunft der Freigabe – Knock-Paket oder Web-Anmeldung –, angemeldeter Benutzer, Restzeit, widerrufbar); erfolgreiche und abgelehnte Knocks stehen im Laufprotokoll und lassen sich in der Benachrichtigungszentrale abonnieren.
 
 ## Schnellstart: lokales SSH schützen
 
@@ -35,9 +36,9 @@ Knock-Pakete gehen standardmäßig an UDP-Port 62201. Steht Gately hinter einem 
 
 | Feld | Beschreibung |
 | --- | --- |
-| Port | Ports, die der Client freigeben lassen darf, etwa `tcp/22`, `udp/51820`, höchstens 16. Alle Ports im Parameter `-A` des Clients müssen in dieser Liste stehen, sonst wird der gesamte Knock abgelehnt |
+| Port | Ports, die der Client freigeben lassen darf, etwa `tcp/22`, `udp/51820`, höchstens 16. Alle Ports im Parameter `-A` des Clients müssen in dieser Liste stehen, sonst wird der gesamte Knock abgelehnt. Ohne Firewall-Blockierung kann das Feld leer bleiben: Die Regel erhält Freigaben dann nur über „Nach Anmeldung freigeben“ einer Web-Site, nimmt keine Knock-Pakete an und lässt für sich keinen UDP-Knock-Port lauschen; die Karte zeigt „Keine (nur per Web-Anmeldung freigegeben)“ |
 | Firewall-Blockierung | Eingeschaltet werden diese Ports in der System-Firewall blockiert und nur für erfolgreich klopfende Adressen geöffnet; ausgeschaltet ändert die Regel die Firewall nicht und dient nur Einstiegen mit „Knock erforderlich“ als Referenz |
-| Verschlüsselungsschlüssel / HMAC-Schlüssel | base64-kodiert, leer wird automatisch erzeugt (32 / 64 Byte, wie bei `fwknop -k`); Schlüssel eines vorhandenen fwknop-Servers lassen sich ebenfalls eintragen. Beim Kopieren der Regel entstehen neue Schlüssel; Ändern, Deaktivieren oder Löschen einer Regel widerruft alle ihre Freigaben |
+| Verschlüsselungsschlüssel / HMAC-Schlüssel | base64-kodiert, leer wird automatisch erzeugt (32 / 64 Byte, wie bei `fwknop -k`); Schlüssel eines vorhandenen fwknop-Servers lassen sich ebenfalls eintragen. Beim Kopieren der Regel entstehen neue Schlüssel. Ändern einer aktiven Regel (Name, Ports, Schlüssel usw.) widerruft die per Knock-Paket erhaltenen Freigaben, per Web-Anmeldung erhaltene Freigaben bleiben bestehen; Deaktivieren oder Löschen der Regel widerruft alle Freigaben |
 | HMAC-Algorithmus | SHA-256 (fwknop-Standard), SHA-384, SHA-512; muss zum `--hmac-digest-type` des Clients passen |
 | Freigabedauer | Zeit, in der nach erfolgreichem Knock neue Verbindungen aufgebaut werden dürfen, standardmäßig 30 Sekunden |
 | Maximale Client-Dauer | Obergrenze, wenn der Client mit `-f` eine längere Dauer anfordert (standardmäßig 300 Sekunden); 0 ignoriert die vom Client angeforderte Dauer. Ist die Anforderung kürzer als die Freigabedauer, gilt immer die kürzere |
@@ -56,7 +57,7 @@ Der fwknop-2.6-Client kann Knock-Pakete nur über IPv4 senden und nur IPv4-Adres
 
 ## Globale Einstellungen
 
-- **UDP-Knock-Port**: Standardmäßig 62201 (Standardport des fwknop-Clients); 0 lauscht nicht per UDP und nimmt nur über das Protokollrouting gesendete Knocks an. Ohne aktivierte Regel wird nicht gelauscht;
+- **UDP-Knock-Port**: Standardmäßig 62201 (Standardport des fwknop-Clients); 0 lauscht nicht per UDP und nimmt nur über das Protokollrouting gesendete Knocks an. Ohne aktivierte Regel, oder wenn keine aktivierte Regel Ports eingetragen hat (nur Freigabe per Web-Anmeldung), wird nicht gelauscht;
 - **Firewall automatisch freigeben**: siehe oben;
 - **Interne Netze ohne Knock / Ausnahmeliste**: wirkt nur auf die Firewall-Blockierung; Einstiege mit „Knock erforderlich“ werden von ihren eigenen IP-Listen gesteuert;
 - **Paketgültigkeit**: maximale Abweichung zwischen Zeitstempel des Pakets und lokaler Zeit, standardmäßig 120 Sekunden; die Uhren von Client und Server müssen genau gehen.
@@ -73,6 +74,10 @@ Der fwknop-2.6-Client kann Knock-Pakete nur über IPv4 senden und nur IPv4-Adres
 Gately legt in nftables eine eigene Tabelle `inet gately_knock` an und ändert bestehende Regeln des Systems nicht: Die Kette `prerouting` (Priorität -160, nach dem Connection Tracking und vor der Zieladress-Umsetzung) übergibt Pakete an geschützte Ports an die Kette `gate`. Diese lässt der Reihe nach durch: Verkehr, dessen Ziel nicht dieser Host ist (über den Host an andere Geräte weitergeleitete Verbindungen bleiben unberührt), die Loopback-Schnittstelle, bestehende Verbindungen, TCP-Pakete, die keine Verbindung eröffnen, sowie Adresse + Protokoll + Port aus den Ausnahmenetzen und der Menge der per Knock freigegebenen Einträge; alles andere wird verworfen. Da in prerouting entschieden wird, werden auf Docker-Container abgebildete Ports nach dem Port vor der Abbildung blockiert. Freigaben stehen als Mengenelemente mit Timeout, der Kernel löscht sie bei Ablauf selbst.
 
 Ohne nf_tables wird die mangle-Tabelle von iptables verwendet: `PREROUTING` springt nach `GATELY_KNOCK`, pro geschütztem Port gibt es eine ipset-Menge (`gkn4_tcp_22` usw., mit Timeout). Wird Tabelle oder Sprung durch ein Neuladen der Firewall, `nft flush ruleset` u. Ä. entfernt, schreibt Gately sie innerhalb von 10 Sekunden samt noch gültiger Freigaben neu. „Firewall-Regeln anzeigen“ auf der Seite zeigt die aktuell geschriebenen Regeln.
+
+### Freigaben per Web-Anmeldung {#web-grant}
+
+Per [Freigabe nach Anmeldung](/de/docs/modules/web#knock) einer Web-Site erhaltene Freigaben gelten auch für Regeln mit Firewall-Blockierung: Gately schreibt die Adressen, die unter dieser Freigabe die Eingangs-Site tatsächlich aufgerufen haben (höchstens 8 pro Freigabe, bei Überschreitung fällt die älteste weg), zusammen mit den Ports der Regel in die Freigabemenge, mit derselben Ablaufzeit wie die Freigabe; bei Widerruf oder Ablauf werden sie entfernt. IPv6-Freigaben gelten netzweise (standardmäßig /64), die Firewall öffnet aber nur die konkret erfassten Adressen. Hat dieselbe Adresse zugleich eine Freigabe per Knock-Paket, bleibt jede bis zu ihrer eigenen Ablaufzeit bestehen.
 
 ::: tip SSH über Portweiterleitung
 Verbindungen, die Gately per Portweiterleitung an `127.0.0.1:22` des Hosts weiterreicht, kommen über die Loopback-Schnittstelle und werden von der Firewall-Blockierung nicht erfasst. Wählen Sie in diesem Fall in der Portweiterleitungsregel „Knock erforderlich“ oder schützen Sie per Firewall-Blockierung den nach außen offenen Weiterleitungsport.
@@ -115,4 +120,4 @@ Vor der Prüfung wird pro Quellbereich begrenzt (höchstens 10 Pakete pro Sekund
 
 - Unterstützt wird nur der Rijndael-(AES-)CBC-Modus von fwknop mit HMAC; GnuPG, der alte IV-Modus und Pakete ohne HMAC werden nicht unterstützt;
 - Befehlsnachrichten (`fwknop -C`) werden nicht ausgeführt, NAT-Zugriffsanfragen (`-N`) werden nicht unterstützt;
-- Knock-Freigaben liegen im Arbeitsspeicher; nach einem Neustart von Gately muss erneut geklopft werden (bestehende Verbindungen bleiben unberührt). Auch die Replay-Einträge liegen nur im Speicher; nach einem Neustart wird daher jedes Paket abgelehnt, dessen Zeitstempel vor dem Start liegt. Geht die Uhr des Clients nach, kann ein Knock in den ersten Sekunden nach dem Neustart abgelehnt werden; ein erneuter Knock funktioniert.
+- Knock-Freigaben liegen im Arbeitsspeicher; nach einem Neustart von Gately muss erneut geklopft oder die Freigabeseite der Web-Site erneut geöffnet werden (bestehende Verbindungen bleiben unberührt). Auch die Replay-Einträge liegen nur im Speicher; nach einem Neustart wird daher jedes Paket abgelehnt, dessen Zeitstempel vor dem Start liegt. Geht die Uhr des Clients nach, kann ein Knock in den ersten Sekunden nach dem Neustart abgelehnt werden; ein erneuter Knock funktioniert.

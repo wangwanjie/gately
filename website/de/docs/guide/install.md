@@ -164,7 +164,7 @@ Aktivieren Sie „Mit fnOS anmelden“ unter „Einstellungen → Zugriffskontro
 
 Die Verwaltungsoberfläche lauscht standardmäßig auf Port `16680`. Das Standardkonto ist `admin`, das Standardpasswort `gately.cn`. Bei automatisierten Bereitstellungen können Sie über die Umgebungsvariable `GATELY_INITIAL_PASSWORD` ein eigenes Initialpasswort anstelle des Standardpassworts vorgeben.
 
-Das Standardpasswort ist öffentlich bekannt; solange es verwendet wird, fordert die Verwaltungsoberfläche oben dauerhaft zur Änderung auf. Bei der ersten Anmeldung erscheint ein Einrichtungsassistent, der nacheinander dazu auffordert, das Passwort zu ändern, Zwei-Faktor-Authentifizierung oder einen Passkey zu aktivieren, den Netzwerk-Selbsttest auszuführen, aus Lucky zu importieren und Benachrichtigungen einzurichten.
+Das Standardpasswort ist öffentlich bekannt. Bei der Anmeldung mit dem Standardpasswort oder einem zu schwachen Passwort erscheint zuerst ein Dialog zur Passwortänderung, der sich nicht schließen lässt; erst nach dem Wechsel auf ein regelkonformes neues Passwort (10 bis 72 Byte, kein gängiges schwaches Passwort, ohne gately oder den Benutzernamen usw.) können Sie weiterarbeiten, siehe [Sicherheitsmodell](/de/docs/guide/security). Danach erscheint ein Einrichtungsassistent, der nacheinander dazu auffordert, Zwei-Faktor-Authentifizierung oder einen Passkey zu aktivieren, den Netzwerk-Selbsttest auszuführen, aus Lucky zu importieren und Benachrichtigungen einzurichten.
 
 ## Passwort und Zwei-Faktor-Authentifizierung zurücksetzen {#reset}
 

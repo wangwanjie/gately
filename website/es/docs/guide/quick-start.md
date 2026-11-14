@@ -21,15 +21,15 @@ Te recomendamos instalar la aplicación nativa: se abre desde el icono del escri
 
 ## 2. Iniciar sesión
 
-Abre `http://<ip-del-dispositivo>:16680` en un navegador. El usuario es `admin` y la contraseña predeterminada es `gately.cn`. Esta contraseña es pública, así que la interfaz de administración muestra un aviso en la parte superior hasta que la cambies.
+Abre `http://<ip-del-dispositivo>:16680` en un navegador. El usuario es `admin` y la contraseña predeterminada es `gately.cn`. Esta contraseña es pública: al iniciar sesión aparece un diálogo de cambio de contraseña, y para continuar hay que elegir una nueva de al menos 10 caracteres y difícil de adivinar.
 
 ## 3. Aplicar un refuerzo básico
 
 Nada más iniciar sesión, ve a «Ajustes» y:
 
-1. Cambia la contraseña del administrador;
-2. Activa la autenticación de dos factores (TOTP);
-3. Configura una ruta de acceso segura, el acceso solo desde la red local o HTTPS para la interfaz de administración según lo necesites.
+1. Activa la autenticación de dos factores (TOTP) o registra una passkey;
+2. Configura una ruta de acceso segura, el acceso solo desde la red local o HTTPS para la interfaz de administración según lo necesites;
+3. Revisa la puntuación de seguridad en la parte superior de «Ajustes → Cuenta y seguridad» y resuelve los puntos que restan.
 
 Consulta la [Guía de refuerzo](/es/docs/guide/hardening) para más recomendaciones.
 
