@@ -9,8 +9,6 @@
   "logoutConfirm": "ログアウトしてもよろしいですか？",
   "logoutOk": "ログアウト",
   "readonlyBadge": "読み取り専用",
-  "defaultPassword": "デフォルトパスワード {password} のままです。このパスワードを知っている人は誰でも管理画面にログインできるため、すぐに変更してください。",
-  "changeNow": "今すぐ変更",
   "update": {
     "available": "新しいバージョン {latest} があります（現在 {current}）",
     "securityAdvisories": "現在のバージョン {current} は公開済みのセキュリティ問題（{count} 件）の影響を受けます。できるだけ早く {latest} にアップグレードしてください",

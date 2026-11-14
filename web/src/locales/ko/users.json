@@ -6,7 +6,6 @@
   "role": "역할",
   "readonly": "읽기 전용",
   "password": "비밀번호",
-  "passwordHint": "8자 이상.",
   "add": "읽기 전용 계정 추가",
   "resetPassword": "비밀번호 재설정",
   "resetPrompt": "{name}의 새 비밀번호(8자 이상). 이 계정의 기존 세션은 로그아웃됩니다.",

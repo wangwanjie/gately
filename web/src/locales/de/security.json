@@ -1,0 +1,110 @@
+{
+  "strength": {
+    "bars": "Passwortstärke",
+    "hint": "Mindestens 10 Zeichen; vermeiden Sie gängige Passwörter, Zeichenfolgen und den Benutzernamen. Passphrasen ab 16 Zeichen sind sicherer.",
+    "checking": "Wird geprüft…",
+    "ok": "Stärke ausreichend"
+  },
+  "weak": {
+    "tooShort": "Das Passwort muss mindestens 10 Zeichen lang sein.",
+    "tooLong": "Das Passwort darf höchstens 72 Byte lang sein (etwa 24 chinesische Zeichen).",
+    "common": "Dies ist ein gängiges schwaches Passwort. Wählen Sie ein schwerer zu erratendes.",
+    "username": "Das Passwort darf den Benutzernamen nicht enthalten.",
+    "product": "Das Passwort darf Produktnamen wie gately nicht enthalten.",
+    "sequence": "Das Passwort besteht aus einer Zeichenfolge (z. B. 123456, abcdef, qwerty). Wählen Sie ein anderes.",
+    "repeat": "Das Passwort besteht aus wiederholten Zeichen oder Teilen. Wählen Sie ein anderes.",
+    "simple": "Das Passwort enthält nur eine Zeichenart. Mischen Sie Buchstaben, Ziffern oder Symbole oder verwenden Sie eine Passphrase ab 16 Zeichen.",
+    "control": "Das Passwort darf keine Zeilenumbrüche oder Steuerzeichen enthalten."
+  },
+  "force": {
+    "titleDefault": "Bitte zuerst das Standardpasswort ändern",
+    "titleWeak": "Bitte zuerst das zu einfache Passwort ändern",
+    "descDefault": "Der Administrator nutzt noch das öffentlich bekannte Standardpasswort; jeder, der es kennt, kann sich anmelden. Nach der Änderung können Sie fortfahren.",
+    "descWeak": "Das aktuelle Passwort ist zu schwach und lässt sich leicht per Brute-Force knacken. Nach der Änderung können Sie fortfahren.",
+    "username": "Benutzername",
+    "current": "Aktuelles Passwort",
+    "defaultHint": "Das Standardpasswort lautet {password}.",
+    "useDefault": "Standardpasswort einfügen",
+    "newPassword": "Neues Passwort",
+    "confirm": "Neues Passwort bestätigen",
+    "required": "Bitte aktuelles und neues Passwort eingeben",
+    "mismatch": "Die beiden neuen Passwörter stimmen nicht überein",
+    "submit": "Ändern und fortfahren",
+    "done": "Passwort geändert",
+    "doneRelogin": "Passwort geändert. Bitte melden Sie sich mit dem neuen Passwort erneut an"
+  },
+  "banner": {
+    "risk": "Hohes Risiko in der Verwaltung: {items}.",
+    "warn": "Sicherheitsbewertung der Verwaltung: {score} Punkte. Empfohlene Härtung: {items}.",
+    "fix": "Jetzt härten",
+    "snooze": "7 Tage lang nicht mehr anzeigen",
+    "sep": ", ",
+    "more": " u. a."
+  },
+  "center": {
+    "title": "Sicherheitsbewertung der Verwaltung",
+    "desc": "Prüft anhand der aktuellen Konfiguration, wie sicher der Anmeldezugang zur Verwaltung ist. Beheben Sie die markierten Punkte.",
+    "refresh": "Erneut prüfen",
+    "scoreLabel": "Sicherheitsbewertung: {score} Punkte",
+    "level": {
+      "good": "Gut",
+      "warn": "Härtung empfohlen",
+      "risk": "Hohes Risiko"
+    },
+    "exposed": "Die Verwaltung ist möglicherweise aus dem Internet erreichbar",
+    "notExposed": "Die Verwaltung ist nur aus dem lokalen Netz oder lokal erreichbar",
+    "fix": "Beheben"
+  },
+  "items": {
+    "password": {
+      "title": "Administratorpasswort",
+      "ok": "Passwortstärke ausreichend oder Passwortanmeldung deaktiviert.",
+      "default": "Es wird noch das öffentlich bekannte Standardpasswort verwendet; jeder kann sich anmelden.",
+      "weak": "Die Passwortstärke reicht nicht aus; Brute-Force ist leicht möglich."
+    },
+    "twoFactor": {
+      "title": "Zweite Bestätigung",
+      "ok": "Zwei-Faktor-Authentifizierung oder Passkey ist aktiviert.",
+      "warn": "Weder Zwei-Faktor-Authentifizierung noch Passkey aktiviert; bei einem Passwortleck oder Brute-Force lässt sich die Anmeldung nicht verhindern."
+    },
+    "entry": {
+      "title": "Sicherheitseinstieg",
+      "ok": "Ein Sicherheitseinstieg ist gesetzt oder die Verwaltung ist nur im lokalen Netz erreichbar.",
+      "warn": "Kein Sicherheitseinstieg gesetzt; Scanner können die Anmeldeseite direkt finden."
+    },
+    "https": {
+      "title": "HTTPS-Verschlüsselung",
+      "ok": "Der Anmeldeverkehr ist verschlüsselt oder die Verwaltung ist nicht aus dem Internet erreichbar.",
+      "warn": "Der Zugriff erfolgt über unverschlüsseltes HTTP; Passwort und Sitzung werden im Klartext übertragen."
+    },
+    "lockout": {
+      "title": "Sperre bei fehlgeschlagener Anmeldung",
+      "ok": "Die Sperrrichtlinie ist angemessen.",
+      "warn": "Das Fehlversuchslimit ist zu hoch oder die Sperrdauer zu kurz; Brute-Force ist zu günstig."
+    },
+    "globalLimit": {
+      "title": "Fehlerbudget für unbekannte Adressen",
+      "ok": "Aktiviert: Bei verteiltem Brute-Force von vielen unbekannten Adressen wird deren Anmeldung automatisch begrenzt.",
+      "warn": "Deaktiviert: Brute-Force, der sich auf viele Adressen verteilt, wird nicht insgesamt begrenzt."
+    },
+    "username": {
+      "title": "Administratorbenutzername",
+      "ok": "Der Benutzername ist kein gängiger Standardname.",
+      "warn": "Der Benutzername ist ein gängiger Standardname (z. B. admin); wählen Sie einen schwer zu erratenden Namen."
+    }
+  },
+  "limit": {
+    "label": "Fehlerbudget für unbekannte Adressen",
+    "help": "Erreichen die Anmeldefehler aller Adressen, die sich noch nie erfolgreich angemeldet haben, innerhalb von 10 Minuten zusammen diese Anzahl, wird die Anmeldung von unbekannten Adressen vorübergehend eingeschränkt; Adressen mit früherer erfolgreicher Anmeldung bleiben unberührt. Schützt vor Brute-Force, der sich auf viele Adressen verteilt. Standard: 20."
+  },
+  "passwordLogin": {
+    "title": "Passwortanmeldung deaktivieren",
+    "desc": "Nach dem Deaktivieren kann sich das Administratorkonto nur noch mit Passkey oder über Drittanbieter anmelden; das Passwort lässt sich nicht mehr per Brute-Force knacken. Schreibgeschützte Konten bleiben unberührt.",
+    "needPasskey": "Registrieren Sie zuerst einen Passkey und deaktivieren Sie dann die Passwortanmeldung.",
+    "lastPasskey": "Die Passwortanmeldung ist deaktiviert; der letzte Passkey kann nicht gelöscht werden",
+    "confirmOff": "Danach kann sich das Administratorkonto nicht mehr mit Passwort anmelden. Gehen alle Passkeys verloren, müssen Sie auf dem Server gately reset-password ausführen, um sie wieder zu aktivieren. Bitte bestätigen Sie mit dem aktuellen Passwort.",
+    "confirmOn": "Nach dem erneuten Aktivieren ist die Anmeldung des Administratorkontos wieder mit Passwort möglich. Bitte bestätigen Sie mit dem aktuellen Passwort.",
+    "changedOff": "Passwortanmeldung deaktiviert",
+    "changedOn": "Passwortanmeldung wieder aktiviert"
+  }
+}

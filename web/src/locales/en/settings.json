@@ -20,7 +20,7 @@
     "title": "Administrator account",
     "username": "Username",
     "newPassword": "New password",
-    "newPasswordPlaceholder": "At least 8 characters",
+    "newPasswordPlaceholder": "At least 10 characters",
     "confirmPassword": "Confirm new password",
     "submit": "Change credentials",
     "help": "All signed-in sessions are invalidated after the change; you will need to sign in again.",

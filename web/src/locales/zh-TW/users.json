@@ -6,7 +6,6 @@
   "role": "角色",
   "readonly": "唯讀",
   "password": "密碼",
-  "passwordHint": "至少 8 個字元。",
   "add": "新增唯讀帳號",
   "resetPassword": "重設密碼",
   "resetPrompt": "為 {name} 設定新密碼（至少 8 個字元）。該帳號現有的工作階段會被登出。",

@@ -1,0 +1,110 @@
+{
+  "strength": {
+    "bars": "Password strength",
+    "hint": "At least 10 characters. Avoid common passwords, sequences and your username; a passphrase of 16+ characters is safer.",
+    "checking": "Checking…",
+    "ok": "Strong enough"
+  },
+  "weak": {
+    "tooShort": "Password must be at least 10 characters.",
+    "tooLong": "Password can be at most 72 bytes (about 24 CJK characters).",
+    "common": "This is a common weak password. Choose one that is harder to guess.",
+    "username": "Password must not contain the username.",
+    "product": "Password must not contain a product name such as gately.",
+    "sequence": "Password is a sequence of characters (such as 123456, abcdef, qwerty). Choose another one.",
+    "repeat": "Password is made of repeated characters or fragments. Choose another one.",
+    "simple": "Password uses only one type of character. Mix letters, digits or symbols, or use a passphrase of 16+ characters.",
+    "control": "Password must not contain line breaks or control characters."
+  },
+  "force": {
+    "titleDefault": "Change the default password first",
+    "titleWeak": "Change the weak password first",
+    "descDefault": "The administrator still uses the public default password, so anyone who knows it can sign in. Change it to continue.",
+    "descWeak": "The current password is too weak and easy to brute-force. Change it to continue.",
+    "username": "Username",
+    "current": "Current password",
+    "defaultHint": "The default password is {password}.",
+    "useDefault": "Fill in default password",
+    "newPassword": "New password",
+    "confirm": "Confirm new password",
+    "required": "Enter the current and new password",
+    "mismatch": "The new passwords do not match",
+    "submit": "Change and continue",
+    "done": "Password changed",
+    "doneRelogin": "Password changed. Please sign in again with the new password."
+  },
+  "banner": {
+    "risk": "The console has high-risk issues: {items}.",
+    "warn": "Console security score is {score}. Hardening recommended: {items}.",
+    "fix": "Harden now",
+    "snooze": "Remind me in 7 days",
+    "sep": ", ",
+    "more": " and more"
+  },
+  "center": {
+    "title": "Console security score",
+    "desc": "Checks how secure the console sign-in is under the current configuration. Resolve the flagged issues.",
+    "refresh": "Re-check",
+    "scoreLabel": "Security score {score}",
+    "level": {
+      "good": "Good",
+      "warn": "Hardening recommended",
+      "risk": "High risk"
+    },
+    "exposed": "The console may be exposed to the internet",
+    "notExposed": "The console is limited to the LAN or this machine",
+    "fix": "Fix"
+  },
+  "items": {
+    "password": {
+      "title": "Administrator password",
+      "ok": "Password strength is sufficient, or password login is turned off.",
+      "default": "Still using the public default password; anyone can sign in.",
+      "weak": "Password is too weak and easy to brute-force."
+    },
+    "twoFactor": {
+      "title": "Two-step verification",
+      "ok": "Two-step verification or Passkey is enabled.",
+      "warn": "Neither two-step verification nor Passkey is enabled, so a leaked or brute-forced password cannot be stopped from signing in."
+    },
+    "entry": {
+      "title": "Secure entry",
+      "ok": "A secure entry is set, or the console is limited to the LAN.",
+      "warn": "No secure entry is set, so scanners can find the sign-in page directly."
+    },
+    "https": {
+      "title": "HTTPS encryption",
+      "ok": "Sign-in traffic is encrypted, or the console is not exposed to the internet.",
+      "warn": "Currently accessed over plain HTTP; passwords and sessions travel unencrypted over the network."
+    },
+    "lockout": {
+      "title": "Failed-login lockout",
+      "ok": "The lockout policy is reasonable.",
+      "warn": "The failure limit is too high or the lockout too short, making brute force cheap."
+    },
+    "globalLimit": {
+      "title": "Unfamiliar-address failure budget",
+      "ok": "Enabled: sign-ins from unfamiliar addresses are limited automatically when brute force is spread across many of them.",
+      "warn": "Disabled: brute force spread across many addresses is not limited as a whole."
+    },
+    "username": {
+      "title": "Administrator username",
+      "ok": "The username is not a common default name.",
+      "warn": "The username is a common default name (such as admin). Use one that is hard to guess."
+    }
+  },
+  "limit": {
+    "label": "Unfamiliar-address failure budget",
+    "help": "Within 10 minutes, once the total failed sign-ins from all addresses that have never signed in successfully reach this count, sign-ins from unfamiliar addresses are temporarily limited; addresses that have signed in successfully are unaffected. Defends against brute force spread across many addresses. Default is 20."
+  },
+  "passwordLogin": {
+    "title": "Turn off password login",
+    "desc": "Once off, the administrator account can only sign in with a Passkey or a third-party login, so the password can no longer be brute-forced. Read-only accounts are unaffected.",
+    "needPasskey": "Register a Passkey before turning off password login.",
+    "lastPasskey": "Password login is off; the last Passkey cannot be deleted",
+    "confirmOff": "Once off, the administrator account cannot sign in with a password. If you lose all Passkeys, run gately reset-password on the server to turn it back on. Enter the current password to confirm.",
+    "confirmOn": "Once back on, the administrator account can sign in with a password again. Enter the current password to confirm.",
+    "changedOff": "Password login turned off",
+    "changedOn": "Password login turned back on"
+  }
+}

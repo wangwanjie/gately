@@ -1,0 +1,110 @@
+{
+  "strength": {
+    "bars": "Força da senha",
+    "hint": "Pelo menos 10 caracteres; evite senhas comuns, sequências e o nome de usuário. Frases secretas com 16 caracteres ou mais são mais seguras.",
+    "checking": "Verificando…",
+    "ok": "Força adequada"
+  },
+  "weak": {
+    "tooShort": "A senha deve ter pelo menos 10 caracteres.",
+    "tooLong": "A senha pode ter no máximo 72 bytes (cerca de 24 caracteres chineses).",
+    "common": "Esta é uma senha fraca comum. Escolha uma mais difícil de adivinhar.",
+    "username": "A senha não pode conter o nome de usuário.",
+    "product": "A senha não pode conter nomes de produtos como gately.",
+    "sequence": "A senha é uma sequência de caracteres (como 123456, abcdef, qwerty). Escolha outra.",
+    "repeat": "A senha é formada por caracteres ou trechos repetidos. Escolha outra.",
+    "simple": "A senha tem apenas um tipo de caractere. Misture letras, números ou símbolos, ou use uma frase secreta com 16 caracteres ou mais.",
+    "control": "A senha não pode conter quebras de linha nem caracteres de controle."
+  },
+  "force": {
+    "titleDefault": "Altere primeiro a senha padrão",
+    "titleWeak": "Altere primeiro a senha, que é simples demais",
+    "descDefault": "O administrador ainda usa a senha padrão pública, e qualquer pessoa que a conheça pode entrar. Só é possível continuar após alterar a senha.",
+    "descWeak": "A senha atual é fraca e pode ser quebrada com facilidade por força bruta. Só é possível continuar após alterar a senha.",
+    "username": "Nome de usuário",
+    "current": "Senha atual",
+    "defaultHint": "A senha padrão é {password}.",
+    "useDefault": "Preencher a senha padrão",
+    "newPassword": "Nova senha",
+    "confirm": "Confirmar nova senha",
+    "required": "Informe a senha atual e a nova senha",
+    "mismatch": "As duas novas senhas não coincidem",
+    "submit": "Alterar e continuar",
+    "done": "Senha alterada",
+    "doneRelogin": "Senha alterada. Entre novamente com a nova senha"
+  },
+  "banner": {
+    "risk": "Risco alto no painel de administração: {items}.",
+    "warn": "Pontuação de segurança do painel de administração: {score} pontos. Reforço recomendado: {items}.",
+    "fix": "Reforçar",
+    "snooze": "Não avisar por 7 dias",
+    "sep": ", ",
+    "more": " etc."
+  },
+  "center": {
+    "title": "Pontuação de segurança do painel de administração",
+    "desc": "Verifica, com base na configuração atual, o nível de segurança do acesso de login ao painel de administração. Recomenda-se resolver os problemas indicados.",
+    "refresh": "Verificar novamente",
+    "scoreLabel": "Pontuação de segurança: {score} pontos",
+    "level": {
+      "good": "Boa",
+      "warn": "Reforço recomendado",
+      "risk": "Risco alto"
+    },
+    "exposed": "O painel de administração pode estar exposto à internet",
+    "notExposed": "O painel de administração só pode ser acessado pela rede local ou pela própria máquina",
+    "fix": "Resolver"
+  },
+  "items": {
+    "password": {
+      "title": "Senha do administrador",
+      "ok": "Força da senha adequada ou login por senha desativado.",
+      "default": "Ainda usa a senha padrão pública; qualquer pessoa pode entrar.",
+      "weak": "A força da senha é insuficiente e ela pode ser quebrada por força bruta."
+    },
+    "twoFactor": {
+      "title": "Segunda verificação",
+      "ok": "Verificação em duas etapas ou Passkey ativada.",
+      "warn": "Verificação em duas etapas e Passkey desativadas: não é possível impedir o login se a senha vazar ou for quebrada por força bruta."
+    },
+    "entry": {
+      "title": "Entrada segura",
+      "ok": "Entrada segura definida, ou painel de administração acessível apenas pela rede local.",
+      "warn": "Entrada segura não definida; scanners podem encontrar a página de login diretamente."
+    },
+    "https": {
+      "title": "Criptografia HTTPS",
+      "ok": "O tráfego de login é criptografado, ou o painel de administração não está exposto à internet.",
+      "warn": "O acesso atual usa HTTP sem criptografia; senha e sessão trafegam em texto puro pela rede."
+    },
+    "lockout": {
+      "title": "Bloqueio por falhas de login",
+      "ok": "A política de bloqueio por falhas é adequada.",
+      "warn": "O limite de falhas é alto demais ou o tempo de bloqueio é curto demais; o custo da força bruta é baixo."
+    },
+    "globalLimit": {
+      "title": "Orçamento de falhas de endereços desconhecidos",
+      "ok": "Ativado: em ataques de força bruta distribuídos por muitos endereços desconhecidos, o login desses endereços é limitado automaticamente.",
+      "warn": "Desativado: ataques de força bruta distribuídos por muitos endereços não são limitados no conjunto."
+    },
+    "username": {
+      "title": "Nome de usuário do administrador",
+      "ok": "O nome de usuário não é um nome padrão comum.",
+      "warn": "O nome de usuário é um nome padrão comum (como admin); recomenda-se usar um nome difícil de adivinhar."
+    }
+  },
+  "limit": {
+    "label": "Orçamento de falhas de endereços desconhecidos",
+    "help": "Quando o total de falhas de login de todos os endereços que nunca entraram com sucesso atinge esse número em 10 minutos, o login de endereços desconhecidos é limitado temporariamente; endereços que já entraram com sucesso não são afetados. Protege contra força bruta distribuída por muitos endereços. Padrão: 20."
+  },
+  "passwordLogin": {
+    "title": "Desativar login por senha",
+    "desc": "Depois de desativado, a conta de administrador só entra com Passkey ou login de terceiros, e a senha não pode mais ser quebrada por força bruta. Contas somente leitura não são afetadas.",
+    "needPasskey": "Registre primeiro um Passkey e depois desative o login por senha.",
+    "lastPasskey": "O login por senha está desativado; não é possível excluir o último Passkey",
+    "confirmOff": "Depois de desativado, a conta de administrador não poderá entrar com senha. Se todos os Passkeys forem perdidos, será preciso executar gately reset-password no servidor para reativar. Informe a senha atual para confirmar.",
+    "confirmOn": "Depois de reativado, a conta de administrador poderá entrar com senha novamente. Informe a senha atual para confirmar.",
+    "changedOff": "Login por senha desativado",
+    "changedOn": "Login por senha reativado"
+  }
+}

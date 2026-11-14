@@ -6,7 +6,6 @@
   "role": "Rolle",
   "readonly": "Nur lesen",
   "password": "Passwort",
-  "passwordHint": "Mindestens 8 Zeichen.",
   "add": "Nur-Lese-Konto hinzufügen",
   "resetPassword": "Passwort zurücksetzen",
   "resetPrompt": "Neues Passwort für {name} (mindestens 8 Zeichen). Bestehende Sitzungen dieses Kontos werden abgemeldet.",

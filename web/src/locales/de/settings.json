@@ -20,7 +20,7 @@
     "title": "Administratorkonto",
     "username": "Benutzername",
     "newPassword": "Neues Passwort",
-    "newPasswordPlaceholder": "Mindestens 8 Zeichen",
+    "newPasswordPlaceholder": "Mindestens 10 Zeichen",
     "confirmPassword": "Neues Passwort bestätigen",
     "submit": "Zugangsdaten ändern",
     "help": "Nach der Änderung werden alle angemeldeten Sitzungen ungültig; Sie müssen sich erneut anmelden.",

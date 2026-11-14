@@ -20,7 +20,7 @@
     "title": "관리자 계정",
     "username": "사용자 이름",
     "newPassword": "새 비밀번호",
-    "newPasswordPlaceholder": "8자 이상",
+    "newPasswordPlaceholder": "10자 이상",
     "confirmPassword": "새 비밀번호 확인",
     "submit": "계정 비밀번호 변경",
     "help": "변경하면 로그인된 모든 세션이 무효가 되며 다시 로그인해야 합니다.",

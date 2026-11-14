@@ -4,10 +4,6 @@
   "go": "Öffnen",
   "later": "Später erinnern",
   "done": "Fertig, nicht mehr anzeigen",
-  "password": {
-    "title": "Standardpasswort ändern",
-    "desc": "Das Standardpasswort gately.cn ist öffentlich bekannt; ersetzen Sie es durch Ihr eigenes."
-  },
   "security": {
     "title": "Zweiten Faktor hinzufügen",
     "desc": "Aktivieren Sie die Zwei-Faktor-Authentifizierung oder registrieren Sie einen Passkey für eine sicherere Anmeldung."

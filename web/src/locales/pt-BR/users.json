@@ -6,7 +6,6 @@
   "role": "Função",
   "readonly": "Somente leitura",
   "password": "Senha",
-  "passwordHint": "Pelo menos 8 caracteres.",
   "add": "Adicionar conta somente leitura",
   "resetPassword": "Redefinir senha",
   "resetPrompt": "Nova senha para {name} (mínimo de 8 caracteres). As sessões atuais desta conta serão encerradas.",

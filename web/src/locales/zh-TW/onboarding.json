@@ -4,10 +4,6 @@
   "go": "前往",
   "later": "稍後提醒",
   "done": "完成，不再提示",
-  "password": {
-    "title": "修改預設密碼",
-    "desc": "預設密碼 gately.cn 是公開的，請換成你自己的密碼。"
-  },
   "security": {
     "title": "新增第二重驗證",
     "desc": "啟用兩步驟驗證或註冊 Passkey，讓登入更安全。"

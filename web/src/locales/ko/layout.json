@@ -9,8 +9,6 @@
   "logoutConfirm": "로그아웃하시겠습니까?",
   "logoutOk": "로그아웃",
   "readonlyBadge": "읽기 전용",
-  "defaultPassword": "아직 기본 비밀번호 {password}를 사용 중입니다. 이 비밀번호를 아는 사람은 누구나 관리 화면에 로그인할 수 있으니 지금 변경하세요.",
-  "changeNow": "지금 변경",
   "update": {
     "available": "새 버전 {latest} 이(가) 있습니다 (현재 {current})",
     "securityAdvisories": "현재 버전 {current} 이(가) 공개된 보안 문제({count}건)의 영향을 받습니다. 가능한 한 빨리 {latest}(으)로 업그레이드하세요",

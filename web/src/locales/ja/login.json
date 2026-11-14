@@ -27,5 +27,6 @@
   "or": "または",
   "passkey": "パスキーでログイン",
   "fnos": "fnOS アカウント {user} でログイン",
-  "totpLost": "認証アプリを紛失した場合は、サーバーで gately reset-totp を実行すると 2 段階認証を無効にできます。"
+  "totpLost": "認証アプリを紛失した場合は、サーバーで gately reset-totp を実行すると 2 段階認証を無効にできます。",
+  "passwordLoginOff": "管理者がパスワードログインを無効にしています。Passkey またはサードパーティログインを使用してください。"
 }

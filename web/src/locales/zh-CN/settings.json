@@ -20,7 +20,7 @@
     "title": "管理员账号",
     "username": "用户名",
     "newPassword": "新密码",
-    "newPasswordPlaceholder": "至少 8 位",
+    "newPasswordPlaceholder": "至少 10 位",
     "confirmPassword": "确认新密码",
     "submit": "修改账号密码",
     "help": "修改后所有已登录的会话都会失效，需要重新登录。",

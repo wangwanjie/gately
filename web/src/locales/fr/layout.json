@@ -9,8 +9,6 @@
   "logoutConfirm": "Voulez-vous vraiment vous déconnecter ?",
   "logoutOk": "Se déconnecter",
   "readonlyBadge": "Lecture seule",
-  "defaultPassword": "Vous utilisez toujours le mot de passe par défaut {password}. Toute personne qui le connaît peut se connecter à l'interface d'administration : changez-le maintenant.",
-  "changeNow": "Changer maintenant",
   "update": {
     "available": "Gately {latest} est disponible (actuelle {current})",
     "securityAdvisories": "La version actuelle {current} est concernée par des problèmes de sécurité publiés ({count}). Mettez à jour vers {latest} dès que possible",

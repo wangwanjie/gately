@@ -6,7 +6,6 @@
   "role": "Rol",
   "readonly": "Solo lectura",
   "password": "Contraseña",
-  "passwordHint": "Al menos 8 caracteres.",
   "add": "Añadir cuenta de solo lectura",
   "resetPassword": "Restablecer contraseña",
   "resetPrompt": "Nueva contraseña para {name} (mínimo 8 caracteres). Se cerrarán las sesiones actuales de esta cuenta.",

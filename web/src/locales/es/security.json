@@ -1,0 +1,110 @@
+{
+  "strength": {
+    "bars": "Seguridad de la contraseña",
+    "hint": "Mínimo 10 caracteres; evita contraseñas comunes, secuencias y el nombre de usuario. Una frase de 16 caracteres o más es más segura.",
+    "checking": "Comprobando…",
+    "ok": "Seguridad suficiente"
+  },
+  "weak": {
+    "tooShort": "La contraseña debe tener al menos 10 caracteres.",
+    "tooLong": "La contraseña puede tener 72 bytes como máximo (unos 24 caracteres chinos).",
+    "common": "Es una contraseña débil muy común; elige otra más difícil de adivinar.",
+    "username": "La contraseña no puede contener el nombre de usuario.",
+    "product": "La contraseña no puede contener nombres de producto como gately.",
+    "sequence": "La contraseña es una secuencia de caracteres (como 123456, abcdef, qwerty); elige otra.",
+    "repeat": "La contraseña se compone de caracteres o fragmentos repetidos; elige otra.",
+    "simple": "La contraseña usa un solo tipo de carácter; combina letras, números o símbolos, o usa una frase de 16 caracteres o más.",
+    "control": "La contraseña no puede contener saltos de línea ni caracteres de control."
+  },
+  "force": {
+    "titleDefault": "Cambia primero la contraseña predeterminada",
+    "titleWeak": "Cambia primero la contraseña demasiado simple",
+    "descDefault": "El administrador sigue usando la contraseña predeterminada pública, con la que cualquiera que la conozca puede iniciar sesión. Debes cambiarla para continuar.",
+    "descWeak": "La contraseña actual no es lo bastante segura y es fácil de descifrar por fuerza bruta. Debes cambiarla para continuar.",
+    "username": "Usuario",
+    "current": "Contraseña actual",
+    "defaultHint": "La contraseña predeterminada es {password}.",
+    "useDefault": "Rellenar la contraseña predeterminada",
+    "newPassword": "Nueva contraseña",
+    "confirm": "Confirmar nueva contraseña",
+    "required": "Introduce la contraseña actual y la nueva",
+    "mismatch": "Las dos contraseñas nuevas no coinciden",
+    "submit": "Cambiar y continuar",
+    "done": "Contraseña cambiada",
+    "doneRelogin": "Contraseña cambiada; vuelve a iniciar sesión con la nueva contraseña"
+  },
+  "banner": {
+    "risk": "El panel de administración tiene riesgos altos: {items}.",
+    "warn": "La puntuación de seguridad del panel de administración es {score}; se recomienda reforzarlo: {items}.",
+    "fix": "Reforzar",
+    "snooze": "No volver a avisar durante 7 días",
+    "sep": ", ",
+    "more": " y otros"
+  },
+  "center": {
+    "title": "Puntuación de seguridad del panel",
+    "desc": "Comprueba el nivel de seguridad de la entrada de inicio de sesión del panel según la configuración actual; se recomienda resolver los problemas señalados.",
+    "refresh": "Volver a comprobar",
+    "scoreLabel": "Puntuación de seguridad: {score}",
+    "level": {
+      "good": "Buena",
+      "warn": "Reforzar",
+      "risk": "Riesgo alto"
+    },
+    "exposed": "El panel de administración puede estar expuesto a Internet",
+    "notExposed": "El panel de administración solo es accesible desde la red local o este equipo",
+    "fix": "Resolver"
+  },
+  "items": {
+    "password": {
+      "title": "Contraseña del administrador",
+      "ok": "La contraseña es suficientemente segura o el inicio de sesión con contraseña está desactivado.",
+      "default": "Se sigue usando la contraseña predeterminada pública; cualquiera puede iniciar sesión.",
+      "weak": "La contraseña no es lo bastante segura y es fácil de descifrar por fuerza bruta."
+    },
+    "twoFactor": {
+      "title": "Verificación en dos pasos",
+      "ok": "La verificación en dos pasos o Passkey está activada.",
+      "warn": "La verificación en dos pasos y Passkey no están activadas; si la contraseña se filtra o se descifra, no se puede impedir el inicio de sesión."
+    },
+    "entry": {
+      "title": "Entrada segura",
+      "ok": "Hay una entrada segura configurada o el panel solo es accesible desde la red local.",
+      "warn": "No hay entrada segura configurada; los escáneres pueden encontrar directamente la página de inicio de sesión."
+    },
+    "https": {
+      "title": "Cifrado HTTPS",
+      "ok": "El tráfico de inicio de sesión está cifrado o el panel no está expuesto a Internet.",
+      "warn": "Se accede actualmente por HTTP sin cifrar; la contraseña y la sesión viajan en texto claro por la red."
+    },
+    "lockout": {
+      "title": "Bloqueo por fallos de inicio de sesión",
+      "ok": "La política de bloqueo por fallos es adecuada.",
+      "warn": "El límite de fallos es demasiado alto o el tiempo de bloqueo demasiado corto; la fuerza bruta resulta barata."
+    },
+    "globalLimit": {
+      "title": "Presupuesto de fallos de direcciones desconocidas",
+      "ok": "Activado: si hay fuerza bruta distribuida desde muchas direcciones desconocidas, se limita automáticamente el inicio de sesión desde direcciones desconocidas.",
+      "warn": "Desactivado: la fuerza bruta distribuida en muchas direcciones no se limita de forma global."
+    },
+    "username": {
+      "title": "Nombre de usuario del administrador",
+      "ok": "El nombre de usuario no es un nombre predeterminado común.",
+      "warn": "El nombre de usuario es un nombre predeterminado común (como admin); se recomienda cambiarlo por uno difícil de adivinar."
+    }
+  },
+  "limit": {
+    "label": "Presupuesto de fallos de direcciones desconocidas",
+    "help": "Cuando, en 10 minutos, los fallos de inicio de sesión acumulados de todas las direcciones que nunca han iniciado sesión con éxito alcanzan este número, el inicio de sesión desde direcciones desconocidas se limita temporalmente; las direcciones que ya han iniciado sesión con éxito no se ven afectadas. Sirve para frenar la fuerza bruta distribuida en muchas direcciones. Valor predeterminado: 20."
+  },
+  "passwordLogin": {
+    "title": "Desactivar el inicio de sesión con contraseña",
+    "desc": "Al desactivarlo, la cuenta de administrador solo puede usar Passkey o inicio de sesión de terceros, por lo que la contraseña ya no puede atacarse por fuerza bruta; las cuentas de solo lectura no se ven afectadas.",
+    "needPasskey": "Registra primero un Passkey y después desactiva el inicio de sesión con contraseña.",
+    "lastPasskey": "El inicio de sesión con contraseña está desactivado; no se puede eliminar el último Passkey",
+    "confirmOff": "Al desactivarlo, la cuenta de administrador no podrá iniciar sesión con contraseña. Si pierdes todos los Passkey, deberás ejecutar gately reset-password en el servidor para reactivarlo. Introduce la contraseña actual para confirmar.",
+    "confirmOn": "Al reactivarlo, podrás volver a iniciar sesión con contraseña en la cuenta de administrador. Introduce la contraseña actual para confirmar.",
+    "changedOff": "Inicio de sesión con contraseña desactivado",
+    "changedOn": "Inicio de sesión con contraseña reactivado"
+  }
+}

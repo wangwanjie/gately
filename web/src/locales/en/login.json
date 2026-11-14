@@ -27,5 +27,6 @@
   "or": "or",
   "passkey": "Sign in with a Passkey",
   "fnos": "Sign in as fnOS user {user}",
-  "totpLost": "Lost your authenticator? Run gately reset-totp on the server to turn off two-factor authentication."
+  "totpLost": "Lost your authenticator? Run gately reset-totp on the server to turn off two-factor authentication.",
+  "passwordLoginOff": "Password login is turned off by the administrator. Use a Passkey or a third-party login."
 }

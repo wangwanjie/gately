@@ -4,10 +4,6 @@
   "go": "Abrir",
   "later": "Recordármelo luego",
   "done": "Hecho, no volver a mostrar",
-  "password": {
-    "title": "Cambia la contraseña predeterminada",
-    "desc": "La contraseña predeterminada gately.cn es pública; cámbiala por una propia."
-  },
   "security": {
     "title": "Añade un segundo factor",
     "desc": "Activa la verificación en dos pasos o registra una passkey para un acceso más seguro."
