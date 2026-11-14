@@ -27,5 +27,6 @@
   "or": "或",
   "passkey": "使用 Passkey 登入",
   "fnos": "使用飛牛帳號 {user} 登入",
-  "totpLost": "遺失了驗證器？可在伺服器上執行 gately reset-totp 關閉兩步驟驗證。"
+  "totpLost": "遺失了驗證器？可在伺服器上執行 gately reset-totp 關閉兩步驟驗證。",
+  "passwordLoginOff": "管理員已關閉密碼登入，請使用 Passkey 或第三方登入。"
 }

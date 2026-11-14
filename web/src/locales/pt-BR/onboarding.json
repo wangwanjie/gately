@@ -4,10 +4,6 @@
   "go": "Abrir",
   "later": "Lembrar depois",
   "done": "Concluído, não mostrar mais",
-  "password": {
-    "title": "Troque a senha padrão",
-    "desc": "A senha padrão gately.cn é pública; troque-a por uma sua."
-  },
   "security": {
     "title": "Adicione um segundo fator",
     "desc": "Ative a verificação em duas etapas ou registre uma passkey para um acesso mais seguro."

@@ -4,10 +4,6 @@
   "go": "Ouvrir",
   "later": "Me le rappeler plus tard",
   "done": "Terminé, ne plus afficher",
-  "password": {
-    "title": "Changer le mot de passe par défaut",
-    "desc": "Le mot de passe par défaut gately.cn est public : remplacez-le par le vôtre."
-  },
   "security": {
     "title": "Ajouter un second facteur",
     "desc": "Activez la vérification en deux étapes ou enregistrez une passkey pour une connexion plus sûre."

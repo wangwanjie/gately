@@ -20,7 +20,7 @@
     "title": "Cuenta de administrador",
     "username": "Usuario",
     "newPassword": "Nueva contraseña",
-    "newPasswordPlaceholder": "Al menos 8 caracteres",
+    "newPasswordPlaceholder": "Al menos 10 caracteres",
     "confirmPassword": "Confirmar nueva contraseña",
     "submit": "Cambiar credenciales",
     "help": "Todas las sesiones iniciadas se invalidan tras el cambio; tendrás que iniciar sesión de nuevo.",

@@ -4,10 +4,6 @@
   "go": "Open",
   "later": "Remind me later",
   "done": "Done, don't show again",
-  "password": {
-    "title": "Change the default password",
-    "desc": "The default password gately.cn is public; replace it with your own."
-  },
   "security": {
     "title": "Add a second factor",
     "desc": "Enable two-step verification or register a Passkey for stronger sign-in."

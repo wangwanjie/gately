@@ -1,0 +1,110 @@
+{
+  "strength": {
+    "bars": "Robustesse du mot de passe",
+    "hint": "10 caractères minimum ; évitez les mots de passe courants, les suites de caractères et le nom d'utilisateur. Une phrase de passe de 16 caractères ou plus est plus sûre.",
+    "checking": "Vérification…",
+    "ok": "Robustesse suffisante"
+  },
+  "weak": {
+    "tooShort": "Le mot de passe doit comporter au moins 10 caractères.",
+    "tooLong": "Le mot de passe ne peut pas dépasser 72 octets (environ 24 caractères chinois).",
+    "common": "C'est un mot de passe faible très courant ; choisissez-en un plus difficile à deviner.",
+    "username": "Le mot de passe ne peut pas contenir le nom d'utilisateur.",
+    "product": "Le mot de passe ne peut pas contenir de nom de produit comme gately.",
+    "sequence": "Le mot de passe est une suite de caractères (comme 123456, abcdef, qwerty) ; choisissez-en un autre.",
+    "repeat": "Le mot de passe est composé de caractères ou de fragments répétés ; choisissez-en un autre.",
+    "simple": "Le mot de passe n'utilise qu'un seul type de caractère ; mélangez lettres, chiffres ou symboles, ou utilisez une phrase de passe de 16 caractères ou plus.",
+    "control": "Le mot de passe ne peut pas contenir de saut de ligne ni de caractère de contrôle."
+  },
+  "force": {
+    "titleDefault": "Changez d'abord le mot de passe par défaut",
+    "titleWeak": "Changez d'abord le mot de passe trop simple",
+    "descDefault": "L'administrateur utilise toujours le mot de passe par défaut public : toute personne qui le connaît peut se connecter. Changez le mot de passe pour continuer.",
+    "descWeak": "Le mot de passe actuel est trop faible et peut être facilement trouvé par force brute. Changez le mot de passe pour continuer.",
+    "username": "Nom d'utilisateur",
+    "current": "Mot de passe actuel",
+    "defaultHint": "Le mot de passe par défaut est {password}.",
+    "useDefault": "Remplir le mot de passe par défaut",
+    "newPassword": "Nouveau mot de passe",
+    "confirm": "Confirmer le nouveau mot de passe",
+    "required": "Saisissez le mot de passe actuel et le nouveau",
+    "mismatch": "Les deux nouveaux mots de passe ne correspondent pas",
+    "submit": "Changer et continuer",
+    "done": "Mot de passe modifié",
+    "doneRelogin": "Mot de passe modifié, reconnectez-vous avec le nouveau mot de passe"
+  },
+  "banner": {
+    "risk": "L'interface d'administration présente des risques élevés : {items}.",
+    "warn": "Le score de sécurité de l'interface d'administration est de {score} ; un renforcement est recommandé : {items}.",
+    "fix": "Renforcer",
+    "snooze": "Ne plus rappeler pendant 7 jours",
+    "sep": ", ",
+    "more": " et autres"
+  },
+  "center": {
+    "title": "Score de sécurité de l'interface d'administration",
+    "desc": "Évalue la sécurité de l'accès de connexion à l'interface d'administration selon la configuration actuelle ; il est recommandé de traiter les problèmes signalés.",
+    "refresh": "Relancer l'analyse",
+    "scoreLabel": "Score de sécurité : {score}",
+    "level": {
+      "good": "Bon",
+      "warn": "Renforcement conseillé",
+      "risk": "Risque élevé"
+    },
+    "exposed": "L'interface d'administration est peut-être exposée sur Internet",
+    "notExposed": "L'interface d'administration n'est accessible que depuis le réseau local ou cette machine",
+    "fix": "Corriger"
+  },
+  "items": {
+    "password": {
+      "title": "Mot de passe administrateur",
+      "ok": "Le mot de passe est suffisamment robuste, ou la connexion par mot de passe est désactivée.",
+      "default": "Le mot de passe par défaut public est toujours utilisé ; n'importe qui peut se connecter.",
+      "weak": "Le mot de passe est trop faible et facile à trouver par force brute."
+    },
+    "twoFactor": {
+      "title": "Authentification à deux facteurs",
+      "ok": "L'authentification à deux facteurs ou une Passkey est activée.",
+      "warn": "Ni l'authentification à deux facteurs ni Passkey ne sont activées ; en cas de fuite ou de découverte du mot de passe, la connexion ne peut pas être empêchée."
+    },
+    "entry": {
+      "title": "Entrée sécurisée",
+      "ok": "Une entrée sécurisée est définie, ou l'interface d'administration n'est accessible que depuis le réseau local.",
+      "warn": "Aucune entrée sécurisée n'est définie ; les scanners peuvent trouver directement la page de connexion."
+    },
+    "https": {
+      "title": "Chiffrement HTTPS",
+      "ok": "Le trafic de connexion est chiffré, ou l'interface d'administration n'est pas exposée sur Internet.",
+      "warn": "L'accès se fait actuellement en HTTP non chiffré ; le mot de passe et la session transitent en clair sur le réseau."
+    },
+    "lockout": {
+      "title": "Verrouillage après échecs de connexion",
+      "ok": "La politique de verrouillage après échecs est adaptée.",
+      "warn": "La limite d'échecs est trop élevée ou la durée de verrouillage trop courte ; la force brute coûte peu."
+    },
+    "globalLimit": {
+      "title": "Budget d'échecs des adresses inconnues",
+      "ok": "Activé : en cas de force brute répartie sur de nombreuses adresses inconnues, la connexion depuis les adresses inconnues est limitée automatiquement.",
+      "warn": "Désactivé : la force brute répartie sur de nombreuses adresses n'est pas limitée globalement."
+    },
+    "username": {
+      "title": "Nom d'utilisateur administrateur",
+      "ok": "Le nom d'utilisateur n'est pas un nom par défaut courant.",
+      "warn": "Le nom d'utilisateur est un nom par défaut courant (comme admin) ; il est recommandé d'en choisir un difficile à deviner."
+    }
+  },
+  "limit": {
+    "label": "Budget d'échecs des adresses inconnues",
+    "help": "Lorsque, en 10 minutes, le cumul des échecs de connexion de toutes les adresses qui ne se sont jamais connectées avec succès atteint ce nombre, la connexion depuis les adresses inconnues est temporairement limitée ; les adresses déjà connectées avec succès ne sont pas affectées. Sert à contrer la force brute répartie sur de nombreuses adresses. Valeur par défaut : 20."
+  },
+  "passwordLogin": {
+    "title": "Désactiver la connexion par mot de passe",
+    "desc": "Une fois désactivée, le compte administrateur ne peut utiliser que Passkey ou une connexion tierce, et le mot de passe ne peut plus être attaqué par force brute ; les comptes en lecture seule ne sont pas concernés.",
+    "needPasskey": "Enregistrez d'abord une Passkey, puis désactivez la connexion par mot de passe.",
+    "lastPasskey": "La connexion par mot de passe est désactivée ; la dernière Passkey ne peut pas être supprimée",
+    "confirmOff": "Une fois désactivée, le compte administrateur ne pourra plus se connecter par mot de passe. Si vous perdez toutes les Passkey, exécutez gately reset-password sur le serveur pour la réactiver. Saisissez le mot de passe actuel pour confirmer.",
+    "confirmOn": "Une fois réactivée, vous pourrez de nouveau vous connecter au compte administrateur par mot de passe. Saisissez le mot de passe actuel pour confirmer.",
+    "changedOff": "Connexion par mot de passe désactivée",
+    "changedOn": "Connexion par mot de passe réactivée"
+  }
+}

@@ -27,5 +27,6 @@
   "or": "oder",
   "passkey": "Mit Passkey anmelden",
   "fnos": "Als fnOS-Benutzer {user} anmelden",
-  "totpLost": "Authenticator verloren? Führen Sie auf dem Server gately reset-totp aus, um die Zwei-Faktor-Authentifizierung abzuschalten."
+  "totpLost": "Authenticator verloren? Führen Sie auf dem Server gately reset-totp aus, um die Zwei-Faktor-Authentifizierung abzuschalten.",
+  "passwordLoginOff": "Der Administrator hat die Passwortanmeldung deaktiviert. Bitte melden Sie sich mit Passkey oder über einen Drittanbieter an."
 }

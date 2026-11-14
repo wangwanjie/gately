@@ -9,8 +9,6 @@
   "logoutConfirm": "Möchten Sie sich wirklich abmelden?",
   "logoutOk": "Abmelden",
   "readonlyBadge": "Nur lesen",
-  "defaultPassword": "Sie verwenden noch das Standardpasswort {password}. Wer es kennt, kann sich an der Admin-Oberfläche anmelden – ändern Sie es jetzt.",
-  "changeNow": "Jetzt ändern",
   "update": {
     "available": "Gately {latest} ist verfügbar (aktuell {current})",
     "securityAdvisories": "Die aktuelle Version {current} ist von veröffentlichten Sicherheitsproblemen betroffen ({count}). Bitte so bald wie möglich auf {latest} aktualisieren",

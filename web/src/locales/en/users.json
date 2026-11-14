@@ -6,7 +6,6 @@
   "role": "Role",
   "readonly": "Read-only",
   "password": "Password",
-  "passwordHint": "At least 8 characters.",
   "add": "Add read-only account",
   "resetPassword": "Reset password",
   "resetPrompt": "New password for {name} (at least 8 characters). Existing sessions of this account are signed out.",

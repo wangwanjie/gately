@@ -20,7 +20,7 @@
     "title": "Compte administrateur",
     "username": "Nom d'utilisateur",
     "newPassword": "Nouveau mot de passe",
-    "newPasswordPlaceholder": "8 caractères minimum",
+    "newPasswordPlaceholder": "10 caractères minimum",
     "confirmPassword": "Confirmer le nouveau mot de passe",
     "submit": "Modifier les identifiants",
     "help": "Toutes les sessions connectées sont invalidées après la modification ; vous devrez vous reconnecter.",

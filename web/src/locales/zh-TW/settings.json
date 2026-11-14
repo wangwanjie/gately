@@ -20,7 +20,7 @@
     "title": "管理員帳號",
     "username": "使用者名稱",
     "newPassword": "新密碼",
-    "newPasswordPlaceholder": "至少 8 位",
+    "newPasswordPlaceholder": "至少 10 位",
     "confirmPassword": "確認新密碼",
     "submit": "變更帳號密碼",
     "help": "修改後所有已登入的工作階段都會失效，需要重新登入。",

@@ -9,8 +9,6 @@
   "logoutConfirm": "Are you sure you want to sign out?",
   "logoutOk": "Sign out",
   "readonlyBadge": "Read-only",
-  "defaultPassword": "You are still using the default password {password}. Anyone who knows it can sign in to the admin UI, so change it now.",
-  "changeNow": "Change now",
   "update": {
     "available": "Gately {latest} is available (current {current})",
     "securityAdvisories": "The current version {current} is affected by published security issues ({count}). Please upgrade to {latest} as soon as possible",

@@ -9,8 +9,6 @@
   "logoutConfirm": "Tem certeza de que deseja sair?",
   "logoutOk": "Sair",
   "readonlyBadge": "Somente leitura",
-  "defaultPassword": "Você ainda está usando a senha padrão {password}. Qualquer pessoa que a conheça pode entrar na interface de administração; troque-a agora.",
-  "changeNow": "Trocar agora",
   "update": {
     "available": "Gately {latest} disponível (atual {current})",
     "securityAdvisories": "A versão atual {current} é afetada por problemas de segurança publicados ({count}). Atualize para {latest} o quanto antes",

@@ -27,5 +27,6 @@
   "or": "ou",
   "passkey": "Entrar com passkey",
   "fnos": "Entrar como usuário do fnOS {user}",
-  "totpLost": "Perdeu o autenticador? Execute gately reset-totp no servidor para desativar a autenticação em dois fatores."
+  "totpLost": "Perdeu o autenticador? Execute gately reset-totp no servidor para desativar a autenticação em dois fatores.",
+  "passwordLoginOff": "O administrador desativou o login por senha. Use Passkey ou login de terceiros."
 }

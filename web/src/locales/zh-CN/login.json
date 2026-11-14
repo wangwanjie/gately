@@ -27,5 +27,6 @@
   "or": "或",
   "passkey": "使用 Passkey 登录",
   "fnos": "使用飞牛账号 {user} 登录",
-  "totpLost": "丢失了验证器？可在服务器上运行 gately reset-totp 关闭两步验证。"
+  "totpLost": "丢失了验证器？可在服务器上运行 gately reset-totp 关闭两步验证。",
+  "passwordLoginOff": "管理员已关闭密码登录，请使用 Passkey 或第三方登录。"
 }

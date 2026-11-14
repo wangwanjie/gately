@@ -9,8 +9,6 @@
   "logoutConfirm": "¿Seguro que quieres cerrar sesión?",
   "logoutOk": "Cerrar sesión",
   "readonlyBadge": "Solo lectura",
-  "defaultPassword": "Sigues usando la contraseña predeterminada {password}. Cualquiera que la conozca puede entrar en la interfaz de administración; cámbiala ahora.",
-  "changeNow": "Cambiar ahora",
   "update": {
     "available": "Gately {latest} disponible (actual {current})",
     "securityAdvisories": "La versión actual {current} está afectada por problemas de seguridad publicados ({count}). Actualiza a {latest} lo antes posible",

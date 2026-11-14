@@ -27,5 +27,6 @@
   "or": "o",
   "passkey": "Iniciar sesión con passkey",
   "fnos": "Iniciar sesión como usuario de fnOS {user}",
-  "totpLost": "¿Perdiste el autenticador? Ejecuta gately reset-totp en el servidor para desactivar la autenticación de dos factores."
+  "totpLost": "¿Perdiste el autenticador? Ejecuta gately reset-totp en el servidor para desactivar la autenticación de dos factores.",
+  "passwordLoginOff": "El administrador ha desactivado el inicio de sesión con contraseña; usa Passkey o un inicio de sesión de terceros."
 }

@@ -27,5 +27,6 @@
   "or": "ou",
   "passkey": "Se connecter avec une passkey",
   "fnos": "Se connecter avec le compte fnOS {user}",
-  "totpLost": "Authentificateur perdu ? Exécutez gately reset-totp sur le serveur pour désactiver l'authentification à deux facteurs."
+  "totpLost": "Authentificateur perdu ? Exécutez gately reset-totp sur le serveur pour désactiver l'authentification à deux facteurs.",
+  "passwordLoginOff": "L'administrateur a désactivé la connexion par mot de passe ; utilisez Passkey ou une connexion tierce."
 }

@@ -20,7 +20,7 @@
     "title": "管理者アカウント",
     "username": "ユーザー名",
     "newPassword": "新しいパスワード",
-    "newPasswordPlaceholder": "8 文字以上",
+    "newPasswordPlaceholder": "10 文字以上",
     "confirmPassword": "新しいパスワード（確認）",
     "submit": "アカウント情報を変更",
     "help": "変更後、ログイン中のすべてのセッションが無効になり、再ログインが必要です。",

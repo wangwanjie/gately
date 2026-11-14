@@ -6,7 +6,6 @@
   "role": "ロール",
   "readonly": "読み取り専用",
   "password": "パスワード",
-  "passwordHint": "8 文字以上。",
   "add": "読み取り専用アカウントを追加",
   "resetPassword": "パスワードをリセット",
   "resetPrompt": "{name} の新しいパスワード（8 文字以上）。このアカウントの既存セッションはログアウトされます。",
