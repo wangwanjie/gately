@@ -38027,7 +38027,7 @@
     },
     "/api/session": {
       "get": {
-        "description": "返回 `username`、`role`（`admin` 或 `readonly`）、`disabledModules`（已关闭的功能模块 ID）、`absentModules`（定制构建中没有编译进来的模块 ID，完整版为空）与 `defaultPassword`（管理员仍在使用默认密码 `gately.cn` 时为 true，管理界面据此提醒修改）。\n\n任何有效的 API 令牌均可访问，无需特定权限。",
+        "description": "返回 `username`、`role`（`admin` 或 `readonly`）、`disabledModules`（已关闭的功能模块 ID）、`absentModules`（定制构建中没有编译进来的模块 ID，完整版为空）、`passwordIssue`（`default` 为仍在使用默认密码 `gately.cn`，`weak` 为密码过弱，空为正常；不为空时管理界面强制修改密码，服务端拒绝其他写操作）与 `defaultPassword`（旧版字段，与 `passwordIssue` 为 `default` 等价）。\n\n任何有效的 API 令牌均可访问，无需特定权限。",
         "responses": {
           "200": {
             "description": "成功"
@@ -43726,7 +43726,7 @@
     },
     "/api/system/settings": {
       "get": {
-        "description": "仅登录会话可用。只读字段 `modules` 列出全部功能模块及依赖关系，`gatewayAvailable` 表示以飞牛统一网关方式运行。`updateProxy` 为检查更新与在线升级访问 GitHub 时使用的代理。`restrictOutbound` 为 true 时（默认 false），管理员配置的出站请求（Webhook、通知、IP 列表订阅、DDNS 回调与 IP 查询地址、更新检查与程序下载、第三方登录等）在连接时拒绝回环、私网、链路本地（含云厂商元数据地址 169.254.169.254）与 ULA 等地址，对域名解析结果和重定向同样生效，保存后立即生效；反向代理上游、网络唤醒、存储挂载等面向内网的功能不受影响。`denyMode` 为未授权访问（被封禁、仅内网时的外网访问、未经过安全入口）的响应方式：空为默认提示页，`notfound` 纯 404，`blank` 空白页，`close` 断开连接，`drop` 不响应直到超时，`custom` 自定义页面；`denyStatus` 为自定义页面的状态码（200、403、404、410、500、502、503），`denyPage` 为自定义页面 HTML（上限 64 KB，在禁止脚本与外部资源的沙箱 CSP 下显示）。\n\n**仅登录会话可用，API 令牌无法访问此接口。**",
+        "description": "仅登录会话可用。只读字段 `modules` 列出全部功能模块及依赖关系，`gatewayAvailable` 表示以飞牛统一网关方式运行。`updateProxy` 为检查更新与在线升级访问 GitHub 时使用的代理。`restrictOutbound` 为 true 时（默认 false），管理员配置的出站请求（Webhook、通知、IP 列表订阅、DDNS 回调与 IP 查询地址、更新检查与程序下载、第三方登录等）在连接时拒绝回环、私网、链路本地（含云厂商元数据地址 169.254.169.254）与 ULA 等地址，对域名解析结果和重定向同样生效，保存后立即生效；反向代理上游、网络唤醒、存储挂载等面向内网的功能不受影响。`denyMode` 为未授权访问（被封禁、仅内网时的外网访问、未经过安全入口）的响应方式：空为默认提示页，`notfound` 纯 404，`blank` 空白页，`close` 断开连接，`drop` 不响应直到超时，`custom` 自定义页面；`denyStatus` 为自定义页面的状态码（200、403、404、410、500、502、503），`denyPage` 为自定义页面 HTML（上限 64 KB，在禁止脚本与外部资源的沙箱 CSP 下显示）。登录限流：`maxLoginFailures` 为单个来源连续失败的上限，`lockMinutes` 为锁定分钟数，同一来源反复被锁定时锁定时长翻倍（最长 24 小时）；`loginGlobalLimit` 为陌生来源（从未登录成功过的地址）10 分钟内允许的密码登录失败总数，0 表示默认 20，负数表示关闭，用完后陌生来源的密码登录返回 429，常用地址与 Passkey 登录不受影响。\n\n**仅登录会话可用，API 令牌无法访问此接口。**",
         "responses": {
           "200": {
             "description": "成功"

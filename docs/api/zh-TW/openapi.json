@@ -38027,7 +38027,7 @@
     },
     "/api/session": {
       "get": {
-        "description": "回傳 `username`、`role`（`admin` 或 `readonly`）、`disabledModules`（已關閉的功能模組 ID）、`absentModules`（自訂建置中沒有編譯進來的模組 ID，完整版為空）與 `defaultPassword`（管理員仍在使用預設密碼 `gately.cn` 時為 true，管理介面據此提醒修改）。\n\n任何有效的 API 權杖皆可存取，無需特定權限。",
+        "description": "回傳 `username`、`role`（`admin` 或 `readonly`）、`disabledModules`（已關閉的功能模組 ID）、`absentModules`（自訂建置中沒有編譯進來的模組 ID，完整版為空）、`passwordIssue`（`default` 為仍在使用預設密碼 `gately.cn`，`weak` 為密碼過弱，空為正常；不為空時管理介面強制修改密碼，伺服器拒絕其他寫入操作）與 `defaultPassword`（舊版欄位，與 `passwordIssue` 為 `default` 等價）。\n\n任何有效的 API 權杖皆可存取，無需特定權限。",
         "responses": {
           "200": {
             "description": "成功"
@@ -43726,7 +43726,7 @@
     },
     "/api/system/settings": {
       "get": {
-        "description": "僅登入工作階段可用。唯讀欄位 `modules` 列出全部功能模組及相依關係，`gatewayAvailable` 表示以飛牛統一閘道方式執行。`updateProxy` 為檢查更新與線上升級存取 GitHub 時使用的代理。`restrictOutbound` 為 true 時（預設 false），管理員設定的對外請求（Webhook、通知、IP 清單訂閱、DDNS 回呼與 IP 查詢位址、更新檢查與程式下載、第三方登入等）會在連線時拒絕迴環、私有網路、連結本機（含雲端供應商中繼資料位址 169.254.169.254）與 ULA 等位址，對網域解析結果和重新導向同樣有效，儲存後立即生效；反向代理上游、網路喚醒、儲存掛載等面向內網的功能不受影響。`denyMode` 為未授權存取（被封鎖、僅內網時的外網存取、未經過安全入口）的回應方式：空為預設提示頁，`notfound` 純 404，`blank` 空白頁，`close` 中斷連線，`drop` 不回應直到逾時，`custom` 自訂頁面；`denyStatus` 為自訂頁面的狀態碼（200、403、404、410、500、502、503），`denyPage` 為自訂頁面 HTML（上限 64 KB，在禁止指令碼與外部資源的沙箱 CSP 下顯示）。\n\n**僅限登入工作階段使用，API 權杖無法存取此介面。**",
+        "description": "僅登入工作階段可用。唯讀欄位 `modules` 列出全部功能模組及相依關係，`gatewayAvailable` 表示以飛牛統一閘道方式執行。`updateProxy` 為檢查更新與線上升級存取 GitHub 時使用的代理。`restrictOutbound` 為 true 時（預設 false），管理員設定的對外請求（Webhook、通知、IP 清單訂閱、DDNS 回呼與 IP 查詢位址、更新檢查與程式下載、第三方登入等）會在連線時拒絕迴環、私有網路、連結本機（含雲端供應商中繼資料位址 169.254.169.254）與 ULA 等位址，對網域解析結果和重新導向同樣有效，儲存後立即生效；反向代理上游、網路喚醒、儲存掛載等面向內網的功能不受影響。`denyMode` 為未授權存取（被封鎖、僅內網時的外網存取、未經過安全入口）的回應方式：空為預設提示頁，`notfound` 純 404，`blank` 空白頁，`close` 中斷連線，`drop` 不回應直到逾時，`custom` 自訂頁面；`denyStatus` 為自訂頁面的狀態碼（200、403、404、410、500、502、503），`denyPage` 為自訂頁面 HTML（上限 64 KB，在禁止指令碼與外部資源的沙箱 CSP 下顯示）。登入限流：`maxLoginFailures` 為單一來源連續失敗的上限，`lockMinutes` 為鎖定分鐘數，同一來源反覆被鎖定時鎖定時長加倍（最長 24 小時）；`loginGlobalLimit` 為陌生來源（從未登入成功過的位址）10 分鐘內允許的密碼登入失敗總數，0 表示預設 20，負數表示關閉，用完後陌生來源的密碼登入回傳 429，常用位址與 Passkey 登入不受影響。\n\n**僅限登入工作階段使用，API 權杖無法存取此介面。**",
         "responses": {
           "200": {
             "description": "成功"
