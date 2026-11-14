@@ -6118,6 +6118,160 @@
         "x-token-allowed": false
       }
     },
+    "/api/account/password-check": {
+      "post": {
+        "description": "リクエストボディ `{\"username\": \"\", \"password\": \"\"}`。`username` が空の場合は管理者ユーザー名を使用します。`{\"ok\": true}` または `{\"ok\": false, \"code\": \"...\"}` を返します。`tooShort`（10 文字未満）、`tooLong`（72 バイト超）、`common`（一般的な脆弱なパスワードとその変形）、`username`（ユーザー名を含む）、`product`（製品名を含む）、`sequence`（連続した文字）、`repeat`（繰り返し）、`simple`（文字の種類が少なすぎる）、`control`（制御文字を含む）。パスワードは記録されません。ログインセッションでのみ利用できます。\n\n**ログインセッションでのみ利用できます。API トークンではこのエンドポイントにアクセスできません。**",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "summary": "パスワード強度を事前チェックする",
+        "tags": [
+          "アカウント"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/account/password-login": {
+      "get": {
+        "description": "`{\"disabled\": false, \"passkeys\": 0}` を返します。ログインセッションでのみ利用できます。\n\n**ログインセッションでのみ利用できます。API トークンではこのエンドポイントにアクセスできません。**",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "summary": "パスワードログインが無効かどうかを確認する",
+        "tags": [
+          "アカウント"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      },
+      "put": {
+        "description": "リクエストボディ `{\"password\": \"現在のパスワード\", \"disabled\": true}`。無効にすると、管理者アカウントは Passkey またはサードパーティログインでのみログインでき、パスワードを総当たりで破られることはなくなります。無効にする前に Passkey の登録が必要で、無効の間は最後の Passkey を削除できません。読み取り専用アカウントは影響を受けません。サーバーで `gately reset-password` を実行するとパスワードログインが再び有効になります。ログインセッションでのみ利用できます。\n\n**ログインセッションでのみ利用できます。API トークンではこのエンドポイントにアクセスできません。**",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "summary": "管理者のパスワードログインを無効または有効にする",
+        "tags": [
+          "アカウント"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
     "/api/account/sessions/revoke": {
       "post": {
         "description": "すべての管理画面ログインセッション（パスワード、Passkey、サードパーティログイン、fnOS ゲートウェイが発行したもの）を、現在のセッションも含めて直ちに無効にします。再ログインが必要です。API トークンには影響しません。ログアウト（`POST /api/logout`）は現在のセッションだけを失効させます。失効の記録は永続化され、再起動後も有効です。管理者のログインセッションのみ使用できます。\n\n**ログインセッションでのみ利用できます。API トークンではこのエンドポイントにアクセスできません。**",
@@ -43430,6 +43584,57 @@
         ],
         "x-required-scope": "!denied",
         "x-token-allowed": false
+      }
+    },
+    "/api/system/security": {
+      "get": {
+        "description": "現在の設定に基づき、0〜100 のセキュリティスコアと項目別のチェック結果を返します。`score` はスコア、`level` は `good`、`warn`、`risk` のいずれか、`exposed` は管理画面がインターネットに公開されている可能性を示し、`passwordIssue` は `default`（初期パスワードのまま）、`weak`（強度不足）または空、`items` は各チェック項目（`id`、`status`、`points` は減点、`max` は満点）で、`password`、`twoFactor`、`entry`、`lockout`、`https`、`globalLimit`、`username` があります。管理画面はこれをもとに強化の通知を表示します。\n\n必要な権限: `system:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "管理画面のセキュリティスコアを確認する",
+        "tags": [
+          "システム"
+        ],
+        "x-required-scope": "system:read",
+        "x-token-allowed": true
       }
     },
     "/api/system/selfcheck": {

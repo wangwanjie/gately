@@ -6118,6 +6118,160 @@
         "x-token-allowed": false
       }
     },
+    "/api/account/password-check": {
+      "post": {
+        "description": "Corps de la requête `{\"username\": \"\", \"password\": \"\"}` ; si `username` est vide, le nom d'utilisateur de l'administrateur est utilisé. Renvoie `{\"ok\": true}` ou `{\"ok\": false, \"code\": \"...\"}` : `tooShort` (moins de 10 caractères), `tooLong` (plus de 72 octets), `common` (mot de passe faible courant et ses variantes), `username` (contient le nom d'utilisateur), `product` (contient un nom de produit), `sequence` (caractères consécutifs), `repeat` (répétition), `simple` (trop peu de types de caractères), `control` (contient des caractères de contrôle). Le mot de passe n'est pas enregistré. Session uniquement.\n\n**Disponible uniquement pour les sessions de connexion ; les jetons d'API ne peuvent pas accéder à ce point d'accès.**",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "summary": "Vérifier à l'avance la robustesse du mot de passe",
+        "tags": [
+          "Compte"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/account/password-login": {
+      "get": {
+        "description": "Renvoie `{\"disabled\": false, \"passkeys\": 0}`. Session uniquement.\n\n**Disponible uniquement pour les sessions de connexion ; les jetons d'API ne peuvent pas accéder à ce point d'accès.**",
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "summary": "Consulter si la connexion par mot de passe est désactivée",
+        "tags": [
+          "Compte"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      },
+      "put": {
+        "description": "Corps de la requête `{\"password\": \"mot de passe actuel\", \"disabled\": true}`. Une fois désactivée, le compte administrateur ne peut utiliser que Passkey ou une connexion tierce, et le mot de passe ne peut plus être attaqué par force brute ; une Passkey doit être enregistrée avant la désactivation et, tant que la connexion par mot de passe est désactivée, la dernière Passkey ne peut pas être supprimée ; les comptes en lecture seule ne sont pas concernés. Exécuter `gately reset-password` sur le serveur réactive la connexion par mot de passe. Session uniquement.\n\n**Disponible uniquement pour les sessions de connexion ; les jetons d'API ne peuvent pas accéder à ce point d'accès.**",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "summary": "Désactiver ou réactiver la connexion par mot de passe de l'administrateur",
+        "tags": [
+          "Compte"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
     "/api/account/sessions/revoke": {
       "post": {
         "description": "Invalide immédiatement toutes les sessions de connexion à l'administration (émises par mot de passe, Passkey, connexion tierce et passerelle fnOS), y compris la session en cours ; il faut alors se reconnecter. Les jetons API ne sont pas affectés. La déconnexion (`POST /api/logout`) ne révoque que la session en cours. Les révocations sont conservées et restent valables après un redémarrage. Réservé aux sessions d'administrateur.\n\n**Disponible uniquement pour les sessions de connexion ; les jetons d'API ne peuvent pas accéder à ce point d'accès.**",
@@ -43430,6 +43584,57 @@
         ],
         "x-required-scope": "!denied",
         "x-token-allowed": false
+      }
+    },
+    "/api/system/security": {
+      "get": {
+        "description": "Renvoie, d'après la configuration actuelle, un score de sécurité de 0 à 100 et le résultat de chaque vérification : `score` est le score, `level` vaut `good`, `warn` ou `risk`, `exposed` indique que l'interface d'administration est peut-être exposée sur Internet, `passwordIssue` vaut `default` (mot de passe par défaut toujours utilisé), `weak` (robustesse insuffisante) ou vide, et `items` liste les vérifications (`id`, `status`, `points` points déduits, `max` score maximal) : `password`, `twoFactor`, `entry`, `lockout`, `https`, `globalLimit`, `username`. L'interface d'administration s'en sert pour afficher les rappels de renforcement.\n\nPermission requise : `system:read`.",
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Consulter le score de sécurité de l'interface d'administration",
+        "tags": [
+          "Système"
+        ],
+        "x-required-scope": "system:read",
+        "x-token-allowed": true
       }
     },
     "/api/system/selfcheck": {

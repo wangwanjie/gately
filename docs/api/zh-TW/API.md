@@ -939,6 +939,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | --- | --- | --- | --- |
 | GET | `/api/session` | 任意有效權杖 | 檢視目前驗證身分 |
 | GET | `/api/status` | `status:read` | 檢視系統與各模組狀態 |
+| GET | `/api/system/security` | `system:read` | 查看管理端安全評分 |
 | GET | `/api/logs` | `logs:read` | 檢視系統日誌 |
 | GET | `/api/logs/sources` | `logs:read` | 列出系統日誌的全部來源 |
 | GET | `/api/logs/export` | `logs:read` | 匯出系統日誌 |
@@ -992,6 +993,9 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/account` | 僅登入工作階段 | 修改管理員使用者名稱與密碼 |
 | POST | `/api/account/sessions/revoke` | 僅登入工作階段 | 登出所有裝置 |
 | PUT | `/api/account/ui-language` | 僅登入工作階段 | 記錄管理介面語言 |
+| POST | `/api/account/password-check` | 僅登入工作階段 | 預先檢查密碼強度 |
+| GET | `/api/account/password-login` | 僅登入工作階段 | 查看密碼登入是否已關閉 |
+| PUT | `/api/account/password-login` | 僅登入工作階段 | 關閉或開啟管理員的密碼登入 |
 | GET | `/api/account/passkeys` | 僅登入工作階段 | 列出已註冊的 Passkey |
 | POST | `/api/account/passkeys/begin` | 僅登入工作階段 | 開始註冊 Passkey |
 | POST | `/api/account/passkeys` | 僅登入工作階段 | 完成註冊 Passkey |

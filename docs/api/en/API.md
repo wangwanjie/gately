@@ -939,6 +939,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | --- | --- | --- | --- |
 | GET | `/api/session` | Any valid token | View the current authenticated identity |
 | GET | `/api/status` | `status:read` | View system and module status |
+| GET | `/api/system/security` | `system:read` | Get the console security score |
 | GET | `/api/logs` | `logs:read` | View system logs |
 | GET | `/api/logs/sources` | `logs:read` | List all sources of system logs |
 | GET | `/api/logs/export` | `logs:read` | Export system logs |
@@ -992,6 +993,9 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | PUT | `/api/account` | Login sessions only | Change the administrator username and password |
 | POST | `/api/account/sessions/revoke` | Login sessions only | Sign out of all devices |
 | PUT | `/api/account/ui-language` | Login sessions only | Record the admin console language |
+| POST | `/api/account/password-check` | Login sessions only | Pre-check password strength |
+| GET | `/api/account/password-login` | Login sessions only | Check whether password login is turned off |
+| PUT | `/api/account/password-login` | Login sessions only | Turn administrator password login off or on |
 | GET | `/api/account/passkeys` | Login sessions only | List registered Passkeys |
 | POST | `/api/account/passkeys/begin` | Login sessions only | Start Passkey registration |
 | POST | `/api/account/passkeys` | Login sessions only | Finish Passkey registration |

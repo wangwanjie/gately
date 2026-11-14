@@ -939,6 +939,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | --- | --- | --- | --- |
 | GET | `/api/session` | Qualquer token válido | Ver a identidade autenticada atual |
 | GET | `/api/status` | `status:read` | Ver o estado do sistema e dos módulos |
+| GET | `/api/system/security` | `system:read` | Consultar a pontuação de segurança do painel de administração |
 | GET | `/api/logs` | `logs:read` | Ver logs do sistema |
 | GET | `/api/logs/sources` | `logs:read` | Listar todas as origens dos logs do sistema |
 | GET | `/api/logs/export` | `logs:read` | Exportar logs do sistema |
@@ -992,6 +993,9 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | PUT | `/api/account` | Somente sessão de login | Modificar usuário e senha do administrador |
 | POST | `/api/account/sessions/revoke` | Somente sessão de login | Sair de todos os dispositivos |
 | PUT | `/api/account/ui-language` | Somente sessão de login | Registrar o idioma do console de administração |
+| POST | `/api/account/password-check` | Somente sessão de login | Verificar previamente a força da senha |
+| GET | `/api/account/password-login` | Somente sessão de login | Consultar se o login por senha está desativado |
+| PUT | `/api/account/password-login` | Somente sessão de login | Desativar ou ativar o login por senha do administrador |
 | GET | `/api/account/passkeys` | Somente sessão de login | Listar Passkeys registradas |
 | POST | `/api/account/passkeys/begin` | Somente sessão de login | Iniciar o registro de uma Passkey |
 | POST | `/api/account/passkeys` | Somente sessão de login | Concluir o registro da Passkey |

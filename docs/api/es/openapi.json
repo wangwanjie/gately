@@ -6118,6 +6118,160 @@
         "x-token-allowed": false
       }
     },
+    "/api/account/password-check": {
+      "post": {
+        "description": "Cuerpo de la solicitud `{\"username\": \"\", \"password\": \"\"}`; si `username` está vacío se usa el nombre de usuario del administrador. Devuelve `{\"ok\": true}` o `{\"ok\": false, \"code\": \"...\"}`: `tooShort` (menos de 10 caracteres), `tooLong` (más de 72 bytes), `common` (contraseña débil común y sus variantes), `username` (contiene el nombre de usuario), `product` (contiene un nombre de producto), `sequence` (caracteres consecutivos), `repeat` (repetición), `simple` (pocos tipos de carácter), `control` (contiene caracteres de control). La contraseña no se registra. Solo sesión.\n\n**Solo disponible para sesiones de inicio de sesión; los tokens de API no pueden acceder a este endpoint.**",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parámetros de solicitud incorrectos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token no válido, caducado o sin sesión iniciada"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Al token le falta el permiso necesario"
+          }
+        },
+        "summary": "Comprobar previamente la seguridad de la contraseña",
+        "tags": [
+          "Cuenta"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/account/password-login": {
+      "get": {
+        "description": "Devuelve `{\"disabled\": false, \"passkeys\": 0}`. Solo sesión.\n\n**Solo disponible para sesiones de inicio de sesión; los tokens de API no pueden acceder a este endpoint.**",
+        "responses": {
+          "200": {
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parámetros de solicitud incorrectos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token no válido, caducado o sin sesión iniciada"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Al token le falta el permiso necesario"
+          }
+        },
+        "summary": "Consultar si el inicio de sesión con contraseña está desactivado",
+        "tags": [
+          "Cuenta"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      },
+      "put": {
+        "description": "Cuerpo de la solicitud `{\"password\": \"contraseña actual\", \"disabled\": true}`. Al desactivarlo, la cuenta de administrador solo puede usar Passkey o inicio de sesión de terceros, por lo que la contraseña ya no puede atacarse por fuerza bruta; antes de desactivarlo debe haber un Passkey registrado y, mientras esté desactivado, no se puede eliminar el último Passkey; las cuentas de solo lectura no se ven afectadas. Ejecutar `gately reset-password` en el servidor reactiva el inicio de sesión con contraseña. Solo sesión.\n\n**Solo disponible para sesiones de inicio de sesión; los tokens de API no pueden acceder a este endpoint.**",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parámetros de solicitud incorrectos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token no válido, caducado o sin sesión iniciada"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Al token le falta el permiso necesario"
+          }
+        },
+        "summary": "Desactivar o activar el inicio de sesión con contraseña del administrador",
+        "tags": [
+          "Cuenta"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
     "/api/account/sessions/revoke": {
       "post": {
         "description": "Invalida de inmediato todas las sesiones de administración (emitidas por contraseña, Passkey, inicio de sesión de terceros y la pasarela de fnOS), incluida la actual, por lo que hay que volver a iniciar sesión; los tokens de API no se ven afectados. Cerrar sesión (`POST /api/logout`) solo revoca la sesión actual. Los registros de revocación se conservan y siguen vigentes tras un reinicio. Solo para sesiones de administrador.\n\n**Solo disponible para sesiones de inicio de sesión; los tokens de API no pueden acceder a este endpoint.**",
@@ -43430,6 +43584,57 @@
         ],
         "x-required-scope": "!denied",
         "x-token-allowed": false
+      }
+    },
+    "/api/system/security": {
+      "get": {
+        "description": "Devuelve, según la configuración actual, una puntuación de seguridad de 0 a 100 y el resultado de cada comprobación: `score` es la puntuación, `level` es `good`, `warn` o `risk`, `exposed` indica que el panel de administración puede estar expuesto a Internet, `passwordIssue` es `default` (sigue la contraseña predeterminada), `weak` (contraseña poco segura) o vacío, e `items` son las comprobaciones (`id`, `status`, `points` puntos descontados, `max` puntuación máxima): `password`, `twoFactor`, `entry`, `lockout`, `https`, `globalLimit`, `username`. El panel de administración las usa para mostrar avisos de refuerzo.\n\nPermiso necesario: `system:read`.",
+        "responses": {
+          "200": {
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parámetros de solicitud incorrectos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token no válido, caducado o sin sesión iniciada"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Al token le falta el permiso necesario"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Consultar la puntuación de seguridad del panel de administración",
+        "tags": [
+          "Sistema"
+        ],
+        "x-required-scope": "system:read",
+        "x-token-allowed": true
       }
     },
     "/api/system/selfcheck": {

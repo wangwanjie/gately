@@ -939,6 +939,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | --- | --- | --- | --- |
 | GET | `/api/session` | Любой действующий токен | Просмотр текущего удостоверения аутентификации |
 | GET | `/api/status` | `status:read` | Просмотр состояния системы и модулей |
+| GET | `/api/system/security` | `system:read` | Просмотреть оценку безопасности консоли управления |
 | GET | `/api/logs` | `logs:read` | Просмотр системного журнала |
 | GET | `/api/logs/sources` | `logs:read` | Список всех источников системных журналов |
 | GET | `/api/logs/export` | `logs:read` | Экспорт системных журналов |
@@ -992,6 +993,9 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/account` | Только сессия входа | Изменить имя пользователя и пароль администратора |
 | POST | `/api/account/sessions/revoke` | Только сессия входа | Выйти на всех устройствах |
 | PUT | `/api/account/ui-language` | Только сессия входа | Сохранить язык панели управления |
+| POST | `/api/account/password-check` | Только сессия входа | Предварительная проверка надёжности пароля |
+| GET | `/api/account/password-login` | Только сессия входа | Проверить, отключён ли вход по паролю |
+| PUT | `/api/account/password-login` | Только сессия входа | Отключить или включить вход администратора по паролю |
 | GET | `/api/account/passkeys` | Только сессия входа | Список зарегистрированных Passkey |
 | POST | `/api/account/passkeys/begin` | Только сессия входа | Начать регистрацию Passkey |
 | POST | `/api/account/passkeys` | Только сессия входа | Завершить регистрацию Passkey |

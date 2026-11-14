@@ -6118,6 +6118,160 @@
         "x-token-allowed": false
       }
     },
+    "/api/account/password-check": {
+      "post": {
+        "description": "Тело запроса `{\"username\": \"\", \"password\": \"\"}`; если `username` пуст, используется имя администратора. Возвращает `{\"ok\": true}` или `{\"ok\": false, \"code\": \"...\"}`: `tooShort` (меньше 10 символов), `tooLong` (больше 72 байт), `common` (распространённый слабый пароль и его вариации), `username` (содержит имя пользователя), `product` (содержит название продукта), `sequence` (последовательные символы), `repeat` (повторы), `simple` (слишком мало типов символов), `control` (содержит управляющие символы). Пароль не записывается в журнал. Доступно только в сеансе входа.\n\n**Доступно только для сессий входа; API-токены не имеют доступа к этому эндпоинту.**",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "summary": "Предварительная проверка надёжности пароля",
+        "tags": [
+          "Учётная запись"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/account/password-login": {
+      "get": {
+        "description": "Возвращает `{\"disabled\": false, \"passkeys\": 0}`. Доступно только в сеансе входа.\n\n**Доступно только для сессий входа; API-токены не имеют доступа к этому эндпоинту.**",
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "summary": "Проверить, отключён ли вход по паролю",
+        "tags": [
+          "Учётная запись"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      },
+      "put": {
+        "description": "Тело запроса `{\"password\": \"текущий пароль\", \"disabled\": true}`. После отключения учётная запись администратора входит только по Passkey или через сторонних провайдеров, а пароль больше нельзя подобрать; перед отключением должен быть зарегистрирован Passkey, пока вход отключён, последний Passkey удалить нельзя; учётные записи только для чтения не затрагиваются. Команда `gately reset-password` на сервере снова включает вход по паролю. Доступно только в сеансе входа.\n\n**Доступно только для сессий входа; API-токены не имеют доступа к этому эндпоинту.**",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "summary": "Отключить или включить вход администратора по паролю",
+        "tags": [
+          "Учётная запись"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
     "/api/account/sessions/revoke": {
       "post": {
         "description": "Немедленно аннулирует все сеансы входа в панель управления (выданные по паролю, Passkey, через сторонний вход и шлюз fnOS), включая текущий, поэтому нужно войти снова; API-токены не затрагиваются. Выход (`POST /api/logout`) отзывает только текущий сеанс. Записи об отзыве сохраняются и действуют после перезапуска. Только для сеансов администратора.\n\n**Доступно только для сессий входа; API-токены не имеют доступа к этому эндпоинту.**",
@@ -43430,6 +43584,57 @@
         ],
         "x-required-scope": "!denied",
         "x-token-allowed": false
+      }
+    },
+    "/api/system/security": {
+      "get": {
+        "description": "Возвращает оценку безопасности от 0 до 100 и результаты по каждой проверке для текущей конфигурации: `score` — баллы, `level` — `good`, `warn` или `risk`, `exposed` — консоль управления, возможно, доступна из интернета, `passwordIssue` — `default` (всё ещё пароль по умолчанию), `weak` (недостаточная надёжность) или пусто, `items` — проверки (`id`, `status`, `points` — списанные баллы, `max` — максимум): `password`, `twoFactor`, `entry`, `lockout`, `https`, `globalLimit`, `username`. Консоль управления использует их для напоминаний об усилении защиты.\n\nТребуемое разрешение: `system:read`.",
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Просмотреть оценку безопасности консоли управления",
+        "tags": [
+          "Система"
+        ],
+        "x-required-scope": "system:read",
+        "x-token-allowed": true
       }
     },
     "/api/system/selfcheck": {

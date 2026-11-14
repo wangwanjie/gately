@@ -939,6 +939,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | --- | --- | --- | --- |
 | GET | `/api/session` | 유효한 모든 토큰 | 현재 인증된 ID 보기 |
 | GET | `/api/status` | `status:read` | 시스템 및 각 모듈 상태 보기 |
+| GET | `/api/system/security` | `system:read` | 관리 화면 보안 점수 확인 |
 | GET | `/api/logs` | `logs:read` | 시스템 로그 보기 |
 | GET | `/api/logs/sources` | `logs:read` | 시스템 로그의 모든 소스 목록 |
 | GET | `/api/logs/export` | `logs:read` | 시스템 로그 내보내기 |
@@ -992,6 +993,9 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/account` | 로그인 세션 전용 | 관리자 사용자 이름과 비밀번호 수정 |
 | POST | `/api/account/sessions/revoke` | 로그인 세션 전용 | 모든 기기에서 로그아웃 |
 | PUT | `/api/account/ui-language` | 로그인 세션 전용 | 관리 화면 언어 기록 |
+| POST | `/api/account/password-check` | 로그인 세션 전용 | 비밀번호 강도 사전 점검 |
+| GET | `/api/account/password-login` | 로그인 세션 전용 | 비밀번호 로그인이 꺼져 있는지 확인 |
+| PUT | `/api/account/password-login` | 로그인 세션 전용 | 관리자 비밀번호 로그인 끄기 또는 켜기 |
 | GET | `/api/account/passkeys` | 로그인 세션 전용 | 등록된 Passkey 목록 조회 |
 | POST | `/api/account/passkeys/begin` | 로그인 세션 전용 | Passkey 등록 시작 |
 | POST | `/api/account/passkeys` | 로그인 세션 전용 | Passkey 등록 완료 |

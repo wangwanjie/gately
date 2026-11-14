@@ -6118,6 +6118,160 @@
         "x-token-allowed": false
       }
     },
+    "/api/account/password-check": {
+      "post": {
+        "description": "請求本文 `{\"username\": \"\", \"password\": \"\"}`，`username` 為空時使用管理員使用者名稱。回傳 `{\"ok\": true}`，或 `{\"ok\": false, \"code\": \"...\"}`：`tooShort`（少於 10 個字元）、`tooLong`（超過 72 位元組）、`common`（常見弱密碼及其變形）、`username`（含使用者名稱）、`product`（含產品名稱）、`sequence`（連續字元）、`repeat`（重複）、`simple`（字元種類過少）、`control`（含控制字元）。密碼不會被記錄。僅登入工作階段可用。\n\n**僅限登入工作階段使用，API 權杖無法存取此介面。**",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "summary": "預先檢查密碼強度",
+        "tags": [
+          "帳號"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/account/password-login": {
+      "get": {
+        "description": "回傳 `{\"disabled\": false, \"passkeys\": 0}`。僅登入工作階段可用。\n\n**僅限登入工作階段使用，API 權杖無法存取此介面。**",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "summary": "查看密碼登入是否已關閉",
+        "tags": [
+          "帳號"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      },
+      "put": {
+        "description": "請求本文 `{\"password\": \"目前密碼\", \"disabled\": true}`。關閉後管理員帳號只能使用 Passkey 或第三方登入，密碼無法再被暴力破解；關閉前必須已註冊 Passkey，關閉期間不能刪除最後一個 Passkey；唯讀帳號不受影響。在伺服器上執行 `gately reset-password` 會重新開啟密碼登入。僅登入工作階段可用。\n\n**僅限登入工作階段使用，API 權杖無法存取此介面。**",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "summary": "關閉或開啟管理員的密碼登入",
+        "tags": [
+          "帳號"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
     "/api/account/sessions/revoke": {
       "post": {
         "description": "讓所有管理介面登入工作階段（密碼、Passkey、第三方登入與飛牛閘道簽發的）立即失效，包含目前的工作階段，需要重新登入；API 權杖不受影響。登出（`POST /api/logout`）只撤銷目前的工作階段，撤銷紀錄會持久化，重新啟動後仍然有效。僅管理員登入工作階段可用。\n\n**僅限登入工作階段使用，API 權杖無法存取此介面。**",
@@ -43430,6 +43584,57 @@
         ],
         "x-required-scope": "!denied",
         "x-token-allowed": false
+      }
+    },
+    "/api/system/security": {
+      "get": {
+        "description": "依目前設定給出 0~100 的安全評分與逐項檢查結果：`score` 為得分，`level` 為 `good`、`warn` 或 `risk`，`exposed` 表示管理端可能暴露在公網，`passwordIssue` 為 `default`（仍是預設密碼）、`weak`（強度不足）或空，`items` 為各檢查項（`id`、`status`、`points` 已扣分、`max` 滿分）：`password`、`twoFactor`、`entry`、`lockout`、`https`、`globalLimit`、`username`。管理介面據此顯示加強防護提醒。\n\n所需權限：`system:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "查看管理端安全評分",
+        "tags": [
+          "系統"
+        ],
+        "x-required-scope": "system:read",
+        "x-token-allowed": true
       }
     },
     "/api/system/selfcheck": {

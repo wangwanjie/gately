@@ -6118,6 +6118,160 @@
         "x-token-allowed": false
       }
     },
+    "/api/account/password-check": {
+      "post": {
+        "description": "Anfragekörper `{\"username\": \"\", \"password\": \"\"}`; ist `username` leer, wird der Administratorbenutzername verwendet. Gibt `{\"ok\": true}` oder `{\"ok\": false, \"code\": \"...\"}` zurück: `tooShort` (unter 10 Zeichen), `tooLong` (über 72 Byte), `common` (gängiges schwaches Passwort und Varianten), `username` (enthält Benutzernamen), `product` (enthält Produktnamen), `sequence` (Zeichenfolge), `repeat` (Wiederholung), `simple` (zu wenige Zeichenarten), `control` (enthält Steuerzeichen). Das Passwort wird nicht protokolliert. Nur mit Anmeldesitzung verfügbar.\n\n**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "summary": "Passwortstärke vorab prüfen",
+        "tags": [
+          "Konto"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/account/password-login": {
+      "get": {
+        "description": "Gibt `{\"disabled\": false, \"passkeys\": 0}` zurück. Nur mit Anmeldesitzung verfügbar.\n\n**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "summary": "Prüfen, ob die Passwortanmeldung deaktiviert ist",
+        "tags": [
+          "Konto"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      },
+      "put": {
+        "description": "Anfragekörper `{\"password\": \"aktuelles Passwort\", \"disabled\": true}`. Nach dem Deaktivieren kann sich das Administratorkonto nur noch mit Passkey oder über Drittanbieter anmelden; das Passwort lässt sich nicht mehr per Brute-Force knacken. Vor dem Deaktivieren muss ein Passkey registriert sein, und solange deaktiviert ist, kann der letzte Passkey nicht gelöscht werden; schreibgeschützte Konten bleiben unberührt. `gately reset-password` auf dem Server aktiviert die Passwortanmeldung wieder. Nur mit Anmeldesitzung verfügbar.\n\n**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "summary": "Passwortanmeldung des Administrators deaktivieren oder aktivieren",
+        "tags": [
+          "Konto"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
     "/api/account/sessions/revoke": {
       "post": {
         "description": "Macht sofort alle Admin-Anmeldesitzungen ungültig (per Passwort, Passkey, Drittanbieter-Anmeldung und fnOS-Gateway ausgestellt), auch die aktuelle, sodass eine erneute Anmeldung nötig ist; API-Token bleiben unberührt. Das Abmelden (`POST /api/logout`) widerruft nur die aktuelle Sitzung. Widerrufseinträge werden gespeichert und gelten auch nach einem Neustart. Nur für Admin-Anmeldesitzungen.\n\n**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",
@@ -43430,6 +43584,57 @@
         ],
         "x-required-scope": "!denied",
         "x-token-allowed": false
+      }
+    },
+    "/api/system/security": {
+      "get": {
+        "description": "Liefert anhand der aktuellen Konfiguration eine Sicherheitsbewertung von 0 bis 100 mit Ergebnissen je Prüfpunkt: `score` ist die Punktzahl, `level` ist `good`, `warn` oder `risk`, `exposed` gibt an, dass die Verwaltung möglicherweise aus dem Internet erreichbar ist, `passwordIssue` ist `default` (noch Standardpasswort), `weak` (zu schwach) oder leer, `items` sind die Prüfpunkte (`id`, `status`, `points` abgezogene Punkte, `max` Höchstpunktzahl): `password`, `twoFactor`, `entry`, `lockout`, `https`, `globalLimit`, `username`. Die Verwaltungsoberfläche zeigt daraus Härtungshinweise an.\n\nErforderliche Berechtigung: `system:read`.",
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Sicherheitsbewertung der Verwaltung abrufen",
+        "tags": [
+          "System"
+        ],
+        "x-required-scope": "system:read",
+        "x-token-allowed": true
       }
     },
     "/api/system/selfcheck": {

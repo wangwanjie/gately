@@ -939,6 +939,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | --- | --- | --- | --- |
 | GET | `/api/session` | Cualquier token válido | Ver la identidad autenticada actual |
 | GET | `/api/status` | `status:read` | Ver el estado del sistema y de cada módulo |
+| GET | `/api/system/security` | `system:read` | Consultar la puntuación de seguridad del panel de administración |
 | GET | `/api/logs` | `logs:read` | Ver los registros del sistema |
 | GET | `/api/logs/sources` | `logs:read` | Listar todos los orígenes de los registros del sistema |
 | GET | `/api/logs/export` | `logs:read` | Exportar registros del sistema |
@@ -992,6 +993,9 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | PUT | `/api/account` | Solo sesión iniciada | Modificar el usuario y la contraseña del administrador |
 | POST | `/api/account/sessions/revoke` | Solo sesión iniciada | Cerrar sesión en todos los dispositivos |
 | PUT | `/api/account/ui-language` | Solo sesión iniciada | Registrar el idioma de la consola de administración |
+| POST | `/api/account/password-check` | Solo sesión iniciada | Comprobar previamente la seguridad de la contraseña |
+| GET | `/api/account/password-login` | Solo sesión iniciada | Consultar si el inicio de sesión con contraseña está desactivado |
+| PUT | `/api/account/password-login` | Solo sesión iniciada | Desactivar o activar el inicio de sesión con contraseña del administrador |
 | GET | `/api/account/passkeys` | Solo sesión iniciada | Listar las Passkeys registradas |
 | POST | `/api/account/passkeys/begin` | Solo sesión iniciada | Iniciar el registro de una Passkey |
 | POST | `/api/account/passkeys` | Solo sesión iniciada | Finalizar el registro de una Passkey |
