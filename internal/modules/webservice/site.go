@@ -1100,6 +1100,8 @@ func (h *siteHandler) serveInner(rec http.ResponseWriter, r *http.Request) {
 	}
 	// id 为认证识别出的访客身份，用于按用户分流与传递身份信息
 	var id visitor
+	// authed 为访客已通过本站点的认证（分享链接放行不算），导航面板据此显示“登录后可见”的链接
+	authed := false
 	if h.needAuth(h.matchRule(r.URL.Path)) {
 		handled, allowed := h.tryShare(rec, r)
 		if handled {
@@ -1111,11 +1113,13 @@ func (h *siteHandler) serveInner(rec http.ResponseWriter, r *http.Request) {
 					return
 				}
 				id = h.fwd.forwardIdentity(r)
+				authed = true
 			} else {
 				var ok bool
 				if id, ok = h.auth.checkUser(rec, r, h.site); !ok {
 					return
 				}
+				authed = true
 				// 放行入口：通过认证的访客为来源地址登记（续期）敲门授权，地址不能放行时忽略，见放行页面的说明
 				if h.site.KnockGrant.Rule != "" {
 					_, _, _ = h.grantKnock(r, id)
@@ -1133,9 +1137,18 @@ func (h *siteHandler) serveInner(rec http.ResponseWriter, r *http.Request) {
 				}
 			}
 		}
-	} else if h.usesIdentity() && h.fwd == nil {
-		// 无需认证的路径上，已网页登录的访客仍按身份分流，同一应用的页面不会落到不同后端
+	} else if (h.usesIdentity() || h.site.Type == TypePanel) && h.fwd == nil {
+		// 无需认证的路径上，已网页登录的访客仍按身份分流，同一应用的页面不会落到不同后端；
+		// 导航面板也靠它识别已登录的访客
 		id = h.auth.sessionIdentity(r, h.site)
+		authed = len(id.names) > 0
+	}
+	if h.site.Type == TypePanel {
+		ctx := context.WithValue(r.Context(), ctxKeyPanelAuthed{}, authed)
+		if len(id.names) > 0 {
+			ctx = context.WithValue(ctx, ctxKeyPanelUser{}, id.names[0])
+		}
+		r = r.WithContext(ctx)
 	}
 	// 认证识别出的身份记到实时连接登记项上，请求结束时随访客审计一并记录
 	if len(id.names) > 0 {

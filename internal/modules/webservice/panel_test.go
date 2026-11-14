@@ -552,7 +552,7 @@ func TestPanelStoreSetCopies(t *testing.T) {
 	}()
 	for range 200 {
 		if cp, ok := s.get("p1"); ok {
-			if v := cp.view(redirectRequest{r: r}, false, false, false); len(v.Groups) != 1 || v.Groups[0].Links[0].Alts[0].Name != "IPv6" {
+			if v := cp.view(redirectRequest{r: r}, false, false, false, false); len(v.Groups) != 1 || v.Groups[0].Links[0].Alts[0].Name != "IPv6" {
 				t.Fatalf("页面内容: %+v", v)
 			}
 		}
@@ -613,7 +613,7 @@ func TestPanelIPv6Host(t *testing.T) {
 			t.Errorf("页面应包含 %s: %s", want, body)
 		}
 	}
-	if strings.Contains(body, "暂不可用") {
+	if strings.Contains(body, `class="card off"`) {
 		t.Error("IPv6 访问时链接不应显示为暂不可用")
 	}
 }
@@ -631,13 +631,13 @@ func TestPanelEmptyWildcard(t *testing.T) {
 	}
 	cp := &compiledPanel{Panel: p}
 	r := httptest.NewRequest("GET", "http://nas.test/", nil)
-	links := cp.view(redirectRequest{r: r}, false, false, true).Groups[0].Links
+	links := cp.view(redirectRequest{r: r}, false, false, true, true).Groups[0].Links
 	for i, want := range []string{"", "", "", "https://a.example.com/"} {
 		if links[i].Href != want {
 			t.Errorf("%s: href=%q，期望 %q", links[i].Name, links[i].Href, want)
 		}
 	}
-	links = cp.view(redirectRequest{r: r, wildcard: "home"}, false, false, false).Groups[0].Links
+	links = cp.view(redirectRequest{r: r, wildcard: "home"}, false, false, false, false).Groups[0].Links
 	if links[0].Href != "https://home.nas.example.com/" || links[1].Href != "https://nhome.example.com/" {
 		t.Fatalf("{1} 有值时应可用: %+v", links)
 	}

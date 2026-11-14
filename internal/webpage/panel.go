@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"crypto/rand"
 	"encoding/hex"
+	"encoding/json"
+	"html"
 	"html/template"
 	"net/http"
 	"net/url"
@@ -22,13 +24,39 @@ import (
 type PanelView struct {
 	Title    string
 	Subtitle string
-	// Icon 为页面标题旁的图标与浏览器标签页图标，为空时使用默认图标
+	// Icon 为页面标题旁的图标，也是浏览器标签页图标，为空时使用默认图标
 	Icon PanelIcon
+	// TabTitle 为浏览器标签页标题（为空时用 Title），Favicon 为标签页图标（为空时用 Icon），Description 为 meta description
+	TabTitle    string
+	Favicon     PanelIcon
+	Description string
+	// Footer 为页脚文字（为空时显示 Gately 标志与名称），FooterURL 为文字的链接，HideFooter 为不显示页脚
+	Footer     string
+	FooterURL  string
+	HideFooter bool
+	// User 为已登录访客的名称，页头显示头像菜单（含页面设置与退出登录）；LogoutURL 为空时只显示设置按钮
+	User string
 	// Theme 为 ""（跟随系统）、light、dark
 	Theme string
 	// Skin 为默认皮肤（色系 ID，见 panelthemes.go），为空时用默认色系；访客可在页面上换肤，选择保存在浏览器中
 	Skin   string
 	Groups []PanelGroup
+	// Engines 为搜索引擎：页面搜索框旁的下拉框选择“本站”（过滤本页链接）或某个引擎，引擎地址里的 {q} 换成关键词后在新标签页打开。
+	// DefaultEngine 为默认选项：0 为本站，n 为 Engines[n-1]，访客的选择保存在浏览器中
+	Engines       []PanelEngine
+	DefaultEngine int
+	// Background 为背景图片地址（http/https，或同站的图片路径），为空时用默认渐变；BgDim 为盖在图片上的底色遮罩浓度（0-90）
+	Background string
+	BgDim      int
+	// BgBlur 为背景图片的模糊半径（像素，0-20）
+	BgBlur int
+	// Lang 为访客在页面上选择的语言，为空时按浏览器语言
+	Lang string
+	// LoginURL 非空时页面提供“登录”入口（面板对未登录访客开放且站点启用了网页认证）；LogoutURL 为已登录访客的退出入口
+	LoginURL  string
+	LogoutURL string
+	// Hidden 为因访客未登录而隐藏的链接数，只用于提示“登录后可查看更多链接”，不暴露链接内容
+	Hidden int
 	// LAN 为当前使用内网地址；Switchable 表示有链接配置了内网地址，显示内外网切换；
 	// Forced 表示访客手动选择了内网或外网，显示“自动识别”
 	LAN        bool
@@ -36,6 +64,12 @@ type PanelView struct {
 	Forced     bool
 	// Preview 为管理界面中的预览：放在禁用脚本的 iframe 中，不输出脚本与搜索框
 	Preview bool
+}
+
+// PanelEngine 是一个搜索引擎：URL 已校验为 http(s) 地址，其中的 {q} 由页面脚本换成关键词。
+type PanelEngine struct {
+	Name string
+	URL  string
 }
 
 // PanelGroup 是面板中的一组链接，Name 为空表示未分组（不显示组标题）。
@@ -54,6 +88,10 @@ type PanelLink struct {
 	Href   string
 	NewTab bool
 	Icon   PanelIcon
+	// Small 为小卡片：只显示图标，名称在悬停时提示；HideName、HideDesc 只对大卡片生效
+	Small, HideName, HideDesc bool
+	// Locked 表示链接只对登录访客显示，已登录的访客在卡片上看到锁标记
+	Locked bool
 	// Alts 为其他访问方式（如 IPv6、frp、STUN、Cloudflare），显示为卡片上的小链接，始终在新标签页打开
 	Alts []PanelAlt
 }
@@ -76,17 +114,38 @@ type PanelIcon struct {
 
 // panelTexts 为页面文案（中文原文），按访客语言翻译。
 var panelTexts = map[string]string{
-	"search":    "搜索",
-	"lan":       "内网",
-	"wan":       "外网",
-	"toLan":     "切换到内网",
-	"toWan":     "切换到外网",
-	"auto":      "自动识别",
-	"noMatch":   "没有匹配的链接",
-	"empty":     "还没有添加链接",
-	"off":       "暂不可用",
-	"netHint":   "当前使用的地址",
-	"clearHint": "按 Esc 清空",
+	"search":        "搜索",
+	"lan":           "内网",
+	"wan":           "外网",
+	"toLan":         "切换到内网",
+	"toWan":         "切换到外网",
+	"auto":          "自动识别",
+	"noMatch":       "没有匹配的链接",
+	"empty":         "还没有添加链接",
+	"off":           "暂不可用",
+	"netHint":       "当前使用的地址",
+	"clearHint":     "按 Esc 清空",
+	"login":         "登录",
+	"logout":        "退出登录",
+	"loginHint":     "登录后可查看更多链接",
+	"locked":        "登录后可见",
+	"local":         "本站",
+	"engine":        "搜索范围",
+	"webSearch":     "输入关键词，回车搜索",
+	"go":            "搜索",
+	"language":      "语言",
+	"settings":      "页面设置",
+	"background":    "背景图片",
+	"pickImage":     "选择图片",
+	"blur":          "模糊",
+	"mask":          "遮罩",
+	"reset":         "恢复默认",
+	"frequent":      "常用",
+	"showFreq":      "显示常用链接",
+	"imageFail":     "无法使用这张图片",
+	"foldHint":      "展开或收起分组",
+	"confirmLogout": "确定要退出登录吗？",
+	"cancel":        "取消",
 }
 
 // panelPalette 为未指定颜色时按名称挑选的图标底色，深浅主题下白字都清晰可读。
@@ -95,6 +154,7 @@ var panelPalette = []string{"#0e7c66", "#2563eb", "#7c3aed", "#db2777", "#ea580c
 // 默认图标（Gately 标志）与面板图标（四宫格）。
 const (
 	panelDefaultFavicon = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%230e7c66'/%3E%3Cpath d='M21.7 10.3A8 8 0 1 0 24 16h-7' stroke='%23fff' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='23.6' cy='8.6' r='2.2' fill='%239ff3dc'/%3E%3C/svg%3E"
+	panelLockIcon       = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>`
 	panelGridIcon       = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>`
 )
 
@@ -104,6 +164,7 @@ const panelCSS = `
 [hidden]{display:none!important}
 body{margin:0;min-height:100vh;display:flex;flex-direction:column;background:var(--bg);color:var(--text);font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;-webkit-font-smoothing:antialiased}
 .bg{position:fixed;inset:0;z-index:-1;background:radial-gradient(60rem 30rem at 0% -10%,var(--soft),transparent 70%),radial-gradient(50rem 28rem at 100% 0%,var(--soft),transparent 70%)}
+.bg.has::after{content:"";position:absolute;inset:0;background:var(--bg)}
 .page{width:100%;max-width:1200px;margin:0 auto;padding:32px 24px 12px;flex:1}
 .top{display:flex;align-items:center;justify-content:space-between;gap:16px 24px;flex-wrap:wrap;margin-bottom:26px}
 .brand{display:flex;align-items:center;gap:14px;min-width:0}
@@ -124,6 +185,14 @@ body{margin:0;min-height:100vh;display:flex;flex-direction:column;background:var
 .search input::-webkit-search-cancel-button{display:none}
 .search kbd{position:absolute;right:9px;min-width:18px;height:20px;padding:0 5px;border:1px solid var(--line);border-radius:5px;color:var(--faint);font:11px/18px ui-monospace,Menlo,monospace;text-align:center;background:var(--input)}
 .search input:focus~kbd{display:none}
+.sbox{display:flex;align-items:center;gap:6px;min-width:0}
+.sbox .search{min-width:0}
+.btn{display:inline-flex;align-items:center;gap:6px;height:38px;padding:0 13px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--card);color:var(--text);font-size:13px;text-decoration:none;white-space:nowrap;transition:border-color .15s,color .15s}
+.btn:hover{border-color:var(--brand);color:var(--brand)}
+.btn svg{width:15px;height:15px}
+.lock{position:absolute;top:7px;right:8px;z-index:2;width:14px;height:14px;color:var(--faint);pointer-events:none}
+.more{margin:0 0 20px;text-align:center;color:var(--muted);font-size:12.5px}
+.more a{color:var(--brand);text-decoration:none;margin-left:6px}
 .net{display:inline-flex;align-items:center;gap:2px;height:38px;padding:3px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--card)}
 .net a,.net span{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 11px;border-radius:max(2px,calc(var(--r-sm) - 3px));color:var(--muted);text-decoration:none;font-size:13px;white-space:nowrap}
 .net a:hover{color:var(--text);background:var(--input)}
@@ -132,8 +201,8 @@ body{margin:0;min-height:100vh;display:flex;flex-direction:column;background:var
 .grp{margin:0 0 26px}
 .grp h2{display:flex;align-items:center;gap:8px;margin:0 0 12px;font-size:13px;font-weight:600;color:var(--muted);letter-spacing:.02em}
 .grp h2 .n{min-width:20px;padding:0 6px;border-radius:999px;background:var(--input);border:1px solid var(--line);color:var(--faint);font-size:11px;font-weight:500;text-align:center}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
-.card{position:relative;display:flex;align-items:center;gap:12px;min-width:0;padding:12px 14px;border:1px solid var(--line);border-radius:var(--r);background:var(--card);color:inherit;box-shadow:var(--shadow);transition:border-color .15s,transform .15s,background .15s}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:12px}
+.card{grid-column:span 2;position:relative;display:flex;align-items:center;gap:12px;min-width:0;padding:12px 14px;border:1px solid var(--line);border-radius:var(--r);background:var(--card);color:inherit;box-shadow:var(--shadow);transition:border-color .15s,transform .15s,background .15s}
 .card .hit{position:absolute;inset:0;z-index:1;border-radius:inherit}
 .card.link:hover{border-color:var(--brand);background:var(--hover);transform:translateY(-1px)}
 .card .hit:focus-visible{outline:none;box-shadow:0 0 0 4px var(--soft)}
@@ -161,8 +230,11 @@ a.alt:hover{border-color:var(--brand);color:var(--brand)}
 .tools{width:100%}
 .search{flex:1 1 180px}
 .search input{width:100%}
+.sbox{flex:1 1 180px}
+.sbox .search{flex:1 1 0}
 .search kbd{display:none}
-.grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.grid{grid-template-columns:repeat(4,1fr);gap:10px}
+.card{grid-column:span 2}
 .card{gap:10px;padding:10px 11px;border-radius:calc(var(--r) - 2px)}
 .ic{width:34px;height:34px;border-radius:var(--r-sm);font-size:15px}
 .ic img{width:24px;height:24px}
@@ -173,49 +245,43 @@ a.alt:hover{border-color:var(--brand);color:var(--brand)}
 `
 
 const panelSrc = `<!doctype html>
-<html lang="{{.Lang}}"{{if .Theme}} data-theme="{{.Theme}}"{{end}}><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="{{.Lang}}"{{if .Theme}} data-theme="{{.Theme}}"{{end}}{{if .Background}} class="hasbg"{{end}}><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<title>{{.Title}}</title>
+<title>{{.TabTitle}}</title>
+{{if .MetaDesc}}<meta name="description" content="{{.MetaDesc}}">{{end}}
 <link rel="icon" href="{{.Favicon}}">
-<style nonce="{{.Nonce}}">{{.SkinCSS}}` + panelCSS + panelSkinCSS + `{{range $i, $c := .Colors}}.c{{$i}}{--c:{{$c}}}{{end}}</style>
-{{if not .Preview}}<script type="application/json" id="skin-data">{{.Skins}}</script><script nonce="{{.Nonce}}">` + panelSkinJS + `</script>{{end}}</head>
-<body><div class="bg" aria-hidden="true"></div>
+<style nonce="{{.Nonce}}">{{.SkinCSS}}` + panelCSS + panelUICSS + panelSkinCSS + `{{range $i, $c := .Colors}}.c{{$i}}{--c:{{$c}}}{{end}}{{.BgCSS}}</style>
+{{if not .Preview}}<script type="application/json" id="ui-data">{{.UIData}}</script><script type="application/json" id="skin-data">{{.Skins}}</script><script nonce="{{.Nonce}}">` + panelSkinJS + `</script>{{end}}</head>
+<body><div class="bg{{if .Background}} has{{end}}" aria-hidden="true">{{if .Background}}<img src="{{.Background}}" alt="" decoding="async" referrerpolicy="no-referrer">{{end}}</div>
 <div class="page">
 <header class="top">
 <div class="brand">{{with .Icon}}{{if and .Image .Class}}<span class="logo tile {{.Class}}"><img src="{{.Image}}" alt=""></span>{{else if .Image}}<span class="logo img"><img src="{{.Image}}" alt="" referrerpolicy="no-referrer"></span>{{else if .Text}}<span class="logo {{.Class}}">{{.Text}}</span>{{else}}<span class="logo">{{$.GridIcon}}</span>{{end}}{{end}}
 <div><h1>{{.Title}}</h1>{{if .Subtitle}}<p>{{.Subtitle}}</p>{{end}}</div></div>
-<div class="tools">
-{{if not .Preview}}<label class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="q" type="search" placeholder="{{.T.search}}" aria-label="{{.T.search}}" title="{{.T.clearHint}}" autocomplete="off" spellcheck="false"><kbd>/</kbd></label>{{end}}
-{{if not .Preview}}<div class="skin"><button id="skin-btn" class="skin-btn" type="button" aria-haspopup="dialog" aria-controls="skin-pop" aria-expanded="false" title="{{.SkinT.switchTheme}}" aria-label="{{.SkinT.switchTheme}}">{{.SkinIcon}}</button></div>{{end}}
+{{if not .Preview}}<div class="sbox">{{if .Engines}}<button id="eng" class="eng" type="button" aria-haspopup="listbox" aria-expanded="false" aria-label="{{.T.engine}}" title="{{.T.engine}}"><span id="eng-name">{{.EngineName}}</span>{{.ChevronIcon}}</button>{{end}}<label class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="q" type="search" enterkeyhint="search" placeholder="{{.T.search}}" aria-label="{{.T.search}}" title="{{.T.clearHint}}" autocomplete="off" spellcheck="false"><kbd>/</kbd>{{if .Engines}}<button id="go" class="go" type="button" hidden aria-label="{{.T.go}}" title="{{.T.go}}">{{.GoIcon}}</button>{{end}}</label></div>{{end}}
 {{if .Switchable}}<nav class="net" aria-label="{{.T.netHint}}">{{if .LAN}}<span class="on"><i class="dot"></i>{{.T.lan}}</span><a href="?net=wan" title="{{.T.toWan}}">{{.T.wan}}</a>{{else}}<a href="?net=lan" title="{{.T.toLan}}">{{.T.lan}}</a><span class="on"><i class="dot"></i>{{.T.wan}}</span>{{end}}{{if .Forced}}<a href="?net=auto">{{.T.auto}}</a>{{end}}</nav>{{end}}
-</div>
+{{if not .Preview}}<div class="acts" id="acts">
+{{if .Langs}}<div class="pw"><button id="lang-btn" class="skin-btn" type="button" aria-haspopup="listbox" aria-expanded="false" title="{{.T.language}}" aria-label="{{.T.language}}">{{.LangIcon}}</button></div>{{end}}
+<div class="skin"><button id="skin-btn" class="skin-btn" type="button" aria-haspopup="dialog" aria-controls="skin-pop" aria-expanded="false" title="{{.SkinT.switchTheme}}" aria-label="{{.SkinT.switchTheme}}">{{.SkinIcon}}</button></div>
+{{if and .User .LogoutURL}}<div class="pw"><button id="user-btn" class="ubtn" type="button" aria-haspopup="menu" aria-expanded="false" title="{{.User}}" aria-label="{{.User}}"><span class="av">{{.UserInitial}}</span>{{.ChevronIcon}}</button></div>{{else}}<div class="pw"><button id="set-btn" class="skin-btn" type="button" aria-haspopup="dialog" aria-expanded="false" title="{{.T.settings}}" aria-label="{{.T.settings}}">{{.GearIcon}}</button></div>{{if .LoginURL}}<a class="btn" href="{{.LoginURL}}">{{.LockIcon}}{{.T.login}}</a>{{end}}{{if .LogoutURL}}<button id="logout-btn" class="btn" type="button">{{.T.logout}}</button>{{end}}{{end}}
+</div>{{end}}
 </header>
 <main>
-{{range .Groups}}<section class="grp">{{if .Name}}<h2>{{.Name}}<span class="n">{{len .Links}}</span></h2>{{end}}<div class="grid">
-{{range .Links}}<div class="card{{if .Href}} link{{else}} off{{end}}" data-s="{{.Search}}"{{if not .Href}} title="{{$.T.off}}"{{end}}>
+{{range .Groups}}<section class="grp">{{if .Name}}<h2><button class="fold" type="button" data-g="{{.Name}}" aria-expanded="true" title="{{$.T.foldHint}}">{{$.ChevronIcon}}{{.Name}}</button><span class="n">{{len .Links}}</span></h2>{{end}}<div class="grid">
+{{range .Links}}<div class="card{{if .Small}} sm{{end}}{{if .Href}} link{{else}} off{{end}}" data-s="{{.Search}}" data-k="{{.Key}}"{{if not .Href}} title="{{$.T.off}}"{{end}}>
+{{if .Locked}}<svg class="lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>{{$.T.locked}}</title><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>{{end}}
 {{if .Href}}<a class="hit" href="{{.Href}}"{{if .NewTab}} target="_blank" rel="noopener noreferrer"{{end}} title="{{.Name}}" aria-label="{{.Name}}"></a>{{end}}
 {{with .Icon}}{{if and .Image .Class}}<span class="ic tile {{.Class}}"><img src="{{.Image}}" alt="" loading="lazy"></span>{{else if .Image}}<span class="ic img"><img src="{{.Image}}" alt="" loading="lazy" referrerpolicy="no-referrer"></span>{{else}}<span class="ic {{.Class}}">{{.Text}}</span>{{end}}{{end}}
-<span class="tx"><span class="nm">{{.Name}}</span>{{if not .Href}}<span class="ds">{{$.T.off}}</span>{{else if .Description}}<span class="ds">{{.Description}}</span>{{else if .Address}}<span class="ds mono">{{.Address}}</span>{{end}}{{if .Alts}}<span class="alts">{{range .Alts}}{{if .Href}}<a class="alt" href="{{.Href}}" target="_blank" rel="noopener noreferrer" title="{{.Title}}">{{.Name}}</a>{{else}}<span class="alt off" title="{{$.T.off}}">{{.Name}}</span>{{end}}{{end}}</span>{{end}}</span>
+{{if not .Small}}<span class="tx">{{if not .HideName}}<span class="nm">{{.Name}}</span>{{end}}{{if not .Href}}<span class="ds">{{$.T.off}}</span>{{else if .HideDesc}}{{else if .Description}}<span class="ds">{{.Description}}</span>{{else if .Address}}<span class="ds mono">{{.Address}}</span>{{end}}{{if .Alts}}<span class="alts">{{range .Alts}}{{if .Href}}<a class="alt" href="{{.Href}}" target="_blank" rel="noopener noreferrer" title="{{.Title}}">{{.Name}}</a>{{else}}<span class="alt off" title="{{$.T.off}}">{{.Name}}</span>{{end}}{{end}}</span>{{end}}</span>{{end}}
 </div>
 {{end}}</div></section>
 {{end}}
-{{if .Empty}}<p class="empty">{{.T.empty}}</p>{{else}}<p id="none" class="empty" hidden>{{.T.noMatch}}</p>{{end}}
+{{if .Empty}}<p class="empty">{{if .Hidden}}{{.T.loginHint}}{{else}}{{.T.empty}}{{end}}</p>{{else}}<p id="none" class="empty" hidden>{{.T.noMatch}}</p>{{end}}
+{{if and .Hidden (not .Empty)}}<p class="more">{{.T.loginHint}}{{if .LoginURL}}<a href="{{.LoginURL}}">{{.T.login}}</a>{{end}}</p>{{end}}
 </main>
 </div>
-<footer class="foot"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" fill="currentColor"/><path d="M21.7 10.3A8 8 0 1 0 24 16h-7" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>Gately</footer>
+{{if not .HideFooter}}<footer class="foot">{{if .Footer}}{{if .FooterLink}}<a href="{{.FooterLink}}" target="_blank" rel="noopener noreferrer">{{.Footer}}</a>{{else}}<span>{{.Footer}}</span>{{end}}{{else}}<svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" fill="currentColor"/><path d="M21.7 10.3A8 8 0 1 0 24 16h-7" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>Gately{{end}}</footer>{{end}}
 {{if not .Preview}}<script nonce="{{.Nonce}}">` + panelJS + `</script>{{end}}
 </body></html>`
-
-// panelJS 为搜索：按空格分词，全部命中名称、描述、地址或分组才显示；/ 聚焦搜索框，Esc 清空，回车打开第一个结果。
-const panelJS = `(function(){var q=document.getElementById("q");if(!q){return}
-var cards=[].slice.call(document.querySelectorAll("[data-s]")),groups=[].slice.call(document.querySelectorAll(".grp")),none=document.getElementById("none");
-function apply(){var terms=q.value.trim().toLowerCase().split(/\s+/).filter(Boolean),shown=0;
-cards.forEach(function(c){var s=c.getAttribute("data-s"),ok=terms.every(function(t){return s.indexOf(t)>=0});c.hidden=!ok;if(ok){shown++}});
-groups.forEach(function(g){g.hidden=!g.querySelector("[data-s]:not([hidden])")});if(none){none.hidden=shown>0}}
-q.addEventListener("input",apply);
-document.addEventListener("keydown",function(e){if(e.key==="/"&&document.activeElement!==q&&!e.metaKey&&!e.ctrlKey&&!e.altKey&&!/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName)){e.preventDefault();q.focus()}});
-q.addEventListener("keydown",function(e){if(e.key==="Escape"){q.value="";apply();q.blur()}else if(e.key==="Enter"){var f=cards.filter(function(c){return !c.hidden&&c.querySelector(".hit")})[0];if(f){e.preventDefault();f.querySelector(".hit").click()}}});
-if(q.value){apply()}})();`
 
 var panelTpl = template.Must(template.New("panel").Parse(panelSrc))
 
@@ -236,7 +302,9 @@ type panelAltData struct {
 type panelLinkData struct {
 	Name, Description, Address string
 	Href                       template.URL
-	NewTab                     bool
+	NewTab, Locked             bool
+	Small, HideName, HideDesc  bool
+	Key                        string
 	Search                     string
 	Icon                       panelIconData
 	Alts                       []panelAltData
@@ -262,6 +330,44 @@ func newNonce() string {
 	_, _ = rand.Read(b[:])
 	// 用十六进制：base64 中的 + 在属性里会被转义成 &#43;，虽然浏览器能还原，但不便核对
 	return hex.EncodeToString(b[:])
+}
+
+// panelLangNames 为语言切换菜单中各语言的自称，与管理界面的语言菜单一致。
+var panelLangNames = map[string]string{
+	"en": "English", "zh-CN": "简体中文", "zh-TW": "繁體中文", "ja": "日本語", "ko": "한국어",
+	"es": "Español", "fr": "Français", "de": "Deutsch", "ru": "Русский", "pt-BR": "Português (Brasil)",
+}
+
+// linkKey 返回链接的稳定标识（分组加名称的哈希），浏览器按它统计常用链接；换了地址仍算同一个链接。
+func linkKey(group, name string) string {
+	var h uint32 = 2166136261
+	for _, b := range []byte(group + "\x00" + name) {
+		h ^= uint32(b)
+		h *= 16777619
+	}
+	return strconv.FormatUint(uint64(h), 16)
+}
+
+// panelFavicon 返回标签页图标的地址：图片图标直接使用；内置图标（透明底的白色图形）画在底色方块上，
+// 文字图标画成文字方块，都生成 SVG data URL；没有设置时用默认图标。颜色已由调用方校验为 #rrggbb，图片与文字经 XML 转义。
+func panelFavicon(ic PanelIcon, name string) string {
+	color := ic.Color
+	if color == "" {
+		color = paletteColor(name)
+	}
+	var inner string
+	switch {
+	case ic.Image != "" && !ic.Tile:
+		return ic.Image
+	case ic.Image != "":
+		inner = `<image href="` + html.EscapeString(ic.Image) + `" x="6" y="6" width="20" height="20"/>`
+	case ic.Text != "":
+		inner = `<text x="16" y="16" font-size="17" font-family="sans-serif" font-weight="700" fill="#fff" text-anchor="middle" dominant-baseline="central">` + html.EscapeString(ic.Text) + `</text>`
+	default:
+		return panelDefaultFavicon
+	}
+	svg := `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="` + color + `"/>` + inner + `</svg>`
+	return "data:image/svg+xml," + url.PathEscape(svg)
 }
 
 // iconInitial 返回名称的首个字母或汉字（大写），名称为空时为 ?。
@@ -298,6 +404,10 @@ func altTitle(href string) string {
 // RenderPanel 生成面板页面，返回页面内容与应放在响应头中的 CSP（预览时 CSP 已写在页面的 meta 标签中，返回空）。
 func RenderPanel(r *http.Request, v PanelView) ([]byte, string) {
 	lang := i18n.RequestLang(r)
+	// 访客在页面上选过语言（Cookie）时以它为准
+	if l := i18n.Normalize(v.Lang); l != "" {
+		lang = l
+	}
 	nonce := newNonce()
 	// colors 为页面用到的底色，按出现顺序编号为 .c0、.c1……；颜色已由调用方校验为 #rrggbb
 	var colors []template.CSS
@@ -341,23 +451,28 @@ func RenderPanel(r *http.Request, v PanelView) ([]byte, string) {
 			}
 			search := strings.ToLower(strings.Join(words, " "))
 			gd.Links = append(gd.Links, panelLinkData{Name: l.Name, Description: l.Description, Address: l.Address,
-				Href: template.URL(l.Href), NewTab: l.NewTab, Search: search, Icon: icon(l.Icon, l.Name), Alts: alts})
+				Href: template.URL(l.Href), NewTab: l.NewTab, Locked: l.Locked, Small: l.Small || (l.HideName && l.HideDesc && len(alts) == 0), HideName: l.HideName, HideDesc: l.HideDesc, Key: linkKey(g.Name, l.Name), Search: search, Icon: icon(l.Icon, l.Name), Alts: alts})
 		}
 		total += len(gd.Links)
 		groups = append(groups, gd)
 	}
+	tabTitle := v.TabTitle
+	if tabTitle == "" {
+		tabTitle = v.Title
+	}
 	var head panelIconData
-	favicon := template.URL(panelDefaultFavicon)
 	switch {
 	case v.Icon.Image != "":
 		head = icon(v.Icon, v.Title)
-		if !v.Icon.Tile {
-			// 内置图标是透明底的白色图形，不适合作标签页图标，沿用默认图标
-			favicon = template.URL(v.Icon.Image)
-		}
 	case v.Icon.Text != "":
 		head = icon(v.Icon, v.Title)
 	}
+	// 标签页图标：单独设置的优先，没有时用页面图标
+	favSrc := v.Favicon
+	if favSrc == (PanelIcon{}) {
+		favSrc = v.Icon
+	}
+	favicon := template.URL(panelFavicon(favSrc, v.Title))
 	theme := ""
 	if v.Theme == "light" || v.Theme == "dark" {
 		theme = v.Theme
@@ -366,9 +481,60 @@ func RenderPanel(r *http.Request, v PanelView) ([]byte, string) {
 	if !ValidSkin(skin) || skin == "" {
 		skin = DefaultSkin()
 	}
+	// 搜索引擎地址放在 <option value> 里：html/template 对该属性只做 HTML 转义，页面脚本换入关键词前再核对 http(s) 协议
+	type engineData struct{ Name, URL string }
+	var engines []engineData
+	for _, e := range v.Engines {
+		engines = append(engines, engineData{Name: e.Name, URL: e.URL})
+	}
+	bg := template.URL("")
+	if v.Background != "" {
+		bg = template.URL(v.Background)
+	}
+	// 遮罩浓度与模糊半径是整数，直接写入样式；页面脚本按访客的设置覆盖这两个变量
+	dim, blur := min(max(v.BgDim, 0), 90), min(max(v.BgBlur, 0), 20)
+	bgCSS := template.CSS(":root{--bgdim:" + strconv.FormatFloat(float64(dim)/100, 'f', 2, 64) + ";--bgblur:" + strconv.Itoa(blur) + "px}")
+	// 页面脚本用到的数据：文案、搜索引擎、语言列表与背景默认值；json.Marshal 会转义 < > &，放在 script 标签里安全
+	type uiEngine struct {
+		N string `json:"n"`
+		U string `json:"u"`
+	}
+	type uiLang struct {
+		C string `json:"c"`
+		N string `json:"n"`
+	}
+	ui := struct {
+		T       map[string]string `json:"t"`
+		Engines []uiEngine        `json:"engines"`
+		Def     int               `json:"def"`
+		Langs   []uiLang          `json:"langs"`
+		Lang    string            `json:"lang"`
+		Bg      map[string]any    `json:"bg"`
+		Logout  string            `json:"logout"`
+	}{Logout: v.LogoutURL, T: Localize(lang, panelTexts), Engines: []uiEngine{}, Def: v.DefaultEngine, Lang: lang, Bg: map[string]any{"has": v.Background != "", "dim": dim, "blur": blur}}
+	engineName := Localize(lang, panelTexts)["local"]
+	for i, e := range v.Engines {
+		ui.Engines = append(ui.Engines, uiEngine{N: e.Name, U: e.URL})
+		if i+1 == v.DefaultEngine {
+			engineName = e.Name
+		}
+	}
+	var langs []uiLang
+	for _, c := range i18n.Langs {
+		langs = append(langs, uiLang{C: c, N: panelLangNames[c]})
+	}
+	// 只有一种语言（定制构建）时不显示语言切换
+	if len(langs) < 2 {
+		langs = nil
+	}
+	ui.Langs = langs
+	uiJSON, _ := json.Marshal(ui)
 	data := map[string]any{
+		"Engines": engines, "DefaultEngine": v.DefaultEngine, "Background": bg, "BgCSS": bgCSS, "UIData": template.JS(uiJSON), "EngineName": engineName,
+		"Langs": langs, "ChevronIcon": template.HTML(panelChevronIcon), "GoIcon": template.HTML(panelGoIcon), "LangIcon": template.HTML(panelLangIcon), "HideFooter": v.HideFooter, "Footer": v.Footer, "FooterLink": template.URL(v.FooterURL), "UserInitial": iconInitial(v.User), "User": v.User, "GearIcon": template.HTML(panelGearIcon),
+		"LoginURL": v.LoginURL, "LogoutURL": v.LogoutURL, "Hidden": v.Hidden, "LockIcon": template.HTML(panelLockIcon),
 		"Lang": lang, "T": Localize(lang, panelTexts), "Nonce": nonce,
-		"Title": v.Title, "Subtitle": v.Subtitle, "Icon": head, "Favicon": favicon, "GridIcon": template.HTML(panelGridIcon),
+		"Title": v.Title, "TabTitle": tabTitle, "MetaDesc": v.Description, "Subtitle": v.Subtitle, "Icon": head, "Favicon": favicon, "GridIcon": template.HTML(panelGridIcon),
 		"Theme": theme, "Groups": groups,
 		"SkinCSS": template.CSS(skinCSS(skin)), "Skins": skinScriptData(lang, skin, theme), "SkinT": skinLangTexts(lang).UI, "SkinIcon": template.HTML(skinIconPalette), "Empty": total == 0, "Colors": colors,
 		"LAN": v.LAN, "Switchable": v.Switchable, "Forced": v.Forced, "Preview": v.Preview,

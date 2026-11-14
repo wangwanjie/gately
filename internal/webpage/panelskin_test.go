@@ -95,7 +95,7 @@ func TestRenderPanelSkin(t *testing.T) {
 	if d.Skin != "nord" || d.Mode != "dark" || len(d.Families) != len(skins.Families) || d.Texts.Names["nord"] == "" {
 		t.Fatalf("皮肤数据错误: %+v", d)
 	}
-	if strings.Count(html, "<script") != 3 || strings.Contains(html, "<script>alert") {
+	if strings.Count(html, "<script") != 4 || strings.Contains(html, "<script>alert") {
 		t.Fatal("标题中的脚本标签应被转义")
 	}
 	nord, _ := findSkin("nord")

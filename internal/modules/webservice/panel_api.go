@@ -141,6 +141,6 @@ func (m *Module) handlePanelPreview(w http.ResponseWriter, r *http.Request) {
 	}
 	lan, _ := parsePrefixes(p.LANCIDRs)
 	cp := &compiledPanel{Panel: p, lan: lan}
-	body, _ := webpage.RenderPanel(r, cp.view(redirectRequest{r: r}, req.LAN, false, true))
+	body, _ := webpage.RenderPanel(r, cp.view(redirectRequest{r: r}, req.LAN, false, true, true))
 	httpx.OK(w, PanelPreview{HTML: string(body)})
 }
