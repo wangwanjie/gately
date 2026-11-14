@@ -144,6 +144,7 @@
                 <el-tag v-if="item.item.site.locations?.length" size="small" type="info">{{ t('web.locationsTag', { count: item.item.site.locations.length }) }}</el-tag>
                 <el-tag v-if="item.item.site.userRoutes?.length" size="small" type="info">{{ t('web.userRoutesTag', { count: item.item.site.userRoutes.length }) }}</el-tag>
                 <el-tag v-if="item.item.site.ipMode" size="small" type="info">{{ item.item.site.ipMode === 'whitelist' ? t('web.whitelist') : t('web.blacklist') }}</el-tag>
+                <el-tag v-if="item.item.site.ipDenyList?.length || item.item.site.ipDenySets?.length" size="small" type="info">{{ t('web.ipDenyTag') }}</el-tag>
                 <el-tag v-if="item.item.site.sendProxyProtocol" size="small" type="info">PROXY v2</el-tag>
                 <el-tag v-if="downCount(l, item.item) > 0" size="small" type="danger">{{ t('web.upstreamsDown', { count: downCount(l, item.item) }) }}</el-tag>
                 <el-tag v-if="item.item.site.insecureSkipVerify" size="small" type="info">{{ t('web.skipVerifyTag') }}</el-tag>
@@ -515,6 +516,19 @@
               </el-select>
               <div class="form-help">{{ site.ipMode === 'whitelist' ? t('web.ipSetsWhitelistHelp') : t('web.ipSetsHelp') }}</div>
             </el-form-item>
+            <!-- 优先拒绝名单（#95）：先于白名单、黑名单判断，与访问控制模式无关，实现“先黑后白” -->
+            <el-form-item :label="t('web.ipDeny')" data-test="ip-deny">
+              <el-input v-model="ipDenyText" type="textarea" :rows="2" class="mono" :placeholder="t('web.ipRangePlaceholder')" />
+              <div class="form-help">{{ t('web.ipDenyHelp') }}</div>
+            </el-form-item>
+            <el-form-item :label="t('web.ipDenySets')" data-test="ip-deny-sets">
+              <el-select v-model="site.ipDenySets" multiple filterable :placeholder="t('web.ipSetsPlaceholder')" :no-data-text="t('web.ipSetsEmpty')" class="w-full">
+                <el-option v-for="o in ipLists" :key="o.key" :label="o.name" :value="o.key">
+                  <span>{{ o.name }}</span>
+                  <span v-if="!o.loaded" class="opt-warn">{{ t('web.ipSetNotLoaded') }}</span>
+                </el-option>
+              </el-select>
+            </el-form-item>
             <SiteAccess v-model:site="site" :tls="siteTls" :port="sitePort" :ip-lists="ipLists" />
             <el-form-item :label="t('web.denyAction')">
               <el-radio-group v-model="site.denyClose">
@@ -778,6 +792,9 @@ interface Site {
   ipList: string[] | null
   // ipSets 为引用的订阅 IP 列表 key
   ipSets: string[] | null
+  // 优先拒绝名单：手填 IP / 网段与引用的订阅 IP 列表 key，先于白名单、黑名单判断
+  ipDenyList: string[] | null
+  ipDenySets: string[] | null
   requestHeaders: string[] | null
   responseHeaders: string[] | null
   cors: boolean
@@ -1000,6 +1017,7 @@ const targetsText = bind(() => site.value.targets, (v) => (site.value.targets = 
 const usersText = bind(() => site.value.users, (v) => (site.value.users = v))
 const oauthUsersText = bind(() => site.value.oauthUsers, (v) => (site.value.oauthUsers = v))
 const ipText = bind(() => site.value.ipList, (v) => (site.value.ipList = v))
+const ipDenyText = bind(() => site.value.ipDenyList, (v) => (site.value.ipDenyList = v))
 const fwdHeadersText = useListText(() => site.value.forwardAuth?.copyHeaders, (v) => (site.value.forwardAuth.copyHeaders = v), {
   split: splitCsv,
   separator: ', ',
@@ -1122,6 +1140,8 @@ function emptySite(): Site {
     ipMode: '',
     ipList: [],
     ipSets: [],
+    ipDenyList: [],
+    ipDenySets: [],
     requestHeaders: [],
     responseHeaders: [],
     cors: false,
@@ -1800,6 +1820,8 @@ function openSite(l: ListenerView, row?: SiteRow, copy = false) {
   draft.rules = (draft.rules ?? []).map((r) => ({ ...r, ipSets: r.ipSets ?? [] }))
   draft.shareLinks = draft.shareLinks ?? []
   draft.ipSets = draft.ipSets ?? []
+  draft.ipDenyList = draft.ipDenyList ?? []
+  draft.ipDenySets = draft.ipDenySets ?? []
   draft.countries = draft.countries ?? []
   draft.rewrites = draft.rewrites ?? []
   draft.locations = draft.locations ?? []
