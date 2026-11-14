@@ -191,4 +191,11 @@ func TestDenySetsReferencedWithoutMode(t *testing.T) {
 	if err := missing.CheckSets(); err == nil {
 		t.Fatal("引用不存在的订阅列表应报错")
 	}
+	// 同一规则在名单与拒绝名单中都引用同一列表时只登记一次
+	both := Access{IPMode: ModeWhitelist, IPSets: []string{"t-exists"}, IPDenySets: []string{"t-exists"}}
+	u2 := map[string][]string{}
+	both.AddUsers(u2, "r2")
+	if got := u2["t-exists"]; len(got) != 1 {
+		t.Fatalf("同一规则应只登记一次: %v", got)
+	}
 }

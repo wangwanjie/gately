@@ -9,6 +9,7 @@ import (
 	"net"
 	"net/http"
 	"net/netip"
+	"slices"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -195,7 +196,10 @@ func (m *Module) publishAccessLocked() {
 			}
 		}
 		for _, k := range s.IPDenySets {
-			users[k] = append(users[k], "frps / "+s.Name)
+			// 同一实例在名单与拒绝名单中都引用某个列表时只登记一次
+			if label := "frps / " + s.Name; !slices.Contains(users[k], label) {
+				users[k] = append(users[k], label)
+			}
 		}
 	}
 	m.access.Store(&rules)
