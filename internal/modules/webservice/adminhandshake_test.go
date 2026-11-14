@@ -744,3 +744,23 @@ func TestHandshakeSpoofedPort(t *testing.T) {
 	}
 }
 
+// 入口确认没有登录后台后，握手标记延长到 12 小时，普通访客不会每两分钟被带去后台入口一次。
+func TestHandshakeNoneMarkerExtended(t *testing.T) {
+	e := startHandshake(t)
+	_, _, hops := e.b.nav(e.u("basic.b.test", "/"), nil)
+	if len(hops) < 3 {
+		t.Fatalf("应先握手: %v", hops)
+	}
+	var found bool
+	for _, c := range e.b.jar {
+		if c.c.Name == adminHSCookie && c.domain == "basic.b.test" {
+			found = true
+			if c.c.MaxAge != adminHSNoneMaxAge {
+				t.Fatalf("握手标记应延长到 12 小时: %d", c.c.MaxAge)
+			}
+		}
+	}
+	if !found {
+		t.Fatal("应保留握手标记")
+	}
+}
