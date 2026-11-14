@@ -70,6 +70,8 @@ type Owner struct {
 	SiteName string `json:"siteName,omitempty"`
 	// Cred 为登录时用户凭据的指纹：修改密码、删除用户后据此撤销，不对外输出
 	Cred string `json:"-"`
+	// Aliases 为第三方登录身份的其他标识（如 GitHub 数字 ID），撤销检查时按允许列表匹配，不对外输出
+	Aliases []string `json:"-"`
 }
 
 // Addr 返回授权的地址（网段时为网络地址）。

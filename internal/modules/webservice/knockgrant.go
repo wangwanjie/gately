@@ -212,7 +212,7 @@ func (a *authenticator) knockHolderValid(s Site, shared map[string]AuthUser, o k
 	}
 	if o.Cred == "o" {
 		provider, id, ok := strings.Cut(o.User, ":")
-		return ok && identityAllowed(s, thirdauth.Identity{Provider: provider, Primary: id})
+		return ok && identityAllowed(s, thirdauth.Identity{Provider: provider, Primary: id, Aliases: o.Aliases})
 	}
 	return true
 }
@@ -229,14 +229,33 @@ func (h *siteHandler) grantKnock(r *http.Request, id visitor) (netip.Prefix, boo
 	if !ok {
 		return netip.Prefix{}, false, errKnockAddr
 	}
-	return h.grantKnockPrefix(r, p, id.names[0])
+	return h.grantKnockPrefix(r, p, id.names)
+}
+
+// knockAliases 返回第三方登录身份的其他标识（去掉“提供方:”前缀），允许列表可能按它们（如 GitHub 数字 ID）放行。
+func knockAliases(names []string) []string {
+	if len(names) < 2 {
+		return nil
+	}
+	provider, _, ok := strings.Cut(names[0], ":")
+	if !ok {
+		return nil
+	}
+	var out []string
+	for _, n := range names[1:] {
+		if v, ok := strings.CutPrefix(n, provider+":"); ok {
+			out = append(out, v)
+		}
+	}
+	return out
 }
 
 // errKnockAddr 表示访客地址不能放行（内网、回环等），见 knockGrantable。
 var errKnockAddr = errors.New("当前地址是内网或本机地址，不能放行；经隧道或转发访问时请检查可信代理与真实 IP 设置")
 
-// grantKnockPrefix 为用户 user 登记网段 p 的授权。
-func (h *siteHandler) grantKnockPrefix(r *http.Request, p netip.Prefix, user string) (netip.Prefix, bool, error) {
+// grantKnockPrefix 为访客身份 names（第一个为用户，其余为第三方登录的别名）登记网段 p 的授权。
+func (h *siteHandler) grantKnockPrefix(r *http.Request, p netip.Prefix, names []string) (netip.Prefix, bool, error) {
+	user := names[0]
 	g := h.site.KnockGrant
 	dur := g.duration()
 	// 剩余时长足够、且这个地址已记录在授权上时不重复写入；同一 IPv6 网段换了临时地址时要立即记录，
@@ -247,7 +266,7 @@ func (h *siteHandler) grantKnockPrefix(r *http.Request, p netip.Prefix, user str
 		return p, false, nil
 	}
 	o := knockgate.Owner{User: user, Site: h.knockSiteID(), SiteName: siteLabel(h.site),
-		Cred: h.auth.knockCred(h.site, h.auth.shared.get().users, user)}
+		Cred: h.auth.knockCred(h.site, h.auth.shared.get().users, user), Aliases: knockAliases(names)}
 	if err := knockgate.Default.AllowWeb(p, g.Rule, time.Now().Add(dur), o, seen); err != nil {
 		h.reqLog(r).Warnf("为 %s 登记放行失败: %v", p, err)
 		return p, false, err
@@ -274,7 +293,9 @@ type knockProbe struct {
 	Site string `json:"s"`
 	Rule string `json:"r"`
 	User string `json:"u"`
-	Cred string `json:"c"`
+	// A 为第三方登录身份的别名（见 knockAliases），随授权登记
+	A    []string `json:"a,omitempty"`
+	Cred string   `json:"c"`
 	// Fam 为 "4" 或 "6"，探测请求的来源地址必须属于该地址族
 	Fam string `json:"f"`
 	// N 为随机数，使每个令牌都不同（一次性使用按令牌整体记录）
@@ -282,10 +303,11 @@ type knockProbe struct {
 }
 
 // probeURL 返回探测地址；host 为探测域名，沿用当前请求的协议与端口。
-func (h *siteHandler) probeURL(r *http.Request, host, fam, user string) string {
+func (h *siteHandler) probeURL(r *http.Request, host, fam string, names []string) string {
+	user := names[0]
 	nonce := make([]byte, 8)
 	_, _ = rand.Read(nonce)
-	tok := h.auth.signBlob("knock-probe", knockProbe{Site: h.knockSiteID(), Rule: h.site.KnockGrant.Rule, User: user,
+	tok := h.auth.signBlob("knock-probe", knockProbe{Site: h.knockSiteID(), Rule: h.site.KnockGrant.Rule, User: user, A: knockAliases(names),
 		Cred: h.auth.knockCred(h.site, h.auth.shared.get().users, user), Fam: fam, N: hex.EncodeToString(nonce)}, knockProbeTTL)
 	scheme := "http"
 	if requestIsHTTPS(r) {
@@ -361,12 +383,25 @@ func (h *siteHandler) handleKnockProbe(w http.ResponseWriter, r *http.Request) {
 		fail(http.StatusForbidden, errKnockAddr.Error())
 		return
 	}
-	if _, _, err := h.grantKnockPrefix(r, p, pr.User); err != nil {
+	if _, _, err := h.grantKnockPrefix(r, p, append([]string{pr.User}, prefixAliases(pr.User, pr.A)...)); err != nil {
 		fail(http.StatusServiceUnavailable, "放行失败，请联系管理员")
 		return
 	}
 	writeKnockJSON(w, http.StatusOK, map[string]any{"addr": knockgate.Grant{Prefix: p}.String(),
 		"until": time.Now().Add(knockgate.Default.Remaining(p, h.site.KnockGrant.Rule)).Unix()})
+}
+
+// prefixAliases 把别名还原为“提供方:别名”的访客身份写法（knockAliases 的逆过程）。
+func prefixAliases(user string, aliases []string) []string {
+	provider, _, ok := strings.Cut(user, ":")
+	if !ok || len(aliases) == 0 {
+		return nil
+	}
+	out := make([]string, len(aliases))
+	for i, a := range aliases {
+		out[i] = provider + ":" + a
+	}
+	return out
 }
 
 // ownOrigin 判断来源是否为本站点的域名（与 corsAllowed 的认证站点规则相同）。
@@ -503,10 +538,10 @@ func (h *siteHandler) handleKnockPage(w http.ResponseWriter, r *http.Request, id
 		data["UntilText"] = until.Format("2006-01-02 15:04 MST")
 		var probes []knockProbeView
 		if g.ProbeV4 != "" && !a.Is4() {
-			probes = append(probes, knockProbeView{Fam: "4", URL: h.probeURL(r, g.ProbeV4, "4", user)})
+			probes = append(probes, knockProbeView{Fam: "4", URL: h.probeURL(r, g.ProbeV4, "4", id.names)})
 		}
 		if g.ProbeV6 != "" && !a.Is6() {
-			probes = append(probes, knockProbeView{Fam: "6", URL: h.probeURL(r, g.ProbeV6, "6", user)})
+			probes = append(probes, knockProbeView{Fam: "6", URL: h.probeURL(r, g.ProbeV6, "6", id.names)})
 		}
 		data["Probes"] = probes
 	}

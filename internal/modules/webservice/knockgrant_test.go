@@ -516,3 +516,21 @@ func TestKnockHolderAdmin(t *testing.T) {
 		t.Fatal("关闭后台登录免认证后管理员身份的授权应失效")
 	}
 }
+
+// 第三方登录按别名（如 GitHub 数字 ID）放行的用户：授权记下别名，保存配置时的撤销检查不会误撤。
+func TestKnockHolderAliases(t *testing.T) {
+	a := newAuthenticator("secret")
+	s := Site{OAuthUsers: []string{"github:12345"}}
+	names := []string{"github:octo", "github:12345"}
+	o := knockgate.Owner{User: names[0], Cred: a.knockCred(s, nil, names[0]), Aliases: knockAliases(names)}
+	if !a.knockHolderValid(s, nil, o) {
+		t.Fatal("按别名放行的第三方登录身份应保持有效")
+	}
+	if got := prefixAliases("github:octo", o.Aliases); len(got) != 1 || got[0] != "github:12345" {
+		t.Fatalf("别名还原错误: %v", got)
+	}
+	s.OAuthUsers = []string{"github:other"}
+	if a.knockHolderValid(s, nil, o) {
+		t.Fatal("移出允许列表后应失效")
+	}
+}
