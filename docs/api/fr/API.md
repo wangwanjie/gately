@@ -1432,6 +1432,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `dashboardUser` | string |
 | `enable` | boolean |
 | `group` | string |
+| `ipDenyList` | Tableau de string |
+| `ipDenySets` | Tableau de string |
 | `ipList` | Tableau de string |
 | `ipMode` | string |
 | `ipSets` | Tableau de string |
@@ -1455,6 +1457,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `dashboardPort` | integer |
 | `dashboardPwd` | string |
 | `dashboardUser` | string |
+| `ipDenyList` | Tableau de string |
+| `ipDenySets` | Tableau de string |
 | `ipList` | Tableau de string |
 | `ipMode` | string |
 | `ipSets` | Tableau de string |
@@ -2027,6 +2031,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `autoFirewall` | boolean |
 | `enable` | boolean |
 | `group` | string |
+| `ipDenyList` | Tableau de string |
+| `ipDenySets` | Tableau de string |
 | `ipList` | Tableau de string |
 | `ipMode` | string |
 | `ipSets` | Tableau de string |
@@ -2076,6 +2082,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `autoFirewall` | boolean |
 | `enable` | boolean |
 | `group` | string |
+| `ipDenyList` | Tableau de string |
+| `ipDenySets` | Tableau de string |
 | `ipList` | Tableau de string |
 | `ipMode` | string |
 | `ipSets` | Tableau de string |
@@ -2210,6 +2218,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `enable` | boolean |
 | `group` | string |
 | `heartbeatInterval` | integer |
+| `ipDenyList` | Tableau de string |
+| `ipDenySets` | Tableau de string |
 | `ipList` | Tableau de string |
 | `ipMode` | string |
 | `ipSets` | Tableau de string |

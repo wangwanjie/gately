@@ -1432,6 +1432,8 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `dashboardUser` | string |
 | `enable` | boolean |
 | `group` | string |
+| `ipDenyList` | Array of string |
+| `ipDenySets` | Array of string |
 | `ipList` | Array of string |
 | `ipMode` | string |
 | `ipSets` | Array of string |
@@ -1455,6 +1457,8 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `dashboardPort` | integer |
 | `dashboardPwd` | string |
 | `dashboardUser` | string |
+| `ipDenyList` | Array of string |
+| `ipDenySets` | Array of string |
 | `ipList` | Array of string |
 | `ipMode` | string |
 | `ipSets` | Array of string |
@@ -2027,6 +2031,8 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `autoFirewall` | boolean |
 | `enable` | boolean |
 | `group` | string |
+| `ipDenyList` | Array of string |
+| `ipDenySets` | Array of string |
 | `ipList` | Array of string |
 | `ipMode` | string |
 | `ipSets` | Array of string |
@@ -2076,6 +2082,8 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `autoFirewall` | boolean |
 | `enable` | boolean |
 | `group` | string |
+| `ipDenyList` | Array of string |
+| `ipDenySets` | Array of string |
 | `ipList` | Array of string |
 | `ipMode` | string |
 | `ipSets` | Array of string |
@@ -2210,6 +2218,8 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `enable` | boolean |
 | `group` | string |
 | `heartbeatInterval` | integer |
+| `ipDenyList` | Array of string |
+| `ipDenySets` | Array of string |
 | `ipList` | Array of string |
 | `ipMode` | string |
 | `ipSets` | Array of string |
