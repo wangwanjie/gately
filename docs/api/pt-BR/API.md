@@ -2881,6 +2881,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `health` | `webservice.HealthCheck` |
 | `identityHeaders` | Array de `webservice.IdentityHeader` |
 | `insecureSkipVerify` | boolean |
+| `ipDenyList` | Array de string |
+| `ipDenySets` | Array de string |
 | `ipList` | Array de string |
 | `ipMode` | string |
 | `ipSets` | Array de string |

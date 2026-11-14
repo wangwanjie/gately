@@ -266,7 +266,7 @@ func (m *Module) ipListUsersLocked(key string) []string {
 	var out []string
 	for _, l := range m.cfg.Listeners {
 		for _, s := range l.Sites {
-			used := slices.Contains(s.IPSets, key)
+			used := slices.Contains(s.IPSets, key) || slices.Contains(s.IPDenySets, key)
 			for _, r := range s.Rules {
 				used = used || slices.Contains(r.IPSets, key)
 			}
@@ -293,7 +293,7 @@ func (m *Module) checkIPSetsLocked(l *Listener) error {
 		known[x.Key] = true
 	}
 	for _, s := range l.Sites {
-		refs := append([]string{}, s.IPSets...)
+		refs := append(append([]string{}, s.IPSets...), s.IPDenySets...)
 		for _, r := range s.Rules {
 			refs = append(refs, r.IPSets...)
 		}

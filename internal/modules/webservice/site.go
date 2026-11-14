@@ -73,12 +73,14 @@ type WAFProvider interface {
 
 // siteHandler 是一个站点编译后的处理器。
 type siteHandler struct {
-	site    Site
-	ipList  []netip.Prefix
-	stats   *SiteStats
-	log     *logbuf.Logger
-	auth    *authenticator
-	handler http.Handler
+	site   Site
+	ipList []netip.Prefix
+	// ipDenyList 为优先拒绝名单中手填的 IP 与网段
+	ipDenyList []netip.Prefix
+	stats      *SiteStats
+	log        *logbuf.Logger
+	auth       *authenticator
+	handler    http.Handler
 	// pipeline 为 WAF（可选）→ 跨域 → 认证 → 站点处理器
 	pipeline http.Handler
 	// inner 为不经过 WAF 的跨域 → 认证 → 站点处理器，带本实例管理员登录态的请求走这里（见 ServeHTTP）
@@ -195,6 +197,9 @@ func newSiteHandler(s Site, log *logbuf.Logger, auth *authenticator, waf WAFProv
 		h.limiter = newLimiter(s.RateLimit)
 	}
 	if h.ipList, err = parsePrefixes(s.IPList); err != nil {
+		return nil, err
+	}
+	if h.ipDenyList, err = parsePrefixes(s.IPDenyList); err != nil {
 		return nil, err
 	}
 	if h.rules, err = compileRules(s.Rules); err != nil {
@@ -673,6 +678,10 @@ func applyHeaders(h http.Header, list []string) {
 // 命中的路径规则设置了 IP 模式时，以规则的名单为准。
 // 引用的订阅 IP 列表尚未下载成功时视为空列表：白名单因此拒绝访问，黑名单不额外拦截。
 func (h *siteHandler) allowedIP(a netip.Addr, rule *compiledRule) bool {
+	// 优先拒绝名单先于白名单、黑名单判断，且不受路径规则覆盖
+	if (len(h.ipDenyList) > 0 || len(h.site.IPDenySets) > 0) && iplist.Default.Match(a, h.ipDenyList, h.site.IPDenySets) {
+		return false
+	}
 	mode, list, sets := h.site.IPMode, h.ipList, h.site.IPSets
 	if rule != nil && rule.ipMode != IPModeOff {
 		mode, list, sets = rule.ipMode, rule.ipList, rule.ipSets

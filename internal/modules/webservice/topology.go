@@ -175,7 +175,7 @@ func siteGuards(s Site) []string {
 	if s.WAF != "" {
 		g = append(g, "waf")
 	}
-	if s.IPMode != IPModeOff {
+	if s.IPMode != IPModeOff || len(s.IPDenyList) > 0 || len(s.IPDenySets) > 0 {
 		g = append(g, "ip")
 	}
 	if s.CountryMode != CountryOff && len(s.Countries) > 0 {

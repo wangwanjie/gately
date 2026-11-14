@@ -2881,6 +2881,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `health` | `webservice.HealthCheck` |
 | `identityHeaders` | 数组 of `webservice.IdentityHeader` |
 | `insecureSkipVerify` | boolean |
+| `ipDenyList` | 数组 of string |
+| `ipDenySets` | 数组 of string |
 | `ipList` | 数组 of string |
 | `ipMode` | string |
 | `ipSets` | 数组 of string |

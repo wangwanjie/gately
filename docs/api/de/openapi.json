@@ -4447,6 +4447,18 @@
           "insecureSkipVerify": {
             "type": "boolean"
           },
+          "ipDenyList": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "ipDenySets": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
           "ipList": {
             "items": {
               "type": "string"

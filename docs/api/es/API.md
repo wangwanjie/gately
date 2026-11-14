@@ -2881,6 +2881,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `health` | `webservice.HealthCheck` |
 | `identityHeaders` | Lista de `webservice.IdentityHeader` |
 | `insecureSkipVerify` | boolean |
+| `ipDenyList` | Lista de string |
+| `ipDenySets` | Lista de string |
 | `ipList` | Lista de string |
 | `ipMode` | string |
 | `ipSets` | Lista de string |
