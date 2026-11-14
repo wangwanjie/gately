@@ -1661,6 +1661,7 @@
   "当前仍在使用默认密码，请先修改管理员密码，再修改安全相关配置": "Sigues usando la contraseña predeterminada. Cambia primero la contraseña de administrador y después los ajustes de seguridad",
   "当前使用的地址": "Direcciones en uso",
   "当前公网地址 ": "Dirección pública actual ",
+  "当前内核不支持 ipset 的 hash:ip,port 集合，封禁原因将不包含端口: %v": "El kernel no admite conjuntos ipset hash:ip,port; los motivos de bloqueo no incluirán puertos: %v",
   "当前地址是内网或本机地址，不能放行；经隧道或转发访问时请检查可信代理与真实 IP 设置": "La dirección actual es una dirección interna o local y no se puede permitir; si accede mediante un túnel o reenvío, revise el proxy de confianza y la configuración de IP real",
   "当前地址未通过安全入口验证，无法打开管理后台。": "Esta dirección no ha superado la verificación de la entrada de seguridad, por lo que no se puede abrir la consola de administración.",
   "当前密码": "Contraseña actual",
