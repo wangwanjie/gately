@@ -1432,6 +1432,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `dashboardUser` | string |
 | `enable` | boolean |
 | `group` | string |
+| `ipDenyList` | Lista de string |
+| `ipDenySets` | Lista de string |
 | `ipList` | Lista de string |
 | `ipMode` | string |
 | `ipSets` | Lista de string |
@@ -1455,6 +1457,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `dashboardPort` | integer |
 | `dashboardPwd` | string |
 | `dashboardUser` | string |
+| `ipDenyList` | Lista de string |
+| `ipDenySets` | Lista de string |
 | `ipList` | Lista de string |
 | `ipMode` | string |
 | `ipSets` | Lista de string |
@@ -2027,6 +2031,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `autoFirewall` | boolean |
 | `enable` | boolean |
 | `group` | string |
+| `ipDenyList` | Lista de string |
+| `ipDenySets` | Lista de string |
 | `ipList` | Lista de string |
 | `ipMode` | string |
 | `ipSets` | Lista de string |
@@ -2076,6 +2082,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `autoFirewall` | boolean |
 | `enable` | boolean |
 | `group` | string |
+| `ipDenyList` | Lista de string |
+| `ipDenySets` | Lista de string |
 | `ipList` | Lista de string |
 | `ipMode` | string |
 | `ipSets` | Lista de string |
@@ -2210,6 +2218,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `enable` | boolean |
 | `group` | string |
 | `heartbeatInterval` | integer |
+| `ipDenyList` | Lista de string |
+| `ipDenySets` | Lista de string |
 | `ipList` | Lista de string |
 | `ipMode` | string |
 | `ipSets` | Lista de string |

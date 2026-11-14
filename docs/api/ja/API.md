@@ -1432,6 +1432,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `dashboardUser` | string |
 | `enable` | boolean |
 | `group` | string |
+| `ipDenyList` | 配列 of string |
+| `ipDenySets` | 配列 of string |
 | `ipList` | 配列 of string |
 | `ipMode` | string |
 | `ipSets` | 配列 of string |
@@ -1455,6 +1457,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `dashboardPort` | integer |
 | `dashboardPwd` | string |
 | `dashboardUser` | string |
+| `ipDenyList` | 配列 of string |
+| `ipDenySets` | 配列 of string |
 | `ipList` | 配列 of string |
 | `ipMode` | string |
 | `ipSets` | 配列 of string |
@@ -2027,6 +2031,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `autoFirewall` | boolean |
 | `enable` | boolean |
 | `group` | string |
+| `ipDenyList` | 配列 of string |
+| `ipDenySets` | 配列 of string |
 | `ipList` | 配列 of string |
 | `ipMode` | string |
 | `ipSets` | 配列 of string |
@@ -2076,6 +2082,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `autoFirewall` | boolean |
 | `enable` | boolean |
 | `group` | string |
+| `ipDenyList` | 配列 of string |
+| `ipDenySets` | 配列 of string |
 | `ipList` | 配列 of string |
 | `ipMode` | string |
 | `ipSets` | 配列 of string |
@@ -2210,6 +2218,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `enable` | boolean |
 | `group` | string |
 | `heartbeatInterval` | integer |
+| `ipDenyList` | 配列 of string |
+| `ipDenySets` | 配列 of string |
 | `ipList` | 配列 of string |
 | `ipMode` | string |
 | `ipSets` | 配列 of string |

@@ -1432,6 +1432,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `dashboardUser` | string |
 | `enable` | boolean |
 | `group` | string |
+| `ipDenyList` | Array de string |
+| `ipDenySets` | Array de string |
 | `ipList` | Array de string |
 | `ipMode` | string |
 | `ipSets` | Array de string |
@@ -1455,6 +1457,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `dashboardPort` | integer |
 | `dashboardPwd` | string |
 | `dashboardUser` | string |
+| `ipDenyList` | Array de string |
+| `ipDenySets` | Array de string |
 | `ipList` | Array de string |
 | `ipMode` | string |
 | `ipSets` | Array de string |
@@ -2027,6 +2031,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `autoFirewall` | boolean |
 | `enable` | boolean |
 | `group` | string |
+| `ipDenyList` | Array de string |
+| `ipDenySets` | Array de string |
 | `ipList` | Array de string |
 | `ipMode` | string |
 | `ipSets` | Array de string |
@@ -2076,6 +2082,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `autoFirewall` | boolean |
 | `enable` | boolean |
 | `group` | string |
+| `ipDenyList` | Array de string |
+| `ipDenySets` | Array de string |
 | `ipList` | Array de string |
 | `ipMode` | string |
 | `ipSets` | Array de string |
@@ -2210,6 +2218,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `enable` | boolean |
 | `group` | string |
 | `heartbeatInterval` | integer |
+| `ipDenyList` | Array de string |
+| `ipDenySets` | Array de string |
 | `ipList` | Array de string |
 | `ipMode` | string |
 | `ipSets` | Array de string |

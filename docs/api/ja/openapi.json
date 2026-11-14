@@ -964,6 +964,18 @@
           "group": {
             "type": "string"
           },
+          "ipDenyList": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "ipDenySets": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
           "ipList": {
             "items": {
               "type": "string"
@@ -1028,6 +1040,18 @@
           },
           "dashboardUser": {
             "type": "string"
+          },
+          "ipDenyList": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "ipDenySets": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
           },
           "ipList": {
             "items": {
@@ -2360,6 +2384,18 @@
           "group": {
             "type": "string"
           },
+          "ipDenyList": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "ipDenySets": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
           "ipList": {
             "items": {
               "type": "string"
@@ -2498,6 +2534,18 @@
           },
           "group": {
             "type": "string"
+          },
+          "ipDenyList": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "ipDenySets": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
           },
           "ipList": {
             "items": {
@@ -2849,6 +2897,18 @@
           },
           "heartbeatInterval": {
             "type": "integer"
+          },
+          "ipDenyList": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "ipDenySets": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
           },
           "ipList": {
             "items": {
