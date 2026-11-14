@@ -553,6 +553,9 @@ func (h *siteHandler) newProxy(s Site, p *pool, strip string) http.Handler {
 			// 站点会话 Cookie 只用于 Gately 自身认证，不转发给后端；后端是负责认证的另一台 Gately 时按站点设置原样转发
 			if !s.PassAuthCookies {
 				stripCookie(pr.Out, cookieName(s), oauthNonceCookie, ssoCookie, adminBridgeCookie, adminHSCookie)
+			} else {
+				// 后台登录免认证的凭据只有本实例能校验，等同于管理员身份，任何情况下都不交给后端
+				stripCookie(pr.Out, adminBridgeCookie, adminHSCookie)
 			}
 			applyHeaders(pr.Out.Header, s.RequestHeaders)
 		},
