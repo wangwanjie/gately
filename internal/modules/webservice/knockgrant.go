@@ -188,6 +188,10 @@ func (h *siteHandler) knockSiteID() string {
 // 站点用户与共享用户按凭据计算；后台管理员与第三方登录没有可比较的凭据，只记录类别。
 func (a *authenticator) knockCred(s Site, shared map[string]AuthUser, name string) string {
 	if strings.HasPrefix(name, adminVisitorPrefix) {
+		// 站点关闭“后台登录免认证”后，管理员身份登记的放行随之失效
+		if !s.AdminPass {
+			return ""
+		}
 		return "a"
 	}
 	if v := a.credVersion(s.Users, name); v != "" {
