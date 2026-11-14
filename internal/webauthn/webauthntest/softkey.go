@@ -18,6 +18,8 @@ type SoftKey struct {
 	priv   *ecdsa.PrivateKey
 	credID []byte
 	count  uint32
+	// zero 为 true 时断言中的签名计数恒为 0，模拟同步型 Passkey（iCloud 钥匙串、Google 密码管理器等）
+	zero bool
 }
 
 // New 创建验证器。
@@ -86,10 +88,29 @@ func (k *SoftKey) Register(rpID, challenge, origin string) webauthn.Registration
 	return r
 }
 
+// SetCount 设置验证器内部的签名计数，用于模拟被克隆的凭据（计数落后于服务端记录）。
+func (k *SoftKey) SetCount(n uint32) {
+	k.count = n
+}
+
+// SetZeroCounter 让验证器的签名计数恒为 0。
+func (k *SoftKey) SetZeroCounter(on bool) {
+	k.zero = on
+}
+
+// ID 返回凭据 ID（base64url）。
+func (k *SoftKey) ID() string {
+	return enc(k.credID)
+}
+
 // Assert 生成登录断言，每次调用签名计数加一。
 func (k *SoftKey) Assert(rpID, challenge, origin string) webauthn.AssertionResponse {
 	k.count++
-	ad := authData(rpID, flagsAssert, k.count, nil)
+	count := k.count
+	if k.zero {
+		count = 0
+	}
+	ad := authData(rpID, flagsAssert, count, nil)
 	cd := clientData("webauthn.get", challenge, origin)
 	cdHash := sha256.Sum256([]byte(cd))
 	digest := sha256.Sum256(append(append([]byte{}, ad...), cdHash[:]...))

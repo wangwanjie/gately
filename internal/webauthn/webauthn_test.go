@@ -198,3 +198,37 @@ func TestRPIDAndCBOR(t *testing.T) {
 		}
 	}
 }
+
+// 指定父域作为 RP ID：凭据记录 RP ID，注册与断言都按它校验；使用子域名自己的 RP ID 或其他域会失败。
+func TestCustomRPID(t *testing.T) {
+	const host = "a.example.com"
+	const origin = "https://a.example.com"
+	const flags = flagUserPresent | flagUserVerified
+	k := newSoftKey(t)
+	ch := NewChallenge()
+	// RP ID 与注册响应中的不一致
+	if _, err := ParseRegistrationRP(k.register(host, ch, origin, flags|flagAttested), ch, host, "example.com", "k"); err == nil {
+		t.Fatal("authData 的 RP ID 与指定值不符应失败")
+	}
+	cred, err := ParseRegistrationRP(k.register("example.com", ch, origin, flags|flagAttested), ch, host, "example.com", "k")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if cred.RPID != "example.com" {
+		t.Fatalf("应记录 RP ID: %q", cred.RPID)
+	}
+	ch2 := NewChallenge()
+	if _, err := VerifyAssertionRP(cred, k.assert("example.com", ch2, origin, flags, 1), ch2, host, "example.com"); err != nil {
+		t.Fatalf("父域断言应通过: %v", err)
+	}
+	ch3 := NewChallenge()
+	if _, err := VerifyAssertionRP(cred, k.assert(host, ch3, origin, flags, 2), ch3, host, "example.com"); err == nil {
+		t.Fatal("使用子域 RP ID 的断言应失败")
+	}
+	// 旧接口仍按访问域名取 RP ID，且不记录 RPID（管理员 Passkey 的行为不变）
+	ch4 := NewChallenge()
+	c2, err := ParseRegistration(k.register(host, ch4, origin, flags|flagAttested), ch4, host, "k")
+	if err != nil || c2.RPID != host {
+		t.Fatalf("旧接口应以访问域名作为 RP ID: %+v %v", c2, err)
+	}
+}
