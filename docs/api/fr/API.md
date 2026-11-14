@@ -2925,6 +2925,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `trustAuthUsers` | boolean |
 | `trustBackendAuth` | boolean |
 | `type` | string |
+| `upstreamH2c` | boolean |
 | `upstreamSniFromHost` | boolean |
 | `useTargetHost` | boolean |
 | `userHeader` | string |

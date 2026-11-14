@@ -4645,6 +4645,9 @@
           "type": {
             "type": "string"
           },
+          "upstreamH2c": {
+            "type": "boolean"
+          },
           "upstreamSniFromHost": {
             "type": "boolean"
           },
