@@ -706,10 +706,7 @@ func (b *iptBackend) kernelBans(ctx context.Context) (map[string][]netip.Addr, p
 	out := map[string][]netip.Addr{}
 	hits := newPortHits()
 	for _, f := range b.fams {
-		// 命中端口记录读不到时只影响封禁原因，不影响封禁本身
-		if text, err := b.run(ctx, "", b.ipset, "save", iptSet("port", f.v6)); err == nil {
-			parsePortSave(text, hits)
-		}
+		got := false
 		for _, kind := range []string{"trap", "scan"} {
 			name := iptSet(kind, f.v6)
 			text, err := b.run(ctx, "", b.ipset, "save", name)
@@ -721,8 +718,16 @@ func (b *iptBackend) kernelBans(ctx context.Context) (map[string][]netip.Addr, p
 				if len(fs) >= 3 && fs[0] == "add" && fs[1] == name {
 					if a, err := netip.ParseAddr(fs[2]); err == nil {
 						out[name] = append(out[name], a)
+						got = true
 					}
 				}
+			}
+		}
+		// 命中端口只用于封禁原因：诱饵与扫描集合里有新来源时才读取，平时每次轮询少执行一次 ipset save。
+		// 读不到时只影响封禁原因，不影响封禁本身
+		if got {
+			if text, err := b.run(ctx, "", b.ipset, "save", iptSet("port", f.v6)); err == nil {
+				parsePortSave(text, hits)
 			}
 		}
 	}
