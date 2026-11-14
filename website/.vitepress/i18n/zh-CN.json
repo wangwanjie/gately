@@ -84,8 +84,8 @@
   "home": {
     "pill": "开源免费 · Apache-2.0",
     "announce": {
-      "text": "v0.6.6.2 发布：EasyTier 组网、TLS 握手失败封禁、新地址登录提醒 →",
-      "link": "/news/v0.6.6.2"
+      "text": "v0.6.6.4 发布：登录安全加固、优先拒绝名单、敲门准入与登录后放行、站点 Passkey →",
+      "link": "/news/v0.6.6.4"
     },
     "titleLine1": "一站式网络网关",
     "titleLine2": "开源透明，开箱即用",

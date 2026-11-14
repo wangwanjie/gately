@@ -7,6 +7,10 @@ description: Release-Ankündigungen und Versionshinweise zu jeder Gately-Version
 
 Unten stehen die Ankündigungen zu wichtigen Releases. Alle Änderungen und Downloads jeder Version finden Sie unter [GitHub Releases](https://github.com/wangwanjie/gately/releases).
 
+## [v0.6.6.4](/de/news/v0.6.6.4)
+
+14. November 2026 · Gehärtete Verwaltungsanmeldung mit Sicherheitsbewertung; vorrangige Sperrliste in der IP-Zugriffskontrolle; Klopf-Zugang und Freigabe nach Anmeldung, Anmeldung an der Verwaltung ohne Site-Authentifizierung, Passkeys für gemeinsame Benutzer und unverschlüsselte HTTP/2-Backends für Websites; Sperrgründe nennen den getroffenen Port.
+
 ## [v0.6.6.2](/de/news/v0.6.6.2)
 
 14. November 2026 · Verwaltetes EasyTier-Netzwerk; der Einbruchschutz erhält Regeln für TLS-Handshake-Fehler und die Portscan-Erkennung kennt die offenen Ports aller Module; Benachrichtigung bei Anmeldung von neuer Adresse.

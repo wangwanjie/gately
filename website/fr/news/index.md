@@ -7,6 +7,10 @@ description: Annonces et notes de version de chaque version de Gately.
 
 Les annonces des versions majeures sont listées ci-dessous. Consultez [GitHub Releases](https://github.com/wangwanjie/gately/releases) pour la liste complète des changements et les téléchargements de chaque version.
 
+## [v0.6.6.4](/fr/news/v0.6.6.4)
+
+14 novembre 2026 · Connexion à l’administration renforcée avec score de sécurité ; liste de refus prioritaire du contrôle d’accès par IP ; admission par frappe et autorisation après connexion, accès sans authentification pour les administrateurs connectés, Passkeys des utilisateurs partagés et backends HTTP/2 en clair pour les sites Web ; les motifs de bannissement indiquent le port touché.
+
 ## [v0.6.6.2](/fr/news/v0.6.6.2)
 
 14 novembre 2026 · Gestion du réseau EasyTier ; la prévention d’intrusion gagne la règle d’échecs de handshake TLS et la détection de balayage de ports reconnaît les ports ouverts de chaque module ; alerte de connexion depuis une nouvelle adresse.

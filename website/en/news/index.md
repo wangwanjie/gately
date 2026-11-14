@@ -7,6 +7,10 @@ description: Release announcements and notes for each Gately version.
 
 Announcements for major releases are listed below. See [GitHub Releases](https://github.com/wangwanjie/gately/releases) for the full changes and downloads of every version.
 
+## [v0.6.6.4](/en/news/v0.6.6.4)
+
+November 14, 2026 · Admin sign-in hardening with a security score; always-deny list for IP access control; knock admission and release after login, admin sign-in bypass, shared user Passkeys and cleartext HTTP/2 backends for web sites; ban reasons include the matched port.
+
 ## [v0.6.6.2](/en/news/v0.6.6.2)
 
 November 14, 2026 · Managed EasyTier networking; intrusion prevention gets a TLS handshake failure source and port scan detection recognizes the open ports of every module; alert for admin logins from a new address.
