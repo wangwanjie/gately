@@ -486,3 +486,17 @@ func TestGlobalBudgetSettingValidation(t *testing.T) {
 		t.Fatalf("负数表示关闭，应可保存: %d %s", code, body)
 	}
 }
+
+// HTTPS 项只采信可信代理写入的 X-Forwarded-Proto：访客直连时自己带上该头不算 HTTPS。
+func TestRequestSecure(t *testing.T) {
+	r := httptest.NewRequest("GET", "/", nil)
+	r.Header.Set("X-Forwarded-Proto", "https")
+	r.RemoteAddr = "127.0.0.1:1234"
+	if !requestSecure(r) {
+		t.Fatal("可信代理（回环）写入的 X-Forwarded-Proto 应采信")
+	}
+	r.RemoteAddr = "8.8.4.4:1234"
+	if requestSecure(r) {
+		t.Fatal("非可信代理带来的 X-Forwarded-Proto 不应采信")
+	}
+}
