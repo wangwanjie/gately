@@ -6118,6 +6118,160 @@
         "x-token-allowed": false
       }
     },
+    "/api/account/password-check": {
+      "post": {
+        "description": "요청 본문 `{\"username\": \"\", \"password\": \"\"}`이며, `username`이 비어 있으면 관리자 사용자 이름을 사용합니다. `{\"ok\": true}` 또는 `{\"ok\": false, \"code\": \"...\"}`을 반환하며, code는 `tooShort`(10자 미만), `tooLong`(72바이트 초과), `common`(흔한 약한 비밀번호와 그 변형), `username`(사용자 이름 포함), `product`(제품 이름 포함), `sequence`(연속된 문자), `repeat`(반복), `simple`(문자 종류 부족), `control`(제어 문자 포함)입니다. 비밀번호는 기록되지 않습니다. 로그인 세션에서만 사용할 수 있습니다.\n\n**로그인 세션에서만 사용할 수 있으며, API 토큰으로는 이 엔드포인트에 접근할 수 없습니다.**",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "summary": "비밀번호 강도 사전 점검",
+        "tags": [
+          "계정"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/account/password-login": {
+      "get": {
+        "description": "`{\"disabled\": false, \"passkeys\": 0}`을 반환합니다. 로그인 세션에서만 사용할 수 있습니다.\n\n**로그인 세션에서만 사용할 수 있으며, API 토큰으로는 이 엔드포인트에 접근할 수 없습니다.**",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "summary": "비밀번호 로그인이 꺼져 있는지 확인",
+        "tags": [
+          "계정"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      },
+      "put": {
+        "description": "요청 본문 `{\"password\": \"현재 비밀번호\", \"disabled\": true}`. 끄면 관리자 계정은 Passkey 또는 서드파티 로그인만 사용할 수 있어 비밀번호 무차별 대입이 불가능해집니다. 끄기 전에 Passkey를 등록해야 하며, 꺼져 있는 동안에는 마지막 Passkey를 삭제할 수 없습니다. 읽기 전용 계정은 영향을 받지 않습니다. 서버에서 `gately reset-password`를 실행하면 비밀번호 로그인이 다시 켜집니다. 로그인 세션에서만 사용할 수 있습니다.\n\n**로그인 세션에서만 사용할 수 있으며, API 토큰으로는 이 엔드포인트에 접근할 수 없습니다.**",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "summary": "관리자 비밀번호 로그인 끄기 또는 켜기",
+        "tags": [
+          "계정"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
     "/api/account/sessions/revoke": {
       "post": {
         "description": "모든 관리 화면 로그인 세션(비밀번호, Passkey, 서드파티 로그인, fnOS 게이트웨이가 발급한 세션)을 현재 세션을 포함해 즉시 무효화하므로 다시 로그인해야 합니다. API 토큰은 영향받지 않습니다. 로그아웃(`POST /api/logout`)은 현재 세션만 폐기합니다. 폐기 기록은 영구 저장되어 재시작 후에도 유지됩니다. 관리자 로그인 세션만 사용할 수 있습니다.\n\n**로그인 세션에서만 사용할 수 있으며, API 토큰으로는 이 엔드포인트에 접근할 수 없습니다.**",
@@ -43430,6 +43584,57 @@
         ],
         "x-required-scope": "!denied",
         "x-token-allowed": false
+      }
+    },
+    "/api/system/security": {
+      "get": {
+        "description": "현재 설정을 기준으로 0~100의 보안 점수와 항목별 점검 결과를 반환합니다. `score`는 점수, `level`은 `good`, `warn` 또는 `risk`, `exposed`는 관리 화면이 공용 인터넷에 노출되어 있을 수 있음을 나타내며, `passwordIssue`는 `default`(여전히 기본 비밀번호), `weak`(강도 부족) 또는 빈 값, `items`는 각 점검 항목(`id`, `status`, `points` 차감된 점수, `max` 만점)으로 `password`, `twoFactor`, `entry`, `lockout`, `https`, `globalLimit`, `username`이 있습니다. 관리 화면은 이를 바탕으로 보안 강화 알림을 표시합니다.\n\n필요한 권한: `system:read`.",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "관리 화면 보안 점수 확인",
+        "tags": [
+          "시스템"
+        ],
+        "x-required-scope": "system:read",
+        "x-token-allowed": true
       }
     },
     "/api/system/selfcheck": {

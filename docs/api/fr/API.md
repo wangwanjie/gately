@@ -939,6 +939,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | --- | --- | --- | --- |
 | GET | `/api/session` | Tout jeton valide | Consulter l'identité authentifiée actuelle |
 | GET | `/api/status` | `status:read` | Consulter l'état du système et des modules |
+| GET | `/api/system/security` | `system:read` | Consulter le score de sécurité de l'interface d'administration |
 | GET | `/api/logs` | `logs:read` | Consulter les journaux système |
 | GET | `/api/logs/sources` | `logs:read` | Lister toutes les sources des journaux système |
 | GET | `/api/logs/export` | `logs:read` | Exporter les journaux système |
@@ -992,6 +993,9 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | PUT | `/api/account` | Session connectée uniquement | Modifier le nom d'utilisateur et le mot de passe de l'administrateur |
 | POST | `/api/account/sessions/revoke` | Session connectée uniquement | Se déconnecter de tous les appareils |
 | PUT | `/api/account/ui-language` | Session connectée uniquement | Enregistrer la langue de la console d'administration |
+| POST | `/api/account/password-check` | Session connectée uniquement | Vérifier à l'avance la robustesse du mot de passe |
+| GET | `/api/account/password-login` | Session connectée uniquement | Consulter si la connexion par mot de passe est désactivée |
+| PUT | `/api/account/password-login` | Session connectée uniquement | Désactiver ou réactiver la connexion par mot de passe de l'administrateur |
 | GET | `/api/account/passkeys` | Session connectée uniquement | Lister les Passkeys enregistrées |
 | POST | `/api/account/passkeys/begin` | Session connectée uniquement | Commencer l'enregistrement d'une Passkey |
 | POST | `/api/account/passkeys` | Session connectée uniquement | Terminer l'enregistrement de la Passkey |

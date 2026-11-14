@@ -939,6 +939,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | --- | --- | --- | --- |
 | GET | `/api/session` | 任意の有効なトークン | 現在の認証 ID を表示 |
 | GET | `/api/status` | `status:read` | システムと各モジュールの状態を表示 |
+| GET | `/api/system/security` | `system:read` | 管理画面のセキュリティスコアを確認する |
 | GET | `/api/logs` | `logs:read` | システムログを表示 |
 | GET | `/api/logs/sources` | `logs:read` | システムログのすべてのソースを一覧表示 |
 | GET | `/api/logs/export` | `logs:read` | システムログをエクスポート |
@@ -992,6 +993,9 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/account` | ログインセッションのみ | 管理者のユーザー名とパスワードを変更 |
 | POST | `/api/account/sessions/revoke` | ログインセッションのみ | すべてのデバイスからログアウト |
 | PUT | `/api/account/ui-language` | ログインセッションのみ | 管理画面の言語を記録 |
+| POST | `/api/account/password-check` | ログインセッションのみ | パスワード強度を事前チェックする |
+| GET | `/api/account/password-login` | ログインセッションのみ | パスワードログインが無効かどうかを確認する |
+| PUT | `/api/account/password-login` | ログインセッションのみ | 管理者のパスワードログインを無効または有効にする |
 | GET | `/api/account/passkeys` | ログインセッションのみ | 登録済みの Passkey を一覧表示 |
 | POST | `/api/account/passkeys/begin` | ログインセッションのみ | Passkey の登録を開始 |
 | POST | `/api/account/passkeys` | ログインセッションのみ | Passkey の登録を完了 |

@@ -939,6 +939,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | --- | --- | --- | --- |
 | GET | `/api/session` | Beliebiges gültiges Token | Aktuelle Authentifizierungsidentität anzeigen |
 | GET | `/api/status` | `status:read` | System- und Modulstatus anzeigen |
+| GET | `/api/system/security` | `system:read` | Sicherheitsbewertung der Verwaltung abrufen |
 | GET | `/api/logs` | `logs:read` | Systemprotokolle anzeigen |
 | GET | `/api/logs/sources` | `logs:read` | Alle Quellen der Systemprotokolle auflisten |
 | GET | `/api/logs/export` | `logs:read` | Systemprotokolle exportieren |
@@ -992,6 +993,9 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | PUT | `/api/account` | Nur Anmeldesitzung | Administrator-Benutzername und -Passwort ändern |
 | POST | `/api/account/sessions/revoke` | Nur Anmeldesitzung | Von allen Geräten abmelden |
 | PUT | `/api/account/ui-language` | Nur Anmeldesitzung | Sprache der Verwaltungsoberfläche speichern |
+| POST | `/api/account/password-check` | Nur Anmeldesitzung | Passwortstärke vorab prüfen |
+| GET | `/api/account/password-login` | Nur Anmeldesitzung | Prüfen, ob die Passwortanmeldung deaktiviert ist |
+| PUT | `/api/account/password-login` | Nur Anmeldesitzung | Passwortanmeldung des Administrators deaktivieren oder aktivieren |
 | GET | `/api/account/passkeys` | Nur Anmeldesitzung | Registrierte Passkeys auflisten |
 | POST | `/api/account/passkeys/begin` | Nur Anmeldesitzung | Passkey-Registrierung starten |
 | POST | `/api/account/passkeys` | Nur Anmeldesitzung | Passkey-Registrierung abschließen |

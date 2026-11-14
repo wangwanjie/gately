@@ -6118,6 +6118,160 @@
         "x-token-allowed": false
       }
     },
+    "/api/account/password-check": {
+      "post": {
+        "description": "Corpo da requisição `{\"username\": \"\", \"password\": \"\"}`; se `username` estiver vazio, usa o nome de usuário do administrador. Retorna `{\"ok\": true}` ou `{\"ok\": false, \"code\": \"...\"}`: `tooShort` (menos de 10 caracteres), `tooLong` (mais de 72 bytes), `common` (senha fraca comum e suas variações), `username` (contém o nome de usuário), `product` (contém o nome do produto), `sequence` (caracteres em sequência), `repeat` (repetição), `simple` (poucos tipos de caractere), `control` (contém caracteres de controle). A senha não é registrada. Disponível apenas em sessão de login.\n\n**Disponível apenas para sessões de login; tokens de API não podem acessar este endpoint.**",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "summary": "Verificar previamente a força da senha",
+        "tags": [
+          "Conta"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/account/password-login": {
+      "get": {
+        "description": "Retorna `{\"disabled\": false, \"passkeys\": 0}`. Disponível apenas em sessão de login.\n\n**Disponível apenas para sessões de login; tokens de API não podem acessar este endpoint.**",
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "summary": "Consultar se o login por senha está desativado",
+        "tags": [
+          "Conta"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      },
+      "put": {
+        "description": "Corpo da requisição `{\"password\": \"senha atual\", \"disabled\": true}`. Depois de desativado, a conta de administrador só entra com Passkey ou login de terceiros, e a senha não pode mais ser quebrada por força bruta; antes de desativar é preciso ter um Passkey registrado e, enquanto estiver desativado, o último Passkey não pode ser excluído; contas somente leitura não são afetadas. Executar `gately reset-password` no servidor reativa o login por senha. Disponível apenas em sessão de login.\n\n**Disponível apenas para sessões de login; tokens de API não podem acessar este endpoint.**",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "summary": "Desativar ou ativar o login por senha do administrador",
+        "tags": [
+          "Conta"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
     "/api/account/sessions/revoke": {
       "post": {
         "description": "Invalida imediatamente todas as sessões de login da administração (emitidas por senha, Passkey, login de terceiros e pelo gateway do fnOS), inclusive a atual, então é preciso entrar novamente; os tokens de API não são afetados. Sair (`POST /api/logout`) revoga apenas a sessão atual. Os registros de revogação são persistidos e continuam valendo após uma reinicialização. Apenas sessões de administrador.\n\n**Disponível apenas para sessões de login; tokens de API não podem acessar este endpoint.**",
@@ -43430,6 +43584,57 @@
         ],
         "x-required-scope": "!denied",
         "x-token-allowed": false
+      }
+    },
+    "/api/system/security": {
+      "get": {
+        "description": "Retorna, com base na configuração atual, uma pontuação de segurança de 0 a 100 e o resultado de cada verificação: `score` é a pontuação, `level` é `good`, `warn` ou `risk`, `exposed` indica que o painel de administração pode estar exposto à internet, `passwordIssue` é `default` (ainda a senha padrão), `weak` (força insuficiente) ou vazio, `items` são as verificações (`id`, `status`, `points` pontos descontados, `max` pontuação máxima): `password`, `twoFactor`, `entry`, `lockout`, `https`, `globalLimit`, `username`. O painel de administração usa isso para exibir lembretes de reforço.\n\nPermissão necessária: `system:read`.",
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Consultar a pontuação de segurança do painel de administração",
+        "tags": [
+          "Sistema"
+        ],
+        "x-required-scope": "system:read",
+        "x-token-allowed": true
       }
     },
     "/api/system/selfcheck": {

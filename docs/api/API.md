@@ -939,6 +939,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | --- | --- | --- | --- |
 | GET | `/api/session` | 任意有效令牌 | 查看当前认证身份 |
 | GET | `/api/status` | `status:read` | 查看系统与各模块状态 |
+| GET | `/api/system/security` | `system:read` | 查看管理端安全评分 |
 | GET | `/api/logs` | `logs:read` | 查看系统日志 |
 | GET | `/api/logs/sources` | `logs:read` | 列出系统日志的全部来源 |
 | GET | `/api/logs/export` | `logs:read` | 导出系统日志 |
@@ -992,6 +993,9 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/account` | 仅登录会话 | 修改管理员用户名与密码 |
 | POST | `/api/account/sessions/revoke` | 仅登录会话 | 退出所有设备 |
 | PUT | `/api/account/ui-language` | 仅登录会话 | 记录管理界面语言 |
+| POST | `/api/account/password-check` | 仅登录会话 | 预检密码强度 |
+| GET | `/api/account/password-login` | 仅登录会话 | 查看密码登录是否已关闭 |
+| PUT | `/api/account/password-login` | 仅登录会话 | 关闭或开启管理员的密码登录 |
 | GET | `/api/account/passkeys` | 仅登录会话 | 列出已注册的 Passkey |
 | POST | `/api/account/passkeys/begin` | 仅登录会话 | 开始注册 Passkey |
 | POST | `/api/account/passkeys` | 仅登录会话 | 完成注册 Passkey |

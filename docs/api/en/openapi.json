@@ -6118,6 +6118,160 @@
         "x-token-allowed": false
       }
     },
+    "/api/account/password-check": {
+      "post": {
+        "description": "Request body `{\"username\": \"\", \"password\": \"\"}`; when `username` is empty the administrator username is used. Returns `{\"ok\": true}` or `{\"ok\": false, \"code\": \"...\"}`: `tooShort` (under 10 characters), `tooLong` (over 72 bytes), `common` (common weak passwords and variants), `username` (contains the username), `product` (contains a product name), `sequence` (sequential characters), `repeat` (repeated), `simple` (too few character types), `control` (contains control characters). The password is never logged. Login sessions only.\n\n**Available only to login sessions; API tokens cannot access this endpoint.**",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "summary": "Pre-check password strength",
+        "tags": [
+          "Account"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/account/password-login": {
+      "get": {
+        "description": "Returns `{\"disabled\": false, \"passkeys\": 0}`. Login sessions only.\n\n**Available only to login sessions; API tokens cannot access this endpoint.**",
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "summary": "Check whether password login is turned off",
+        "tags": [
+          "Account"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      },
+      "put": {
+        "description": "Request body `{\"password\": \"current password\", \"disabled\": true}`. Once off, the administrator account can only sign in with a Passkey or a third-party login, so the password can no longer be brute-forced; a Passkey must be registered before turning it off, and the last Passkey cannot be deleted while it is off; read-only accounts are unaffected. Running `gately reset-password` on the server turns password login back on. Login sessions only.\n\n**Available only to login sessions; API tokens cannot access this endpoint.**",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "summary": "Turn administrator password login off or on",
+        "tags": [
+          "Account"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
     "/api/account/sessions/revoke": {
       "post": {
         "description": "Invalidates every admin sign-in session (issued by password, Passkey, third-party sign-in and the fnOS gateway) immediately, including the current one, so you need to sign in again; API tokens are not affected. Signing out (`POST /api/logout`) revokes only the current session. Revocation records are persisted and stay in effect after a restart. Administrator sessions only.\n\n**Available only to login sessions; API tokens cannot access this endpoint.**",
@@ -43430,6 +43584,57 @@
         ],
         "x-required-scope": "!denied",
         "x-token-allowed": false
+      }
+    },
+    "/api/system/security": {
+      "get": {
+        "description": "Returns a 0-100 security score with per-item results: `score` is the score, `level` is `good`, `warn` or `risk`, `exposed` means the console may be exposed to the internet, `passwordIssue` is `default` (still the default password), `weak` (too weak) or empty, and `items` are the checks (`id`, `status`, `points` deducted, `max` full score): `password`, `twoFactor`, `entry`, `lockout`, `https`, `globalLimit`, `username`. The console uses this to show hardening reminders.\n\nRequired permission: `system:read`.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get the console security score",
+        "tags": [
+          "System"
+        ],
+        "x-required-scope": "system:read",
+        "x-token-allowed": true
       }
     },
     "/api/system/selfcheck": {
