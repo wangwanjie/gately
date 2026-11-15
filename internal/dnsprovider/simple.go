@@ -257,26 +257,26 @@ func (d *dynv6) do(ctx context.Context, method, path string, body any, out any) 
 	return nil
 }
 
-// resolveZone 返回 zone 的记录路径与记录名（根记录为空串）。
+// resolveZoneInfo 返回 zone 信息与记录名（根记录为空串）。
 // dynv6 的 zone 是用户自己的完整域名（如 my.dynv6.net）。主域名填成 dynv6.net、子域名填 my 时
 // zone 查询会 404，此时把子域名最右侧的标签逐级并入 zone 重试。
-func (d *dynv6) resolveZone(ctx context.Context, zoneName, sub string) (string, string, error) {
+func (d *dynv6) resolveZoneInfo(ctx context.Context, zoneName, sub string) (dynv6Zone, string, error) {
 	name := sub
 	if name == "@" {
 		name = ""
 	}
 	var firstErr error
 	for {
-		zp, err := d.zonePath(ctx, zoneName)
+		z, err := d.zoneInfo(ctx, zoneName)
 		if err == nil {
-			return zp, name, nil
+			return z, name, nil
 		}
 		if firstErr == nil {
 			firstErr = err
 		}
 		var he *HTTPError
 		if !errors.As(err, &he) || he.Status != http.StatusNotFound || name == "" {
-			return "", "", firstErr
+			return dynv6Zone{}, "", firstErr
 		}
 		if i := strings.LastIndex(name, "."); i >= 0 {
 			zoneName, name = name[i+1:]+"."+zoneName, name[:i]
@@ -286,11 +286,36 @@ func (d *dynv6) resolveZone(ctx context.Context, zoneName, sub string) (string, 
 	}
 }
 
+// resolveZone 返回 zone 的记录路径与记录名（根记录为空串）。
+func (d *dynv6) resolveZone(ctx context.Context, zoneName, sub string) (string, string, error) {
+	z, name, err := d.resolveZoneInfo(ctx, zoneName, sub)
+	if err != nil {
+		return "", "", err
+	}
+	return "/zones/" + strconv.FormatInt(z.ID, 10) + "/records", name, nil
+}
+
 func (d *dynv6) Upsert(ctx context.Context, r Record) (string, error) {
-	zpath, name, err := d.resolveZone(ctx, r.Zone, r.Sub)
+	zone, name, err := d.resolveZoneInfo(ctx, r.Zone, r.Sub)
 	if err != nil {
 		return "", err
 	}
+	zonePath := "/zones/" + strconv.FormatInt(zone.ID, 10)
+	if name == "" {
+		// 根域名通过 PATCH zone 更新（A 对应 ipv4address，AAAA 对应 ipv6prefix）
+		cur, field := zone.IPv4, "ipv4address"
+		if r.Type == "AAAA" {
+			cur, field = zone.IPv6, "ipv6prefix"
+		}
+		if cur == r.Value {
+			return ActionUnchanged, nil
+		}
+		if err := d.do(ctx, http.MethodPatch, zonePath, map[string]string{field: r.Value}, nil); err != nil {
+			return "", err
+		}
+		return ActionUpdated, nil
+	}
+	zpath := zonePath + "/records"
 	var recs []struct {
 		ID   int64  `json:"id"`
 		Name string `json:"name"`
@@ -361,6 +386,11 @@ type callback struct {
 
 // Upsert 调用用户配置的回调地址，可用变量：{ip} {recordType} {domain} {subDomain} {zone} {ttl} {timestamp}（当前 Unix 秒）{id} {secret}。
 func (c *callback) Upsert(ctx context.Context, r Record) (string, error) {
+	// 未配置 TTL 时 {ttl} 取 600
+	ttl := r.TTL
+	if ttl <= 0 {
+		ttl = 600
+	}
 	vars := map[string]string{
 		"ip":         r.Value,
 		"recordType": r.Type,
@@ -377,8 +407,3 @@ func (c *callback) Upsert(ctx context.Context, r Record) (string, error) {
 	}
 	return ActionUpdated, nil
 }
-	// 未配置 TTL 时 {ttl} 取 600
-	ttl := r.TTL
-	if ttl <= 0 {
-		ttl = 600
-	}
