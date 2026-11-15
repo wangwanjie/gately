@@ -124,6 +124,8 @@ type firewall struct {
 	// trustText 为最近一次写入的内容，不变时不重写放行集合
 	trusted   []netip.Prefix
 	trustText string
+	// trustLapsed 为过了期限后发现连接已断开、就此失效的登记（见 effectiveTrusted）
+	trustLapsed map[trustKey]bool
 	// lastErr 为最近一次记录到日志的写入错误，重试时相同的错误不重复记录
 	lastErr string
 	// baseDropped / baseHits 为之前的表（保存设置、外部清除或停止时被删除重建）累计的计数。
