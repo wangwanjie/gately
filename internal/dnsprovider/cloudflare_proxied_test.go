@@ -54,9 +54,11 @@ func TestCloudflareProxiedTTL(t *testing.T) {
 	}
 }
 
-// 同名同类型的多条记录逐条更新，未配置 TTL 时更新用 1（自动）。
+// 同名同类型的多条记录最终都解析到目标值：保留一条改成目标值（优先已是目标值的那条），其余旧值记录删除，
+// 避免逐条改成同一个值触发 Cloudflare 81058（identical record already exists）；未配置 TTL 时更新用 1（自动）。
 func TestCloudflareUpdatesAllSameNameRecords(t *testing.T) {
 	patches := map[string]map[string]any{}
+	deletes := map[string]bool{}
 	listJSON := ""
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch {
@@ -66,6 +68,9 @@ func TestCloudflareUpdatesAllSameNameRecords(t *testing.T) {
 			_, _ = w.Write([]byte(`{"success":true,"result":` + listJSON + `}`))
 		case r.Method == "PATCH":
 			patches[r.URL.Path] = readJSON(t, r)
+			_, _ = w.Write([]byte(`{"success":true,"result":{}}`))
+		case r.Method == "DELETE":
+			deletes[r.URL.Path] = true
 			_, _ = w.Write([]byte(`{"success":true,"result":{}}`))
 		default:
 			t.Errorf("意外请求 %s %s", r.Method, r.URL)
@@ -77,34 +82,35 @@ func TestCloudflareUpdatesAllSameNameRecords(t *testing.T) {
 	ctx := context.Background()
 	rec := Record{Zone: "example.com", Sub: "home", Type: "A", Value: "2.2.2.2"}
 
-	// 两条都不是目标值：两条都改，TTL 未配置时为 1，未管理代理状态时不发送 proxied
+	// 两条都不是目标值：改第一条，删第二条；TTL 未配置时为 1，未管理代理状态时不发送 proxied
 	listJSON = `[{"id":"r1","type":"A","name":"home.example.com","content":"9.9.9.9","ttl":120,"proxied":false},` +
 		`{"id":"r2","type":"A","name":"home.example.com","content":"8.8.8.8","ttl":120,"proxied":false}]`
 	if got, err := p.Upsert(ctx, rec); err != nil || got != ActionUpdated {
 		t.Fatalf("更新: %v %v", got, err)
 	}
-	if len(patches) != 2 {
-		t.Fatalf("应更新两条记录: %v", patches)
+	body := patches["/zones/z1/dns_records/r1"]
+	if len(patches) != 1 || body == nil || !deletes["/zones/z1/dns_records/r2"] || len(deletes) != 1 {
+		t.Fatalf("应改 r1、删 r2: patches=%v deletes=%v", patches, deletes)
 	}
-	for path, body := range patches {
-		if body["content"] != "2.2.2.2" || body["ttl"].(float64) != 1 {
-			t.Fatalf("%s 请求体错误: %v", path, body)
-		}
-		if _, ok := body["proxied"]; ok {
-			t.Fatalf("未配置代理状态时不应发送 proxied: %v", body)
-		}
+	if body["content"] != "2.2.2.2" || body["ttl"].(float64) != 1 {
+		t.Fatalf("请求体错误: %v", body)
+	}
+	if _, ok := body["proxied"]; ok {
+		t.Fatalf("未配置代理状态时不应发送 proxied: %v", body)
 	}
 
-	// 一条已是目标值：只改另一条，整体仍算更新
+	// 一条已是目标值（排在后面）：保留它，删除另一条旧值记录，整体仍算更新
 	clear(patches)
-	listJSON = `[{"id":"r1","type":"A","name":"home.example.com","content":"2.2.2.2","ttl":120,"proxied":false},` +
-		`{"id":"r2","type":"A","name":"home.example.com","content":"8.8.8.8","ttl":120,"proxied":false}]`
+	clear(deletes)
+	listJSON = `[{"id":"r1","type":"A","name":"home.example.com","content":"8.8.8.8","ttl":120,"proxied":false},` +
+		`{"id":"r2","type":"A","name":"home.example.com","content":"2.2.2.2","ttl":120,"proxied":false}]`
 	if got, err := p.Upsert(ctx, rec); err != nil || got != ActionUpdated {
 		t.Fatalf("更新: %v %v", got, err)
 	}
-	if len(patches) != 1 || patches["/zones/z1/dns_records/r2"] == nil {
-		t.Fatalf("应只更新 r2: %v", patches)
+	if len(patches) != 0 || len(deletes) != 1 || !deletes["/zones/z1/dns_records/r1"] {
+		t.Fatalf("应只删除 r1: patches=%v deletes=%v", patches, deletes)
 	}
+	clear(deletes)
 
 	// 全部已是目标值（未配置 TTL 时不比较 TTL）：不变
 	clear(patches)
