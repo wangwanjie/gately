@@ -145,9 +145,9 @@ func (d *dnspod) Upsert(ctx context.Context, r Record) (string, error) {
 			return ActionUnchanged, nil
 		}
 		if !valueSame {
-			if r.TTL <= 0 && rec.TTL != "" {
-				// 未指定 TTL 时沿用记录现有值，避免修改接口按默认值重置
-				form.Set("ttl", rec.TTL)
+			if r.TTL <= 0 {
+				// 未指定 TTL 时更新为默认的 600
+				form.Set("ttl", "600")
 			}
 			form.Set("record_id", rec.ID)
 			st, err := d.call(ctx, "Record.Modify", form, nil)

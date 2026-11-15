@@ -10,7 +10,10 @@ import (
 	"time"
 )
 
-func TestDNSPodKeepsTTL(t *testing.T) {
+// 以下用例：未指定 TTL 时更新使用服务商默认值（DNSPod/腾讯云 600、华为云 300、NS1 60），Gandi 与 Bunny 沿用现有 TTL。
+
+// DNSPod 传统接口：未指定 TTL 时 Record.Modify 更新为 600。
+func TestDNSPodDefaultTTLOnUpdate(t *testing.T) {
 	var modify map[string]string
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		_ = r.ParseForm()
@@ -33,14 +36,13 @@ func TestDNSPodKeepsTTL(t *testing.T) {
 	if got, err := p.Upsert(context.Background(), Record{Zone: "example.com", Sub: "nas", Type: "A", Value: "2.2.2.2"}); err != nil || got != ActionUpdated {
 		t.Fatalf("%v %v", got, err)
 	}
-	if modify["ttl"] != "120" {
-		t.Fatalf("应沿用 TTL 120: %v", modify)
+	if modify["ttl"] != "600" {
+		t.Fatalf("未指定 TTL 应更新为 600: %v", modify)
 	}
 }
 
-// 腾讯云 DNSPod 3.0：未指定 TTL 时 ModifyRecord 沿用现有 TTL。
-
-func TestTencentCloudKeepsTTL(t *testing.T) {
+// 腾讯云 DNSPod 3.0：未指定 TTL 时 ModifyRecord 更新为 600。
+func TestTencentCloudDefaultTTLOnUpdate(t *testing.T) {
 	var modify string
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		body, _ := io.ReadAll(r.Body)
@@ -62,14 +64,13 @@ func TestTencentCloudKeepsTTL(t *testing.T) {
 	if got, err := p.Upsert(context.Background(), Record{Zone: "example.com", Sub: "@", Type: "A", Value: "2.2.2.2"}); err != nil || got != ActionUpdated {
 		t.Fatalf("%v %v", got, err)
 	}
-	if !strings.Contains(modify, `"TTL":180`) {
-		t.Fatalf("应沿用 TTL 180: %s", modify)
+	if !strings.Contains(modify, `"TTL":600`) {
+		t.Fatalf("未指定 TTL 应更新为 600: %s", modify)
 	}
 }
 
-// 华为云：未指定 TTL 时 PUT 沿用记录集现有 TTL。
-
-func TestHuaweiCloudKeepsTTL(t *testing.T) {
+// 华为云：未指定 TTL 时 PUT 更新为 300。
+func TestHuaweiCloudDefaultTTLOnUpdate(t *testing.T) {
 	var put map[string]any
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch {
@@ -90,14 +91,13 @@ func TestHuaweiCloudKeepsTTL(t *testing.T) {
 	if got, err := p.Upsert(context.Background(), Record{Zone: "example.com", Sub: "www", Type: "A", Value: "2.2.2.2"}); err != nil || got != ActionUpdated {
 		t.Fatalf("%v %v", got, err)
 	}
-	if put["ttl"] != float64(120) {
-		t.Fatalf("应沿用 TTL 120: %v", put)
+	if put["ttl"] != float64(300) {
+		t.Fatalf("未指定 TTL 应更新为 300: %v", put)
 	}
 }
 
-// Gandi / NS1：未指定 TTL 时更新沿用现有 TTL，不被重置为 300 / 3600。
-
-func TestGandiNS1KeepTTL(t *testing.T) {
+// Gandi 沿用现有 TTL；NS1 未指定 TTL 时更新为 60。
+func TestGandiKeepsTTLNS1DefaultTTLOnUpdate(t *testing.T) {
 	var gandiPut, ns1Post string
 	gsrv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "GET" {
@@ -121,7 +121,7 @@ func TestGandiNS1KeepTTL(t *testing.T) {
 
 	nsrv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "GET" {
-			_, _ = w.Write([]byte(`{"ttl":60,"answers":[{"answer":["1.1.1.1"]}]}`))
+			_, _ = w.Write([]byte(`{"ttl":900,"answers":[{"answer":["1.1.1.1"]}]}`))
 			return
 		}
 		b, _ := io.ReadAll(r.Body)
@@ -135,7 +135,7 @@ func TestGandiNS1KeepTTL(t *testing.T) {
 		t.Fatalf("%v %v", got, err)
 	}
 	if !strings.Contains(ns1Post, `"ttl":60`) {
-		t.Fatalf("NS1 应沿用 TTL 60: %s", ns1Post)
+		t.Fatalf("NS1 未指定 TTL 应更新为 60: %s", ns1Post)
 	}
 }
 

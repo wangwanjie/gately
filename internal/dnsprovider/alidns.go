@@ -161,9 +161,9 @@ func (a *aliDNS) Upsert(ctx context.Context, r Record) (string, error) {
 		}
 		// 值与 TTL 都没变时 UpdateDomainRecord 会报 DomainRecordDuplicate，只改备注时跳过
 		if !valueSame {
-			if r.TTL <= 0 && rec.TTL > 0 {
-				// 未指定 TTL 时沿用记录现有值，避免更新接口按默认 600 重置
-				params["TTL"] = strconv.Itoa(rec.TTL)
+			if r.TTL <= 0 {
+				// 未指定 TTL 时更新为默认的 600
+				params["TTL"] = "600"
 			}
 			params["RecordId"] = rec.RecordID
 			if err := a.call(ctx, "UpdateDomainRecord", params, nil); err != nil {
