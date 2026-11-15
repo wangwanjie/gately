@@ -209,6 +209,10 @@ func (g *gandi) Upsert(ctx context.Context, r Record) (string, error) {
 		return "", err
 	}
 	ttl := r.TTL
+	if ttl <= 0 && cur != nil {
+		// 未指定 TTL 时沿用记录现有值
+		ttl = cur.TTL
+	}
 	// Gandi 最小 TTL 为 300
 	if ttl < 300 {
 		ttl = 300
@@ -316,6 +320,10 @@ func (n *ns1) Upsert(ctx context.Context, r Record) (string, error) {
 		return "", err
 	}
 	ttl := r.TTL
+	if ttl <= 0 && cur != nil && cur.TTL > 0 {
+		// 未指定 TTL 时沿用记录现有值
+		ttl = cur.TTL
+	}
 	if ttl <= 0 {
 		ttl = 3600
 	}
@@ -476,6 +484,10 @@ func (b *bunny) Upsert(ctx context.Context, r Record) (string, error) {
 	for _, rec := range recs {
 		if rec.Type != typ || !strings.EqualFold(rec.Name, name) {
 			continue
+		}
+		if r.TTL <= 0 && rec.TTL > 0 {
+			// 未指定 TTL 时沿用记录现有值
+			ttl = rec.TTL
 		}
 		if rec.Value == r.Value && (r.TTL <= 0 || rec.TTL == ttl) {
 			return ActionUnchanged, nil
