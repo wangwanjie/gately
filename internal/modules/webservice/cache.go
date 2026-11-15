@@ -40,6 +40,8 @@ type respCache struct {
 	now   func() time.Time
 	// rules 为按路径的缓存规则，已按具体程度从高到低排序
 	rules []cacheRule
+	// gatelyCookie 判断某个 Cookie 是否只用于 Gately 自身的认证、不会转发给后端，这类 Cookie 不算后端凭据；为空时所有 Cookie 都算
+	gatelyCookie func(name string) bool
 }
 
 // cacheRule 是编译后的缓存规则。
@@ -189,6 +191,13 @@ var credentialParams = map[string]bool{"api_key": true, "x-plex-token": true, "t
 
 // requestCacheable 判断请求是否可以走缓存。带凭据或 Cookie 的请求内容可能因人而异，一律不缓存。
 func requestCacheable(r *http.Request) bool {
+	return requestCacheableIgnoring(r, nil)
+}
+
+// requestCacheableIgnoring 与 requestCacheable 相同，但 ignore 返回 true 的 Cookie 不视为凭据。
+// 站点会话与单点登录 Cookie 只用于 Gately 自身认证（缓存位于认证之后，且不会转发给后端），
+// 单点登录域用主域名时所有站点的请求都会带上它们，不排除就会让缓存永远不生效。
+func requestCacheableIgnoring(r *http.Request, ignore func(name string) bool) bool {
 	if r.Method != http.MethodGet {
 		return false
 	}
@@ -196,9 +205,14 @@ func requestCacheable(r *http.Request) bool {
 		return false
 	}
 	for _, k := range credentialHeaders {
-		if r.Header.Get(k) != "" {
-			return false
+		if r.Header.Get(k) == "" {
+			continue
 		}
+		// Cookie 头逐个看名称，只剩 Gately 自身的 Cookie 时仍可缓存
+		if k == "Cookie" && ignore != nil && onlyIgnoredCookies(r, ignore) {
+			continue
+		}
+		return false
 	}
 	if strings.EqualFold(r.Header.Get("Upgrade"), "websocket") {
 		return false
@@ -210,6 +224,25 @@ func requestCacheable(r *http.Request) bool {
 		return false
 	}
 	return !strings.Contains(strings.ToLower(r.Header.Get("Cache-Control")), "no-cache")
+}
+
+// onlyIgnoredCookies 判断请求的 Cookie 是否全部可以忽略。
+func onlyIgnoredCookies(r *http.Request, ignore func(name string) bool) bool {
+	// 多个 Cookie 头或无法解析的内容按有凭据处理：Cookies() 解析失败的片段会被丢弃，所以再核对数量
+	n := 0
+	for _, line := range r.Header.Values("Cookie") {
+		n += strings.Count(line, ";") + 1
+	}
+	cookies := r.Cookies()
+	if len(cookies) != n {
+		return false
+	}
+	for _, c := range cookies {
+		if !ignore(c.Name) {
+			return false
+		}
+	}
+	return true
 }
 
 // hasCredentialParam 判断查询串是否带凭据参数。按 & 与 ; 两种分隔符逐个取参数名，
@@ -351,7 +384,7 @@ func (c *respCache) wrap(next http.Handler) http.Handler {
 		entryLimit = maxCacheEntry
 	}
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if !requestCacheable(r) {
+		if !requestCacheableIgnoring(r, c.gatelyCookie) {
 			next.ServeHTTP(w, r)
 			return
 		}

@@ -220,3 +220,80 @@ func TestCacheBackendVaryAndCORS(t *testing.T) {
 		}
 	}
 }
+
+// TestCacheIgnoresGatelyCookies 验证只带 Gately 自身认证 Cookie 的请求照常走缓存（单点登录域用主域名时所有请求都带这些 Cookie），
+// 带其他 Cookie、或站点把登录 Cookie 转发给后端时仍不缓存。
+func TestCacheIgnoresGatelyCookies(t *testing.T) {
+	backend, _ := cacheRulesBackend(t)
+	run := func(domain string, pass bool) func(path, cookie string) string {
+		site := Site{Enable: true, Domains: []string{domain}, Targets: []string{backend.URL}, PassAuthCookies: pass, Cache: CacheConfig{Enable: true, TTL: 30}}
+		if err := site.validateProxyExtras(); err != nil {
+			t.Fatal(err)
+		}
+		addr, _ := startRunner(t, Listener{Sites: []Site{site}}, nil, nil)
+		return func(path, cookie string) string {
+			var hdr map[string]string
+			if cookie != "" {
+				hdr = map[string]string{"Cookie": cookie}
+			}
+			resp, _ := get(t, http.DefaultClient, addr, domain, path, hdr)
+			return resp.Header.Get("X-Cache")
+		}
+	}
+	x := run("c1.test", false)
+	for _, c := range []string{"gately_sso=abc", "gately_site_0123456789ab=v; gately_sso=abc", "gately_admin=1; gately_oauth_nonce=n"} {
+		x("/plain/"+c[:8], c)
+		if got := x("/plain/"+c[:8], c); got != "HIT" {
+			t.Errorf("只带 Gately 自身 Cookie %q 应命中缓存: %q", c, got)
+		}
+	}
+	// 夹带后端自己的 Cookie 时仍按凭据处理
+	if got := x("/plain/mixed", "gately_sso=abc; sessionid=1"); got != "" {
+		t.Errorf("带后端 Cookie 的请求不应走缓存: %q", got)
+	}
+	// 转发登录 Cookie 的站点：站点会话与单点登录 Cookie 会到后端，不能共享缓存；后台登录免认证凭据始终不转发
+	y := run("c2.test", true)
+	if got := y("/plain/sso", "gately_sso=abc"); got != "" {
+		t.Errorf("转发登录 Cookie 的站点不应缓存带该 Cookie 的请求: %q", got)
+	}
+	y("/plain/admin", "gately_admin=1")
+	if got := y("/plain/admin", "gately_admin=1"); got != "HIT" {
+		t.Errorf("后台登录免认证 Cookie 不转发给后端，应命中缓存: %q", got)
+	}
+}
+
+// TestCacheWithRealWebAuth 用真实的网页认证登录验证：已登录访客的请求（带站点会话 Cookie）能命中缓存，
+// 未登录的请求读不到缓存内容，转发登录 Cookie 的站点不缓存。
+func TestCacheWithRealWebAuth(t *testing.T) {
+	backend, _ := cacheRulesBackend(t)
+	mk := func(key, domain string, pass bool) Site {
+		s := Site{Enable: true, Key: key, Domains: []string{domain}, Targets: []string{backend.URL}, PassAuthCookies: pass, Cache: CacheConfig{Enable: true, TTL: 30}}
+		// 转发登录 Cookie 的站点由后端 Gately 负责认证，本站点不能再开认证
+		if !pass {
+			s.WebAuth, s.Users = true, []string{"alice:pw"}
+		}
+		if err := s.validateProxyExtras(); err != nil {
+			t.Fatal(err)
+		}
+		return s
+	}
+	addr, _ := startRunner(t, Listener{Sites: []Site{mk("a", "wa.test", false), mk("b", "wb.test", true)}}, nil, nil)
+
+	cookie := loginCookie(t, addr, "wa.test", "alice", "pw")
+	with := map[string]string{"Cookie": cookie}
+	get(t, noRedirect(), addr, "wa.test", "/plain/x", with)
+	if resp, _ := get(t, noRedirect(), addr, "wa.test", "/plain/x", with); resp.Header.Get("X-Cache") != "HIT" {
+		t.Fatalf("已登录访客应命中缓存: %q", resp.Header.Get("X-Cache"))
+	}
+	// 缓存已有内容时，未登录的请求仍要先过认证，拿不到缓存内容
+	resp, body := get(t, noRedirect(), addr, "wa.test", "/plain/x", nil)
+	if resp.Header.Get("X-Cache") == "HIT" || strings.Contains(body, "body:/plain/x") {
+		t.Fatalf("未登录请求不应读到缓存: %d %q", resp.StatusCode, body)
+	}
+	// 转发登录 Cookie 的站点：后端 Gately 的会话 Cookie 到达后端，带它的请求不缓存
+	cb := map[string]string{"Cookie": "gately_site_0123456789ab=v"}
+	get(t, noRedirect(), addr, "wb.test", "/plain/x", cb)
+	if resp, _ := get(t, noRedirect(), addr, "wb.test", "/plain/x", cb); resp.Header.Get("X-Cache") == "HIT" {
+		t.Fatal("转发登录 Cookie 的站点不应缓存带会话的请求")
+	}
+}
