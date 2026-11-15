@@ -367,7 +367,7 @@ func (c *callback) Upsert(ctx context.Context, r Record) (string, error) {
 		"domain":     r.FQDN(),
 		"subDomain":  r.RR(),
 		"zone":       r.Zone,
-		"ttl":        strconv.Itoa(r.TTL),
+		"ttl":        strconv.Itoa(ttl),
 		"timestamp":  strconv.FormatInt(time.Now().Unix(), 10),
 		"id":         c.id,
 		"secret":     c.secret,
@@ -377,3 +377,8 @@ func (c *callback) Upsert(ctx context.Context, r Record) (string, error) {
 	}
 	return ActionUpdated, nil
 }
+	// 未配置 TTL 时 {ttl} 取 600
+	ttl := r.TTL
+	if ttl <= 0 {
+		ttl = 600
+	}
