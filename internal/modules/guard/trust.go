@@ -28,7 +28,8 @@ var establishedPeersFn = establishedPeers
 // 来源在登记的期限内有效；过了期限后，只在它与登记的本机端口之间还有已建立的 TCP 连接时有效。
 // 读不到连接状态时只按期限判断。
 func (f *firewall) refreshTrustLocked(ctx context.Context) {
-	trusted := effectiveTrusted(trustsrc.All(), time.Now())
+	trusted, lapsed := effectiveTrusted(trustsrc.All(), time.Now(), f.trustLapsed)
+	f.trustLapsed = lapsed
 	text := strings.Join(prefixStrings(trusted), ",")
 	if text == f.trustText {
 		return
@@ -49,33 +50,69 @@ func (f *firewall) refreshTrust(ctx context.Context) {
 	f.refreshTrustLocked(ctx)
 }
 
-// effectiveTrusted 返回 list 中当前有效的来源（单个地址的网段，已排序去重）。
-func effectiveTrusted(list []trustsrc.Source, now time.Time) []netip.Prefix {
+// trustKey 标识一次登记：同一来源重新登录后期限变化，视为新的登记
+type trustKey struct {
+	addr  netip.Addr
+	port  int
+	until int64
+}
+
+// effectiveTrusted 返回 list 中当前有效的来源（单个地址的网段，已排序去重），以及已失效的登记（见下）。
+// 过了期限的来源只在与登记端口之间还有已建立的连接时有效；某次检查发现连接已断开后，这次登记就此失效（记入 lapsed），
+// 之后即使该地址重新建立连接也不再恢复，直到模块重新登记（如 frpc 重新登录、期限变化）。
+// 否则家宽地址被运营商分配给别人后，新的持有者只要连上公开的 frps 端口、不必知道令牌，就能免于扫描检测。
+// lapsed 为上一次的结果，返回值只保留仍在登记中的部分，不会随登记变化无限增长。
+func effectiveTrusted(list []trustsrc.Source, now time.Time, lapsed map[trustKey]bool) ([]netip.Prefix, map[trustKey]bool) {
 	if len(list) == 0 {
-		return nil
+		return nil, nil
 	}
-	// 只有过了期限的来源需要按连接判断
+	keyOf := func(s trustsrc.Source) trustKey {
+		return trustKey{addr: s.Addr.Unmap(), port: s.Port, until: s.Until.UnixNano()}
+	}
+	// 只有过了期限、尚未失效的来源需要按连接判断；都不需要时不读取连接状态
 	ports := map[int]bool{}
 	for _, s := range list {
-		if s.Port > 0 && !now.Before(s.Until) {
+		if s.Port > 0 && !now.Before(s.Until) && !lapsed[keyOf(s)] {
 			ports[s.Port] = true
 		}
 	}
 	var peers map[int]map[netip.Addr]bool
+	peersOK := false
 	if len(ports) > 0 {
-		peers, _ = establishedPeersFn(ports)
+		var err error
+		peers, err = establishedPeersFn(ports)
+		peersOK = err == nil
 	}
 	var out []netip.Prefix
+	next := map[trustKey]bool{}
 	for _, s := range list {
 		a := s.Addr.Unmap()
 		if !a.IsValid() {
 			continue
 		}
-		if now.Before(s.Until) || (s.Port > 0 && peers[s.Port][a]) {
+		if now.Before(s.Until) {
 			out = append(out, netip.PrefixFrom(a, a.BitLen()))
+			continue
+		}
+		if s.Port <= 0 {
+			continue
+		}
+		k := keyOf(s)
+		if lapsed[k] {
+			next[k] = true
+			continue
+		}
+		if peers[s.Port][a] {
+			out = append(out, netip.PrefixFrom(a, a.BitLen()))
+		} else if peersOK {
+			// 读到了连接状态且连接已断开：这次登记失效。读取失败时无法确认，下次再判断
+			next[k] = true
 		}
 	}
-	return mergePrefixes(out)
+	if len(next) == 0 {
+		next = nil
+	}
+	return mergePrefixes(out), next
 }
 
 // trustedFilterLocked 包装导入内核封禁的回调，跳过可信来源：内核规则可能在放行集合更新之前

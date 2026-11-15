@@ -55,19 +55,66 @@ func TestEffectiveTrusted(t *testing.T) {
 	gone := netip.MustParseAddr("198.51.100.20")
 	fresh := netip.MustParseAddr("2001:db8::7")
 	stubPeers(t, map[int]map[netip.Addr]bool{17000: {home: true}})
-	got := effectiveTrusted([]trustsrc.Source{
+	got, _ := effectiveTrusted([]trustsrc.Source{
 		// 过了登录宽限期，但控制连接还在
 		{Addr: home, Port: 17000, Until: now.Add(-time.Hour)},
 		// 过了宽限期且已断开
 		{Addr: gone, Port: 17000, Until: now.Add(-time.Minute)},
 		// 刚登录，还在宽限期内
 		{Addr: fresh, Port: 17000, Until: now.Add(time.Minute)},
-	}, now)
+	}, now, nil)
 	if s := strings.Join(prefixStrings(got), ","); s != "14.19.55.154,2001:db8::7" {
 		t.Fatalf("有效的可信来源 = %s", s)
 	}
-	if effectiveTrusted(nil, now) != nil {
+	if got, _ := effectiveTrusted(nil, now, nil); got != nil {
 		t.Fatal("没有登记时应为空")
+	}
+}
+
+// 过了宽限期后连接一旦断开，这次登记就失效：地址被分配给别人后，新的持有者重新连上 frps 端口也不再放行；
+// 模块重新登记（frpc 重新登录、期限变化）后恢复。全部登记都已失效时不再读取连接状态
+func TestEffectiveTrustedLapse(t *testing.T) {
+	now := time.Now()
+	home := netip.MustParseAddr("14.19.55.154")
+	peers := map[int]map[netip.Addr]bool{17000: {home: true}}
+	reads := 0
+	old := establishedPeersFn
+	establishedPeersFn = func(map[int]bool) (map[int]map[netip.Addr]bool, error) {
+		reads++
+		return peers, nil
+	}
+	t.Cleanup(func() { establishedPeersFn = old })
+	src := []trustsrc.Source{{Addr: home, Port: 17000, Until: now.Add(-time.Minute)}}
+
+	got, lapsed := effectiveTrusted(src, now, nil)
+	if len(got) != 1 || lapsed != nil {
+		t.Fatalf("连接还在时应放行: %v lapsed=%v", got, lapsed)
+	}
+	// 连接断开：登记失效
+	delete(peers, 17000)
+	got, lapsed = effectiveTrusted(src, now, lapsed)
+	if len(got) != 0 || len(lapsed) != 1 {
+		t.Fatalf("连接断开后应撤销并记为失效: %v lapsed=%v", got, lapsed)
+	}
+	// 同一地址重新建立连接（不是重新登录）：仍不放行，也不再读取连接状态
+	peers[17000] = map[netip.Addr]bool{home: true}
+	n := reads
+	got, lapsed = effectiveTrusted(src, now, lapsed)
+	if len(got) != 0 || len(lapsed) != 1 || reads != n {
+		t.Fatalf("失效的登记不应因重新连接而恢复: %v lapsed=%v reads=%d->%d", got, lapsed, n, reads)
+	}
+	// 重新登录：期限变化，按新登记判断
+	relogin := []trustsrc.Source{{Addr: home, Port: 17000, Until: now.Add(-time.Second)}}
+	got, lapsed = effectiveTrusted(relogin, now, lapsed)
+	if len(got) != 1 || lapsed != nil {
+		t.Fatalf("重新登录后应恢复放行，旧的失效记录应丢弃: %v lapsed=%v", got, lapsed)
+	}
+
+	// 读不到连接状态时无法确认断开，不记为失效
+	establishedPeersFn = func(map[int]bool) (map[int]map[netip.Addr]bool, error) { return nil, os.ErrNotExist }
+	got, lapsed = effectiveTrusted(src, now, nil)
+	if len(got) != 0 || lapsed != nil {
+		t.Fatalf("读不到连接状态时只按期限判断、不记失效: %v lapsed=%v", got, lapsed)
 	}
 }
 
