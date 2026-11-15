@@ -36,9 +36,7 @@ func TestAliDNSDefaultLineAndTTL(t *testing.T) {
 	if updated["RecordId"] != "def" {
 		t.Fatalf("应更新默认线路记录: %v", updated)
 	}
-	if updated["TTL"] != "300" {
-		t.Fatalf("未指定 TTL 应沿用 300: %v", updated)
+	if updated["TTL"] != "600" {
+		t.Fatalf("未指定 TTL 应更新为 600: %v", updated)
 	}
 }
-
-// DNSPod 传统接口：未指定 TTL 时修改记录沿用现有 TTL。

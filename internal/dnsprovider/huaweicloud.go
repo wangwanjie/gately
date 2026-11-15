@@ -143,9 +143,9 @@ func (h *huaweiCloud) Upsert(ctx context.Context, r Record) (string, error) {
 		if !strings.EqualFold(s.Name, fqdn) || s.Type != r.Type {
 			continue
 		}
-		if r.TTL <= 0 && s.TTL > 0 {
-			// 未指定 TTL 时沿用记录集现有值，避免 PUT 按默认值重置
-			body.TTL = s.TTL
+		if r.TTL <= 0 {
+			// 未指定 TTL 时更新为默认的 300
+			body.TTL = 300
 		}
 		valueSame := len(s.Records) == 1 && s.Records[0] == r.Value && (r.TTL == 0 || s.TTL == r.TTL)
 		if valueSame && (r.Remark == "" || s.Description == r.Remark) {

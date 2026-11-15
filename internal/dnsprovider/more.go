@@ -320,12 +320,13 @@ func (n *ns1) Upsert(ctx context.Context, r Record) (string, error) {
 		return "", err
 	}
 	ttl := r.TTL
-	if ttl <= 0 && cur != nil && cur.TTL > 0 {
-		// 未指定 TTL 时沿用记录现有值
-		ttl = cur.TTL
-	}
 	if ttl <= 0 {
-		ttl = 3600
+		if cur != nil {
+			// 未指定 TTL 时更新为默认的 60
+			ttl = 60
+		} else {
+			ttl = 3600
+		}
 	}
 	want := &ns1Record{Zone: r.Zone, Domain: fqdn, Type: r.Type, TTL: ttl, Answers: []ns1Answer{{Answer: []string{r.Value}}}}
 	if cur == nil {
@@ -334,7 +335,7 @@ func (n *ns1) Upsert(ctx context.Context, r Record) (string, error) {
 		}
 		return ActionCreated, nil
 	}
-	if len(cur.Answers) == 1 && len(cur.Answers[0].Answer) == 1 && cur.Answers[0].Answer[0] == r.Value && (r.TTL <= 0 || cur.TTL == ttl) {
+	if len(cur.Answers) == 1 && len(cur.Answers[0].Answer) == 1 && cur.Answers[0].Answer[0] == r.Value && (r.TTL <= 0 || cur.TTL == r.TTL) {
 		return ActionUnchanged, nil
 	}
 	if _, err := n.call(ctx, http.MethodPost, r.Zone, fqdn, r.Type, &ns1Record{TTL: ttl, Answers: want.Answers}); err != nil {
