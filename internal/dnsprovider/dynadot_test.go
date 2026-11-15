@@ -48,6 +48,15 @@ func TestDynadot(t *testing.T) {
 	if last["subDomain"] != "@" || last["containRoot"] != "true" || last["type"] != "AAAA" || last["ttl"] != "300" {
 		t.Fatalf("根域名参数不符: %v", last)
 	}
+	// TTL 取整到文档列出的可选值
+	for in, want := range map[int]string{60: "300", 301: "600", 3600: "3600", 5000: "7200", 86400: "28800"} {
+		if _, err := p.Upsert(ctx, Record{Zone: "example.com", Sub: "a", Type: "A", Value: "1.1.1.1", TTL: in}); err != nil {
+			t.Fatal(err)
+		}
+		if last["ttl"] != want {
+			t.Fatalf("TTL %d 应提交 %s，实际 %s", in, want, last["ttl"])
+		}
+	}
 	// 不支持的类型
 	if _, err := p.Upsert(ctx, Record{Zone: "example.com", Sub: "a", Type: "TXT", Value: "x"}); err == nil {
 		t.Fatal("TXT 应报错")

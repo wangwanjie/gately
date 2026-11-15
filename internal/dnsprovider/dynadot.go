@@ -31,6 +31,22 @@ func init() {
 	})
 }
 
+// dynadotTTLs 是 set_ddns 文档列出的 TTL 可选值（5 分钟到 8 小时）。
+var dynadotTTLs = []int{300, 600, 1800, 3600, 7200, 14400, 28800}
+
+// dynadotTTL 把 TTL 取整到不小于它的最近可选值：0 取 600，超过上限取 28800。
+func dynadotTTL(ttl int) int {
+	if ttl <= 0 {
+		return 600
+	}
+	for _, v := range dynadotTTLs {
+		if ttl <= v {
+			return v
+		}
+	}
+	return dynadotTTLs[len(dynadotTTLs)-1]
+}
+
 type dynadot struct {
 	pwd      string
 	hc       *http.Client
@@ -43,16 +59,12 @@ func (d *dynadot) Upsert(ctx context.Context, r Record) (string, error) {
 	if r.Type != "A" && r.Type != "AAAA" {
 		return "", errors.New("Dynadot 动态 DNS 仅支持 A 与 AAAA 记录")
 	}
-	ttl := r.TTL
-	if ttl <= 0 {
-		ttl = 600
-	}
 	q := url.Values{
 		"domain": {r.Zone},
 		"type":   {r.Type},
 		"ip":     {r.Value},
 		"pwd":    {d.pwd},
-		"ttl":    {strconv.Itoa(ttl)},
+		"ttl":    {strconv.Itoa(dynadotTTL(r.TTL))},
 	}
 	// subDomain 始终携带（根域名写 "@"），containRoot 仅在根域名时为 true
 	q.Set("subDomain", r.RR())
