@@ -134,19 +134,30 @@ func (c *cloudflare) Upsert(ctx context.Context, r Record) (string, error) {
 	if err := c.call(ctx, http.MethodGet, "/zones/"+zid+"/dns_records"+q, nil, &recs); err != nil {
 		return "", err
 	}
-	ttl := r.TTL
-	if ttl <= 0 {
-		// 1 表示自动
-		ttl = 1
-	}
 	if len(recs) > 0 {
+		// 同名同类型有多条记录（轮询解析）时，优先选已经是目标值的那条，避免把另一条无关记录改成同一个值
 		cur := recs[0]
-		valueSame := cur.Content == r.Value && (r.TTL <= 0 || cur.TTL == ttl)
+		for _, x := range recs {
+			if x.Content == r.Value {
+				cur = x
+				break
+			}
+		}
+		ttl := r.TTL
+		if cur.Proxied {
+			// 开启代理的记录 TTL 只能是自动（1），否则 Cloudflare 会拒绝
+			ttl = 1
+		}
+		valueSame := cur.Content == r.Value && (ttl <= 0 || cur.TTL == ttl)
 		if valueSame && (r.Remark == "" || cur.Comment == r.Remark) {
 			return ActionUnchanged, nil
 		}
 		// PATCH 只改给出的字段，代理状态、标签和未由 Gately 管理的备注保持不变
-		upd := map[string]any{"content": r.Value, "ttl": ttl}
+		upd := map[string]any{"content": r.Value}
+		if ttl > 0 {
+			// 未指定 TTL 时不发送，保留服务商处已有的 TTL
+			upd["ttl"] = ttl
+		}
 		if r.Remark != "" {
 			upd["comment"] = r.Remark
 		}
@@ -155,7 +166,13 @@ func (c *cloudflare) Upsert(ctx context.Context, r Record) (string, error) {
 		}
 		return ActionUpdated, nil
 	}
-	rec := cfRecord{Type: r.Type, Name: r.FQDN(), Content: r.Value, TTL: ttl, Proxied: c.creds.Extra["proxied"] == "true", Comment: r.Remark}
+	proxied := c.creds.Extra["proxied"] == "true"
+	ttl := r.TTL
+	if ttl <= 0 || proxied {
+		// 1 表示自动；开启代理时只能用自动
+		ttl = 1
+	}
+	rec := cfRecord{Type: r.Type, Name: r.FQDN(), Content: r.Value, TTL: ttl, Proxied: proxied, Comment: r.Remark}
 	if err := c.call(ctx, http.MethodPost, "/zones/"+zid+"/dns_records", rec, nil); err != nil {
 		return "", err
 	}
