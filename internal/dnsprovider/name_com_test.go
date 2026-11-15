@@ -25,7 +25,7 @@ func (f *nameComFake) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		_, _ = w.Write([]byte(`{"message":"Unauthorized","details":"Authentication Error - Invalid Credentials"}`))
 		return
 	}
-	const base = "/v4/domains/example.com/records"
+	const base = "/core/v1/domains/example.com/records"
 	switch {
 	case r.Method == "GET" && r.URL.Path == base:
 		page, _ := strconv.Atoi(r.URL.Query().Get("page"))

@@ -43,9 +43,19 @@ func (f *spaceshipFake) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		_ = json.NewEncoder(w).Encode(map[string]any{"items": f.items[start:end], "total": len(f.items)})
 	case "PUT":
 		var body struct {
+			Force *bool           `json:"force"`
 			Items []spaceshipItem `json:"items"`
 		}
 		_ = json.NewDecoder(r.Body).Decode(&body)
+		// A / AAAA 的 PUT 带 force=true，TXT 不带
+		for _, it := range body.Items {
+			if it.Type != "TXT" && (body.Force == nil || !*body.Force) {
+				f.t.Errorf("A/AAAA 的 PUT 应带 force=true: %+v", it)
+			}
+			if it.Type == "TXT" && body.Force != nil {
+				f.t.Errorf("TXT 的 PUT 不应带 force: %+v", it)
+			}
+		}
 		for _, it := range body.Items {
 			replaced := false
 			for i := range f.items {

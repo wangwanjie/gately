@@ -41,11 +41,11 @@ func TestDynadot(t *testing.T) {
 		last["ttl"] != "600" || last["containRoot"] != "false" {
 		t.Fatalf("参数不符: %v", last)
 	}
-	// 根域名：不带 subDomain，containRoot 为 true
+	// 根域名：subDomain 为 "@"，containRoot 为 true
 	if _, err := p.Upsert(ctx, Record{Zone: "example.com", Sub: "@", Type: "AAAA", Value: "2001:db8::1", TTL: 300}); err != nil {
 		t.Fatal(err)
 	}
-	if _, has := last["subDomain"]; has || last["containRoot"] != "true" || last["type"] != "AAAA" || last["ttl"] != "300" {
+	if last["subDomain"] != "@" || last["containRoot"] != "true" || last["type"] != "AAAA" || last["ttl"] != "300" {
 		t.Fatalf("根域名参数不符: %v", last)
 	}
 	// 不支持的类型

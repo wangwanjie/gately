@@ -157,8 +157,14 @@ func (s *spaceship) match(items []spaceshipItem, sub, typ string) []spaceshipIte
 	return out
 }
 
-func (s *spaceship) save(ctx context.Context, zone string, it spaceshipItem) error {
-	return s.call(ctx, http.MethodPut, nil, zone, map[string]any{"items": []spaceshipItem{it}}, nil)
+// save 保存一条记录。force 为 true 时请求体带 "force": true（允许覆盖冲突记录），
+// 仅 A / AAAA 的 Upsert 使用；TXT 不带。
+func (s *spaceship) save(ctx context.Context, zone string, it spaceshipItem, force bool) error {
+	body := map[string]any{"items": []spaceshipItem{it}}
+	if force {
+		body["force"] = true
+	}
+	return s.call(ctx, http.MethodPut, nil, zone, body, nil)
 }
 
 // del 按类型、名称和内容删除记录，不会影响其他记录。
@@ -191,7 +197,7 @@ func (s *spaceship) Upsert(ctx context.Context, r Record) (string, error) {
 		ttl = same.TTL
 	}
 	// 先写入新值，再删除旧值，避免中途失败时记录消失
-	if err := s.save(ctx, r.Zone, spaceshipItemOf(r.Type, name, r.Value, ttl)); err != nil {
+	if err := s.save(ctx, r.Zone, spaceshipItemOf(r.Type, name, r.Value, ttl), true); err != nil {
 		return "", err
 	}
 	for _, o := range others {
@@ -206,7 +212,7 @@ func (s *spaceship) Upsert(ctx context.Context, r Record) (string, error) {
 }
 
 func (s *spaceship) AddTXT(ctx context.Context, zone, sub, value string) error {
-	return s.save(ctx, zone, spaceshipItemOf("TXT", Record{Sub: sub}.RR(), value, txtTTL))
+	return s.save(ctx, zone, spaceshipItemOf("TXT", Record{Sub: sub}.RR(), value, txtTTL), false)
 }
 
 func (s *spaceship) DeleteTXT(ctx context.Context, zone, sub, value string) error {

@@ -77,12 +77,20 @@ func cloudnsTTL(ttl int) int {
 	return cloudnsTTLs[len(cloudnsTTLs)-1]
 }
 
-// cloudnsHost 返回 ClouDNS 的主机记录，根域名为空字符串。
+// cloudnsHost 返回发给 ClouDNS 的主机记录。根域名直接写 "@"。
 func cloudnsHost(sub string) string {
-	if sub == "@" {
-		return ""
+	if sub == "" {
+		return "@"
 	}
 	return sub
+}
+
+// cloudnsHostEqual 判断响应里的 host 是否对应目标主机；根域名兼容 "@" 与空字符串两种返回。
+func cloudnsHostEqual(got, want string) bool {
+	if got == "" {
+		got = "@"
+	}
+	return got == want
 }
 
 // call 发送请求并返回原始响应；失败状态（status=Failed）转成错误。
@@ -118,12 +126,10 @@ func (c *cloudns) call(ctx context.Context, action string, params url.Values) ([
 	return body, nil
 }
 
-// list 返回指定主机与类型的记录。records.json 的 host 过滤对根域名不可靠，所以在本地再过滤一次。
+// list 返回指定主机与类型的记录（records.json 的 host、type 过滤参数），并在本地再过滤一次。
 func (c *cloudns) list(ctx context.Context, zone, host, typ string) ([]cloudnsRecord, error) {
 	params := url.Values{"domain-name": {zone}, "type": {typ}}
-	if host != "" {
-		params.Set("host", host)
-	}
+	params.Set("host", host)
 	body, err := c.call(ctx, "records.json", params)
 	if err != nil {
 		return nil, err
@@ -145,24 +151,25 @@ func (c *cloudns) list(ctx context.Context, zone, host, typ string) ([]cloudnsRe
 		if rec.ID == "" {
 			rec.ID = key
 		}
-		if rec.Type == typ && (rec.Host == host || (host == "" && rec.Host == "@")) {
+		if rec.Type == typ && cloudnsHostEqual(rec.Host, host) {
 			out = append(out, rec)
 		}
 	}
 	return out, nil
 }
 
-// add 新增记录。记录类型参数官方文档里 type 与 record-type 两种写法并存，同时发送以兼容。
+// add 新增记录。记录类型参数名使用 type。
 func (c *cloudns) add(ctx context.Context, zone, host, typ, value string, ttl int) error {
 	_, err := c.call(ctx, "add-record.json", url.Values{
-		"domain-name": {zone}, "record-type": {typ}, "type": {typ}, "host": {host},
+		"domain-name": {zone}, "type": {typ}, "host": {host},
 		"record": {value}, "ttl": {strconv.Itoa(cloudnsTTL(ttl))},
 	})
 	return err
 }
 
+// modify 修改记录，接口名与参数（modify-record.json、record-id）。
 func (c *cloudns) modify(ctx context.Context, zone, id, host, value string, ttl int) error {
-	_, err := c.call(ctx, "mod-record.json", url.Values{
+	_, err := c.call(ctx, "modify-record.json", url.Values{
 		"domain-name": {zone}, "record-id": {id}, "host": {host},
 		"record": {value}, "ttl": {strconv.Itoa(cloudnsTTL(ttl))},
 	})
