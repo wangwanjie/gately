@@ -84,8 +84,8 @@
   "home": {
     "pill": "開源免費 · Apache-2.0",
     "announce": {
-      "text": "v0.6.6.4 發佈：登入安全加固、優先拒絕名單、敲門准入與登入後放行、站點 Passkey →",
-      "link": "/zh-TW/news/v0.6.6.4"
+      "text": "v0.6.6.6 發佈：導覽面板搜尋與登入可見連結、16 家新 DNS 服務商、frpc 可信來源 →",
+      "link": "/zh-TW/news/v0.6.6.6"
     },
     "titleLine1": "一站式網路閘道",
     "titleLine2": "開源透明，開箱即用",

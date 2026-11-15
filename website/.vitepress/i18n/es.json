@@ -84,8 +84,8 @@
   "home": {
     "pill": "Gratis y de código abierto · Apache-2.0",
     "announce": {
-      "text": "v0.6.6.4: inicio de sesión reforzado, lista de denegación prioritaria, admisión por llamada y permiso tras iniciar sesión, Passkeys en sitios →",
-      "link": "/es/news/v0.6.6.4"
+      "text": "v0.6.6.6: búsqueda y enlaces solo tras iniciar sesión en el panel de navegación, 16 proveedores DNS nuevos, orígenes de confianza para frpc →",
+      "link": "/es/news/v0.6.6.6"
     },
     "titleLine1": "La pasarela de red todo en uno",
     "titleLine2": "Código abierto y lista para usar",

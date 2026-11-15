@@ -84,8 +84,8 @@
   "home": {
     "pill": "Gratuito e de código aberto · Apache-2.0",
     "announce": {
-      "text": "v0.6.6.4: login reforçado, lista de bloqueio prioritário, admissão por batida e liberação após login, Passkeys nos sites →",
-      "link": "/pt-BR/news/v0.6.6.4"
+      "text": "v0.6.6.6: busca e links visíveis só após o login no painel de navegação, 16 novos provedores de DNS, origens confiáveis para o frpc →",
+      "link": "/pt-BR/news/v0.6.6.6"
     },
     "titleLine1": "O gateway de rede tudo em um",
     "titleLine2": "Código aberto e pronto para usar",

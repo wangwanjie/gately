@@ -7,6 +7,10 @@ description: Release-Ankündigungen und Versionshinweise zu jeder Gately-Version
 
 Unten stehen die Ankündigungen zu wichtigen Releases. Alle Änderungen und Downloads jeder Version finden Sie unter [GitHub Releases](https://github.com/wangwanjie/gately/releases).
 
+## [v0.6.6.6](/de/news/v0.6.6.6)
+
+15. November 2026 · Das Navigationspanel erhält Suchmaschinen, nur nach der Anmeldung sichtbare Links, ein Hintergrundbild und mehr; Dynamisches DNS bringt 16 weitere DNS-Anbieter und verbessert TTL und den Cloudflare-Proxy-Status; vertrauenswürdige Quellen verhindern, dass die Scan-Erkennung frpc sperrt; die Anmeldung an der Verwaltung ohne Site-Authentifizierung startet der Administrator selbst; Korrekturen am Antwort-Cache.
+
 ## [v0.6.6.4](/de/news/v0.6.6.4)
 
 14. November 2026 · Gehärtete Verwaltungsanmeldung mit Sicherheitsbewertung; vorrangige Sperrliste in der IP-Zugriffskontrolle; Klopf-Zugang und Freigabe nach Anmeldung, Anmeldung an der Verwaltung ohne Site-Authentifizierung, Passkeys für gemeinsame Benutzer und unverschlüsselte HTTP/2-Backends für Websites; Sperrgründe nennen den getroffenen Port.

@@ -84,8 +84,8 @@
   "home": {
     "pill": "Free and open source · Apache-2.0",
     "announce": {
-      "text": "v0.6.6.4 released: sign-in hardening, always-deny list, knock admission and release after login, site Passkeys →",
-      "link": "/en/news/v0.6.6.4"
+      "text": "v0.6.6.6 released: navigation panel search and sign-in-only links, 16 new DNS providers, trusted sources for frpc →",
+      "link": "/en/news/v0.6.6.6"
     },
     "titleLine1": "The all-in-one network gateway",
     "titleLine2": "Open source, ready out of the box",

@@ -7,6 +7,10 @@ description: Anuncios y notas de cada versión de Gately.
 
 A continuación se listan los anuncios de las versiones principales. Consulta [GitHub Releases](https://github.com/wangwanjie/gately/releases) para ver todos los cambios y las descargas de cada versión.
 
+## [v0.6.6.6](/es/news/v0.6.6.6)
+
+15 de noviembre de 2026 · El panel de navegación incorpora motores de búsqueda, enlaces visibles solo tras iniciar sesión, imagen de fondo y más; el DNS dinámico añade 16 proveedores DNS y mejora el TTL y el estado de proxy de Cloudflare; los orígenes de confianza evitan que la detección de escaneos bloquee a frpc; la omisión de autenticación con sesión de administración la inicia el administrador; correcciones de la caché de respuestas.
+
 ## [v0.6.6.4](/es/news/v0.6.6.4)
 
 14 de noviembre de 2026 · Inicio de sesión de administración reforzado con puntuación de seguridad; lista de denegación prioritaria en el control de acceso por IP; admisión por llamada y permiso tras iniciar sesión, omisión de autenticación con sesión de administración, Passkeys para usuarios compartidos y backends HTTP/2 sin cifrar en los sitios web; los motivos de bloqueo incluyen el puerto afectado.
