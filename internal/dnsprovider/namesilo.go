@@ -86,7 +86,7 @@ func (n *nameSilo) call(ctx context.Context, op string, q url.Values) (*nameSilo
 	}
 	resp, err := n.hc.Do(req)
 	if err != nil {
-		return nil, errors.New("NameSilo: " + strings.ReplaceAll(err.Error(), n.key, "***"))
+		return nil, errors.New("NameSilo: " + redactSecret(err.Error(), n.key))
 	}
 	defer resp.Body.Close()
 	raw, err := io.ReadAll(io.LimitReader(resp.Body, 4<<20))

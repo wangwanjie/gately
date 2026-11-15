@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"sort"
 	"strings"
 
@@ -206,6 +207,19 @@ func truncate(s string, n int) string {
 		return s
 	}
 	return string(r[:n]) + "..."
+}
+
+// redactSecret 把错误信息中的密钥替换为 ***。密钥放在查询串里时，连接失败的 *url.Error 会带出
+// 经过 URL 编码的完整地址，因此原文与编码后的写法都要替换。
+func redactSecret(msg, secret string) string {
+	if secret == "" {
+		return msg
+	}
+	msg = strings.ReplaceAll(msg, secret, "***")
+	if esc := url.QueryEscape(secret); esc != secret {
+		msg = strings.ReplaceAll(msg, esc, "***")
+	}
+	return msg
 }
 
 // ctxReq 是创建带 ctx 请求的简写。
