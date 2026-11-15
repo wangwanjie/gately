@@ -28,7 +28,8 @@ func init() {
 	})
 }
 
-// deSEC 默认账号的 TTL 下限为 3600，上限为 86400
+// deSEC 的 TTL 下限由每个域名的 minimum_ttl 决定（服务端设置，常见为 3600，dedyn.io 等更低），上限为 86400。
+// desecMinTTL 是读不到 minimum_ttl 时的保守下限，也是未指定 TTL 时新建记录集使用的值。
 const (
 	desecMinTTL = 3600
 	desecMaxTTL = 86400
@@ -47,10 +48,10 @@ type desecRRSet struct {
 	TTL     int      `json:"ttl"`
 }
 
-// desecTTL 把 TTL 限制在允许范围内，0 表示最小值。
-func desecTTL(ttl int) int {
-	if ttl < desecMinTTL {
-		return desecMinTTL
+// desecTTL 把 TTL 限制在 [floor, 86400] 内，floor 为域名的 minimum_ttl。
+func desecTTL(ttl, floor int) int {
+	if ttl < floor {
+		return floor
 	}
 	if ttl > desecMaxTTL {
 		return desecMaxTTL
@@ -102,6 +103,17 @@ func (d *desec) call(ctx context.Context, method, u string, body, out any) error
 	return nil
 }
 
+// minTTL 读取域名的 minimum_ttl；读取失败或未返回时使用保守下限 3600。
+func (d *desec) minTTL(ctx context.Context, zone string) int {
+	var dom struct {
+		MinimumTTL int `json:"minimum_ttl"`
+	}
+	if err := d.call(ctx, http.MethodGet, fmt.Sprintf("%s/domains/%s/", d.endpoint, url.PathEscape(zone)), nil, &dom); err != nil || dom.MinimumTTL <= 0 {
+		return desecMinTTL
+	}
+	return dom.MinimumTTL
+}
+
 // getRRSet 查询记录集，不存在（404）时返回 nil。域名本身不存在时同样是 404，会在后续写入时报错。
 func (d *desec) getRRSet(ctx context.Context, zone, sub, typ string) (*desecRRSet, error) {
 	var out desecRRSet
@@ -132,7 +144,18 @@ func (d *desec) Upsert(ctx context.Context, r Record) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	ttl := desecTTL(r.TTL)
+	ttl := desecMinTTL
+	if r.TTL > 0 {
+		floor := desecMinTTL
+		if r.TTL < desecMinTTL {
+			// 指定的 TTL 低于保守下限时，读取域名实际允许的最小值，避免把 60、300 这类值一律抬到 3600
+			floor = d.minTTL(ctx, r.Zone)
+		}
+		ttl = desecTTL(r.TTL, floor)
+	} else if cur != nil && cur.TTL > 0 {
+		// 未指定 TTL 时沿用记录集现有的 TTL
+		ttl = cur.TTL
+	}
 	want := desecRRSet{Subname: sub, Type: r.Type, Records: []string{desecValue(r.Type, r.Value)}, TTL: ttl}
 	if cur == nil {
 		if err := d.create(ctx, r.Zone, want); err != nil {

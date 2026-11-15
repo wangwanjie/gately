@@ -129,3 +129,56 @@ func TestDeSEC(t *testing.T) {
 		t.Fatal("缺少 token 应报错")
 	}
 }
+
+// TestDeSECMinimumTTL 验证指定的 TTL 低于 3600 时按域名的 minimum_ttl 取下限，读取失败时退回 3600；
+// 未指定 TTL 时沿用记录集现有 TTL。
+func TestDeSECMinimumTTL(t *testing.T) {
+	var cur *desecRRSet
+	minimum := 60
+	domainFail := false
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case r.Method == "GET" && r.URL.Path == "/domains/example.dedyn.io/":
+			if domainFail {
+				w.WriteHeader(500)
+				return
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{"name": "example.dedyn.io", "minimum_ttl": minimum})
+		case r.Method == "GET":
+			if cur == nil {
+				w.WriteHeader(404)
+				return
+			}
+			_ = json.NewEncoder(w).Encode(cur)
+		case r.Method == "POST" || r.Method == "PUT":
+			var body desecRRSet
+			_ = json.NewDecoder(r.Body).Decode(&body)
+			cur = &body
+			_ = json.NewEncoder(w).Encode(body)
+		default:
+			t.Errorf("意外请求 %s %s", r.Method, r.URL.Path)
+		}
+	}))
+	defer srv.Close()
+	p, _ := New("desec", Credentials{Secret: "tok"}, srv.Client())
+	p.(*desec).endpoint = srv.URL
+	ctx := context.Background()
+	// 域名允许 60 秒：120 原样使用
+	if got, err := p.Upsert(ctx, Record{Zone: "example.dedyn.io", Sub: "home", Type: "A", Value: "203.0.113.1", TTL: 120}); err != nil || got != ActionCreated || cur.TTL != 120 {
+		t.Fatalf("got %s %v cur=%+v", got, err, cur)
+	}
+	// 低于 minimum_ttl 时取 minimum_ttl
+	minimum = 300
+	if got, err := p.Upsert(ctx, Record{Zone: "example.dedyn.io", Sub: "home", Type: "A", Value: "203.0.113.1", TTL: 60}); err != nil || got != ActionUpdated || cur.TTL != 300 {
+		t.Fatalf("got %s %v cur=%+v", got, err, cur)
+	}
+	// 未指定 TTL：值变化时沿用现有 300
+	if got, err := p.Upsert(ctx, Record{Zone: "example.dedyn.io", Sub: "home", Type: "A", Value: "203.0.113.2"}); err != nil || got != ActionUpdated || cur.TTL != 300 {
+		t.Fatalf("got %s %v cur=%+v", got, err, cur)
+	}
+	// 读不到 minimum_ttl 时退回 3600
+	domainFail = true
+	if got, err := p.Upsert(ctx, Record{Zone: "example.dedyn.io", Sub: "home", Type: "A", Value: "203.0.113.2", TTL: 60}); err != nil || got != ActionUpdated || cur.TTL != 3600 {
+		t.Fatalf("got %s %v cur=%+v", got, err, cur)
+	}
+}
