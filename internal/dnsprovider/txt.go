@@ -325,11 +325,24 @@ type dynv6Record struct {
 	Data string `json:"data"`
 }
 
-func (d *dynv6) zonePath(ctx context.Context, zone string) (string, error) {
-	var z struct {
-		ID int64 `json:"id"`
-	}
+// dynv6Zone 为 zone 本身的信息；根域名的地址直接保存在 zone 上，不走 records 接口。
+type dynv6Zone struct {
+	ID   int64  `json:"id"`
+	IPv4 string `json:"ipv4address"`
+	IPv6 string `json:"ipv6prefix"`
+}
+
+func (d *dynv6) zoneInfo(ctx context.Context, zone string) (dynv6Zone, error) {
+	var z dynv6Zone
 	if err := d.do(ctx, http.MethodGet, "/zones/by-name/"+zone, nil, &z); err != nil {
+		return dynv6Zone{}, err
+	}
+	return z, nil
+}
+
+func (d *dynv6) zonePath(ctx context.Context, zone string) (string, error) {
+	z, err := d.zoneInfo(ctx, zone)
+	if err != nil {
 		return "", err
 	}
 	return "/zones/" + strconv.FormatInt(z.ID, 10) + "/records", nil

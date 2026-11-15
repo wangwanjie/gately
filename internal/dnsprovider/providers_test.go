@@ -272,6 +272,54 @@ func TestPorkbun(t *testing.T) {
 	runUpsertSequence(t, p, Record{Zone: "example.com", Sub: "vpn", Type: "A"})
 }
 
+// dynv6 根域名通过 PATCH zone 的 ipv4address / ipv6prefix 更新，不走 records 接口。
+func TestDynv6Root(t *testing.T) {
+	zone := map[string]any{"id": 7, "ipv4address": "", "ipv6prefix": ""}
+	var patched map[string]any
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case r.Method == "GET" && r.URL.Path == "/zones/by-name/my.dynv6.net":
+			_ = json.NewEncoder(w).Encode(zone)
+		case r.Method == "PATCH" && r.URL.Path == "/zones/7":
+			patched = readJSON(t, r)
+			for k, v := range patched {
+				zone[k] = v
+			}
+			_, _ = w.Write([]byte(`{}`))
+		default:
+			t.Errorf("意外请求 %s %s", r.Method, r.URL)
+		}
+	}))
+	defer srv.Close()
+	p, _ := New("dynv6", Credentials{Secret: "tok"}, srv.Client())
+	p.(*dynv6).endpoint = srv.URL
+	steps := []struct {
+		typ, value, want, field string
+	}{
+		{"A", "203.0.113.1", ActionUpdated, "ipv4address"},
+		{"A", "203.0.113.1", ActionUnchanged, ""},
+		{"A", "203.0.113.2", ActionUpdated, "ipv4address"},
+		{"AAAA", "2001:db8::1", ActionUpdated, "ipv6prefix"},
+		{"AAAA", "2001:db8::1", ActionUnchanged, ""},
+	}
+	for _, s := range steps {
+		patched = nil
+		got, err := p.Upsert(context.Background(), Record{Zone: "my.dynv6.net", Sub: "@", Type: s.typ, Value: s.value})
+		if err != nil || got != s.want {
+			t.Fatalf("%s %s: %v %v", s.typ, s.value, got, err)
+		}
+		if s.field == "" {
+			if patched != nil {
+				t.Fatalf("未变化不应 PATCH: %v", patched)
+			}
+			continue
+		}
+		if len(patched) != 1 || patched[s.field] != s.value {
+			t.Fatalf("应只 PATCH %s: %v", s.field, patched)
+		}
+	}
+}
+
 func TestDynv6(t *testing.T) {
 	value := ""
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -286,7 +334,7 @@ func TestDynv6(t *testing.T) {
 				_, _ = w.Write([]byte(`[]`))
 				return
 			}
-			_, _ = w.Write([]byte(`[{"id":3,"name":"","type":"A","data":"` + value + `"}]`))
+			_, _ = w.Write([]byte(`[{"id":3,"name":"www","type":"A","data":"` + value + `"}]`))
 		case r.Method == "POST", r.Method == "PATCH" && r.URL.Path == "/zones/7/records/3":
 			value = readJSON(t, r)["data"].(string)
 			_, _ = w.Write([]byte(`{}`))
@@ -297,7 +345,8 @@ func TestDynv6(t *testing.T) {
 	defer srv.Close()
 	p, _ := New("dynv6", Credentials{Secret: "tok"}, srv.Client())
 	p.(*dynv6).endpoint = srv.URL
-	runUpsertSequence(t, p, Record{Zone: "my.dynv6.net", Sub: "@", Type: "A"})
+	// 子域名走 records 接口
+	runUpsertSequence(t, p, Record{Zone: "my.dynv6.net", Sub: "www", Type: "A"})
 }
 
 func TestDuckDNSAndCallback(t *testing.T) {
