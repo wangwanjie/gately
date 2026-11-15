@@ -28,6 +28,10 @@ func (f *trafficRouteFake) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Header.Get("Authorization") != want {
 		f.t.Errorf("鉴权头不一致: %s", r.Header.Get("Authorization"))
 	}
+	// 凭证范围服务名为大写 DNS，且请求头带 Host 之外的四个签名头
+	if !strings.Contains(r.Header.Get("Authorization"), "/cn-north-1/DNS/request, SignedHeaders=content-type;host;x-content-sha256;x-date,") {
+		f.t.Errorf("凭证范围错误: %s", r.Header.Get("Authorization"))
+	}
 	if r.Header.Get("X-Content-Sha256") != sha256Hex(body) || q.Get("Version") != "2018-08-01" {
 		f.t.Errorf("请求头或版本错误: %v %v", r.Header, q)
 	}
@@ -48,6 +52,9 @@ func (f *trafficRouteFake) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	switch action {
 	case "ListZones":
+		if q.Has("SearchMode") {
+			f.t.Errorf("ListZones 不应带 SearchMode: %v", q)
+		}
 		if q.Get("Key") == "example.com" {
 			write(map[string]any{"Total": 2, "Zones": []map[string]any{{"ZID": 11, "ZoneName": "example.com.cn"}, {"ZID": 12, "ZoneName": "Example.com"}}})
 		} else {
@@ -121,8 +128,12 @@ func TestTrafficRouteUpsert(t *testing.T) {
 	if up["Host"] != "home" || up["Line"] != "default" || up["Type"] != "A" {
 		t.Fatalf("Update 请求体 = %v", up)
 	}
-	if _, ok := f.last["CreateRecord"]["TTL"]; ok {
-		t.Fatal("未指定 TTL 时不应传 TTL")
+	// 创建与更新始终携带 TTL，未指定时创建取 600、更新沿用现有值
+	if c := f.last["CreateRecord"]; c["TTL"] != float64(600) || c["Line"] != "default" || c["ZID"] != float64(12) {
+		t.Fatalf("Create 请求体 = %v", c)
+	}
+	if up["TTL"] != float64(600) {
+		t.Fatalf("Update 应携带 TTL: %v", up)
 	}
 	// 指定 TTL 时变化也触发更新；根域名主机记录为 @
 	if got, _ := tr.Upsert(t.Context(), Record{Zone: "example.com", Sub: "home", Type: "A", Value: "203.0.113.2", TTL: 900}); got != ActionUpdated || f.records[0].TTL != 900 {

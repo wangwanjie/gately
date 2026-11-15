@@ -15,7 +15,7 @@ import (
 	"time"
 )
 
-// 火山引擎 DNS（TrafficRoute）记录管理，接口版本 2018-08-01，签名算法 HMAC-SHA256（服务 dns，地域 cn-north-1）。
+// 火山引擎 DNS（TrafficRoute）记录管理，接口版本 2018-08-01，签名算法 HMAC-SHA256（服务 DNS，地域 cn-north-1）。
 // 文档：https://www.volcengine.com/docs/6758/155088
 func init() {
 	register(Meta{
@@ -37,8 +37,11 @@ func init() {
 
 const (
 	trafficRouteVersion = "2018-08-01"
-	trafficRouteService = "dns"
+	// 凭证范围中的服务名使用大写 "DNS"
+	trafficRouteService = "DNS"
 	trafficRouteRegion  = "cn-north-1"
+	// 创建记录未指定 TTL 时的默认值（创建/更新始终携带 TTL）
+	trafficRouteDefaultTTL = 600
 	// 列表接口单页最大 500 条
 	trafficRoutePageSize = 500
 	trafficRouteMaxPages = 50
@@ -167,7 +170,7 @@ func (t *trafficRoute) zoneID(ctx context.Context, zone string) (int64, error) {
 			} `json:"Zones"`
 		}
 		err := t.call(ctx, http.MethodGet, "ListZones", url.Values{
-			"Key": {name}, "SearchMode": {"exact"},
+			"Key":        {name},
 			"PageNumber": {strconv.Itoa(page)}, "PageSize": {strconv.Itoa(trafficRoutePageSize)},
 		}, nil, &resp)
 		if err != nil {
@@ -218,10 +221,11 @@ func (t *trafficRoute) createRecord(ctx context.Context, zid int64, r Record, tt
 	if line == "" {
 		line = "default"
 	}
-	body := map[string]any{"ZID": zid, "Host": r.RR(), "Type": r.Type, "Value": r.Value, "Line": line}
-	if ttl > 0 {
-		body["TTL"] = ttl
+	// 创建时始终携带 TTL（默认 600）与线路
+	if ttl <= 0 {
+		ttl = trafficRouteDefaultTTL
 	}
+	body := map[string]any{"ZID": zid, "Host": r.RR(), "Type": r.Type, "Value": r.Value, "Line": line, "TTL": ttl}
 	return t.call(ctx, http.MethodPost, "CreateRecord", nil, body, nil)
 }
 
@@ -245,10 +249,15 @@ func (t *trafficRoute) Upsert(ctx context.Context, r Record) (string, error) {
 		return ActionUnchanged, nil
 	}
 	// 更新接口必须带主机记录与线路，沿用现有记录的值
-	body := map[string]any{"RecordID": rec.RecordID, "Host": rec.Host, "Line": rec.Line, "Type": r.Type, "Value": r.Value}
-	if r.TTL > 0 {
-		body["TTL"] = r.TTL
+	// 更新时始终携带 TTL：未指定时沿用现有记录的 TTL，仍无有效值则取默认 600
+	ttl := r.TTL
+	if ttl <= 0 {
+		ttl = rec.TTL
 	}
+	if ttl <= 0 {
+		ttl = trafficRouteDefaultTTL
+	}
+	body := map[string]any{"RecordID": rec.RecordID, "Host": rec.Host, "Line": rec.Line, "Type": r.Type, "Value": r.Value, "TTL": ttl}
 	if err := t.call(ctx, http.MethodPost, "UpdateRecord", nil, body, nil); err != nil {
 		return "", err
 	}
