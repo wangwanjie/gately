@@ -27,7 +27,7 @@ Arquivos compatíveis:
 | Arquivo | Importado para | Observações |
 | --- | --- | --- |
 | lucky_portforward.lkcf | Redirecionamento de portas | Criptografia TLS/de fluxo e opções de limitação de velocidade ainda não são compatíveis e geram aviso; o modo de segurança vira controle de acesso por IP de origem (envie `lucky_ipfilter.lkcf` na mesma importação) |
-| lucky_ddns.lkcf | DNS dinâmico | Compatível com 11 provedores; os endereços oficiais de consulta de IP do Lucky são removidos |
+| lucky_ddns.lkcf | DNS dinâmico | Tarefas de provedores suportados pelo Gately são importadas, as demais são ignoradas com aviso; os endereços oficiais de consulta de IP do Lucky são removidos |
 | lucky_stun.lkcf | Travessia STUN | Inclui a lista global de servidores STUN e o webhook global; o modo de segurança do encaminhamento integrado também vira controle de acesso por IP de origem |
 | lucky_ssl.lkcf | Certificados SSL | Certificados já emitidos são importados como estão e não são solicitados de novo antes de expirar |
 | lucky_reverseproxy.lkcf | Serviços Web | Sites, autenticação e referências a WAF (quando o WAF da sub-regra é main, usa a instância da regra de escuta); variáveis das sub-regras de redirecionamento, como `{host}{path}{args}`, `{port}`, `{1}` e `{STUN_NomeRegra_PORT}`, continuam funcionando; as configurações de HTTP/3 dos listeners são mantidas na importação |
