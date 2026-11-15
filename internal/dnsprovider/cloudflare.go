@@ -147,10 +147,31 @@ func (c *cloudflare) Upsert(ctx context.Context, r Record) (string, error) {
 		return "", err
 	}
 	if len(recs) > 0 {
-		// 同名同类型的多条记录（如轮询解析）逐条都改成同一个目标值
+		// 同名同类型的多条记录（如轮询解析）最终都解析到同一个目标值。Cloudflare 不允许同名同类型同值的
+		// 重复记录（81058 identical record already exists），所以只保留一条改成目标值：优先已经是目标值的那条，
+		// 否则取第一条；其余旧值记录删除，解析结果与逐条改成目标值相同
+		keep := 0
+		for i, x := range recs {
+			if x.Content == r.Value {
+				keep = i
+				break
+			}
+		}
+		recs[0], recs[keep] = recs[keep], recs[0]
 		managed, desired := c.proxiedSetting()
 		updated := false
-		for _, cur := range recs {
+		for i, cur := range recs {
+			if i > 0 {
+				if cur.Content == r.Value {
+					// 已是目标值的其他记录（理论上 Cloudflare 不会出现）不动
+					continue
+				}
+				if err := c.call(ctx, http.MethodDelete, "/zones/"+zid+"/dns_records/"+cur.ID, nil, nil); err != nil {
+					return "", err
+				}
+				updated = true
+				continue
+			}
 			// 生效后的代理状态：配置了代理状态则以配置为准，否则沿用记录现状
 			proxied := cur.Proxied
 			if managed {
