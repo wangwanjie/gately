@@ -158,18 +158,20 @@ func (c *cloudns) list(ctx context.Context, zone, host, typ string) ([]cloudnsRe
 	return out, nil
 }
 
-// add 新增记录。记录类型参数名使用 type。
+// add 新增记录。官方文档参数表写 type，但示例 URL 与错误说明写 record-type，
+// lego、acme.sh、libdns 等实际可用的客户端都发 record-type，两者同时发送以兼容。
 func (c *cloudns) add(ctx context.Context, zone, host, typ, value string, ttl int) error {
 	_, err := c.call(ctx, "add-record.json", url.Values{
-		"domain-name": {zone}, "type": {typ}, "host": {host},
+		"domain-name": {zone}, "record-type": {typ}, "type": {typ}, "host": {host},
 		"record": {value}, "ttl": {strconv.Itoa(cloudnsTTL(ttl))},
 	})
 	return err
 }
 
-// modify 修改记录，接口名与参数（modify-record.json、record-id）。
+// modify 修改记录。接口名为 mod-record.json（见 https://www.cloudns.net/wiki/article/60/ 示例地址），
+// 记录 ID 参数为 record-id。
 func (c *cloudns) modify(ctx context.Context, zone, id, host, value string, ttl int) error {
-	_, err := c.call(ctx, "modify-record.json", url.Values{
+	_, err := c.call(ctx, "mod-record.json", url.Values{
 		"domain-name": {zone}, "record-id": {id}, "host": {host},
 		"record": {value}, "ttl": {strconv.Itoa(cloudnsTTL(ttl))},
 	})
