@@ -533,7 +533,7 @@ http://10.0.0.3:8080 backup
 
 - 仅缓存 GET 请求，且请求不含 `Range` 头与 `Cache-Control: no-cache`；
 - 带凭据的请求不缓存：请求头含 `Authorization`、`Proxy-Authorization`、`Cookie`、`X-Api-Key`、`X-Auth-Token`、`X-Access-Token`、`X-CSRF-Token`、`X-Emby-Token`、`X-Emby-Authorization`、`X-MediaBrowser-Token`、`X-Plex-Token`、`X-Jellyfin-Token` 之一，或查询串含 `api_key`、`X-Plex-Token`、`token`、`access_token` 参数（参数名不区分大小写）；
-- `Cookie` 中只有 Gately 自己的登录 Cookie 时不算凭据，照常缓存：后台登录免认证的 `gately_admin`、`gately_admin_hs` 始终如此，单点登录的 `gately_sso`、站点会话 `gately_site_*` 与第三方登录的 `gately_oauth_nonce` 在站点未开启「转发 Gately 登录 Cookie」时如此（缓存位于认证之后，未登录的访客到不了缓存）；含其他 Cookie 或无法解析时仍不缓存；
+- `Cookie` 中只有 Gately 自己的登录 Cookie 时不算凭据，照常缓存：后台登录免认证的 `gately_admin`、`gately_admin_hs` 始终如此，单点登录的 `gately_sso`、本实例签发的站点会话 `gately_site_*`（同名但不是本实例签发的 Cookie 会原样到达后端，仍算凭据） 与第三方登录的 `gately_oauth_nonce` 在站点未开启「转发 Gately 登录 Cookie」时如此（缓存位于认证之后，未登录的访客到不了缓存）；含其他 Cookie 或无法解析时仍不缓存；
 - 原始请求路径含 `;`、`\`、`%2F` 或 `%5C`（不区分大小写）的请求不缓存，这类路径经规范化后与后端的理解可能不同；
 - 仅缓存状态码 200 的响应；响应含 `Set-Cookie`、`Vary: *`，或 `Cache-Control` 为 `no-store` / `private` / `no-cache` 时跳过；
 - 响应的 `Vary` 只能包含 `Accept-Encoding`，站点开启跨域时还可以包含 `Origin`，含其他请求头时不缓存；后端自己返回的 `Access-Control-Allow-Origin` 不是 `*` 时不缓存；

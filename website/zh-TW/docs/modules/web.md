@@ -533,7 +533,7 @@ http://10.0.0.3:8080 backup
 
 - 僅快取 GET 請求，且請求不含 `Range` 標頭與 `Cache-Control: no-cache`；
 - 帶憑證的請求不快取：請求標頭含 `Authorization`、`Proxy-Authorization`、`Cookie`、`X-Api-Key`、`X-Auth-Token`、`X-Access-Token`、`X-CSRF-Token`、`X-Emby-Token`、`X-Emby-Authorization`、`X-MediaBrowser-Token`、`X-Plex-Token`、`X-Jellyfin-Token` 之一，或查詢字串含 `api_key`、`X-Plex-Token`、`token`、`access_token` 參數（參數名不區分大小寫）；
-- `Cookie` 中只有 Gately 自己的登入 Cookie 時不算憑證，照常快取：後台登入免認證的 `gately_admin`、`gately_admin_hs` 始終如此，單一登入的 `gately_sso`、站點工作階段 `gately_site_*` 與第三方登入的 `gately_oauth_nonce` 在站點未開啟「轉發 Gately 登入 Cookie」時如此（快取位於認證之後，未登入的訪客到不了快取）；含其他 Cookie 或無法解析時仍不快取；
+- `Cookie` 中只有 Gately 自己的登入 Cookie 時不算憑證，照常快取：後台登入免認證的 `gately_admin`、`gately_admin_hs` 始終如此，單一登入的 `gately_sso`、本實例簽發的站點工作階段 `gately_site_*`（同名但不是本實例簽發的 Cookie 會原樣到達後端，仍算憑證） 與第三方登入的 `gately_oauth_nonce` 在站點未開啟「轉發 Gately 登入 Cookie」時如此（快取位於認證之後，未登入的訪客到不了快取）；含其他 Cookie 或無法解析時仍不快取；
 - 原始請求路徑含 `;`、`\`、`%2F`、`%5C`（不區分大小寫）的請求不快取，這類路徑經正規化後與後端的理解可能不同；
 - 僅快取狀態碼 200 的回應；回應含 `Set-Cookie`、`Vary: *`，或 `Cache-Control` 為 `no-store` / `private` / `no-cache` 時略過；
 - 回應的 `Vary` 只能包含 `Accept-Encoding`，站點開啟跨域時還可以包含 `Origin`，含其他請求標頭時不快取；後端自己回傳的 `Access-Control-Allow-Origin` 不是 `*` 時不快取；
