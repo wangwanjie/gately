@@ -36,13 +36,13 @@ func TestClouDNSUpsertAndTXT(t *testing.T) {
 			_ = json.NewEncoder(w).Encode(out)
 		case "/dns/add-record.json":
 			next++
-			if r.Form.Get("record-type") != "" {
-				t.Errorf("add-record 应只用 type 参数: %v", r.Form)
+			if r.Form.Get("record-type") == "" || r.Form.Get("record-type") != r.Form.Get("type") {
+				t.Errorf("add-record 应同时带 record-type 与 type: %v", r.Form)
 			}
 			lastAdd = map[string]string{"type": r.Form.Get("type"), "host": r.Form.Get("host"), "ttl": r.Form.Get("ttl")}
 			records = append(records, rec{strings.Repeat("1", 1) + string(rune('0'+next%10)) + "0", r.Form.Get("type"), r.Form.Get("host"), r.Form.Get("record"), r.Form.Get("ttl")})
 			_, _ = w.Write([]byte(`{"status":"Success","statusDescription":"The record was added successfully.","data":{"id":1}}`))
-		case "/dns/modify-record.json":
+		case "/dns/mod-record.json":
 			for i := range records {
 				if records[i].ID == r.Form.Get("record-id") {
 					records[i].Value = r.Form.Get("record")
