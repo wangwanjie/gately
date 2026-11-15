@@ -22,7 +22,7 @@ func init() {
 		IDLabel:     "账号邮箱",
 		SecretLabel: "API Token / Global API Key",
 		Extra: []Field{
-			{Key: "proxied", Label: "新建时开启代理", Placeholder: "true 或 false，默认 false"},
+			{Key: "proxied", Label: "代理状态", Placeholder: "true 或 false；留空不管理已有记录的代理状态，新建记录默认 false"},
 		},
 		DocURL:         "https://dash.cloudflare.com/profile/api-tokens",
 		SupportsRemark: true,
@@ -108,6 +108,18 @@ func (c *cloudflare) globalKey() bool {
 	return strings.Contains(c.creds.ID, "@")
 }
 
+// proxiedSetting 解析额外字段“代理状态”：managed 表示填写了 true/false 并需要同步已有记录，
+// desired 为期望的代理状态；留空（或无法识别的值）时不管理已有记录，新建记录按 false 处理。
+func (c *cloudflare) proxiedSetting() (managed, desired bool) {
+	switch strings.ToLower(strings.TrimSpace(c.creds.Extra["proxied"])) {
+	case "true":
+		return true, true
+	case "false":
+		return true, false
+	}
+	return false, false
+}
+
 func (c *cloudflare) zoneID(ctx context.Context, zone string) (string, error) {
 	var zones []struct {
 		ID   string `json:"id"`
@@ -135,38 +147,45 @@ func (c *cloudflare) Upsert(ctx context.Context, r Record) (string, error) {
 		return "", err
 	}
 	if len(recs) > 0 {
-		// 同名同类型有多条记录（轮询解析）时，优先选已经是目标值的那条，避免把另一条无关记录改成同一个值
-		cur := recs[0]
-		for _, x := range recs {
-			if x.Content == r.Value {
-				cur = x
-				break
+		// 同名同类型的多条记录（如轮询解析）逐条都改成同一个目标值
+		managed, desired := c.proxiedSetting()
+		updated := false
+		for _, cur := range recs {
+			// 生效后的代理状态：配置了代理状态则以配置为准，否则沿用记录现状
+			proxied := cur.Proxied
+			if managed {
+				proxied = desired
 			}
+			ttl := r.TTL
+			if ttl <= 0 || proxied {
+				// 未配置 TTL 时用 1（自动）；开启代理的记录 TTL 只能是自动（1），否则 Cloudflare 会拒绝
+				ttl = 1
+			}
+			proxiedChanged := managed && cur.Proxied != desired
+			// 未配置 TTL 时只按记录值判断是否变化；代理记录读回的 TTL 恒为 1，不参与比较，避免每轮重复更新
+			ttlSame := r.TTL <= 0 || proxied || cur.TTL == ttl
+			if cur.Content == r.Value && ttlSame && !proxiedChanged && (r.Remark == "" || cur.Comment == r.Remark) {
+				continue
+			}
+			// PATCH 只改给出的字段，标签和未由 Gately 管理的备注保持不变
+			upd := map[string]any{"content": r.Value, "ttl": ttl}
+			if managed {
+				upd["proxied"] = desired
+			}
+			if r.Remark != "" {
+				upd["comment"] = r.Remark
+			}
+			if err := c.call(ctx, http.MethodPatch, "/zones/"+zid+"/dns_records/"+cur.ID, upd, nil); err != nil {
+				return "", err
+			}
+			updated = true
 		}
-		ttl := r.TTL
-		if cur.Proxied {
-			// 开启代理的记录 TTL 只能是自动（1），否则 Cloudflare 会拒绝
-			ttl = 1
+		if updated {
+			return ActionUpdated, nil
 		}
-		valueSame := cur.Content == r.Value && (ttl <= 0 || cur.TTL == ttl)
-		if valueSame && (r.Remark == "" || cur.Comment == r.Remark) {
-			return ActionUnchanged, nil
-		}
-		// PATCH 只改给出的字段，代理状态、标签和未由 Gately 管理的备注保持不变
-		upd := map[string]any{"content": r.Value}
-		if ttl > 0 {
-			// 未指定 TTL 时不发送，保留服务商处已有的 TTL
-			upd["ttl"] = ttl
-		}
-		if r.Remark != "" {
-			upd["comment"] = r.Remark
-		}
-		if err := c.call(ctx, http.MethodPatch, "/zones/"+zid+"/dns_records/"+cur.ID, upd, nil); err != nil {
-			return "", err
-		}
-		return ActionUpdated, nil
+		return ActionUnchanged, nil
 	}
-	proxied := c.creds.Extra["proxied"] == "true"
+	_, proxied := c.proxiedSetting()
 	ttl := r.TTL
 	if ttl <= 0 || proxied {
 		// 1 表示自动；开启代理时只能用自动
