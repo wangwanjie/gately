@@ -533,6 +533,7 @@ http://10.0.0.3:8080 backup
 
 - GET 요청만 캐시하며 요청에 `Range` 헤더나 `Cache-Control: no-cache`가 없어야 합니다.
 - 자격 증명이 있는 요청은 캐시하지 않습니다. 요청 헤더에 `Authorization`, `Proxy-Authorization`, `Cookie`, `X-Api-Key`, `X-Auth-Token`, `X-Access-Token`, `X-CSRF-Token`, `X-Emby-Token`, `X-Emby-Authorization`, `X-MediaBrowser-Token`, `X-Plex-Token`, `X-Jellyfin-Token` 중 하나가 있거나 쿼리 문자열에 `api_key`, `X-Plex-Token`, `token`, `access_token` 매개변수가 있는 경우입니다(매개변수 이름은 대소문자를 구분하지 않음).
+- `Cookie`에 Gately 자체 로그인 쿠키만 있으면 자격 증명으로 보지 않고 평소처럼 캐시합니다. 관리 콘솔 로그인의 `gately_admin`, `gately_admin_hs`는 항상, 싱글 사인온의 `gately_sso`, 사이트 세션 `gately_site_*`, 외부 로그인의 `gately_oauth_nonce`는 사이트에서 'Gately 로그인 쿠키 전달'을 켜지 않았을 때 해당합니다(캐시는 인증 뒤에 있어 로그인하지 않은 방문자는 캐시에 닿지 않음). 다른 쿠키가 있거나 해석할 수 없으면 여전히 캐시하지 않습니다.
 - 원래 요청 경로에 `;`, `\`, `%2F`, `%5C`(대소문자 구분 없음)가 있는 요청은 캐시하지 않습니다. 이런 경로는 정규화 후 백엔드가 다르게 해석할 수 있습니다.
 - 상태 코드 200 응답만 캐시합니다. 응답에 `Set-Cookie`, `Vary: *`가 있거나 `Cache-Control`이 `no-store` / `private` / `no-cache`이면 건너뜁니다.
 - 응답의 `Vary`에는 `Accept-Encoding`만 올 수 있고, 사이트에서 CORS를 켠 경우 `Origin`도 올 수 있습니다. 다른 헤더가 있으면 캐시하지 않습니다. 백엔드가 직접 반환한 `Access-Control-Allow-Origin`이 `*`가 아니어도 캐시하지 않습니다.

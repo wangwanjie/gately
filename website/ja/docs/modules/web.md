@@ -533,6 +533,7 @@ http://10.0.0.3:8080 backup
 
 - GET リクエストのみキャッシュされ、リクエストに `Range` ヘッダーや `Cache-Control: no-cache` が含まれていないことが条件です。
 - 認証情報付きのリクエストはキャッシュされません：リクエストヘッダーに `Authorization`、`Proxy-Authorization`、`Cookie`、`X-Api-Key`、`X-Auth-Token`、`X-Access-Token`、`X-CSRF-Token`、`X-Emby-Token`、`X-Emby-Authorization`、`X-MediaBrowser-Token`、`X-Plex-Token`、`X-Jellyfin-Token` のいずれかがある場合、またはクエリ文字列に `api_key`、`X-Plex-Token`、`token`、`access_token` パラメーターがある場合です（パラメーター名の大文字小文字は区別しません）。
+- `Cookie` に Gately 自身のログイン Cookie しか含まれない場合は認証情報とみなさず、通常どおりキャッシュします。管理画面ログインの `gately_admin`・`gately_admin_hs` は常に、シングルサインオンの `gately_sso`、サイトセッションの `gately_site_*`、外部ログインの `gately_oauth_nonce` はサイトで「Gately のログイン Cookie を転送」を有効にしていない場合に該当します（キャッシュは認証の後にあるため、未ログインの訪問者は到達しません）。ほかの Cookie を含む場合や解析できない場合は引き続きキャッシュしません。
 - 元のリクエストパスに `;`、`\`、`%2F`、`%5C`（大文字小文字を区別しない）を含むリクエストはキャッシュされません。正規化後のパスとバックエンドの解釈が食い違うおそれがあるためです。
 - ステータスコード 200 のレスポンスのみキャッシュされます。レスポンスに `Set-Cookie` や `Vary: *` が含まれる場合、または `Cache-Control` が `no-store` / `private` / `no-cache` の場合は対象外です。
 - レスポンスの `Vary` に含められるのは `Accept-Encoding` だけで、サイトで CORS を有効にしている場合は `Origin` も含められます。それ以外のヘッダーがあるとキャッシュされません。バックエンド自身が返す `Access-Control-Allow-Origin` が `*` 以外の場合もキャッシュされません。
