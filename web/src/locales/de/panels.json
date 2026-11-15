@@ -109,7 +109,7 @@
   "bgDimHelp": "Eine Tönung in der Seitenfarbe über dem Bild; höhere Werte machen den Text lesbarer.",
   "authOnly": "Nur nach Anmeldung sichtbar",
   "authOnlyTag": "Nur angemeldet",
-  "authOnlyHelp": "Nicht angemeldete Besucher sehen diesen Link nicht (weder Name noch Adresse werden gesendet). Die Site braucht Web-Authentifizierung mit „Nur bestimmte Pfade authentifizieren“, damit abgemeldete Besucher das Panel öffnen und die Anmeldung finden; auf Sites, die alles schützen, sind alle Besucher bereits angemeldet.",
+  "authOnlyHelp": "Nicht angemeldete Besucher sehen diesen Link nicht (weder Name noch Adresse werden gesendet). Die Site braucht Web-Authentifizierung mit aktiviertem „Authentifizierung nur für unten als Erforderlich markierte Pfade verlangen“, damit abgemeldete Besucher das Panel öffnen und die Anmeldung finden; auf Sites, die alles schützen, sind alle Besucher bereits angemeldet.",
   "bgBlur": "Hintergrundunschärfe",
   "bgReset": "Standardhintergrund wiederherstellen",
   "cardSize": "Kartengröße",

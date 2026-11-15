@@ -109,7 +109,7 @@
   "bgDimHelp": "A tint of the page colour laid over the image; higher values make text clearer.",
   "authOnly": "Visible after sign-in",
   "authOnlyTag": "Sign-in only",
-  "authOnlyHelp": "Visitors who are not signed in do not see this link (neither its name nor its address is sent). The site needs web authentication set to “authenticate only specified paths”, so signed-out visitors can open the panel and find the sign-in button; on sites that require sign-in for everything all visitors are already signed in.",
+  "authOnlyHelp": "Visitors who are not signed in do not see this link (neither its name nor its address is sent). The site needs web authentication with “Require authentication only for paths marked Required below” checked, so signed-out visitors can open the panel and find the sign-in button; on sites that require sign-in for everything all visitors are already signed in.",
   "bgBlur": "Background blur",
   "bgReset": "Restore default background",
   "cardSize": "Card size",
