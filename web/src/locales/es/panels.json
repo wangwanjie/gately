@@ -109,7 +109,7 @@
   "bgDimHelp": "Un tinte del color de la página sobre la imagen; cuanto mayor, más legible el texto.",
   "authOnly": "Visible tras iniciar sesión",
   "authOnlyTag": "Solo con sesión",
-  "authOnlyHelp": "Los visitantes sin sesión no ven este enlace (no se envían ni su nombre ni su dirección). El sitio necesita autenticación web con «Autenticar solo rutas indicadas» para que los visitantes sin sesión abran el panel y vean el botón de inicio de sesión; en sitios que exigen sesión para todo, todos los visitantes ya la tienen.",
+  "authOnlyHelp": "Los visitantes sin sesión no ven este enlace (no se envían ni su nombre ni su dirección). El sitio necesita autenticación web con «Exigir autenticación solo en las rutas marcadas como Obligatoria más abajo» activado para que los visitantes sin sesión abran el panel y vean el botón de inicio de sesión; en sitios que exigen sesión para todo, todos los visitantes ya la tienen.",
   "bgBlur": "Desenfoque del fondo",
   "bgReset": "Restaurar fondo predeterminado",
   "cardSize": "Tamaño de la tarjeta",

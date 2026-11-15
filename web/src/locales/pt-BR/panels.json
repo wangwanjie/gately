@@ -109,7 +109,7 @@
   "bgDimHelp": "Uma cor da página sobre a imagem; quanto maior, mais legível o texto.",
   "authOnly": "Visível após login",
   "authOnlyTag": "Só com login",
-  "authOnlyHelp": "Visitantes sem login não veem este link (nem o nome nem o endereço são enviados). O site precisa de autenticação web com “Autenticar apenas caminhos específicos” para que visitantes sem login abram o painel e vejam o botão de login; em sites que exigem login em tudo, todos os visitantes já estão logados.",
+  "authOnlyHelp": "Visitantes sem login não veem este link (nem o nome nem o endereço são enviados). O site precisa de autenticação web com “Exigir autenticação apenas nos caminhos marcados como Obrigatória abaixo” marcado para que visitantes sem login abram o painel e vejam o botão de login; em sites que exigem login em tudo, todos os visitantes já estão logados.",
   "bgBlur": "Desfoque do fundo",
   "bgReset": "Restaurar fundo padrão",
   "cardSize": "Tamanho do cartão",
