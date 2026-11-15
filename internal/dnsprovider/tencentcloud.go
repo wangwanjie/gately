@@ -155,6 +155,10 @@ func (t *tencentCloud) Upsert(ctx context.Context, r Record) (string, error) {
 			return ActionUnchanged, nil
 		}
 		action, params := "ModifyRecord", params
+		if r.TTL <= 0 && rec.TTL > 0 {
+			// 未指定 TTL 时沿用记录现有值，避免修改接口按默认 600 重置
+			params["TTL"] = rec.TTL
+		}
 		if valueSame {
 			// 只有备注不同时调用专门的备注接口，不重复提交记录值
 			action, params = "ModifyRecordRemark", map[string]any{"Domain": r.Zone, "Remark": r.Remark}
