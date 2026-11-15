@@ -313,6 +313,28 @@ func TestHandshakeVisitorNeverRedirected(t *testing.T) {
 	}
 }
 
+// admin-start 的 next 只接受站点内的路径：外站地址、协议相对地址、反斜杠与认证保留路径都回到站点首页，不形成开放跳转。
+func TestHandshakeStartNextOpenRedirect(t *testing.T) {
+	e := startHandshake(t)
+	e.loginAdmin(t)
+	for _, next := range []string{"https://evil.example/x", "//evil.example/x", "/\\evil.example", "\\\\evil.example", "/\tevil", "javascript:alert(1)", authPath + "/logout", ""} {
+		resp, body, hops := e.b.nav(e.start("basic.b.test", next), nil)
+		if resp.StatusCode != http.StatusOK || body != "basic-ok" {
+			t.Fatalf("next=%q 握手后应放行: %d %q", next, resp.StatusCode, body)
+		}
+		// 每一跳都只在站点与后台入口之间
+		for _, h := range hops {
+			u, err := url.Parse(h.URL)
+			if err != nil || (u.Hostname() != "basic.b.test" && u.Hostname() != "admin.a.test") {
+				t.Fatalf("next=%q 不应跳到外站: %v", next, hops)
+			}
+		}
+		if last := hops[len(hops)-1].URL; last != e.u("basic.b.test", "/") {
+			t.Fatalf("next=%q 应回到站点首页: %v", next, hops)
+		}
+	}
+}
+
 // 后台登出后，已握手得到的凭据立即失效。
 func TestHandshakeRevoked(t *testing.T) {
 	e := startHandshake(t)
