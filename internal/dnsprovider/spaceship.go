@@ -36,29 +36,36 @@ type spaceship struct {
 	endpoint    string
 }
 
-// spaceshipItem 是列表中的一条记录；A / AAAA 的内容在 address，TXT 的内容在 value。
+// spaceshipItem 是列表中的一条记录；A / AAAA 的内容在 address，CNAME 在 cname，TXT 在 value。
 type spaceshipItem struct {
 	Type    string `json:"type"`
 	Name    string `json:"name"`
 	Address string `json:"address,omitempty"`
+	CName   string `json:"cname,omitempty"`
 	Value   string `json:"value,omitempty"`
 	TTL     int    `json:"ttl,omitempty"`
 }
 
 // content 返回记录内容。
 func (i spaceshipItem) content() string {
-	if i.Type == "TXT" {
+	switch i.Type {
+	case "TXT":
 		return i.Value
+	case "CNAME":
+		return i.CName
 	}
 	return i.Address
 }
 
-// spaceshipItemOf 按类型构造记录：TXT 用 value，其余用 address。
+// spaceshipItemOf 按类型构造记录：TXT 用 value，CNAME 用 cname（接口要求的必填字段），其余用 address。
 func spaceshipItemOf(typ, name, content string, ttl int) spaceshipItem {
 	it := spaceshipItem{Type: typ, Name: name, TTL: ttl}
-	if typ == "TXT" {
+	switch typ {
+	case "TXT":
 		it.Value = content
-	} else {
+	case "CNAME":
+		it.CName = content
+	default:
 		it.Address = content
 	}
 	return it

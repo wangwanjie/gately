@@ -1,8 +1,10 @@
 package dnsprovider
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
@@ -188,5 +190,42 @@ func TestSpaceshipErrors(t *testing.T) {
 	}
 	if _, err := New("spaceship", Credentials{ID: "k"}, nil); err == nil {
 		t.Fatal("缺少 Secret 应报错")
+	}
+}
+
+// TestSpaceshipCNAME 验证 CNAME 记录用接口要求的 cname 字段读写，不能写进 address。
+func TestSpaceshipCNAME(t *testing.T) {
+	f := &spaceshipFake{t: t}
+	f.items = []spaceshipItem{{Type: "CNAME", Name: "www", CName: "old.example.net", TTL: 600}}
+	var lastPut string
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == "PUT" {
+			var raw bytes.Buffer
+			_, _ = raw.ReadFrom(r.Body)
+			lastPut = raw.String()
+			r.Body = io.NopCloser(bytes.NewReader(raw.Bytes()))
+		}
+		f.ServeHTTP(w, r)
+	}))
+	defer srv.Close()
+	p, err := New("spaceship", Credentials{ID: "key", Secret: "sec"}, srv.Client())
+	if err != nil {
+		t.Fatal(err)
+	}
+	p.(*spaceship).endpoint = srv.URL + "/api/v1"
+	ctx := context.Background()
+	// 值相同：识别为未变化
+	if got, err := p.Upsert(ctx, Record{Zone: "example.com", Sub: "www", Type: "CNAME", Value: "old.example.net"}); err != nil || got != ActionUnchanged {
+		t.Fatalf("got %s %v", got, err)
+	}
+	// 值变化：写入 cname 字段并删除旧值
+	if got, err := p.Upsert(ctx, Record{Zone: "example.com", Sub: "www", Type: "CNAME", Value: "new.example.net"}); err != nil || got != ActionUpdated {
+		t.Fatalf("got %s %v", got, err)
+	}
+	if !strings.Contains(lastPut, `"cname":"new.example.net"`) || strings.Contains(lastPut, `"address"`) {
+		t.Fatalf("PUT 请求体不符: %s", lastPut)
+	}
+	if len(f.items) != 1 || f.items[0].CName != "new.example.net" {
+		t.Fatalf("记录不符: %+v", f.items)
 	}
 }
