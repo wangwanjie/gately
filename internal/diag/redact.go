@@ -88,6 +88,10 @@ var publicDomains = []string{
 	"github.com", "githubusercontent.com", "docker.io", "docker.com", "ghcr.io", "gcr.io",
 	"letsencrypt.org", "zerossl.com", "google.com", "cloudflare.com", "aliyuncs.com", "dnspod.cn",
 	"tencentcloudapi.com", "myhuaweicloud.com", "godaddy.com", "porkbun.com", "duckdns.org", "dynv6.com",
+	// 各 DNS 服务商的接口域名，同样用于区分网络不通与服务异常
+	"baidubce.com", "volcengineapi.com", "dns.la", "rainyun.com", "now.cn", "eranet.com", "tnet.hk",
+	"vercel.com", "namesilo.com", "dynadot.com", "spaceship.dev", "name.com", "gcore.com", "cloudns.net",
+	"desec.io", "edgeone.ai",
 }
 
 func isPublicDomain(d string) bool {
