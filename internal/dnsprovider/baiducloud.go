@@ -36,12 +36,12 @@ func init() {
 }
 
 const (
-	// 解析 TTL 允许 60~3600 秒，默认 600 秒
+	// 解析 TTL 限制在 60~3600 秒；未指定时默认 300 秒
 	baiduCloudMinTTL     = 60
 	baiduCloudMaxTTL     = 3600
-	baiduCloudDefaultTTL = 600
-	// 列表接口 pageSize 的默认值，翻页以不足一页作为结束
-	baiduCloudPageSize = 100
+	baiduCloudDefaultTTL = 300
+	// 列表接口 pageSize，取 1000，翻页以不足一页作为结束
+	baiduCloudPageSize = 1000
 	baiduCloudMaxPages = 100
 	// 认证字符串有效期（秒）
 	baiduCloudExpire = 1800
@@ -138,11 +138,10 @@ func (b *baiduCloud) call(ctx context.Context, path string, body any, out any) e
 		return err
 	}
 	ts := b.now()
-	date := ts.UTC().Format("2006-01-02T15:04:05Z")
 	req.Header.Set("Content-Type", "application/json; charset=utf-8")
-	req.Header.Set("x-bce-date", date)
+	// 只签名 host 头，时间戳写在认证字符串前缀中，不发送 x-bce-date 头
 	req.Header.Set("Authorization", bceAuthorization(b.id, b.secret, http.MethodPost, path, nil,
-		map[string]string{"host": u.Host, "x-bce-date": date}, "host;x-bce-date", ts, baiduCloudExpire))
+		map[string]string{"host": u.Host}, "host", ts, baiduCloudExpire))
 	err = doJSON(b.hc, req, out)
 	if he, ok := err.(*HTTPError); ok {
 		var be struct {
@@ -168,7 +167,8 @@ func (b *baiduCloud) listRecords(ctx context.Context, zone string) ([]baiduCloud
 			Result []baiduCloudRecord `json:"result"`
 		}
 		err := b.call(ctx, "/v1/domain/resolve/list", map[string]any{
-			"domain": zone, "pageNo": page, "pageSize": baiduCloudPageSize,
+			// 部分环境使用 pageNum，官方文档写作 pageNo，无法确定哪个生效，同时发送
+			"domain": zone, "pageNum": page, "pageNo": page, "pageSize": baiduCloudPageSize,
 		}, &resp)
 		if err != nil {
 			return nil, err

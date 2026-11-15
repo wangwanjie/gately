@@ -148,7 +148,7 @@ func (a *aliESA) site(ctx context.Context, zone string) (aliESASite, error) {
 			Sites      []aliESASite `json:"Sites"`
 		}
 		err := a.call(ctx, http.MethodGet, "ListSites", map[string]string{
-			"SiteName": name, "SiteSearchType": "exact",
+			"SiteName":   name,
 			"PageNumber": strconv.Itoa(page), "PageSize": strconv.Itoa(aliESAPageSize),
 		}, &resp)
 		if err != nil {
@@ -166,7 +166,7 @@ func (a *aliESA) site(ctx context.Context, zone string) (aliESASite, error) {
 	return aliESASite{}, fmt.Errorf("阿里云 ESA 账号下未找到站点 %s", zone)
 }
 
-// listRecords 查询站点下指定名称与类型的记录（名称精确匹配）。
+// listRecords 查询站点下指定名称与类型的记录。请求参数为 SiteId/RecordName/Type，名称在本地再精确比对。
 func (a *aliESA) listRecords(ctx context.Context, siteID int64, fqdn, typ string) ([]aliESARecord, error) {
 	var out []aliESARecord
 	for page := 1; page <= aliESAMaxPages; page++ {
@@ -175,14 +175,16 @@ func (a *aliESA) listRecords(ctx context.Context, siteID int64, fqdn, typ string
 			Records    []aliESARecord `json:"Records"`
 		}
 		err := a.call(ctx, http.MethodGet, "ListRecords", map[string]string{
-			"SiteId": strconv.FormatInt(siteID, 10), "RecordName": fqdn, "RecordMatchType": "exact", "Type": typ,
+			"SiteId": strconv.FormatInt(siteID, 10), "RecordName": fqdn, "Type": typ,
 			"PageNumber": strconv.Itoa(page), "PageSize": strconv.Itoa(aliESAPageSize),
 		}, &resp)
 		if err != nil {
 			return nil, err
 		}
 		for _, rec := range resp.Records {
-			if strings.EqualFold(rec.RecordName, fqdn) && (rec.RecordType == typ || (typ == aliESAAddrType && (rec.RecordType == "A" || rec.RecordType == "AAAA"))) {
+			// 请求已按 Type 过滤；响应带有类型且明显不符时才丢弃，类型缺失视为匹配
+			typeOK := rec.RecordType == "" || rec.RecordType == typ || (typ == aliESAAddrType && (rec.RecordType == "A" || rec.RecordType == "AAAA"))
+			if strings.EqualFold(rec.RecordName, fqdn) && typeOK {
 				out = append(out, rec)
 			}
 		}

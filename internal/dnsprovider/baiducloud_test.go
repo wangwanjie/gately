@@ -41,12 +41,19 @@ func (f *baiduCloudFake) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	body, _ := io.ReadAll(r.Body)
 	f.calls = append(f.calls, r.URL.Path)
 	// 重新计算认证字符串并比对
-	date := r.Header.Get("x-bce-date")
-	ts, err := time.Parse("2006-01-02T15:04:05Z", date)
-	if err != nil {
-		f.t.Errorf("x-bce-date 无效: %q", date)
+	// 只签名 host，时间戳取自认证字符串前缀，且不带 x-bce-date 头
+	if r.Header.Get("x-bce-date") != "" {
+		f.t.Errorf("不应发送 x-bce-date 头")
 	}
-	want := bceAuthorization("AK", "SK", r.Method, r.URL.Path, nil, map[string]string{"host": r.Host, "x-bce-date": date}, "host;x-bce-date", ts, 1800)
+	parts := strings.Split(r.Header.Get("Authorization"), "/")
+	if len(parts) < 3 {
+		f.t.Fatalf("鉴权头格式错误: %s", r.Header.Get("Authorization"))
+	}
+	ts, err := time.Parse("2006-01-02T15:04:05Z", parts[2])
+	if err != nil {
+		f.t.Fatalf("鉴权头时间戳无效: %q", parts[2])
+	}
+	want := bceAuthorization("AK", "SK", r.Method, r.URL.Path, nil, map[string]string{"host": r.Host}, "host", ts, 1800)
 	if r.Header.Get("Authorization") != want {
 		f.t.Errorf("鉴权头不一致: %s", r.Header.Get("Authorization"))
 	}
@@ -66,7 +73,11 @@ func (f *baiduCloudFake) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			_, _ = w.Write([]byte(`{"code":"DomainNotExists","message":"domain not found","requestId":"x"}`))
 			return
 		}
-		no, size := int(params["pageNo"].(float64)), int(params["pageSize"].(float64))
+		// 使用 pageNum；pageNo 同时发送，两者必须一致
+		no, size := int(params["pageNum"].(float64)), int(params["pageSize"].(float64))
+		if int(params["pageNo"].(float64)) != no || size != 1000 {
+			f.t.Errorf("分页参数错误: %v", params)
+		}
 		start := (no - 1) * size
 		end := start + size
 		if start > len(f.records) {
@@ -119,7 +130,7 @@ func TestBaiduCloudUpsert(t *testing.T) {
 	b, f, done := newBaiduCloudTest(t)
 	defer done()
 	runUpsertSequence(t, b, Record{Zone: "example.com", Sub: "home", Type: "A"})
-	if len(f.records) != 1 || f.records[0].RData != "203.0.113.2" || f.records[0].TTL != 600 || f.records[0].Domain != "home" {
+	if len(f.records) != 1 || f.records[0].RData != "203.0.113.2" || f.records[0].TTL != 300 || f.records[0].Domain != "home" {
 		t.Fatalf("记录 = %+v", f.records)
 	}
 	edit := f.last["/v1/domain/resolve/edit"]
@@ -146,12 +157,12 @@ func TestBaiduCloudUpsert(t *testing.T) {
 func TestBaiduCloudPaging(t *testing.T) {
 	b, f, done := newBaiduCloudTest(t)
 	defer done()
-	for i := 1; i <= 230; i++ {
+	for i := 1; i <= 2300; i++ {
 		f.records = append(f.records, baiduCloudRecord{RecordID: int64(i), Domain: fmt.Sprintf("h%d", i), View: "DEFAULT", RdType: "A", TTL: 600, RData: "1.1.1.1"})
 	}
 	f.next = 1000
-	// 目标记录在第三页，翻页后应识别为同值未变化
-	if got, err := b.Upsert(t.Context(), Record{Zone: "example.com", Sub: "h225", Type: "A", Value: "1.1.1.1"}); err != nil || got != ActionUnchanged {
+	// 目标记录在第三页（每页 1000 条），翻页后应识别为同值未变化
+	if got, err := b.Upsert(t.Context(), Record{Zone: "example.com", Sub: "h2250", Type: "A", Value: "1.1.1.1"}); err != nil || got != ActionUnchanged {
 		t.Fatalf("got %s %v", got, err)
 	}
 }

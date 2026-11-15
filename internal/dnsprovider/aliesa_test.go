@@ -54,7 +54,7 @@ func (f *aliESAFake) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			write(map[string]any{"TotalCount": 0, "Sites": []aliESASite{}})
 		}
 	case "ListRecords":
-		if q.Get("SiteId") != "77" || q.Get("RecordMatchType") != "exact" {
+		if q.Get("SiteId") != "77" || q.Has("RecordMatchType") {
 			f.t.Errorf("ListRecords 参数错误: %v", q)
 		}
 		var out []aliESARecord
