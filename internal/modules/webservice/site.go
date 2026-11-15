@@ -264,6 +264,7 @@ func newSiteHandler(s Site, log *logbuf.Logger, auth *authenticator, waf WAFProv
 	// 响应缓存只用于反向代理站点，包在按用户分流外层，缓存键带所选的用户路由
 	if s.Type == TypeProxy && s.Cache.Enable {
 		h.cache = newRespCache(s.Cache)
+		h.cache.gatelyCookie = gatelyCookieMatcher(s)
 		h.handler = h.cache.wrap(h.handler)
 	}
 	// 重定向没有响应体，无需压缩；重定向站点配置了按用户分流时，分流到的后端响应仍可压缩
@@ -657,6 +658,22 @@ func localPort(r *http.Request) string {
 		}
 	}
 	return ""
+}
+
+// gatelyCookieMatcher 返回判断 Cookie 是否只用于 Gately 自身认证的函数，缓存据此不把它们当作后端凭据。
+// 与反向代理转发前剥离的 Cookie 保持一致：后台登录免认证的凭据始终不会转发给后端；
+// 站点会话、单点登录与 OIDC nonce 在站点开启转发登录 Cookie 时会交给后端（后端可能是另一台 Gately），此时仍按凭据处理。
+// 同域其他站点的会话 Cookie（gately_site_ 前缀）在不转发时同样只与 Gately 认证有关。
+func gatelyCookieMatcher(s Site) func(string) bool {
+	return func(name string) bool {
+		if name == adminBridgeCookie || name == adminHSCookie {
+			return true
+		}
+		if s.PassAuthCookies {
+			return false
+		}
+		return name == ssoCookie || name == oauthNonceCookie || strings.HasPrefix(name, "gately_site_")
+	}
 }
 
 // stripCookie 从请求中删除指定名称的 Cookie。
