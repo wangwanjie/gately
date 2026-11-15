@@ -4,7 +4,7 @@
 
 ## 지원하는 제공자
 
-Alibaba Cloud, Cloudflare, Tencent Cloud, DNSPod, Huawei Cloud, GoDaddy, Porkbun, dynv6, DuckDNS, Amazon Route 53, OVHcloud, Gandi, NS1, Bunny DNS, Namecheap, DynDNS2, 그리고 사용자 정의 콜백(내장되지 않은 제공자나 자체 구축한 API용)을 지원합니다.
+Alibaba Cloud, Cloudflare, Tencent Cloud, DNSPod, Huawei Cloud, GoDaddy, Porkbun, dynv6, DuckDNS, Amazon Route 53, OVHcloud, Gandi, NS1, Bunny DNS, Namecheap, DynDNS2, Tencent Cloud EdgeOne, Alibaba Cloud ESA, Baidu AI Cloud, Volcano Engine, DNS.LA, Rainyun, Now.cn, Eranet, Tnet.hk, HiPM DNSMgr, Vercel, NameSilo, Dynadot, Spaceship, Name.com, Gcore, ClouDNS, deSEC, 그리고 사용자 정의 콜백(내장되지 않은 제공자나 자체 구축한 API용)을 지원합니다.
 
 | 제공자 | 자격 증명 | 인증서 DNS 검증에 사용 가능 |
 | --- | --- | --- |
@@ -13,6 +13,24 @@ Alibaba Cloud, Cloudflare, Tencent Cloud, DNSPod, Huawei Cloud, GoDaddy, Porkbun
 | Gandi | Personal Access Token | 예 |
 | NS1 | API Key | 예 |
 | Bunny DNS | Account API Key | 예 |
+| Tencent Cloud EdgeOne | SecretId / SecretKey | 예 |
+| Alibaba Cloud ESA | AccessKey ID / AccessKey Secret | 예 |
+| Baidu AI Cloud | AccessKey ID / SecretAccessKey | 예 |
+| Volcano Engine | Access Key ID / Secret Access Key | 예 |
+| DNS.LA | APIID / APISecret | 예 |
+| Rainyun | API Key | 예 |
+| Now.cn | AccessInstanceID / AccessKeySecret | 예 |
+| Eranet | AccessInstanceID / AccessKeySecret | 예 |
+| Tnet.hk | AccessInstanceID / AccessKeySecret | 예 |
+| HiPM DNSMgr | Base URL / API Token | 예 |
+| Vercel | Access Token | 예 |
+| NameSilo | API Key | 예 |
+| Dynadot | Dynamic DNS password | 아니요 |
+| Spaceship | API Key / API Secret | 예 |
+| Name.com | Username / API Token | 예 |
+| Gcore | Permanent API Token | 예 |
+| ClouDNS | Auth ID / Auth Password | 예 |
+| deSEC | API Token | 예 |
 | Namecheap | 도메인의 Dynamic DNS 비밀번호(A 레코드만) | 아니요 |
 | DynDNS2 | 사용자 이름, 비밀번호, 업데이트 주소. No-IP, Dynu 등 dyndns2 프로토콜 호환 서비스에 사용 | 아니요 |
 

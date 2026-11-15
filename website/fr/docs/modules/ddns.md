@@ -4,7 +4,7 @@ L'IP publique d'une connexion internet domestique change avec le temps. Le DDNS 
 
 ## Fournisseurs pris en charge
 
-Alibaba Cloud, Cloudflare, Tencent Cloud, DNSPod, Huawei Cloud, GoDaddy, Porkbun, dynv6, DuckDNS, Amazon Route 53, OVHcloud, Gandi, NS1, Bunny DNS, Namecheap, DynDNS2, ainsi qu'un rappel personnalisé (pour les fournisseurs non intégrés ou les points de terminaison auto-hébergés).
+Alibaba Cloud, Cloudflare, Tencent Cloud, DNSPod, Huawei Cloud, GoDaddy, Porkbun, dynv6, DuckDNS, Amazon Route 53, OVHcloud, Gandi, NS1, Bunny DNS, Namecheap, DynDNS2, Tencent Cloud EdgeOne, Alibaba Cloud ESA, Baidu AI Cloud, Volcano Engine, DNS.LA, Rainyun, Now.cn, Eranet, Tnet.hk, HiPM DNSMgr, Vercel, NameSilo, Dynadot, Spaceship, Name.com, Gcore, ClouDNS, deSEC, ainsi qu'un rappel personnalisé (pour les fournisseurs non intégrés ou les points de terminaison auto-hébergés).
 
 | Fournisseur | Identifiants | Utilisable pour la validation DNS des certificats |
 | --- | --- | --- |
@@ -13,6 +13,24 @@ Alibaba Cloud, Cloudflare, Tencent Cloud, DNSPod, Huawei Cloud, GoDaddy, Porkbun
 | Gandi | Personal Access Token | Oui |
 | NS1 | API Key | Oui |
 | Bunny DNS | Account API Key | Oui |
+| Tencent Cloud EdgeOne | SecretId / SecretKey | Oui |
+| Alibaba Cloud ESA | AccessKey ID / AccessKey Secret | Oui |
+| Baidu AI Cloud | AccessKey ID / SecretAccessKey | Oui |
+| Volcano Engine | Access Key ID / Secret Access Key | Oui |
+| DNS.LA | APIID / APISecret | Oui |
+| Rainyun | API Key | Oui |
+| Now.cn | AccessInstanceID / AccessKeySecret | Oui |
+| Eranet | AccessInstanceID / AccessKeySecret | Oui |
+| Tnet.hk | AccessInstanceID / AccessKeySecret | Oui |
+| HiPM DNSMgr | Base URL / API Token | Oui |
+| Vercel | Access Token | Oui |
+| NameSilo | API Key | Oui |
+| Dynadot | Dynamic DNS password | Non |
+| Spaceship | API Key / API Secret | Oui |
+| Name.com | Username / API Token | Oui |
+| Gcore | Permanent API Token | Oui |
+| ClouDNS | Auth ID / Auth Password | Oui |
+| deSEC | API Token | Oui |
 | Namecheap | Mot de passe Dynamic DNS du domaine (enregistrements A uniquement) | Non |
 | DynDNS2 | Nom d'utilisateur, mot de passe et URL de mise à jour, pour No-IP, Dynu et les autres services compatibles avec le protocole dyndns2 | Non |
 

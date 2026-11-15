@@ -225,7 +225,7 @@ Cloudflare、阿里云、DNSPod、Route 53 等都能用。IPv4 与 IPv6，IP 可
 
 | 模块 | 能力 |
 | --- | --- |
-| 动态域名 | 阿里云、Cloudflare、腾讯云、DNSPod、华为云、GoDaddy、Porkbun、dynv6、DuckDNS、Amazon Route 53、OVHcloud、Gandi、NS1、Bunny DNS、Namecheap、DynDNS2（No-IP、Dynu 等）、自定义回调；URL/网卡/命令取 IP；IPv4/IPv6；Webhook；分组、排序与搜索；备注写入服务商；删除时可同时删除服务商处的解析 |
+| 动态域名 | 阿里云、Cloudflare、腾讯云、DNSPod、华为云、GoDaddy、Porkbun、dynv6、DuckDNS、Amazon Route 53、OVHcloud、Gandi、NS1、Bunny DNS、Namecheap、腾讯云 EdgeOne、阿里云 ESA、百度智能云、火山引擎、DNS.LA、雨云、时代互联（Now.cn）、新网互联（Eranet）、Tnet.hk、HiPM DNSMgr、Vercel、NameSilo、Dynadot、Spaceship、Name.com、Gcore、ClouDNS、deSEC、DynDNS2（No-IP、Dynu 等）、自定义回调；URL/网卡/命令取 IP；IPv4/IPv6；Webhook；分组、排序与搜索；备注写入服务商；删除时可同时删除服务商处的解析 |
 | STUN 穿透 | TCP/UDP、保活、UPnP/NAT-PMP、自动在本机防火墙（nftables / iptables）放行端口、内置转发、地址变化时触发 Webhook 与脚本；来源 IP 白名单 / 黑名单与优先拒绝名单（可引用订阅 IP 列表） |
 | 端口转发 | TCP/UDP、IPv4/IPv6、端口段、多目标故障转移、连接数限制、流量统计、PROXY 协议（v1/v2）；分组、排序与搜索；来源 IP 白名单 / 黑名单与优先拒绝名单（可引用订阅 IP 列表）；规则自动放行本机防火墙端口 |
 | 协议分流 | 多个服务共用 443 等同一个端口：按协议识别连接并透传、不解密，TLS 按 SNI 与 ALPN、HTTP 按 Host，Minecraft 按服务器地址，另可识别 SSH、RDP、SOCKS、OpenVPN、RTSP、SIP、XMPP、MQTT、AMQP、PostgreSQL、Redis、SMB、Git、IRC、ADB、BitTorrent，VNC 等服务端先发言的协议走等待超时路由；默认目标、每条路由单独设置 PROXY 协议；替代 haproxy SNI 分流与 sslh；来源 IP 白名单 / 黑名单与优先拒绝名单（可引用订阅 IP 列表）；规则自动放行本机防火墙端口；整条或单条路由可要求敲门，spa 路由经 TCP 接收敲门包 |

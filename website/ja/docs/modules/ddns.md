@@ -4,7 +4,7 @@
 
 ## 対応プロバイダー
 
-Alibaba Cloud、Cloudflare、Tencent Cloud、DNSPod、Huawei Cloud、GoDaddy、Porkbun、dynv6、DuckDNS、Amazon Route 53、OVHcloud、Gandi、NS1、Bunny DNS、Namecheap、DynDNS2、およびカスタムコールバック（未対応のプロバイダーや自前の API 用）。
+Alibaba Cloud、Cloudflare、Tencent Cloud、DNSPod、Huawei Cloud、GoDaddy、Porkbun、dynv6、DuckDNS、Amazon Route 53、OVHcloud、Gandi、NS1、Bunny DNS、Namecheap、DynDNS2、Tencent Cloud EdgeOne、Alibaba Cloud ESA、Baidu AI Cloud、Volcano Engine、DNS.LA、Rainyun、Now.cn、Eranet、Tnet.hk、HiPM DNSMgr、Vercel、NameSilo、Dynadot、Spaceship、Name.com、Gcore、ClouDNS、deSEC、およびカスタムコールバック（未対応のプロバイダーや自前の API 用）。
 
 | プロバイダー | 認証情報 | 証明書の DNS 検証に利用 |
 | --- | --- | --- |
@@ -13,6 +13,24 @@ Alibaba Cloud、Cloudflare、Tencent Cloud、DNSPod、Huawei Cloud、GoDaddy、P
 | Gandi | Personal Access Token | 可 |
 | NS1 | API Key | 可 |
 | Bunny DNS | Account API Key | 可 |
+| Tencent Cloud EdgeOne | SecretId / SecretKey | 可 |
+| Alibaba Cloud ESA | AccessKey ID / AccessKey Secret | 可 |
+| Baidu AI Cloud | AccessKey ID / SecretAccessKey | 可 |
+| Volcano Engine | Access Key ID / Secret Access Key | 可 |
+| DNS.LA | APIID / APISecret | 可 |
+| Rainyun | API Key | 可 |
+| Now.cn | AccessInstanceID / AccessKeySecret | 可 |
+| Eranet | AccessInstanceID / AccessKeySecret | 可 |
+| Tnet.hk | AccessInstanceID / AccessKeySecret | 可 |
+| HiPM DNSMgr | Base URL / API Token | 可 |
+| Vercel | Access Token | 可 |
+| NameSilo | API Key | 可 |
+| Dynadot | Dynamic DNS password | 不可 |
+| Spaceship | API Key / API Secret | 可 |
+| Name.com | Username / API Token | 可 |
+| Gcore | Permanent API Token | 可 |
+| ClouDNS | Auth ID / Auth Password | 可 |
+| deSEC | API Token | 可 |
 | Namecheap | ドメインの Dynamic DNS パスワード（A レコードのみ） | 不可 |
 | DynDNS2 | ユーザー名、パスワード、更新 URL。No-IP、Dynu など dyndns2 プロトコル互換のサービス向け | 不可 |
 

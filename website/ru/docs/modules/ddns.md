@@ -4,7 +4,7 @@
 
 ## Поддерживаемые провайдеры
 
-Alibaba Cloud, Cloudflare, Tencent Cloud, DNSPod, Huawei Cloud, GoDaddy, Porkbun, dynv6, DuckDNS, Amazon Route 53, OVHcloud, Gandi, NS1, Bunny DNS, Namecheap, DynDNS2, а также пользовательский callback (для провайдеров без встроенной поддержки и собственных интерфейсов).
+Alibaba Cloud, Cloudflare, Tencent Cloud, DNSPod, Huawei Cloud, GoDaddy, Porkbun, dynv6, DuckDNS, Amazon Route 53, OVHcloud, Gandi, NS1, Bunny DNS, Namecheap, DynDNS2, Tencent Cloud EdgeOne, Alibaba Cloud ESA, Baidu AI Cloud, Volcano Engine, DNS.LA, Rainyun, Now.cn, Eranet, Tnet.hk, HiPM DNSMgr, Vercel, NameSilo, Dynadot, Spaceship, Name.com, Gcore, ClouDNS, deSEC, а также пользовательский callback (для провайдеров без встроенной поддержки и собственных интерфейсов).
 
 | Провайдер | Учётные данные | Подходит для DNS-проверки сертификатов |
 | --- | --- | --- |
@@ -13,6 +13,24 @@ Alibaba Cloud, Cloudflare, Tencent Cloud, DNSPod, Huawei Cloud, GoDaddy, Porkbun
 | Gandi | Personal Access Token | Да |
 | NS1 | API Key | Да |
 | Bunny DNS | Account API Key | Да |
+| Tencent Cloud EdgeOne | SecretId / SecretKey | Да |
+| Alibaba Cloud ESA | AccessKey ID / AccessKey Secret | Да |
+| Baidu AI Cloud | AccessKey ID / SecretAccessKey | Да |
+| Volcano Engine | Access Key ID / Secret Access Key | Да |
+| DNS.LA | APIID / APISecret | Да |
+| Rainyun | API Key | Да |
+| Now.cn | AccessInstanceID / AccessKeySecret | Да |
+| Eranet | AccessInstanceID / AccessKeySecret | Да |
+| Tnet.hk | AccessInstanceID / AccessKeySecret | Да |
+| HiPM DNSMgr | Base URL / API Token | Да |
+| Vercel | Access Token | Да |
+| NameSilo | API Key | Да |
+| Dynadot | Dynamic DNS password | Нет |
+| Spaceship | API Key / API Secret | Да |
+| Name.com | Username / API Token | Да |
+| Gcore | Permanent API Token | Да |
+| ClouDNS | Auth ID / Auth Password | Да |
+| deSEC | API Token | Да |
 | Namecheap | Пароль Dynamic DNS для домена (только A-записи) | Нет |
 | DynDNS2 | Имя пользователя, пароль и адрес обновления; подходит для No-IP, Dynu и других сервисов, совместимых с протоколом dyndns2 | Нет |
 
