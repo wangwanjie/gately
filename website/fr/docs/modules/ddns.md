@@ -36,7 +36,7 @@ Alibaba Cloud, Cloudflare, Tencent Cloud, DNSPod, Huawei Cloud, GoDaddy, Porkbun
 
 ## TTL, état du proxy Cloudflare et rappel personnalisé {#ttl}
 
-- **TTL** : un enregistrement avec un TTL de 0 utilise la valeur par défaut du fournisseur (elle varie selon le fournisseur, par exemple 1, c'est-à-dire « Automatique », chez Cloudflare) ; avec un TTL de 0, un enregistrement dont la valeur n'a pas changé n'est pas réécrit simplement parce que son TTL diffère chez le fournisseur.
+- **TTL** : avec un TTL de 0, les nouveaux enregistrements reçoivent la valeur par défaut du fournisseur (elle varie selon le fournisseur, par exemple 1, c'est-à-dire « Automatique », chez Cloudflare), et les mises à jour conservent le TTL existant ou appliquent la valeur par défaut selon l'API du fournisseur ; avec un TTL de 0, un enregistrement dont la valeur n'a pas changé n'est pas réécrit simplement parce que son TTL diffère chez le fournisseur.
 - **État du proxy Cloudflare** : avec Cloudflare comme fournisseur, « État du proxy » accepte `true` ou `false`, et chaque synchronisation règle le proxy (nuage orange) des enregistrements existants sur cette valeur ; vide, l'état du proxy des enregistrements existants n'est pas touché et les nouveaux enregistrements sont créés sans proxy. Les enregistrements proxifiés utilisent toujours un TTL de 1 (Automatique).
 - **Rappel personnalisé** : l'adresse de rappel, les en-têtes et le corps de la requête peuvent utiliser les variables `{ip}`, `{domain}` (domaine complet), `{subDomain}` (enregistrement d'hôte), `{zone}` (domaine racine), `{recordType}`, `{ttl}` (600 quand le TTL vaut 0) et `{timestamp}` (heure Unix actuelle en secondes) ; les valeurs placées dans l'adresse sont encodées pour l'URL.
 

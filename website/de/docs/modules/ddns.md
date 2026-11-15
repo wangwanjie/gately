@@ -36,7 +36,7 @@ Alibaba Cloud, Cloudflare, Tencent Cloud, DNSPod, Huawei Cloud, GoDaddy, Porkbun
 
 ## TTL, Cloudflare-Proxy-Status und benutzerdefinierter Callback {#ttl}
 
-- **TTL**: Ein Eintrag mit TTL 0 verwendet den Standardwert des Anbieters (je nach Anbieter unterschiedlich, bei Cloudflare z. B. 1, also „Automatisch“); bei TTL 0 wird ein Eintrag mit unverändertem Wert nicht nur deshalb neu geschrieben, weil die TTL beim Anbieter abweicht.
+- **TTL**: Bei TTL 0 erhalten neue Einträge den Standardwert des Anbieters (je nach Anbieter unterschiedlich, bei Cloudflare z. B. 1, also „Automatisch“), Aktualisierungen behalten je nach API des Anbieters die bisherige TTL oder verwenden den Standardwert; bei TTL 0 wird ein Eintrag mit unverändertem Wert nicht nur deshalb neu geschrieben, weil die TTL beim Anbieter abweicht.
 - **Cloudflare-Proxy-Status**: Mit Cloudflare als Anbieter nimmt „Proxy-Status“ `true` oder `false` an, und jede Synchronisierung setzt den Proxy (orange Wolke) vorhandener Einträge auf diesen Wert; leer lässt den Proxy-Status vorhandener Einträge unverändert, neue Einträge werden ohne Proxy angelegt. Einträge mit Proxy verwenden immer TTL 1 (Automatisch).
 - **Benutzerdefinierter Callback**: Callback-Adresse, Header und Anfragekörper können die Variablen `{ip}`, `{domain}` (vollständige Domain), `{subDomain}` (Hosteintrag), `{zone}` (Hauptdomain), `{recordType}`, `{ttl}` (600 bei TTL 0) und `{timestamp}` (aktuelle Unix-Zeit in Sekunden) verwenden; Werte in der Adresse werden URL-kodiert.
 
