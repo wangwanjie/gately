@@ -11,6 +11,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/wangwanjie/gately/internal/webhook"
 )
@@ -71,7 +72,7 @@ func init() {
 			{Key: "url", Label: "回调地址", Placeholder: "https://example.com/ddns?domain={domain}&ip={ip}", Required: true},
 			{Key: "method", Label: "请求方法", Placeholder: "GET"},
 			{Key: "headers", Label: "请求头", Placeholder: "每行一个，格式 Key: Value", Multiline: true},
-			{Key: "body", Label: "请求体", Placeholder: "可用变量 {ip} {domain} {subDomain} {zone} {recordType} {ttl}", Multiline: true},
+			{Key: "body", Label: "请求体", Placeholder: "可用变量 {ip} {domain} {subDomain} {zone} {recordType} {ttl} {timestamp}", Multiline: true},
 			{Key: "successContent", Label: "成功标识", Placeholder: "每行一个，响应包含任意一项即成功；留空只检查状态码", Multiline: true},
 		},
 	}, func(c Credentials, hc *http.Client) (Provider, error) {
@@ -358,7 +359,7 @@ type callback struct {
 	id, secret string
 }
 
-// Upsert 调用用户配置的回调地址，可用变量：{ip} {recordType} {domain} {subDomain} {zone} {ttl} {id} {secret}。
+// Upsert 调用用户配置的回调地址，可用变量：{ip} {recordType} {domain} {subDomain} {zone} {ttl} {timestamp}（当前 Unix 秒）{id} {secret}。
 func (c *callback) Upsert(ctx context.Context, r Record) (string, error) {
 	vars := map[string]string{
 		"ip":         r.Value,
@@ -367,6 +368,7 @@ func (c *callback) Upsert(ctx context.Context, r Record) (string, error) {
 		"subDomain":  r.RR(),
 		"zone":       r.Zone,
 		"ttl":        strconv.Itoa(r.TTL),
+		"timestamp":  strconv.FormatInt(time.Now().Unix(), 10),
 		"id":         c.id,
 		"secret":     c.secret,
 	}
