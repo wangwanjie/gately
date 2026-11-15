@@ -318,6 +318,40 @@ func TestDynv6Root(t *testing.T) {
 			t.Fatalf("应只 PATCH %s: %v", s.field, patched)
 		}
 	}
+	// 接口返回展开写法或带前缀长度的 IPv6 时，按地址比较仍视为未变化
+	zone["ipv6prefix"] = "2001:0db8:0000:0000:0000:0000:0000:0001/64"
+	patched = nil
+	if got, err := p.Upsert(context.Background(), Record{Zone: "my.dynv6.net", Sub: "@", Type: "AAAA", Value: "2001:db8::1"}); err != nil || got != ActionUnchanged || patched != nil {
+		t.Fatalf("展开写法应视为未变化: %v %v %v", got, err, patched)
+	}
+}
+
+// dynv6 根域名的 TXT 等非地址记录走 records 接口，不能写进 zone 的 ipv4address。
+func TestDynv6RootTXT(t *testing.T) {
+	var created map[string]any
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case r.Method == "GET" && r.URL.Path == "/zones/by-name/my.dynv6.net":
+			_, _ = w.Write([]byte(`{"id":7,"ipv4address":"203.0.113.1","ipv6prefix":""}`))
+		case r.Method == "GET" && r.URL.Path == "/zones/7/records":
+			_, _ = w.Write([]byte(`[]`))
+		case r.Method == "POST" && r.URL.Path == "/zones/7/records":
+			created = readJSON(t, r)
+			_, _ = w.Write([]byte(`{}`))
+		default:
+			t.Errorf("意外请求 %s %s", r.Method, r.URL)
+		}
+	}))
+	defer srv.Close()
+	p, _ := New("dynv6", Credentials{Secret: "tok"}, srv.Client())
+	p.(*dynv6).endpoint = srv.URL
+	got, err := p.Upsert(context.Background(), Record{Zone: "my.dynv6.net", Sub: "@", Type: "TXT", Value: "hello"})
+	if err != nil || got != ActionCreated {
+		t.Fatalf("got %v %v", got, err)
+	}
+	if created["name"] != "" || created["type"] != "TXT" || created["data"] != "hello" {
+		t.Fatalf("创建参数不符: %v", created)
+	}
 }
 
 func TestDynv6(t *testing.T) {
