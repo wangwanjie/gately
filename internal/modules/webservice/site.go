@@ -264,7 +264,7 @@ func newSiteHandler(s Site, log *logbuf.Logger, auth *authenticator, waf WAFProv
 	// 响应缓存只用于反向代理站点，包在按用户分流外层，缓存键带所选的用户路由
 	if s.Type == TypeProxy && s.Cache.Enable {
 		h.cache = newRespCache(s.Cache)
-		h.cache.gatelyCookie = gatelyCookieMatcher(s)
+		h.cache.gatelyCookie = gatelyCookieMatcher(s, auth)
 		h.handler = h.cache.wrap(h.handler)
 	}
 	// 重定向没有响应体，无需压缩；重定向站点配置了按用户分流时，分流到的后端响应仍可压缩
@@ -663,16 +663,26 @@ func localPort(r *http.Request) string {
 // gatelyCookieMatcher 返回判断 Cookie 是否只用于 Gately 自身认证的函数，缓存据此不把它们当作后端凭据。
 // 与反向代理转发前剥离的 Cookie 保持一致：后台登录免认证的凭据始终不会转发给后端；
 // 站点会话、单点登录与 OIDC nonce 在站点开启转发登录 Cookie 时会交给后端（后端可能是另一台 Gately），此时仍按凭据处理。
-// 同域其他站点的会话 Cookie（gately_site_ 前缀）在不转发时同样只与 Gately 认证有关。
-func gatelyCookieMatcher(s Site) func(string) bool {
-	return func(name string) bool {
-		if name == adminBridgeCookie || name == adminHSCookie {
+// 其他 gately_site_ 前缀的 Cookie 不会被剥离、会原样到达后端：后端是另一台 Gately 时它就是后端的登录会话，
+// 忽略它会把后端按登录状态返回的内容缓存下来交给未登录的访客。只有值为本实例签发的站点会话时（同主机其他端口、
+// 其他监听器的站点）才对后端没有意义，可以忽略；名称伪造或来自其他实例的一律按凭据处理。
+func gatelyCookieMatcher(s Site, a *authenticator) func(*http.Cookie) bool {
+	own := cookieName(s)
+	return func(c *http.Cookie) bool {
+		if c.Name == adminBridgeCookie || c.Name == adminHSCookie {
 			return true
 		}
 		if s.PassAuthCookies {
 			return false
 		}
-		return name == ssoCookie || name == oauthNonceCookie || strings.HasPrefix(name, "gately_site_")
+		if c.Name == ssoCookie || c.Name == oauthNonceCookie || c.Name == own {
+			return true
+		}
+		if !strings.HasPrefix(c.Name, "gately_site_") || a == nil {
+			return false
+		}
+		var sess siteSession
+		return a.verifyBlob("session", c.Value, &sess) == nil
 	}
 }
 

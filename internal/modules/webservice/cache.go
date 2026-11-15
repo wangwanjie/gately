@@ -40,8 +40,8 @@ type respCache struct {
 	now   func() time.Time
 	// rules 为按路径的缓存规则，已按具体程度从高到低排序
 	rules []cacheRule
-	// gatelyCookie 判断某个 Cookie 是否只用于 Gately 自身的认证、不会转发给后端，这类 Cookie 不算后端凭据；为空时所有 Cookie 都算
-	gatelyCookie func(name string) bool
+	// gatelyCookie 判断某个 Cookie 是否只用于 Gately 自身的认证、对后端没有意义，这类 Cookie 不算后端凭据；为空时所有 Cookie 都算
+	gatelyCookie func(c *http.Cookie) bool
 }
 
 // cacheRule 是编译后的缓存规则。
@@ -197,7 +197,7 @@ func requestCacheable(r *http.Request) bool {
 // requestCacheableIgnoring 与 requestCacheable 相同，但 ignore 返回 true 的 Cookie 不视为凭据。
 // 站点会话与单点登录 Cookie 只用于 Gately 自身认证（缓存位于认证之后，且不会转发给后端），
 // 单点登录域用主域名时所有站点的请求都会带上它们，不排除就会让缓存永远不生效。
-func requestCacheableIgnoring(r *http.Request, ignore func(name string) bool) bool {
+func requestCacheableIgnoring(r *http.Request, ignore func(c *http.Cookie) bool) bool {
 	if r.Method != http.MethodGet {
 		return false
 	}
@@ -227,7 +227,7 @@ func requestCacheableIgnoring(r *http.Request, ignore func(name string) bool) bo
 }
 
 // onlyIgnoredCookies 判断请求的 Cookie 是否全部可以忽略。
-func onlyIgnoredCookies(r *http.Request, ignore func(name string) bool) bool {
+func onlyIgnoredCookies(r *http.Request, ignore func(c *http.Cookie) bool) bool {
 	// 多个 Cookie 头或无法解析的内容按有凭据处理：Cookies() 解析失败的片段会被丢弃，所以再核对数量
 	n := 0
 	for _, line := range r.Header.Values("Cookie") {
@@ -238,7 +238,7 @@ func onlyIgnoredCookies(r *http.Request, ignore func(name string) bool) bool {
 		return false
 	}
 	for _, c := range cookies {
-		if !ignore(c.Name) {
+		if !ignore(c) {
 			return false
 		}
 	}

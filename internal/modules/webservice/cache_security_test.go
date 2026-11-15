@@ -241,10 +241,17 @@ func TestCacheIgnoresGatelyCookies(t *testing.T) {
 		}
 	}
 	x := run("c1.test", false)
-	for _, c := range []string{"gately_sso=abc", "gately_site_0123456789ab=v; gately_sso=abc", "gately_admin=1; gately_oauth_nonce=n"} {
+	for _, c := range []string{"gately_sso=abc", "gately_admin=1; gately_oauth_nonce=n"} {
 		x("/plain/"+c[:8], c)
 		if got := x("/plain/"+c[:8], c); got != "HIT" {
 			t.Errorf("只带 Gately 自身 Cookie %q 应命中缓存: %q", c, got)
+		}
+	}
+	// 不是本实例签发的 gately_site_ Cookie 会原样转发给后端（可能是后端 Gately 的登录会话），不能忽略
+	for _, c := range []string{"gately_site_0123456789ab=v", "gately_site_0123456789ab=v; gately_sso=abc"} {
+		x("/plain/foreign", c)
+		if got := x("/plain/foreign", c); got != "" {
+			t.Errorf("带非本实例站点会话 %q 的请求不应走缓存: %q", c, got)
 		}
 	}
 	// 夹带后端自己的 Cookie 时仍按凭据处理
@@ -277,7 +284,12 @@ func TestCacheWithRealWebAuth(t *testing.T) {
 		}
 		return s
 	}
-	addr, _ := startRunner(t, Listener{Sites: []Site{mk("a", "wa.test", false), mk("b", "wb.test", true)}}, nil, nil)
+	// c 为不认证的缓存站点，代理到的后端可能自己是一台 Gately
+	open := Site{Enable: true, Key: "c", Domains: []string{"wc.test"}, Targets: []string{backend.URL}, Cache: CacheConfig{Enable: true, TTL: 30}}
+	if err := open.validateProxyExtras(); err != nil {
+		t.Fatal(err)
+	}
+	addr, _ := startRunner(t, Listener{Sites: []Site{mk("a", "wa.test", false), mk("b", "wb.test", true), open}}, nil, nil)
 
 	cookie := loginCookie(t, addr, "wa.test", "alice", "pw")
 	with := map[string]string{"Cookie": cookie}
@@ -289,6 +301,21 @@ func TestCacheWithRealWebAuth(t *testing.T) {
 	resp, body := get(t, noRedirect(), addr, "wa.test", "/plain/x", nil)
 	if resp.Header.Get("X-Cache") == "HIT" || strings.Contains(body, "body:/plain/x") {
 		t.Fatalf("未登录请求不应读到缓存: %d %q", resp.StatusCode, body)
+	}
+	// 同一实例其他站点签发的会话 Cookie（同主机其他端口时浏览器也会带上）对后端没有意义，照常缓存
+	with2 := map[string]string{"Cookie": cookie}
+	get(t, noRedirect(), addr, "wc.test", "/plain/own", with2)
+	if resp, _ := get(t, noRedirect(), addr, "wc.test", "/plain/own", with2); resp.Header.Get("X-Cache") != "HIT" {
+		t.Fatalf("本实例签发的站点会话不影响缓存: %q", resp.Header.Get("X-Cache"))
+	}
+	// 后端 Gately 的会话 Cookie（本实例验证不了）原样到达后端：带它的响应不能缓存，否则未登录访客会拿到登录后的内容
+	inner := map[string]string{"Cookie": "gately_site_0123456789ab=backend-session"}
+	get(t, noRedirect(), addr, "wc.test", "/plain/inner", inner)
+	if resp, _ := get(t, noRedirect(), addr, "wc.test", "/plain/inner", inner); resp.Header.Get("X-Cache") == "HIT" {
+		t.Fatal("带后端会话的请求不应走缓存")
+	}
+	if resp, _ := get(t, noRedirect(), addr, "wc.test", "/plain/inner", nil); resp.Header.Get("X-Cache") == "HIT" {
+		t.Fatal("未登录访客不应读到带后端会话时的响应")
 	}
 	// 转发登录 Cookie 的站点：后端 Gately 的会话 Cookie 到达后端，带它的请求不缓存
 	cb := map[string]string{"Cookie": "gately_site_0123456789ab=v"}
