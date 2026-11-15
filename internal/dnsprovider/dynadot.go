@@ -80,7 +80,7 @@ func (d *dynadot) Upsert(ctx context.Context, r Record) (string, error) {
 	resp, err := d.hc.Do(req)
 	if err != nil {
 		// 密码在查询串里，错误信息要先抹掉
-		return "", errors.New("Dynadot: " + strings.ReplaceAll(err.Error(), d.pwd, "***"))
+		return "", errors.New("Dynadot: " + redactSecret(err.Error(), d.pwd))
 	}
 	defer resp.Body.Close()
 	raw, err := io.ReadAll(io.LimitReader(resp.Body, 64<<10))

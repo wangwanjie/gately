@@ -78,6 +78,13 @@ func TestDynadot(t *testing.T) {
 	if _, err := p.Upsert(ctx, Record{Zone: "example.com", Sub: "a", Type: "A", Value: "1.1.1.1"}); err == nil || strings.Contains(err.Error(), "ddnspw") {
 		t.Fatalf("错误信息不得包含密码: %v", err)
 	}
+	// 含特殊字符的密码在地址里是编码后的写法，同样不能泄露
+	special, _ := New("dynadot", Credentials{Secret: "p+w/d&x=1"}, srv.Client())
+	special.(*dynadot).endpoint = srv.URL + "/set_ddns"
+	if _, err := special.Upsert(ctx, Record{Zone: "example.com", Sub: "a", Type: "A", Value: "1.1.1.1"}); err == nil ||
+		strings.Contains(err.Error(), "p%2Bw%2Fd%26x%3D1") || strings.Contains(err.Error(), "p+w/d&x=1") {
+		t.Fatalf("错误信息不得包含编码后的密码: %v", err)
+	}
 	if _, err := New("dynadot", Credentials{}, nil); err == nil {
 		t.Fatal("缺少密码应报错")
 	}
