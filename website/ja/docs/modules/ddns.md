@@ -25,7 +25,7 @@ Alibaba Cloud、Cloudflare、Tencent Cloud、DNSPod、Huawei Cloud、GoDaddy、P
 | HiPM DNSMgr | Base URL / API Token | 可 |
 | Vercel | Access Token | 可 |
 | NameSilo | API Key | 可 |
-| Dynadot | Dynamic DNS password | 不可 |
+| Dynadot | Dynamic DNS パスワード | 不可 |
 | Spaceship | API Key / API Secret | 可 |
 | Name.com | Username / API Token | 可 |
 | Gcore | Permanent API Token | 可 |
@@ -33,6 +33,12 @@ Alibaba Cloud、Cloudflare、Tencent Cloud、DNSPod、Huawei Cloud、GoDaddy、P
 | deSEC | API Token | 可 |
 | Namecheap | ドメインの Dynamic DNS パスワード（A レコードのみ） | 不可 |
 | DynDNS2 | ユーザー名、パスワード、更新 URL。No-IP、Dynu など dyndns2 プロトコル互換のサービス向け | 不可 |
+
+## TTL、Cloudflare のプロキシ状態とカスタムコールバック {#ttl}
+
+- **TTL**：TTL が 0 のレコードはプロバイダーの既定値を使います（プロバイダーごとに異なり、例えば Cloudflare では 1、つまり「自動」）。TTL が 0 の場合、値が変わっていないレコードは、プロバイダー側の TTL が異なるだけでは書き換えません。
+- **Cloudflare のプロキシ状態**：プロバイダーが Cloudflare のとき、「プロキシ状態」に `true` または `false` を指定すると、同期のたびに既存レコードのプロキシ（オレンジの雲）をその値にします。空欄なら既存レコードのプロキシ状態は変更せず、新規レコードはプロキシなしで作成します。プロキシを有効にしたレコードの TTL は常に 1（自動）です。
+- **カスタムコールバック**：コールバックアドレス、リクエストヘッダー、リクエストボディで変数 `{ip}`、`{domain}`（完全なドメイン）、`{subDomain}`（ホストレコード）、`{zone}`（ルートドメイン）、`{recordType}`、`{ttl}`（TTL が 0 のときは 600）、`{timestamp}`（現在の Unix 時刻、秒単位）を使えます。アドレスに入る値は URL エンコードされます。
 
 ## IP の取得方法
 

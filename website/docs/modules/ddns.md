@@ -13,19 +13,19 @@
 | Gandi | Personal Access Token | 是 |
 | NS1 | API Key | 是 |
 | Bunny DNS | Account API Key | 是 |
-| Tencent Cloud EdgeOne | SecretId / SecretKey | 是 |
-| Alibaba Cloud ESA | AccessKey ID / AccessKey Secret | 是 |
-| Baidu AI Cloud | AccessKey ID / SecretAccessKey | 是 |
-| Volcano Engine | Access Key ID / Secret Access Key | 是 |
+| 腾讯云 EdgeOne | SecretId / SecretKey | 是 |
+| 阿里云 ESA | AccessKey ID / AccessKey Secret | 是 |
+| 百度智能云 | AccessKey ID / SecretAccessKey | 是 |
+| 火山引擎 | Access Key ID / Secret Access Key | 是 |
 | DNS.LA | APIID / APISecret | 是 |
-| Rainyun | API Key | 是 |
-| Now.cn | AccessInstanceID / AccessKeySecret | 是 |
-| Eranet | AccessInstanceID / AccessKeySecret | 是 |
+| 雨云 | API Key | 是 |
+| 时代互联（Now.cn） | AccessInstanceID / AccessKeySecret | 是 |
+| 新网互联（Eranet） | AccessInstanceID / AccessKeySecret | 是 |
 | Tnet.hk | AccessInstanceID / AccessKeySecret | 是 |
 | HiPM DNSMgr | Base URL / API Token | 是 |
 | Vercel | Access Token | 是 |
 | NameSilo | API Key | 是 |
-| Dynadot | Dynamic DNS password | 否 |
+| Dynadot | Dynamic DNS 密码 | 否 |
 | Spaceship | API Key / API Secret | 是 |
 | Name.com | Username / API Token | 是 |
 | Gcore | Permanent API Token | 是 |
@@ -33,6 +33,12 @@
 | deSEC | API Token | 是 |
 | Namecheap | 域名的 Dynamic DNS 密码（仅 A 记录） | 否 |
 | DynDNS2 | 用户名、密码与更新地址，适用于 No-IP、Dynu 等兼容 dyndns2 协议的服务 | 否 |
+
+## TTL、Cloudflare 代理状态与自定义回调 {#ttl}
+
+- **TTL**：记录的 TTL 为 0 时使用服务商的默认值（各家不同，例如 Cloudflare 为 1，即「自动」）；此时记录值没有变化的解析不会因为 TTL 与服务商处不同而被改写。
+- **Cloudflare 代理状态**：服务商选择 Cloudflare 时，「代理状态」可以填 `true` 或 `false`，同步时把已有记录的代理（橙色云朵）改成该值；留空不改动已有记录的代理状态，新建的记录不开启代理。开启代理的记录 TTL 固定为 1（自动）。
+- **自定义回调**：回调地址、请求头与请求体中可以使用变量 `{ip}`、`{domain}`（完整域名）、`{subDomain}`（主机记录）、`{zone}`（主域名）、`{recordType}`、`{ttl}`（TTL 为 0 时取 600）与 `{timestamp}`（当前 Unix 时间，单位为秒），地址中的变量值会做 URL 编码。
 
 ## 获取 IP 的方式
 

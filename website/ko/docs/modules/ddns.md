@@ -25,7 +25,7 @@ Alibaba Cloud, Cloudflare, Tencent Cloud, DNSPod, Huawei Cloud, GoDaddy, Porkbun
 | HiPM DNSMgr | Base URL / API Token | 예 |
 | Vercel | Access Token | 예 |
 | NameSilo | API Key | 예 |
-| Dynadot | Dynamic DNS password | 아니요 |
+| Dynadot | Dynamic DNS 비밀번호 | 아니요 |
 | Spaceship | API Key / API Secret | 예 |
 | Name.com | Username / API Token | 예 |
 | Gcore | Permanent API Token | 예 |
@@ -33,6 +33,12 @@ Alibaba Cloud, Cloudflare, Tencent Cloud, DNSPod, Huawei Cloud, GoDaddy, Porkbun
 | deSEC | API Token | 예 |
 | Namecheap | 도메인의 Dynamic DNS 비밀번호(A 레코드만) | 아니요 |
 | DynDNS2 | 사용자 이름, 비밀번호, 업데이트 주소. No-IP, Dynu 등 dyndns2 프로토콜 호환 서비스에 사용 | 아니요 |
+
+## TTL, Cloudflare 프록시 상태와 사용자 지정 콜백 {#ttl}
+
+- **TTL**: TTL이 0인 레코드는 제공자의 기본값을 씁니다(제공자마다 다르며, 예를 들어 Cloudflare는 1, 곧 '자동'). TTL이 0이면 값이 바뀌지 않은 레코드는 제공자 쪽 TTL이 다르다는 이유만으로 다시 쓰지 않습니다.
+- **Cloudflare 프록시 상태**: 제공자가 Cloudflare일 때 '프록시 상태'에 `true` 또는 `false`를 넣으면 동기화할 때마다 기존 레코드의 프록시(주황색 구름)를 그 값으로 맞춥니다. 비워 두면 기존 레코드의 프록시 상태는 건드리지 않고, 새 레코드는 프록시 없이 만듭니다. 프록시를 켠 레코드의 TTL은 항상 1(자동)입니다.
+- **사용자 지정 콜백**: 콜백 주소, 요청 헤더, 요청 본문에서 변수 `{ip}`, `{domain}`(전체 도메인), `{subDomain}`(호스트 레코드), `{zone}`(루트 도메인), `{recordType}`, `{ttl}`(TTL이 0이면 600), `{timestamp}`(현재 Unix 시간, 초 단위)를 쓸 수 있으며, 주소에 들어가는 값은 URL 인코딩됩니다.
 
 ## IP를 가져오는 방법
 

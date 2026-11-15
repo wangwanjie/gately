@@ -25,7 +25,7 @@ Alibaba Cloud, Cloudflare, Tencent Cloud, DNSPod, Huawei Cloud, GoDaddy, Porkbun
 | HiPM DNSMgr | Base URL / API Token | Ja |
 | Vercel | Access Token | Ja |
 | NameSilo | API Key | Ja |
-| Dynadot | Dynamic DNS password | Nein |
+| Dynadot | Dynamic-DNS-Passwort | Nein |
 | Spaceship | API Key / API Secret | Ja |
 | Name.com | Username / API Token | Ja |
 | Gcore | Permanent API Token | Ja |
@@ -33,6 +33,12 @@ Alibaba Cloud, Cloudflare, Tencent Cloud, DNSPod, Huawei Cloud, GoDaddy, Porkbun
 | deSEC | API Token | Ja |
 | Namecheap | Dynamic-DNS-Passwort der Domain (nur A-Einträge) | Nein |
 | DynDNS2 | Benutzername, Passwort und Update-URL; für No-IP, Dynu und andere Dienste, die das dyndns2-Protokoll unterstützen | Nein |
+
+## TTL, Cloudflare-Proxy-Status und benutzerdefinierter Callback {#ttl}
+
+- **TTL**: Ein Eintrag mit TTL 0 verwendet den Standardwert des Anbieters (je nach Anbieter unterschiedlich, bei Cloudflare z. B. 1, also „Automatisch“); bei TTL 0 wird ein Eintrag mit unverändertem Wert nicht nur deshalb neu geschrieben, weil die TTL beim Anbieter abweicht.
+- **Cloudflare-Proxy-Status**: Mit Cloudflare als Anbieter nimmt „Proxy-Status“ `true` oder `false` an, und jede Synchronisierung setzt den Proxy (orange Wolke) vorhandener Einträge auf diesen Wert; leer lässt den Proxy-Status vorhandener Einträge unverändert, neue Einträge werden ohne Proxy angelegt. Einträge mit Proxy verwenden immer TTL 1 (Automatisch).
+- **Benutzerdefinierter Callback**: Callback-Adresse, Header und Anfragekörper können die Variablen `{ip}`, `{domain}` (vollständige Domain), `{subDomain}` (Hosteintrag), `{zone}` (Hauptdomain), `{recordType}`, `{ttl}` (600 bei TTL 0) und `{timestamp}` (aktuelle Unix-Zeit in Sekunden) verwenden; Werte in der Adresse werden URL-kodiert.
 
 ## So wird die IP ermittelt
 
