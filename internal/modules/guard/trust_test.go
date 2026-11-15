@@ -2,6 +2,7 @@ package guard
 
 import (
 	"context"
+	"errors"
 	"net"
 	"net/netip"
 	"os"
@@ -278,5 +279,50 @@ func TestEstablishedPeersReal(t *testing.T) {
 		if !peers[port][netip.MustParseAddr(host)] {
 			t.Errorf("%s: 端口 %d 的已建立连接应能找到对端 %s，实际 %v", network, port, host, peers)
 		}
+	}
+}
+
+// 写入放行集合失败（如 nft 锁冲突）后，下一次刷新即使可信来源没有变化也要重试
+func TestFirewallTrustedRetryAfterWriteError(t *testing.T) {
+	cleanDefault(t)
+	const owner = "test-trust-retry"
+	t.Cleanup(func() {
+		trustsrc.Clear(owner)
+		select {
+		case <-trustsrc.Notify():
+		default:
+		}
+	})
+	stubPeers(t, nil)
+	fake := &fakeNFT{output: `{"nftables": [{"metainfo": {"version": "1.0.6"}}]}`}
+	fw := activeFirewall(t, fake)
+	ctx := context.Background()
+	fake.mu.Lock()
+	fake.fail = func(stdin string, _ []string) error {
+		if strings.Contains(stdin, "flush set inet gately allow4") {
+			return errors.New("Error: Could not process rule: Device or resource busy")
+		}
+		return nil
+	}
+	fake.mu.Unlock()
+	trustsrc.Set(owner, []trustsrc.Source{{Addr: netip.MustParseAddr("14.19.55.154"), Port: 17000, Until: time.Now().Add(time.Minute)}})
+	fw.refreshTrust(ctx)
+
+	fake.mu.Lock()
+	fake.fail = nil
+	n := len(fake.calls)
+	fake.mu.Unlock()
+	fw.refreshTrust(ctx)
+	fake.mu.Lock()
+	retried := len(fake.calls) > n && strings.Contains(fake.calls[len(fake.calls)-1], "14.19.55.154")
+	fake.mu.Unlock()
+	if !retried {
+		t.Fatalf("写入失败后应在下一次刷新时重试:\n%s", fake.last())
+	}
+	// 写入成功后内容不变时不再重写
+	n = len(fake.calls)
+	fw.refreshTrust(ctx)
+	if len(fake.calls) != n {
+		t.Fatal("写入成功后可信来源不变时不应重写")
 	}
 }
