@@ -25,7 +25,7 @@ Alibaba Cloud, Cloudflare, Tencent Cloud, DNSPod, Huawei Cloud, GoDaddy, Porkbun
 | HiPM DNSMgr | Base URL / API Token | Да |
 | Vercel | Access Token | Да |
 | NameSilo | API Key | Да |
-| Dynadot | Dynamic DNS password | Нет |
+| Dynadot | Пароль Dynamic DNS | Нет |
 | Spaceship | API Key / API Secret | Да |
 | Name.com | Username / API Token | Да |
 | Gcore | Permanent API Token | Да |
@@ -33,6 +33,12 @@ Alibaba Cloud, Cloudflare, Tencent Cloud, DNSPod, Huawei Cloud, GoDaddy, Porkbun
 | deSEC | API Token | Да |
 | Namecheap | Пароль Dynamic DNS для домена (только A-записи) | Нет |
 | DynDNS2 | Имя пользователя, пароль и адрес обновления; подходит для No-IP, Dynu и других сервисов, совместимых с протоколом dyndns2 | Нет |
+
+## TTL, состояние прокси Cloudflare и пользовательский обратный вызов {#ttl}
+
+- **TTL**: запись с TTL 0 использует значение провайдера по умолчанию (у каждого своё, например 1, то есть «Авто», у Cloudflare); при TTL 0 запись с неизменным значением не перезаписывается только из-за того, что TTL у провайдера другой.
+- **Состояние прокси Cloudflare**: если провайдер — Cloudflare, в «Состояние прокси» можно указать `true` или `false`, и каждая синхронизация выставляет прокси (оранжевое облако) существующих записей в это значение; пустое поле не меняет состояние прокси существующих записей, новые записи создаются без прокси. Проксируемые записи всегда используют TTL 1 (Авто).
+- **Пользовательский обратный вызов**: в адресе обратного вызова, заголовках и теле запроса доступны переменные `{ip}`, `{domain}` (полный домен), `{subDomain}` (запись хоста), `{zone}` (корневой домен), `{recordType}`, `{ttl}` (600 при TTL 0) и `{timestamp}` (текущее время Unix в секундах); значения в адресе кодируются для URL.
 
 ## Способы получения IP
 

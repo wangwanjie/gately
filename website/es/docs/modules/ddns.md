@@ -25,7 +25,7 @@ Alibaba Cloud, Cloudflare, Tencent Cloud, DNSPod, Huawei Cloud, GoDaddy, Porkbun
 | HiPM DNSMgr | Base URL / API Token | Sí |
 | Vercel | Access Token | Sí |
 | NameSilo | API Key | Sí |
-| Dynadot | Dynamic DNS password | No |
+| Dynadot | Contraseña de Dynamic DNS | No |
 | Spaceship | API Key / API Secret | Sí |
 | Name.com | Username / API Token | Sí |
 | Gcore | Permanent API Token | Sí |
@@ -33,6 +33,12 @@ Alibaba Cloud, Cloudflare, Tencent Cloud, DNSPod, Huawei Cloud, GoDaddy, Porkbun
 | deSEC | API Token | Sí |
 | Namecheap | Contraseña de Dynamic DNS del dominio (solo registros A) | No |
 | DynDNS2 | Usuario, contraseña y URL de actualización; para No-IP, Dynu y otros servicios compatibles con el protocolo dyndns2 | No |
+
+## TTL, estado del proxy de Cloudflare y callback personalizado {#ttl}
+
+- **TTL**: un registro con TTL 0 usa el valor predeterminado del proveedor (varía según el proveedor, por ejemplo 1, es decir «Automático», en Cloudflare); con TTL 0, un registro cuyo valor no ha cambiado no se reescribe solo porque su TTL sea distinto en el proveedor.
+- **Estado del proxy de Cloudflare**: con Cloudflare como proveedor, «Estado del proxy» admite `true` o `false`, y cada sincronización pone el proxy (nube naranja) de los registros existentes en ese valor; vacío deja sin tocar el estado del proxy de los registros existentes, y los registros nuevos se crean sin proxy. Los registros con proxy usan siempre TTL 1 (Automático).
+- **Callback personalizado**: la dirección de callback, las cabeceras y el cuerpo pueden usar las variables `{ip}`, `{domain}` (dominio completo), `{subDomain}` (registro de host), `{zone}` (dominio raíz), `{recordType}`, `{ttl}` (600 cuando el TTL es 0) y `{timestamp}` (hora Unix actual en segundos); los valores que van en la dirección se codifican como URL.
 
 ## Cómo se obtiene la IP
 

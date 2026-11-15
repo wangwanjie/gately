@@ -34,6 +34,12 @@ Alibaba Cloud, Cloudflare, Tencent Cloud, DNSPod, Huawei Cloud, GoDaddy, Porkbun
 | Namecheap | The domain's Dynamic DNS password (A records only) | No |
 | DynDNS2 | Username, password and update URL; for No-IP, Dynu and other services compatible with the dyndns2 protocol | No |
 
+## TTL, Cloudflare proxy status and custom callback {#ttl}
+
+- **TTL**: a record with TTL 0 uses the provider's default (it differs per provider, for example 1, meaning "Auto", on Cloudflare); with TTL 0, a record whose value has not changed is not rewritten just because its TTL differs at the provider.
+- **Cloudflare proxy status**: with Cloudflare as the provider, "Proxy status" takes `true` or `false`, and each sync sets the proxy (orange cloud) of existing records to that value; empty leaves the proxy status of existing records alone, and new records are created unproxied. Proxied records always use TTL 1 (Auto).
+- **Custom callback**: the callback URL, headers and body can use the variables `{ip}`, `{domain}` (full domain), `{subDomain}` (host record), `{zone}` (root domain), `{recordType}`, `{ttl}` (600 when the TTL is 0) and `{timestamp}` (current Unix time in seconds); values placed in the URL are URL-encoded.
+
 ## How the IP is obtained
 
 - **URL**: request a public-IP lookup address (replace it with any service you like, or host your own);
