@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/netip"
 	"net/url"
 	"strconv"
 	"strings"
@@ -295,19 +296,35 @@ func (d *dynv6) resolveZone(ctx context.Context, zoneName, sub string) (string, 
 	return "/zones/" + strconv.FormatInt(z.ID, 10) + "/records", name, nil
 }
 
+// dynv6SameAddr 判断 zone 上保存的地址与目标地址是否相同。接口返回的 IPv6 可能是展开写法
+// （如 2001:0db8:0000:…）或带前缀长度，按解析后的地址比较，避免每轮都误判为变化而重复 PATCH。
+func dynv6SameAddr(cur, want string) bool {
+	cur = strings.TrimSpace(cur)
+	if i := strings.IndexByte(cur, '/'); i >= 0 {
+		cur = cur[:i]
+	}
+	a, errA := netip.ParseAddr(cur)
+	b, errB := netip.ParseAddr(strings.TrimSpace(want))
+	if errA != nil || errB != nil {
+		return cur == want
+	}
+	return a.Unmap() == b.Unmap()
+}
+
 func (d *dynv6) Upsert(ctx context.Context, r Record) (string, error) {
 	zone, name, err := d.resolveZoneInfo(ctx, r.Zone, r.Sub)
 	if err != nil {
 		return "", err
 	}
 	zonePath := "/zones/" + strconv.FormatInt(zone.ID, 10)
-	if name == "" {
-		// 根域名通过 PATCH zone 更新（A 对应 ipv4address，AAAA 对应 ipv6prefix）
+	if name == "" && (r.Type == "A" || r.Type == "AAAA") {
+		// 根域名的地址通过 PATCH zone 更新（A 对应 ipv4address，AAAA 对应 ipv6prefix）；
+		// 根域名的 TXT、CNAME 等其他类型仍走 records 接口，不能写进地址字段
 		cur, field := zone.IPv4, "ipv4address"
 		if r.Type == "AAAA" {
 			cur, field = zone.IPv6, "ipv6prefix"
 		}
-		if cur == r.Value {
+		if dynv6SameAddr(cur, r.Value) {
 			return ActionUnchanged, nil
 		}
 		if err := d.do(ctx, http.MethodPatch, zonePath, map[string]string{field: r.Value}, nil); err != nil {
