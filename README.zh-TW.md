@@ -225,7 +225,7 @@ Cloudflare、阿里雲、DNSPod、Route 53 等都能用。支援 IPv4 與 IPv6�
 
 | 模組 | 功能 |
 | --- | --- |
-| 動態網域 | Alibaba Cloud、Cloudflare、Tencent Cloud、DNSPod、Huawei Cloud、GoDaddy、Porkbun、dynv6、DuckDNS、Amazon Route 53、OVHcloud、Gandi、NS1、Bunny DNS、Namecheap、DynDNS2（No-IP、Dynu 等）、自訂回呼；以 URL／網路卡／指令取得 IP；IPv4/IPv6；Webhook；分組、排序與搜尋；備註寫入服務商；刪除時可同時刪除服務商處的解析 |
+| 動態網域 | Alibaba Cloud、Cloudflare、Tencent Cloud、DNSPod、Huawei Cloud、GoDaddy、Porkbun、dynv6、DuckDNS、Amazon Route 53、OVHcloud、Gandi、NS1、Bunny DNS、Namecheap、騰訊雲 EdgeOne、阿里雲 ESA、百度智慧雲、火山引擎、DNS.LA、雨雲、時代互聯（Now.cn）、新網互聯（Eranet）、Tnet.hk、HiPM DNSMgr、Vercel、NameSilo、Dynadot、Spaceship、Name.com、Gcore、ClouDNS、deSEC、DynDNS2（No-IP、Dynu 等）、自訂回呼；以 URL／網路卡／指令取得 IP；IPv4/IPv6；Webhook；分組、排序與搜尋；備註寫入服務商；刪除時可同時刪除服務商處的解析 |
 | STUN 穿透 | TCP/UDP、保活、UPnP/NAT-PMP、自動在本機防火牆（nftables／iptables）放行連接埠、內建轉發、位址變更時觸發 Webhook 與腳本；來源 IP 白名單／黑名單與優先拒絕名單（可引用訂閱 IP 清單） |
 | 連接埠轉發 | TCP/UDP、IPv4/IPv6、連接埠範圍、多目標故障轉移、連線數限制、流量統計、PROXY 協定（v1/v2）；分組、排序與搜尋；來源 IP 白名單／黑名單與優先拒絕名單（可引用訂閱 IP 清單）；規則自動放行本機防火牆連接埠 |
 | 協定分流 | 多個服務共用 443 等同一個連接埠：依協定辨識連線並透傳、不解密，TLS 依 SNI 與 ALPN、HTTP 依 Host，Minecraft 依伺服器位址，另可辨識 SSH、RDP、SOCKS、OpenVPN、RTSP、SIP、XMPP、MQTT、AMQP、PostgreSQL、Redis、SMB、Git、IRC、ADB、BitTorrent，VNC 等伺服器先發話的協定走等待逾時路由；預設目標、每條路由可單獨設定 PROXY 協定；取代 haproxy SNI 分流與 sslh；來源 IP 白名單／黑名單與優先拒絕名單（可引用訂閱 IP 清單）；規則自動放行本機防火牆連接埠；整條或單條路由可要求敲門，spa 路由經 TCP 接收敲門封包 |

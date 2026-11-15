@@ -4,7 +4,7 @@ The public IP of a home broadband connection changes over time. DDNS updates you
 
 ## Supported providers
 
-Alibaba Cloud, Cloudflare, Tencent Cloud, DNSPod, Huawei Cloud, GoDaddy, Porkbun, dynv6, DuckDNS, Amazon Route 53, OVHcloud, Gandi, NS1, Bunny DNS, Namecheap, DynDNS2, and a custom callback (for providers that are not built in, or for self-hosted endpoints).
+Alibaba Cloud, Cloudflare, Tencent Cloud, DNSPod, Huawei Cloud, GoDaddy, Porkbun, dynv6, DuckDNS, Amazon Route 53, OVHcloud, Gandi, NS1, Bunny DNS, Namecheap, DynDNS2, Tencent Cloud EdgeOne, Alibaba Cloud ESA, Baidu AI Cloud, Volcano Engine, DNS.LA, Rainyun, Now.cn, Eranet, Tnet.hk, HiPM DNSMgr, Vercel, NameSilo, Dynadot, Spaceship, Name.com, Gcore, ClouDNS, deSEC, and a custom callback (for providers that are not built in, or for self-hosted endpoints).
 
 | Provider | Credentials | Usable for certificate DNS validation |
 | --- | --- | --- |
@@ -13,6 +13,24 @@ Alibaba Cloud, Cloudflare, Tencent Cloud, DNSPod, Huawei Cloud, GoDaddy, Porkbun
 | Gandi | Personal Access Token | Yes |
 | NS1 | API Key | Yes |
 | Bunny DNS | Account API Key | Yes |
+| Tencent Cloud EdgeOne | SecretId / SecretKey | Yes |
+| Alibaba Cloud ESA | AccessKey ID / AccessKey Secret | Yes |
+| Baidu AI Cloud | AccessKey ID / SecretAccessKey | Yes |
+| Volcano Engine | Access Key ID / Secret Access Key | Yes |
+| DNS.LA | APIID / APISecret | Yes |
+| Rainyun | API Key | Yes |
+| Now.cn | AccessInstanceID / AccessKeySecret | Yes |
+| Eranet | AccessInstanceID / AccessKeySecret | Yes |
+| Tnet.hk | AccessInstanceID / AccessKeySecret | Yes |
+| HiPM DNSMgr | Base URL / API Token | Yes |
+| Vercel | Access Token | Yes |
+| NameSilo | API Key | Yes |
+| Dynadot | Dynamic DNS password | No |
+| Spaceship | API Key / API Secret | Yes |
+| Name.com | Username / API Token | Yes |
+| Gcore | Permanent API Token | Yes |
+| ClouDNS | Auth ID / Auth Password | Yes |
+| deSEC | API Token | Yes |
 | Namecheap | The domain's Dynamic DNS password (A records only) | No |
 | DynDNS2 | Username, password and update URL; for No-IP, Dynu and other services compatible with the dyndns2 protocol | No |
 

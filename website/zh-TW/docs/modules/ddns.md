@@ -4,7 +4,7 @@
 
 ## 支援的服務商
 
-阿里雲（Alibaba Cloud）、Cloudflare、騰訊雲、DNSPod、華為雲、GoDaddy、Porkbun、dynv6、DuckDNS、Amazon Route 53、OVHcloud、Gandi、NS1、Bunny DNS、Namecheap、DynDNS2，以及自訂回呼（用於未內建的服務商或自建介面）。
+阿里雲（Alibaba Cloud）、Cloudflare、騰訊雲、DNSPod、華為雲、GoDaddy、Porkbun、dynv6、DuckDNS、Amazon Route 53、OVHcloud、Gandi、NS1、Bunny DNS、Namecheap、DynDNS2、騰訊雲 EdgeOne、阿里雲 ESA、百度智慧雲、火山引擎、DNS.LA、雨雲、時代互聯（Now.cn）、新網互聯（Eranet）、Tnet.hk、HiPM DNSMgr、Vercel、NameSilo、Dynadot、Spaceship、Name.com、Gcore、ClouDNS、deSEC，以及自訂回呼（用於未內建的服務商或自建介面）。
 
 | 服務商 | 憑據 | 可用於憑證 DNS 驗證 |
 | --- | --- | --- |
@@ -13,6 +13,24 @@
 | Gandi | Personal Access Token | 是 |
 | NS1 | API Key | 是 |
 | Bunny DNS | Account API Key | 是 |
+| Tencent Cloud EdgeOne | SecretId / SecretKey | 是 |
+| Alibaba Cloud ESA | AccessKey ID / AccessKey Secret | 是 |
+| Baidu AI Cloud | AccessKey ID / SecretAccessKey | 是 |
+| Volcano Engine | Access Key ID / Secret Access Key | 是 |
+| DNS.LA | APIID / APISecret | 是 |
+| Rainyun | API Key | 是 |
+| Now.cn | AccessInstanceID / AccessKeySecret | 是 |
+| Eranet | AccessInstanceID / AccessKeySecret | 是 |
+| Tnet.hk | AccessInstanceID / AccessKeySecret | 是 |
+| HiPM DNSMgr | Base URL / API Token | 是 |
+| Vercel | Access Token | 是 |
+| NameSilo | API Key | 是 |
+| Dynadot | Dynamic DNS password | 否 |
+| Spaceship | API Key / API Secret | 是 |
+| Name.com | Username / API Token | 是 |
+| Gcore | Permanent API Token | 是 |
+| ClouDNS | Auth ID / Auth Password | 是 |
+| deSEC | API Token | 是 |
 | Namecheap | 網域的 Dynamic DNS 密碼（僅 A 記錄） | 否 |
 | DynDNS2 | 使用者名稱、密碼與更新網址，適用於 No-IP、Dynu 等相容 dyndns2 協定的服務 | 否 |
 

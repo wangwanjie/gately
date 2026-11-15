@@ -225,7 +225,7 @@ fail2ban 방식 규칙이 로그 파일, journald, 컨테이너 로그를 읽고
 
 | 모듈 | 기능 |
 | --- | --- |
-| 동적 도메인 | Alibaba Cloud, Cloudflare, Tencent Cloud, DNSPod, Huawei Cloud, GoDaddy, Porkbun, dynv6, DuckDNS, Amazon Route 53, OVHcloud, Gandi, NS1, Bunny DNS, Namecheap, DynDNS2(No-IP, Dynu 등), 사용자 지정 콜백. URL/네트워크 카드/명령으로 IP 조회. IPv4/IPv6. Webhook; 그룹, 정렬, 검색; 메모를 제공업체에 기록, 삭제 시 제공업체 레코드도 함께 삭제 가능 |
+| 동적 도메인 | Alibaba Cloud, Cloudflare, Tencent Cloud, DNSPod, Huawei Cloud, GoDaddy, Porkbun, dynv6, DuckDNS, Amazon Route 53, OVHcloud, Gandi, NS1, Bunny DNS, Namecheap, Tencent Cloud EdgeOne, Alibaba Cloud ESA, Baidu AI Cloud, Volcano Engine, DNS.LA, Rainyun, Now.cn, Eranet, Tnet.hk, HiPM DNSMgr, Vercel, NameSilo, Dynadot, Spaceship, Name.com, Gcore, ClouDNS, deSEC, DynDNS2(No-IP, Dynu 등), 사용자 지정 콜백. URL/네트워크 카드/명령으로 IP 조회. IPv4/IPv6. Webhook; 그룹, 정렬, 검색; 메모를 제공업체에 기록, 삭제 시 제공업체 레코드도 함께 삭제 가능 |
 | STUN 터널링 | TCP/UDP, keep-alive, UPnP/NAT-PMP, 호스트 방화벽(nftables / iptables) 포트 자동 개방, 내장 포워딩, 주소 변경 시 Webhook 및 스크립트 실행; 출발지 IP 허용 목록 / 차단 목록과 우선 차단 목록(구독 IP 목록 참조 가능) |
 | 포트 포워딩 | TCP/UDP, IPv4/IPv6, 포트 범위, 다중 대상 장애 조치, 연결 수 제한, 트래픽 통계, PROXY 프로토콜(v1/v2); 그룹, 정렬, 검색; 출발지 IP 허용 목록 / 차단 목록과 우선 차단 목록(구독 IP 목록 참조 가능); 규칙이 로컬 방화벽 포트를 자동으로 허용 |
 | 프로토콜 라우팅 | 여러 서비스가 443 같은 포트 하나를 함께 사용: 연결을 프로토콜로 식별해 복호화 없이 그대로 전달. TLS는 SNI와 ALPN, HTTP는 Host, Minecraft는 서버 주소로 구분하고 SSH, RDP, SOCKS, OpenVPN, RTSP, SIP, XMPP, MQTT, AMQP, PostgreSQL, Redis, SMB, Git, IRC, ADB, BitTorrent도 식별하며, VNC처럼 서버가 먼저 보내는 프로토콜은 대기 시간 초과 라우트로 처리; 기본 대상, 라우트별 PROXY 프로토콜 설정; haproxy SNI 라우팅과 sslh 대체; 출발지 IP 허용 목록 / 차단 목록과 우선 차단 목록(구독 IP 목록 참조 가능); 규칙이 로컬 방화벽 포트를 자동으로 허용; 규칙 전체나 개별 라우트에 노크를 요구할 수 있고 spa 라우트는 TCP로 노크 패킷을 받음 |
