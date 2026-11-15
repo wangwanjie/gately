@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-// Name.com Core API：https://docs.name.com/
+// Name.com Core API：https://docs.name.com/（OpenAPI 路径前缀为 /core/v1；旧的 /v4 不再使用）
 // 使用用户名与 API Token 做 HTTP Basic 认证；记录以整数 ID 标识。
 
 func init() {
@@ -103,7 +103,7 @@ func (n *nameCom) call(ctx context.Context, method, path string, q url.Values, b
 }
 
 func (n *nameCom) recordsPath(zone string) string {
-	return "/v4/domains/" + url.PathEscape(zone) + "/records"
+	return "/core/v1/domains/" + url.PathEscape(zone) + "/records"
 }
 
 // list 返回域名下的全部记录，按 nextPage 翻页。
@@ -140,6 +140,10 @@ func (n *nameCom) match(recs []nameComRecord, sub, typ string) []nameComRecord {
 }
 
 func (n *nameCom) create(ctx context.Context, zone, sub, typ, value string, ttl int) error {
+	// 新建时未指定 TTL 取 300（也是 Name.com 的最小值）
+	if ttl <= 0 {
+		ttl = 300
+	}
 	body := nameComRecord{Host: nameComHost(sub), Type: typ, Answer: value, TTL: nameComTTL(ttl)}
 	return n.call(ctx, http.MethodPost, n.recordsPath(zone), nil, body, nil)
 }

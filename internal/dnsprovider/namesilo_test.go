@@ -45,7 +45,7 @@ func (f *nameSiloFake) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		for _, rec := range f.recs {
 			host := rec.host
 			if f.fullHost {
-				if host == "" {
+				if host == "" || host == "@" {
 					host = "example.com"
 				} else {
 					host += ".example.com"
@@ -102,11 +102,11 @@ func TestNameSiloUpsert(t *testing.T) {
 		if len(f.recs) != 1 || f.recs[0].host != "home" || f.recs[0].value != "203.0.113.2" || f.recs[0].ttl != 3600 {
 			t.Fatalf("full=%v 记录不符: %+v", full, f.recs)
 		}
-		// 根域名：rrhost 为空；TTL 低于下限时取 3600
+		// 根域名：rrhost 为 "@"；TTL 低于下限时取 3600
 		if got, err := p.Upsert(context.Background(), Record{Zone: "example.com", Sub: "@", Type: "AAAA", Value: "2001:db8::1", TTL: 120}); err != nil || got != ActionCreated {
 			t.Fatalf("got %s %v", got, err)
 		}
-		if f.recs[1].host != "" || f.recs[1].ttl != 3600 {
+		if f.recs[1].host != "@" || f.recs[1].ttl != 3600 {
 			t.Fatalf("根记录不符: %+v", f.recs[1])
 		}
 		if got, _ := p.Upsert(context.Background(), Record{Zone: "example.com", Sub: "@", Type: "AAAA", Value: "2001:db8::1"}); got != ActionUnchanged {

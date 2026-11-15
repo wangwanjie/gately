@@ -64,10 +64,10 @@ func nameSiloTTL(ttl int) int {
 	return ttl
 }
 
-// nameSiloHost 返回 add/update 使用的主机记录：只写子域名部分，根域名为空。
+// nameSiloHost 返回 add/update 使用的 rrhost：只写子域名部分，根域名写 "@"。
 func nameSiloHost(sub string) string {
-	if sub == "@" {
-		return ""
+	if sub == "" {
+		return "@"
 	}
 	return sub
 }

@@ -54,11 +54,11 @@ func (d *dynadot) Upsert(ctx context.Context, r Record) (string, error) {
 		"pwd":    {d.pwd},
 		"ttl":    {strconv.Itoa(ttl)},
 	}
+	// subDomain 始终携带（根域名写 "@"），containRoot 仅在根域名时为 true
+	q.Set("subDomain", r.RR())
 	if r.RR() == "@" {
 		q.Set("containRoot", "true")
 	} else {
-		// 只更新指定的子域名，不带上根域名
-		q.Set("subDomain", r.RR())
 		q.Set("containRoot", "false")
 	}
 	req, err := ctxReq(ctx, http.MethodGet, d.endpoint+"?"+q.Encode(), nil)

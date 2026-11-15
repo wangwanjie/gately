@@ -36,10 +36,13 @@ func TestClouDNSUpsertAndTXT(t *testing.T) {
 			_ = json.NewEncoder(w).Encode(out)
 		case "/dns/add-record.json":
 			next++
-			lastAdd = map[string]string{"type": r.Form.Get("record-type"), "host": r.Form.Get("host"), "ttl": r.Form.Get("ttl")}
-			records = append(records, rec{strings.Repeat("1", 1) + string(rune('0'+next%10)) + "0", r.Form.Get("record-type"), r.Form.Get("host"), r.Form.Get("record"), r.Form.Get("ttl")})
+			if r.Form.Get("record-type") != "" {
+				t.Errorf("add-record 应只用 type 参数: %v", r.Form)
+			}
+			lastAdd = map[string]string{"type": r.Form.Get("type"), "host": r.Form.Get("host"), "ttl": r.Form.Get("ttl")}
+			records = append(records, rec{strings.Repeat("1", 1) + string(rune('0'+next%10)) + "0", r.Form.Get("type"), r.Form.Get("host"), r.Form.Get("record"), r.Form.Get("ttl")})
 			_, _ = w.Write([]byte(`{"status":"Success","statusDescription":"The record was added successfully.","data":{"id":1}}`))
-		case "/dns/mod-record.json":
+		case "/dns/modify-record.json":
 			for i := range records {
 				if records[i].ID == r.Form.Get("record-id") {
 					records[i].Value = r.Form.Get("record")
@@ -126,7 +129,10 @@ func TestClouDNSDefaultAuthAndRoot(t *testing.T) {
 			hosts = append(hosts, "["+r.Form.Get("host")+"]")
 		}
 		if r.URL.Path == "/dns/records.json" {
-			// 根域名记录以空 host 返回，另有一条同类型的子域名记录不应被选中
+			// 另有一条同类型的子域名记录，不应被选中；list 的 host 过滤参数应为 "@"
+			if r.Form.Get("host") != "@" || r.Form.Get("type") != "A" {
+				t.Errorf("records.json 参数 = %v", r.Form)
+			}
 			_, _ = w.Write([]byte(`{"7":{"id":"7","type":"A","host":"www","record":"9.9.9.9","ttl":"3600"}}`))
 			return
 		}
@@ -138,7 +144,7 @@ func TestClouDNSDefaultAuthAndRoot(t *testing.T) {
 	if got, err := p.Upsert(context.Background(), Record{Zone: "example.com", Sub: "@", Type: "A", Value: "1.1.1.1"}); err != nil || got != ActionCreated {
 		t.Fatalf("got %s %v", got, err)
 	}
-	if len(hosts) != 1 || hosts[0] != "[]" {
+	if len(hosts) != 1 || hosts[0] != "[@]" {
 		t.Fatalf("根域名 host = %v", hosts)
 	}
 }
