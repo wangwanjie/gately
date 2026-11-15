@@ -145,8 +145,13 @@ func (a *aliDNS) Upsert(ctx context.Context, r Record) (string, error) {
 	if r.Line != "" {
 		params["Line"] = r.Line
 	}
+	// 未指定线路时只处理默认线路的记录，避免同名下已有运营商等分线路记录时误改其中一条
+	wantLine := r.Line
+	if wantLine == "" {
+		wantLine = "default"
+	}
 	for _, rec := range list.DomainRecords.Record {
-		if rec.Type != r.Type || (r.Line != "" && rec.Line != r.Line) {
+		if rec.Type != r.Type || (rec.Line != "" && rec.Line != wantLine) {
 			continue
 		}
 		valueSame := rec.Value == r.Value && (r.TTL == 0 || rec.TTL == r.TTL)
@@ -156,6 +161,10 @@ func (a *aliDNS) Upsert(ctx context.Context, r Record) (string, error) {
 		}
 		// 值与 TTL 都没变时 UpdateDomainRecord 会报 DomainRecordDuplicate，只改备注时跳过
 		if !valueSame {
+			if r.TTL <= 0 && rec.TTL > 0 {
+				// 未指定 TTL 时沿用记录现有值，避免更新接口按默认 600 重置
+				params["TTL"] = strconv.Itoa(rec.TTL)
+			}
 			params["RecordId"] = rec.RecordID
 			if err := a.call(ctx, "UpdateDomainRecord", params, nil); err != nil {
 				return "", err
