@@ -84,8 +84,8 @@
   "home": {
     "pill": "Gratuit et open source · Apache-2.0",
     "announce": {
-      "text": "v0.6.6.4 : connexion renforcée, liste de refus prioritaire, admission par frappe et autorisation après connexion, Passkeys des sites →",
-      "link": "/fr/news/v0.6.6.4"
+      "text": "v0.6.6.6 : recherche et liens visibles après connexion dans le panneau de navigation, 16 nouveaux fournisseurs DNS, sources de confiance pour frpc →",
+      "link": "/fr/news/v0.6.6.6"
     },
     "titleLine1": "La passerelle réseau tout-en-un",
     "titleLine2": "Open source, prête à l'emploi",
