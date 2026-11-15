@@ -925,10 +925,10 @@ func (f *firewall) setLocal(ctx context.Context, local []netip.Prefix) {
 	f.rewriteAllowLocked(ctx)
 }
 
-// rewriteAllowLocked 在规则生效时按当前白名单与可信来源重写 input 链的放行集合。调用方持有 f.mu。
-func (f *firewall) rewriteAllowLocked(ctx context.Context) {
+// rewriteAllowLocked 在规则生效时按当前白名单与可信来源重写 input 链的放行集合，写入失败时返回 false。调用方持有 f.mu。
+func (f *firewall) rewriteAllowLocked(ctx context.Context) bool {
 	if !f.status.Active {
-		return
+		return true
 	}
 	if f.ipt != nil {
 		open, trap := f.iptCurrentPortsLocked()
@@ -938,8 +938,9 @@ func (f *firewall) rewriteAllowLocked(ctx context.Context) {
 		if err != nil {
 			f.log.Warnf("更新白名单失败: %v", err)
 			f.resync = true
+			return false
 		}
-		return
+		return true
 	}
 	allow4, allow6 := splitFamilies(f.allowLocked())
 	var b strings.Builder
@@ -948,7 +949,9 @@ func (f *firewall) rewriteAllowLocked(ctx context.Context) {
 	writeElements(&b, "allow6", prefixStrings(allow6))
 	if _, err := f.run(ctx, b.String(), "-f", "-"); err != nil {
 		f.log.Warnf("更新白名单失败: %v", err)
+		return false
 	}
+	return true
 }
 
 // deleteStmt 返回从 ban 集合删除单个来源的语句。

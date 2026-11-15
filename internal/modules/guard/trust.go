@@ -40,8 +40,14 @@ func (f *firewall) refreshTrustLocked(ctx context.Context) {
 	} else {
 		f.log.Infof("免于诱饵端口与扫描检测的可信来源（已登录 frps 的 frpc 等）: %s", strings.Join(prefixStrings(trusted), "、"))
 	}
-	f.rewriteAllowLocked(ctx)
+	if !f.rewriteAllowLocked(ctx) {
+		// 写入失败（如 nft 锁冲突）时清掉记录的内容，下一次轮询重试；否则可信来源不再变化时永远不会写入
+		f.trustText = trustRetry
+	}
 }
+
+// trustRetry 是写入失败后记录的内容，与任何实际内容都不同，保证下一次刷新重写放行集合
+const trustRetry = "\x00retry"
 
 // refreshTrust 在收到可信来源变化通知时立即刷新。
 func (f *firewall) refreshTrust(ctx context.Context) {
