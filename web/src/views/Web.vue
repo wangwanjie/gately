@@ -66,7 +66,7 @@
           <span>{{ l.name || t('web.unnamedListener') }}</span>
           <span class="tags">
             <el-tag size="small" effect="plain" class="mono">{{ l.tls ? 'https' : 'http' }}://{{ hostPort(l) }}</el-tag>
-            <el-tag size="small" type="info">{{ networkText(l.network) }}</el-tag>
+            <el-tag v-if="listenerNetworkText(l)" size="small" type="info">{{ listenerNetworkText(l) }}</el-tag>
             <el-tag v-if="l.tls && l.plainHttp" size="small" type="info">{{ plainHttpText(l.plainHttp) }}</el-tag>
             <el-tag v-if="l.httpPort" size="small" type="info" class="mono" :title="t('web.httpPort')">{{ httpPortText(l) }}</el-tag>
             <el-tag v-if="l.acceptProxyProtocol" size="small" type="info">{{ t('web.acceptProxyTag') }}</el-tag>
@@ -1366,6 +1366,15 @@ function networkText(n: string) {
   return map[n] ?? n
 }
 
+// listenerNetworkText 为监听卡片上的网络标签：填了具体监听地址时只监听该地址，地址族已由地址本身决定
+// （如 127.0.0.1 只有 IPv4），“双栈”之类的标签反而误导，返回空不显示
+function listenerNetworkText(l: Listener): string {
+  if ((l.listenIp ?? '').trim()) {
+    return ''
+  }
+  return networkText(l.network)
+}
+
 // listenerStatus 计算监听展示状态：停用的监听只显示“已停用”
 function listenerStatus(l: ListenerView): { type: StatusType; text: string; title?: string } {
   if (moduleOff.value) {
@@ -1899,7 +1908,7 @@ function openLogs(l: ListenerView, row: SiteRow) {
     domain: row.site.domains?.[0],
     accessLog: row.site.accessLog,
     listener: l.key,
-    listenerLabel: `${l.name || t('web.unnamedListener')} · ${hostPort(l)} · ${networkText(l.network)}`,
+    listenerLabel: [l.name || t('web.unnamedListener'), hostPort(l), listenerNetworkText(l)].filter(Boolean).join(' · '),
   })
 }
 
