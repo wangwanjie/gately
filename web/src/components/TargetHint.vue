@@ -32,9 +32,9 @@ const check = computed(() => checkTargets(props.lines, props.ports))
   line-height: 1.5;
 }
 .target-hint.is-info {
-  color: var(--el-color-warning-dark-2);
+  color: var(--g-text-warning);
 }
 .target-hint.is-error {
-  color: var(--el-color-danger);
+  color: var(--g-text-danger);
 }
 </style>

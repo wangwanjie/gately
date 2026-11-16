@@ -598,6 +598,46 @@ export function mix(a: string, b: string, t: number): string {
   return '#' + out.map((v) => v.toString(16).padStart(2, '0')).join('')
 }
 
+// Element Plus 默认的成功、警告、危险色；调色板没有 status 时界面使用它们
+export const STATUS_DEFAULT: [string, string, string] = ['#67c23a', '#e6a23c', '#f56c6c']
+
+function luminance(hex: string): number {
+  const [r, g, b] = parseHex(hex).map((v) => {
+    const c = v / 255
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4
+  })
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b
+}
+
+// contrastRatio 返回两种颜色的 WCAG 对比度（1～21）
+export function contrastRatio(a: string, b: string): number {
+  const [x, y] = [luminance(a), luminance(b)].sort((m, n) => n - m)
+  return (x + 0.05) / (y + 0.05)
+}
+
+// readable 把前景色逐步向 toward（通常是正文色）混合，直到与每个背景的对比度都不低于 min；本来就够时原样返回
+export function readable(fg: string, bgs: string[], min: number, toward: string): string {
+  for (let i = 0; i <= 20; i++) {
+    const c = mix(fg, toward, i * 0.05)
+    if (bgs.every((bg) => contrastRatio(c, bg) >= min)) {
+      return c
+    }
+  }
+  return toward
+}
+
+// statusTextColors 返回状态色用作文字时的颜色（成功、警告、危险）：状态色本身多为中等亮度，直接当 12px 文字在白底上只有约 2:1，
+// 这里加深（暗色主题提亮）到在卡片、页面与状态浅底（徽标、标签背景）上都达到 4.5:1；圆点、图标、边框仍用原状态色
+export function statusTextColors(p: Palette, dark: boolean): [string, string, string] {
+  const status = p.status ?? STATUS_DEFAULT
+  return status.map((c) => readable(c, [p.card, p.page, mix(c, dark ? p.card : '#ffffff', 0.9)], 4.5, p.text)) as [string, string, string]
+}
+
+// placeholderColor 返回输入框占位符颜色：比次要文字浅，但在卡片上至少 3:1，仍能看清
+export function placeholderColor(p: Palette): string {
+  return readable(mix(p.textSub, p.card, 0.4), [p.card], 3, p.textSub)
+}
+
 // buildThemeVars 由基础色推导出全部需要覆盖的 CSS 变量。
 export function buildThemeVars(t: ThemeDef): Record<string, string> {
   // 亮色主题的浅阶向白色混合，暗色主题的浅阶向卡片底色混合
@@ -637,7 +677,7 @@ export function buildThemeVars(t: ThemeDef): Record<string, string> {
     '--el-text-color-primary': t.text,
     '--el-text-color-regular': mix(t.text, t.card, 0.18),
     '--el-text-color-secondary': t.textSub,
-    '--el-text-color-placeholder': mix(t.textSub, t.card, 0.4),
+    '--el-text-color-placeholder': placeholderColor(t),
     '--el-text-color-disabled': mix(t.textSub, t.card, 0.6),
     '--el-fill-color': fill(0.08),
     '--el-fill-color-light': fill(0.05),
@@ -646,6 +686,11 @@ export function buildThemeVars(t: ThemeDef): Record<string, string> {
     '--el-fill-color-blank': t.card,
     '--el-mask-color': t.dark ? 'rgba(0, 0, 0, 0.7)' : 'rgba(255, 255, 255, 0.85)',
   }
+  // 状态色用作文字时的加深色（见 statusTextColors）
+  const [okText, warnText, dangerText] = statusTextColors(t, t.dark)
+  v['--g-text-success'] = okText
+  v['--g-text-warning'] = warnText
+  v['--g-text-danger'] = dangerText
   // 个别调色板（如朋克）的状态色与整体风格保持一致
   if (t.status) {
     v['--el-color-success'] = t.status[0]
