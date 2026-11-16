@@ -1,8 +1,8 @@
 ---
 layout: page
-title: "Kit de gateway de rede de código aberto e auditável"
-titleTemplate: "Gately"
-description: "O Gately é um kit de gateway de rede de código aberto e auditável, com DDNS, travessia de NAT com STUN, redirecionamento de portas, proxy reverso, certificados, WAF, Tailscale e frp."
+title: "Gately: proxy reverso auto-hospedado, DDNS, travessia de NAT e WAF em um único binário"
+titleTemplate: false
+description: "O Gately é um gateway auto-hospedado de código aberto com interface web: proxy reverso com HTTPS automático, DNS dinâmico, travessia de NAT (STUN, frp, Cloudflare Tunnel, Tailscale), WAF e bloqueios no estilo fail2ban em um único binário para NAS, roteadores e servidores."
 ---
 
 <HomeLanding />
