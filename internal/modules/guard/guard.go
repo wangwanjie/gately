@@ -283,6 +283,8 @@ type Module struct {
 	fw       *firewall
 	trap     *userTrap
 	unsub    []func()
+	// logins 为最近登录管理后台成功的地址，免于自动封禁（见 login.go）
+	logins loginTrust
 
 	// saveTimer 延迟保存封禁表，合并短时间内的多次变化；fileMu 保证同一时间只有一次写文件
 	saveMu    sync.Mutex
@@ -398,7 +400,7 @@ func (m *Module) Start(ctx context.Context) error {
 	m.started = true
 	s := m.cfg.Settings
 	m.local = localPrefixes()
-	banlist.Default.SetIgnore(s.ignoreSet(m.local).overlaps)
+	banlist.Default.SetIgnore(m.ignoreFunc(s, m.local))
 	m.loadBans()
 	m.unsub = append(m.unsub, banlist.Default.Subscribe(m.onBanChange))
 	m.unsub = append(m.unsub, events.Subscribe(m.onEvent))
@@ -440,6 +442,7 @@ func (m *Module) Stop() error {
 	m.mu.Unlock()
 	m.fw.stop()
 	banlist.Default.SetIgnore(nil)
+	m.logins.clear()
 	m.saveMu.Lock()
 	if m.saveTimer != nil {
 		m.saveTimer.Stop()
@@ -483,7 +486,7 @@ func (m *Module) refreshLocal() {
 	}
 	m.local = local
 	s := m.cfg.Settings
-	banlist.Default.SetIgnore(s.ignoreSet(local).overlaps)
+	banlist.Default.SetIgnore(m.ignoreFunc(s, local))
 	m.mu.Unlock()
 	m.fw.setLocal(m.ctx, local)
 }
@@ -635,10 +638,15 @@ func (m *Module) importKernelBans(source string, addrs []netip.Addr, ports portH
 	})
 }
 
-// onEvent 把 Gately 内部事件（管理后台登录失败、WAF 拦截）交给来源为“内部事件”的规则计数。
+// onEvent 把 Gately 内部事件（管理后台登录失败、WAF 拦截）交给来源为“内部事件”的规则计数；
+// 管理后台登录成功的地址记为免封（见 noteLogin）。
 func (m *Module) onEvent(e events.Event) {
 	ip := e.Fields["ip"]
 	if ip == "" {
+		return
+	}
+	if e.Type == events.LoginSuccessful {
+		m.noteLogin(e)
 		return
 	}
 	a, ok := parseAddr(ip)
