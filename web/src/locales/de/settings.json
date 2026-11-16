@@ -189,6 +189,13 @@
   },
   "runtime": {
     "title": "Laufzeitparameter",
+    "logLevel": "Protokollstufe",
+    "logLevelDefault": "Standard (Info und höher)",
+    "logLevelDebug": "Debug und höher (alles)",
+    "logLevelInfo": "Info und höher",
+    "logLevelWarn": "Warnung und höher",
+    "logLevelError": "Nur Fehler",
+    "logLevelHelp": "Es werden nur Laufzeitprotokolle der gewählten Stufe oder höher aufgezeichnet; niedrigere Stufen gelangen weder auf die Protokollseiten noch in die Protokolldateien oder die Standardfehlerausgabe (docker logs). Wird sofort nach dem Speichern wirksam. Die Debug-Stufe enthält eine Zeile pro Verbindung der Portweiterleitung und des Protokoll-Routings, was bei vielen Verbindungen spürbaren Mehraufwand verursacht; Zugriffsprotokolle der Webdienste haben die Stufe Info. „Standard“ verwendet die Umgebungsvariable GATELY_LOG_LEVEL bzw. Info und höher, wenn sie nicht gesetzt ist",
     "logLines": "Aufbewahrte Protokollzeilen",
     "logLinesHelp": "Anzahl der Protokollzeilen, die jedes Modul im Arbeitsspeicher hält; bei aktivierter Speicherung werden sie nach einem Neustart von der Festplatte wiederhergestellt",
     "logPersist": "Protokolle speichern",

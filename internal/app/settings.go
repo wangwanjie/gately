@@ -80,6 +80,9 @@ type Settings struct {
 	// DisableUpdateCheck 为 true 时不再定期检查更新与安全公告，只在点击“检查更新”时访问 GitHub。
 	// 默认开启：安全修复版本发布后需要尽快让用户知道
 	DisableUpdateCheck bool `json:"disableUpdateCheck"`
+	// LogLevel 为运行日志记录的最低级别：debug、info、warn、error，低于它的日志不记录（不进日志页、不写文件、不回显）。
+	// 为空时使用环境变量 GATELY_LOG_LEVEL，都没有时为 info
+	LogLevel string `json:"logLevel"`
 	// LogLines 为每个模块保留的日志条数
 	LogLines int `json:"logLines"`
 	// DisableLogPersist 为 true 时运行日志只保留在内存，重启后丢失；默认写入配置目录下的 logs/
@@ -150,6 +153,7 @@ func (s *Settings) normalize() {
 	}
 	s.DNSServers = dns
 	s.UpdateProxy = strings.TrimSpace(s.UpdateProxy)
+	s.LogLevel = strings.ToLower(strings.TrimSpace(s.LogLevel))
 	if s.LogDir = strings.TrimSpace(s.LogDir); s.LogDir != "" && filepath.IsAbs(s.LogDir) {
 		s.LogDir = filepath.Clean(s.LogDir)
 	}
@@ -220,6 +224,9 @@ func (s *Settings) Validate() error {
 			return err
 		}
 	}
+	if s.LogLevel != "" && !logbuf.ValidLevel(s.LogLevel) {
+		return errors.New("日志级别无效，可选 debug、info、warn、error")
+	}
 	if s.LogLines > maxLogLines {
 		return fmt.Errorf("日志条数不能超过 %d", maxLogLines)
 	}
@@ -267,6 +274,7 @@ func (a *App) applyRuntime() {
 	if err := resolver.Install(s.DNSServers); err != nil {
 		a.sysLogs.Add(logbuf.LevelWarn, "settings", "部分 DNS 服务器无效: "+err.Error())
 	}
+	a.applyLogLevel(s)
 	a.sysLogs.Resize(s.LogLines)
 	for _, e := range a.modules {
 		e.logs.Resize(s.LogLines)

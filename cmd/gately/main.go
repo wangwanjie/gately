@@ -61,8 +61,12 @@ func main() {
 
 // serve 解析启动参数并运行服务，直到 ctx 被取消。命令行与 Windows 服务共用。
 func serve(ctx context.Context) {
-	// 标准日志（含启动失败等 log.Fatalf）按服务端语言翻译
-	log.SetOutput(i18n.NewWriter(os.Stderr))
+	// 标准日志（含启动失败等 log.Fatalf）按服务端语言翻译，与运行日志的回显走同一个出口，先后顺序保持一致。
+	// 回显是异步写出的：正常返回、收到退出信号或主协程 panic 时，都在这里等已有内容写完再退出；
+	// log.Fatalf 的内容经 Echo.Write 同步写出后才退出进程
+	echo := app.StderrEcho()
+	defer echo.Flush()
+	log.SetOutput(i18n.NewWriter(echo))
 	configDir := flag.String("c", defaultConfigDir(), "configuration directory / 配置目录")
 	listen := flag.String("listen", "", "admin UI listen address, overrides the config file, e.g. :16680 / 管理界面监听地址，覆盖配置文件")
 	showVersion := flag.Bool("version", false, "print version info and exit / 输出版本信息")
