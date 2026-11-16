@@ -2266,6 +2266,7 @@
   "查询 %s 的权威服务器失败: %w": "Échec de la requête des serveurs faisant autorité de %s : %w",
   "查询操作审计日志": "Consulter le journal d'audit",
   "查询网关外网地址失败，按单层 NAT 处理: %v": "Impossible d'obtenir l'adresse externe de la passerelle, traitée comme un seul NAT : %v",
+  "标准错误输出写入过慢，有 %d 行日志没有回显（日志页与日志文件不受影响）": "L'écriture sur la sortie d'erreur standard est trop lente ; %d lignes de journal n'ont pas été affichées (la page des journaux et les fichiers journaux ne sont pas affectés)",
   "标签页图标: %w": "Icône de l’onglet : %w",
   "标签页标题": "Titre de l’onglet",
   "校验终端两步验证码": "Vérifier le code d'authentification à deux facteurs du terminal",

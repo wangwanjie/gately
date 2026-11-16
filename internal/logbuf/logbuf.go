@@ -45,8 +45,9 @@ type Buffer struct {
 	start   int // 最旧一条在 entries 中的下标；未写满时为 0
 	count   int // 已有的日志条数，与 len(entries) 相同
 	nextSeq uint64
-	// echo 不为 nil 时同时输出到标准日志，便于 docker logs 查看
-	echo *log.Logger
+	// echo 不为 nil 时同时输出到标准日志（同步写）；async 不为 nil 时异步回显到标准错误输出，便于 docker logs 查看
+	echo  *log.Logger
+	async *Echo
 	// sink 不为 nil 时日志同时写入文件，见 Persist；persisting 与它同步变化，写日志时不加锁就能知道是否需要序列化
 	sink       *fileSink
 	persisting atomic.Bool
@@ -59,12 +60,20 @@ type Buffer struct {
 // 上限只是防止异常情况下无限增长
 const maxSources = 1000
 
-// New 创建容量为 size 的缓冲。
+// New 创建容量为 size 的缓冲。echo 不为 nil 时每条日志同步写到这个标准日志器；
+// 正式运行使用异步回显，见 SetEcho。
 func New(size int, echo *log.Logger) *Buffer {
 	if size <= 0 {
 		size = 500
 	}
 	return &Buffer{size: size, nextSeq: 1, echo: echo, sources: map[string]struct{}{}}
+}
+
+// SetEcho 设置异步回显：每条日志同时交给 e 写到标准错误输出。应在开始写日志之前调用。
+func (b *Buffer) SetEcho(e *Echo) {
+	b.mu.Lock()
+	b.async = e
+	b.mu.Unlock()
 }
 
 // Add 追加一条日志。
@@ -155,15 +164,19 @@ func (b *Buffer) add(e Entry) {
 			b.sink.add(e)
 		}
 	}
+	echo, async := b.echo, b.async
 	b.mu.Unlock()
 	if le != nil && le.buf.Cap() <= lineEncoderKeep {
 		lineEncoders.Put(le)
 	}
-	if b.echo != nil {
+	if async != nil {
+		async.entry(&e)
+	}
+	if echo != nil {
 		if e.Source != "" {
-			b.echo.Printf("[%s] [%s] %s", e.Level, e.Source, e.Message)
+			echo.Printf("[%s] [%s] %s", e.Level, e.Source, e.Message)
 		} else {
-			b.echo.Printf("[%s] %s", e.Level, e.Message)
+			echo.Printf("[%s] %s", e.Level, e.Message)
 		}
 	}
 }
