@@ -41,6 +41,8 @@ func tokenUpload(t *testing.T, url, secret string, files map[string][]byte) (int
 
 // 只有 import:write 的令牌不能借 Lucky 导入改写只允许登录会话修改的系统设置，也不能写入第三方登录身份表。
 func TestImportTokenCannotChangeSessionOnlySettings(t *testing.T) {
+	// 测试会核对导入报告里的中文提示：固定服务端语言为源语言
+	t.Setenv("GATELY_LANG", "zh-CN")
 	dir := t.TempDir()
 	a, err := New(Options{ConfigDir: dir, Modules: []module.Module{webservice.New(nil, nil)}})
 	if err != nil {
@@ -128,6 +130,8 @@ func TestImportTokenCannotChangeSessionOnlySettings(t *testing.T) {
 
 // 身份表里的通配与无效标识不会进入允许列表：否则导入一份他人给的配置，就可能让某个登录方式的任何账号成为管理员。
 func TestImportRejectsWildcardIdentity(t *testing.T) {
+	// 测试会核对导入报告里的中文提示：固定服务端语言为源语言
+	t.Setenv("GATELY_LANG", "zh-CN")
 	dir := t.TempDir()
 	a, err := New(Options{ConfigDir: dir, Modules: []module.Module{webservice.New(nil, nil)}})
 	if err != nil {
