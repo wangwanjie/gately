@@ -118,8 +118,9 @@ func (mt *Mount) Validate() error {
 	return nil
 }
 
-// validate 在 Validate 之外再拒绝与 Gately 配置目录重叠的本地目录：配置目录里有会话签名密钥，
-// 挂载后可经文件管理读出。新增、修改、复制与导入都经过这里。
+// validate 在 Validate 之外再拒绝是 Gately 配置目录或位于其中的本地目录：配置目录里有会话签名密钥，
+// 挂载后可经文件管理读出。包含配置目录的目录可以挂载，配置目录在文件管理中被自动隐藏（见 localBackend）。
+// 新增、修改、复制与导入都经过这里。
 func validate(mt *Mount) error {
 	if err := mt.Validate(); err != nil {
 		return err
@@ -182,10 +183,16 @@ func (m *Module) Init(env module.Env) error {
 		Changed: m.dropBackend,
 		Removed: m.dropBackend,
 	}
-	// 升级前保存的挂载点没有经过上面的校验：与配置目录重叠的不再提供访问（见 open），这里提示用户修改
+	// 升级前保存的挂载点没有经过上面的校验：目录是配置目录或位于其中的不再提供访问（见 open），这里提示用户修改；
+	// 包含配置目录的照常提供，配置目录被自动隐藏（见 localBackend），同样记一条说明
 	for _, mt := range m.cfg.Mounts {
-		if mt.Type == TypeLocal && fsperm.Protected(mt.Path) != "" {
+		if mt.Type != TypeLocal {
+			continue
+		}
+		if fsperm.Inside(mt.Path) != "" {
 			m.logs.Add(logbuf.LevelWarn, "", fmt.Sprintf("挂载点 %s 的目录 %s 与 Gately 的配置目录重叠，已停止提供访问，请改为其他目录", mt.Name, mt.Path))
+		} else if fsperm.Contains(mt.Path) != "" {
+			m.logs.Add(logbuf.LevelInfo, "", fmt.Sprintf("挂载点 %s 的目录 %s 包含 Gately 的配置目录，配置目录已自动隐藏，其余文件照常提供", mt.Name, mt.Path))
 		}
 	}
 	return nil

@@ -276,6 +276,9 @@ func New(opts Options) (_ *App, err error) {
 	for _, msg := range fileusers.Default.Blocked() {
 		a.sysLogs.Add(logbuf.LevelWarn, "", msg)
 	}
+	for _, msg := range fileusers.Default.HiddenNotes() {
+		a.sysLogs.Add(logbuf.LevelInfo, "", msg)
+	}
 	// 需要迁移配置的模块先迁移，再统一初始化：迁移可能改写其他模块的配置文件
 	inherits, err := a.migrateModules(opts.Modules)
 	if err != nil {

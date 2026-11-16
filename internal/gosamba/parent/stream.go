@@ -106,6 +106,11 @@ func (d *Dispatcher) handleCreateNamedStream(rw io.ReadWriter, hdr smb2.Header, 
 		d.respondError(rw, hdr, smb2.StatusAccessDenied, sess)
 		return true
 	}
+	// Gately 补丁：被屏蔽的路径按不存在处理，见 gately_guard.go
+	if shareHidden(tree, osPath) {
+		d.respondError(rw, hdr, smb2.StatusObjectNameNotFound, sess)
+		return true
+	}
 	// The base object must exist — but it may be a DIRECTORY. macOS opens named
 	// streams on directories to carry Finder metadata (tags, labels, custom
 	// icons): smb2fs_smb_get_create_options() in Apple's smbfs deliberately
