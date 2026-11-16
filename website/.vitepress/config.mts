@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { defineConfig, type DefaultTheme, type HeadConfig } from 'vitepress'
@@ -18,6 +18,59 @@ function loadPack(code: string): any | null {
 const packs = siteLocales
   .map((loc) => ({ loc, pack: loadPack(loc.code) }))
   .filter((x): x is { loc: SiteLocale; pack: any } => x.pack !== null)
+
+// 最新版本号取自简体中文版本公告的文件名（news/v<版本>.md），按数字逐段比较
+const latestVersion = readdirSync(resolve(here, '..', 'news'))
+  .map((f) => /^v([\d.]+)\.md$/.exec(f)?.[1])
+  .filter((v): v is string => !!v)
+  .sort((a, b) => {
+    const x = a.split('.').map(Number)
+    const y = b.split('.').map(Number)
+    for (let i = 0; i < Math.max(x.length, y.length); i++) {
+      if ((x[i] ?? 0) !== (y[i] ?? 0)) {
+        return (x[i] ?? 0) - (y[i] ?? 0)
+      }
+    }
+    return 0
+  })
+  .pop()
+
+// 首页的结构化数据：软件信息与常见问题（取当前语言首页的 FAQ 文案）
+function homeJsonLd(pack: any, url: string, prefix: string, image: string): string {
+  const data = [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: 'Gately',
+      url,
+      description: pack.description,
+      inLanguage: pack.lang,
+      applicationCategory: 'UtilitiesApplication',
+      applicationSubCategory: 'Network gateway',
+      operatingSystem: 'Linux, macOS, Windows, FreeBSD, OpenWrt, fnOS, Docker',
+      softwareVersion: latestVersion,
+      license: 'https://www.apache.org/licenses/LICENSE-2.0',
+      downloadUrl: `${SITE}${prefix}/download`,
+      installUrl: `${SITE}${prefix}/docs/guide/install`,
+      image,
+      codeRepository: REPO,
+      sameAs: [REPO],
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' }
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      inLanguage: pack.lang,
+      mainEntity: pack.home.faqs.map((f: { q: string; a: string }) => ({
+        '@type': 'Question',
+        name: f.q,
+        acceptedAnswer: { '@type': 'Answer', text: f.a }
+      }))
+    }
+  ]
+  // 内联在 <script> 里，转义 < 以免文案中出现 </script>
+  return JSON.stringify(data).replace(/</g, '\\u003c')
+}
 
 function prefixOf(loc: SiteLocale) {
   return loc.dir ? `/${loc.dir}` : ''
@@ -173,6 +226,12 @@ export default defineConfig({
       ['meta', { property: 'og:image:alt', content: 'Gately' }],
       ['meta', { name: 'twitter:image', content: image }]
     ]
+    if (slug === '' && pageData.frontmatter.layout === 'page') {
+      const own = packs.find(({ loc }) => loc.code === code)
+      if (own) {
+        tags.push(['script', { type: 'application/ld+json' }, homeJsonLd(own.pack, url, prefixOf(own.loc), image)])
+      }
+    }
     for (const { loc } of packs) {
       const target = `${loc.dir ? `${loc.dir}/` : ''}${slug}`
       const file = resolve(here, '..', `${target}.md`.replace(/\/\.md$/, '/index.md'))
