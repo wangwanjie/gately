@@ -87,9 +87,9 @@
       "text": "v0.6.6.6: busca e links visíveis só após o login no painel de navegação, 16 novos provedores de DNS, origens confiáveis para o frpc →",
       "link": "/pt-BR/news/v0.6.6.6"
     },
-    "titleLine1": "O gateway de rede tudo em um",
-    "titleLine2": "Código aberto e pronto para usar",
-    "lead": "DNS e travessia de NAT, proxy reverso e certificados HTTPS, WAF e prevenção de intrusões, login único e compartilhamento de arquivos: tudo o que a sua rede doméstica e os seus servidores precisam na entrada, em um só painel. Instale em um NAS, em um roteador por software ou em um servidor na nuvem e configure tudo pelo navegador.",
+    "titleLine1": "Uma única entrada para os seus serviços auto-hospedados",
+    "titleLine2": "Proxy reverso, HTTPS, DDNS, travessia de NAT, WAF e bloqueios em um único binário",
+    "lead": "O Gately fica na entrada da sua rede doméstica ou de um servidor e cuida do caminho da internet até os seus serviços: mantém o seu domínio apontado para um IP que muda, obtém e renova certificados, passa todos os serviços por uma única porta 443, coloca login e um WAF na frente deles e bloqueia endereços que fazem varreduras. Instale em um NAS, um roteador ou um servidor na nuvem e configure tudo pelo navegador.",
     "ctaStart": "Início rápido",
     "ctaDownload": "Download",
     "mockTitle": "gately · Visão geral",

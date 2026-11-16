@@ -87,9 +87,9 @@
       "text": "v0.6.6.6: Suche und nur nach Anmeldung sichtbare Links im Navigationspanel, 16 neue DNS-Anbieter, vertrauenswürdige Quellen für frpc →",
       "link": "/de/news/v0.6.6.6"
     },
-    "titleLine1": "Das All-in-one-Netzwerk-Gateway",
-    "titleLine2": "Open Source, sofort einsatzbereit",
-    "lead": "DNS und NAT-Traversal, Reverse Proxy und HTTPS-Zertifikate, WAF und Einbruchschutz, Single Sign-on und Dateifreigabe: alles, was Ihr Heimnetz und Ihre Server am Eingang brauchen, in einer Oberfläche. Installieren Sie Gately auf einem NAS, einem Soft-Router oder einem Cloud-Server und richten Sie alles im Browser ein.",
+    "titleLine1": "Ein Eingang für Ihre selbst gehosteten Dienste",
+    "titleLine2": "Reverse Proxy, HTTPS, DDNS, NAT-Traversal, WAF und Sperren in einer Binärdatei",
+    "lead": "Gately sitzt am Eingang eines Heimnetzes oder Servers und übernimmt den Weg vom Internet zu Ihren Diensten: Es hält Ihre Domain auf eine wechselnde IP gerichtet, holt und erneuert Zertifikate, leitet alle Dienste über einen Port 443, stellt Anmeldung und WAF vor sie und sperrt Adressen, die scannen. Installieren Sie es auf einem NAS, einem Router oder einem Cloud-Server und richten Sie alles im Browser ein.",
     "ctaStart": "Schnellstart",
     "ctaDownload": "Download",
     "mockTitle": "gately · Übersicht",

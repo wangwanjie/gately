@@ -87,9 +87,9 @@
       "text": "v0.6.6.6 : recherche et liens visibles après connexion dans le panneau de navigation, 16 nouveaux fournisseurs DNS, sources de confiance pour frpc →",
       "link": "/fr/news/v0.6.6.6"
     },
-    "titleLine1": "La passerelle réseau tout-en-un",
-    "titleLine2": "Open source, prête à l'emploi",
-    "lead": "DNS et traversée de NAT, reverse proxy et certificats HTTPS, WAF et prévention des intrusions, authentification unique et partage de fichiers : tout ce dont votre réseau domestique et vos serveurs ont besoin en frontal, réuni dans une seule console. Installez-le sur un NAS, un routeur logiciel ou un serveur cloud, et configurez tout depuis votre navigateur.",
+    "titleLine1": "Une seule entrée pour vos services auto-hébergés",
+    "titleLine2": "Reverse proxy, HTTPS, DDNS, traversée de NAT, WAF et bannissements, en un seul binaire",
+    "lead": "Gately se place à l'entrée d'un réseau domestique ou d'un serveur et prend en charge le chemin d'internet jusqu'à vos services : il garde votre domaine pointé vers une IP qui change, obtient et renouvelle les certificats, fait passer tous les services par un seul port 443, place une authentification et un WAF devant eux, et bannit les adresses qui sondent. Installez-le sur un NAS, un routeur ou un serveur cloud et configurez tout dans le navigateur.",
     "ctaStart": "Démarrage rapide",
     "ctaDownload": "Télécharger",
     "mockTitle": "gately · Vue d'ensemble",

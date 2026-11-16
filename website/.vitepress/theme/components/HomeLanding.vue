@@ -168,15 +168,17 @@ function onSpot(e: PointerEvent) {
       <div class="wrap hero-grid">
         <div class="hero-text">
           <!-- 有版本公告时链接到公告页，否则显示标语并链接到 GitHub Releases -->
-          <a v-if="h.announce" class="pill rise" :href="h.announce.link">
-            <span class="dot" />{{ h.announce.text }}
+          <!-- 公告文字较长时单行截断，完整内容放在 title 里 -->
+          <a v-if="h.announce" class="pill rise" :href="h.announce.link" :title="h.announce.text">
+            <span class="dot" /><span class="pill-text">{{ h.announce.text }}</span>
           </a>
           <a v-else class="pill rise" href="https://github.com/wangwanjie/gately/releases" target="_blank" rel="noreferrer">
-            <span class="dot" />{{ h.pill }}
+            <span class="dot" /><span class="pill-text">{{ h.pill }}</span>
           </a>
+          <!-- 第一行是定位句，第二行用较小字号列出能力 -->
           <h1>
             <span class="rise" style="--d: .08s">{{ h.titleLine1 }}</span>
-            <span class="grad rise" style="--d: .18s">{{ h.titleLine2 }}</span>
+            <span class="grad sub rise" style="--d: .18s">{{ h.titleLine2 }}</span>
           </h1>
           <p class="lead rise" style="--d: .28s">{{ h.lead }}</p>
           <div class="cta rise" style="--d: .38s">
@@ -403,16 +405,20 @@ function onSpot(e: PointerEvent) {
 @keyframes drift2 { to { transform: translate(-140px, 120px) scale(.9); } }
 
 .hero-grid { display: grid; grid-template-columns: 1.05fr 1fr; gap: 40px; align-items: center; }
+/* 允许文字列收窄，公告胶囊才能在列宽内截断 */
+.hero-text { min-width: 0; }
 .pill { display: inline-flex; align-items: center; gap: 8px; max-width: 100%; padding: 6px 14px 6px 10px; border-radius: 999px; font-size: 13px; color: var(--vp-c-brand-1); background: color-mix(in srgb, var(--vp-c-bg) 70%, transparent); border: 1px solid var(--vp-c-brand-soft); text-decoration: none; transition: border-color .2s, transform .2s; }
 .pill:hover { border-color: var(--vp-c-brand-1); }
+.pill-text { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .pill .dot { flex: none; position: relative; width: 7px; height: 7px; border-radius: 50%; background: var(--vp-c-brand-3); }
 .pill .dot::after { content: ''; position: absolute; inset: -4px; border-radius: 50%; border: 1px solid var(--vp-c-brand-3); animation: ring 2s ease-out infinite; }
 @keyframes ring { from { transform: scale(.6); opacity: 1; } to { transform: scale(1.6); opacity: 0; } }
-h1 { display: flex; flex-direction: column; font-size: 52px; text-wrap: balance; word-break: auto-phrase; line-height: 1.14; font-weight: 800; letter-spacing: -0.03em; margin: 22px 0 20px; }
+h1 { display: flex; flex-direction: column; font-size: 50px; text-wrap: balance; word-break: auto-phrase; line-height: 1.14; font-weight: 800; letter-spacing: -0.03em; margin: 22px 0 20px; }
 .grad { background: linear-gradient(100deg, #12967d, #0b5f4f 30%, #6366f1 60%, #12967d 90%); background-size: 220% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: rise .9s var(--ease) both, sheen 9s linear infinite; animation-delay: var(--d, 0s), 1s; }
 .dark .grad { background-image: linear-gradient(100deg, #5eead4, #3ed1ae 30%, #a5b4fc 60%, #5eead4 90%); }
 @keyframes sheen { to { background-position: -220% 0; } }
-.lead { text-wrap: pretty; font-size: 18px; line-height: 1.8; color: var(--vp-c-text-2); max-width: 560px; margin: 0; }
+h1 .sub { margin-top: 12px; font-size: .56em; line-height: 1.3; letter-spacing: -0.015em; }
+.lead { text-wrap: pretty; font-size: 17px; line-height: 1.8; color: var(--vp-c-text-2); max-width: 560px; margin: 0; }
 .meta { margin: 22px 0 0; font-size: 13px; color: var(--vp-c-text-3); font-family: var(--vp-font-family-mono); }
 .cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 30px; }
 .cta.center { justify-content: center; }
@@ -596,6 +602,7 @@ h1 { display: flex; flex-direction: column; font-size: 52px; text-wrap: balance;
 }
 @media (max-width: 600px) {
   h1 { font-size: 28px; }
+  h1 .sub { margin-top: 8px; font-size: .68em; }
   .lead { font-size: 16px; }
   .block { padding-top: 72px; }
   .why { grid-template-columns: 1fr; }
