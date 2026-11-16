@@ -90,7 +90,8 @@
   "event": {
     "authFailed": "Admin console login failed",
     "wafBlocked": "Request blocked by the WAF",
-    "knockFailed": "Port knock rejected"
+    "knockFailed": "Port knock rejected",
+    "fileAuthFailed": "File service sign-in failed"
   },
   "sourceHelp": {
     "file": "Follows new lines appended to the file and switches to the new file after rotation. One path per line.",
@@ -241,6 +242,10 @@
     "gately-knock": {
       "name": "Failed port knocks",
       "desc": "Sources that repeatedly send knock packets that fail authentication, are replayed or request unauthorized ports (counted at most once every 5 seconds per source)"
+    },
+    "gately-files": {
+      "name": "File service sign-in failures",
+      "desc": "Sources whose WebDAV, FTP or SMB sign-ins fail or are refused after too many failures (counted at most once every 5 seconds per source)"
     },
     "web-decoy": {
       "name": "Web decoy paths",

@@ -1213,3 +1213,31 @@ func TestPortGraceCoversFrpcReconnect(t *testing.T) {
 		t.Fatalf("宽限期 %v 过短，覆盖不了 frps 心跳超时与 frpc 重连退避", portGrace)
 	}
 }
+
+// 文件服务登录失败的事件可以作为规则来源，按次数封禁；内置模板引用该事件。
+func TestFileAuthFailedJail(t *testing.T) {
+	m := newTestModule(t)
+	j := Jail{Key: "jf", Name: "files", Enable: true, Source: SourceEvent, Target: events.FileAuthFailed, MaxRetry: 2, FindTime: 60}
+	if err := j.Validate(); err != nil {
+		t.Fatal(err)
+	}
+	m.mu.Lock()
+	m.cfg.Jails = append(m.cfg.Jails, j)
+	m.startJailLocked(j)
+	m.mu.Unlock()
+	for range 2 {
+		m.onEvent(events.Event{Type: events.FileAuthFailed, Fields: map[string]string{"ip": "198.51.100.78", "service": "WebDAV"}})
+	}
+	if !banlist.Default.Banned(netip.MustParseAddr("198.51.100.78")) {
+		t.Fatal("文件服务登录失败达到次数应封禁")
+	}
+	found := false
+	for _, p := range Presets {
+		if p.Preset == "gately-files" && p.Target == events.FileAuthFailed {
+			found = true
+		}
+	}
+	if !found {
+		t.Fatal("应提供文件服务登录失败的模板")
+	}
+}

@@ -227,10 +227,15 @@ func (d *driver) ClientDisconnected(cc ftpserver.ClientContext) {
 func (d *driver) AuthUser(cc ftpserver.ClientContext, user, pass string) (ftpserver.ClientDriver, error) {
 	ip := remoteIP(cc.RemoteAddr())
 	if !d.throttle.Reserve(ip) {
+		// 被限流后仍在尝试：同样报告给入侵防护
+		fileusers.ReportAuthFailure("FTP", ip, user)
 		return nil, errors.New("登录失败次数过多，请稍后再试")
 	}
 	fileUser, err := d.authUser(cc, user, pass)
 	d.throttle.Done(ip, err == nil)
+	if err != nil {
+		fileusers.ReportAuthFailure("FTP", ip, user)
+	}
 	return fileUser, err
 }
 

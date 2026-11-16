@@ -94,6 +94,25 @@ func userConfigs(accounts []account, logs *logbuf.Buffer, warn bool) []config.Us
 	return users
 }
 
+// reportingLimiter 在限流的同时把登录失败（含失败过多被拒绝）报告给入侵防护。
+// gosamba 只对非匿名的登录调用限流器，Windows 资源管理器先匿名试探的失败不会被报告。
+type reportingLimiter struct{ *fileusers.Throttle }
+
+func (l reportingLimiter) Reserve(ip string) bool {
+	if !l.Throttle.Reserve(ip) {
+		fileusers.ReportAuthFailure("SMB", ip, "")
+		return false
+	}
+	return true
+}
+
+func (l reportingLimiter) Done(ip string, ok bool) {
+	l.Throttle.Done(ip, ok)
+	if !ok {
+		fileusers.ReportAuthFailure("SMB", ip, "")
+	}
+}
+
 // loadUsers 返回当前的账号列表，每次认证时调用。
 func (s *server) loadUsers() []config.UserConfig {
 	if p := s.users.Load(); p != nil {
@@ -194,7 +213,7 @@ func startServer(s Settings, accounts []account, logs *logbuf.Buffer, throttle *
 		DurableTimeout: durableTimeout,
 		// 按来源地址限制认证失败次数（与 WebDAV、FTP 相同：15 分钟内失败 10 次后拒绝）；
 		// 限流器由模块持有，修改设置重启服务后失败次数仍然保留
-		AuthLimiter: throttle,
+		AuthLimiter: reportingLimiter{throttle},
 		PreAuth: &parent.PreAuthLimits{
 			IdleTimeout: preAuthIdleTimeout,
 			Deadline:    preAuthDeadline,

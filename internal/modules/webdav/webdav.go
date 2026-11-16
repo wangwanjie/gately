@@ -318,6 +318,8 @@ func (m *Module) serve(w http.ResponseWriter, r *http.Request) {
 	ip := httpx.ClientIP(r)
 	// 失败次数（含进行中的校验）已达上限的来源一律拒绝，包括凭据正确的请求，避免被拒绝的来源借响应判断密码是否猜中
 	if ok && m.throttle.Blocked(ip) {
+		// 被限流后仍在尝试：同样报告给入侵防护
+		fileusers.ReportAuthFailure("WebDAV", ip, name)
 		http.Error(w, "429 Too Many Requests", http.StatusTooManyRequests)
 		return
 	}
@@ -331,6 +333,7 @@ func (m *Module) serve(w http.ResponseWriter, r *http.Request) {
 	} else if ok {
 		// 其余带凭据的请求先占位：失败次数加进行中的校验达到上限时直接拒绝，不再校验密码
 		if !m.throttle.Reserve(ip) {
+			fileusers.ReportAuthFailure("WebDAV", ip, name)
 			http.Error(w, "429 Too Many Requests", http.StatusTooManyRequests)
 			return
 		}
@@ -342,6 +345,10 @@ func (m *Module) serve(w http.ResponseWriter, r *http.Request) {
 			m.logs.Add(logbuf.LevelWarn, "", fmt.Sprintf("%s 认证失败（共享用户 %q）", r.RemoteAddr, fileusers.ClipName(name)))
 		} else if ok {
 			m.logs.Add(logbuf.LevelWarn, "", fmt.Sprintf("%s 认证失败（用户 %q）", r.RemoteAddr, fileusers.ClipName(name)))
+		}
+		// 带了凭据但校验失败才算登录失败；不带凭据的请求是客户端在等待 401 质询，不报告
+		if ok {
+			fileusers.ReportAuthFailure("WebDAV", ip, name)
 		}
 		w.Header().Set("WWW-Authenticate", `Basic realm="Gately WebDAV"`)
 		http.Error(w, "401 Unauthorized", http.StatusUnauthorized)

@@ -31,6 +31,8 @@ const (
 	BackupFailed    = "backup.failed"
 	AuthFailed      = "auth.failed"
 	AuthBanned      = "auth.banned"
+	// FileAuthFailed 由文件服务（WebDAV、FTP、SMB）发布：登录失败或因失败过多被拒绝（入侵防护可按此计数封禁）
+	FileAuthFailed = "fileauth.failed"
 	// AuthFlood 为陌生来源的登录失败总量超过全局预算（疑似分布式爆破），此后陌生地址的登录暂时受限
 	AuthFlood   = "auth.flood"
 	GuardBanned = "guard.banned"
@@ -89,6 +91,7 @@ var Catalog = []TypeInfo{
 	{BackupDone, "备份：完成", LevelInfo},
 	{BackupFailed, "备份：失败", LevelError},
 	{AuthFailed, "认证：连续失败", LevelWarn},
+	{FileAuthFailed, "文件服务：登录失败", LevelWarn},
 	{AuthBanned, "认证：IP 已被封禁", LevelWarn},
 	{AuthFlood, "认证：疑似分布式爆破", LevelWarn},
 	{GuardBanned, "入侵防护：IP 已被封禁", LevelWarn},
