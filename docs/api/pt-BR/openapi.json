@@ -1247,6 +1247,9 @@
           "reason": {
             "type": "string"
           },
+          "redirect": {
+            "type": "boolean"
+          },
           "trapPorts": {
             "type": "string"
           },
@@ -2492,6 +2495,9 @@
           "maxConnections": {
             "type": "integer"
           },
+          "maxConnsPerSource": {
+            "type": "integer"
+          },
           "mode": {
             "type": "string"
           },
@@ -2641,6 +2647,9 @@
             "type": "string"
           },
           "maxConnections": {
+            "type": "integer"
+          },
+          "maxConnsPerSource": {
             "type": "integer"
           },
           "name": {
@@ -43543,7 +43552,7 @@
     },
     "/api/system/onboarding": {
       "get": {
-        "description": "Disponível apenas para sessões de login. `pending` é true em uma instalação nova até a configuração inicial ser concluída.\n\n**Disponível apenas para sessões de login; tokens de API não podem acessar este endpoint.**",
+        "description": "Somente sessões conectadas. `pending` é true em uma instalação nova cuja introdução não terminou (a lista Primeiros passos é exibida); `scenePending` é true quando o cenário de uso ainda precisa ser escolhido (apenas em uma instalação nova cujo diretório de configuração ainda não tinha arquivos de configuração); `scenes` lista os cenários escolhidos e `done` os itens marcados como concluídos.\n\n**Disponível apenas para sessões de login; tokens de API não podem acessar este endpoint.**",
         "responses": {
           "200": {
             "description": "Sucesso"
@@ -43579,7 +43588,7 @@
             "description": "O token não tem a permissão necessária"
           }
         },
-        "summary": "Se a configuração inicial está pendente",
+        "summary": "Estado da introdução do primeiro início",
         "tags": [
           "Sistema"
         ],
@@ -43589,7 +43598,7 @@
     },
     "/api/system/onboarding/dismiss": {
       "post": {
-        "description": "Disponível apenas para sessões de login.\n\n**Disponível apenas para sessões de login; tokens de API não podem acessar este endpoint.**",
+        "description": "Somente sessões conectadas. Depois disso a lista Primeiros passos não é mais exibida e o cenário de uso não é mais perguntado.\n\n**Disponível apenas para sessões de login; tokens de API não podem acessar este endpoint.**",
         "responses": {
           "200": {
             "description": "Sucesso"
@@ -43625,7 +43634,172 @@
             "description": "O token não tem a permissão necessária"
           }
         },
-        "summary": "Concluir ou pular a configuração inicial",
+        "summary": "Concluir ou fechar a introdução do primeiro início",
+        "tags": [
+          "Sistema"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/onboarding/done": {
+      "post": {
+        "description": "Somente sessões conectadas. O corpo é `{\"item\": \"check\"}`; usado para itens cuja conclusão não pode ser deduzida da configuração (como o autodiagnóstico de rede).\n\n**Disponível apenas para sessões de login; tokens de API não podem acessar este endpoint.**",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "summary": "Marcar um item de Primeiros passos como concluído",
+        "tags": [
+          "Sistema"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/onboarding/scenes": {
+      "post": {
+        "description": "Somente sessões conectadas. O corpo é `{\"scenes\": [...]}` com `web`, `forward`, `ddns`, `mesh`, `files`, `vps` ou `all`; uma lista vazia pula a escolha. Apenas registra a escolha e encerra a etapa de cenários; os módulos são ligados ou desligados por `disabledModules` de `PUT /api/system/settings`.\n\n**Disponível apenas para sessões de login; tokens de API não podem acessar este endpoint.**",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "summary": "Registrar os cenários de uso escolhidos",
+        "tags": [
+          "Sistema"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/probe": {
+      "post": {
+        "description": "Somente sessões de administrador (contas somente leitura e tokens de API não podem chamá-lo). O corpo é `{\"target\": \"http://192.168.1.10:8123\"}`: um endereço `http(s)://` recebe uma requisição HEAD para a raiz sem seguir redirecionamentos; `host:porta` testa apenas uma conexão TCP; tempo limite de 5 segundos. Retorna `reachable`, `status` (código HTTP), `insecure` (o certificado do backend https falha na verificação, mas sem verificação a conexão funciona), `reason` (motivo: refused, timeout, dns, tls, protocol, unreachable, error) e `elapsedMs`; cabeçalhos e corpo da resposta nunca são retornados.\n\n**Disponível apenas para sessões de login; tokens de API não podem acessar este endpoint.**",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "summary": "Testar se um endereço de backend está acessível",
         "tags": [
           "Sistema"
         ],

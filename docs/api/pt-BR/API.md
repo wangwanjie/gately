@@ -963,8 +963,11 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | POST | `/api/system/restore` | Somente sessão de login | Restaurar a configuração a partir do backup |
 | POST | `/api/system/restart` | Somente sessão de login | Reiniciar o Gately |
 | POST | `/api/system/selfcheck` | Somente sessão de login | Autoverificação de rede e configuração |
-| GET | `/api/system/onboarding` | Somente sessão de login | Se a configuração inicial está pendente |
-| POST | `/api/system/onboarding/dismiss` | Somente sessão de login | Concluir ou pular a configuração inicial |
+| GET | `/api/system/onboarding` | Somente sessão de login | Estado da introdução do primeiro início |
+| POST | `/api/system/onboarding/dismiss` | Somente sessão de login | Concluir ou fechar a introdução do primeiro início |
+| POST | `/api/system/onboarding/scenes` | Somente sessão de login | Registrar os cenários de uso escolhidos |
+| POST | `/api/system/onboarding/done` | Somente sessão de login | Marcar um item de Primeiros passos como concluído |
+| POST | `/api/system/probe` | Somente sessão de login | Testar se um endereço de backend está acessível |
 | GET | `/api/openapi.json` | Qualquer token válido | Obter a descrição OpenAPI desta API |
 
 ## Importação de configuração
@@ -1540,6 +1543,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `hits` | Mapa de integer |
 | `openPorts` | integer |
 | `reason` | string |
+| `redirect` | boolean |
 | `trapPorts` | string |
 | `trapSkipped` | Array de integer |
 | `version` | string |
@@ -2068,6 +2072,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `listenAddress` | string |
 | `listenPorts` | string |
 | `maxConnections` | integer |
+| `maxConnsPerSource` | integer |
 | `mode` | string |
 | `name` | string |
 | `protocols` | Array de string |
@@ -2119,6 +2124,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `listenAddress` | string |
 | `listenPorts` | string |
 | `maxConnections` | integer |
+| `maxConnsPerSource` | integer |
 | `name` | string |
 | `protocols` | Array de string |
 | `proxyProtocol` | string |

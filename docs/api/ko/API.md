@@ -963,8 +963,11 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/system/restore` | 로그인 세션 전용 | 백업에서 설정 복원 |
 | POST | `/api/system/restart` | 로그인 세션 전용 | Gately 재시작 |
 | POST | `/api/system/selfcheck` | 로그인 세션 전용 | 네트워크 및 설정 자가 점검 |
-| GET | `/api/system/onboarding` | 로그인 세션 전용 | 최초 실행 온보딩 필요 여부 |
-| POST | `/api/system/onboarding/dismiss` | 로그인 세션 전용 | 최초 실행 온보딩 완료 또는 건너뛰기 |
+| GET | `/api/system/onboarding` | 로그인 세션 전용 | 첫 실행 안내 상태 |
+| POST | `/api/system/onboarding/dismiss` | 로그인 세션 전용 | 첫 실행 안내 완료 또는 닫기 |
+| POST | `/api/system/onboarding/scenes` | 로그인 세션 전용 | 고른 용도 기록 |
+| POST | `/api/system/onboarding/done` | 로그인 세션 전용 | 「시작하기」 체크리스트 항목을 완료로 표시 |
+| POST | `/api/system/probe` | 로그인 세션 전용 | 백엔드 주소에 연결할 수 있는지 시험 |
 | GET | `/api/openapi.json` | 유효한 모든 토큰 | 이 API의 OpenAPI 설명 가져오기 |
 
 ## 설정 가져오기
@@ -1540,6 +1543,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `hits` | Map of integer |
 | `openPorts` | integer |
 | `reason` | string |
+| `redirect` | boolean |
 | `trapPorts` | string |
 | `trapSkipped` | Array of integer |
 | `version` | string |
@@ -2068,6 +2072,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `listenAddress` | string |
 | `listenPorts` | string |
 | `maxConnections` | integer |
+| `maxConnsPerSource` | integer |
 | `mode` | string |
 | `name` | string |
 | `protocols` | Array of string |
@@ -2119,6 +2124,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `listenAddress` | string |
 | `listenPorts` | string |
 | `maxConnections` | integer |
+| `maxConnsPerSource` | integer |
 | `name` | string |
 | `protocols` | Array of string |
 | `proxyProtocol` | string |

@@ -963,8 +963,11 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/system/restore` | 僅登入工作階段 | 從備份還原設定 |
 | POST | `/api/system/restart` | 僅登入工作階段 | 重新啟動 Gately |
 | POST | `/api/system/selfcheck` | 僅登入工作階段 | 網路與設定自我檢查 |
-| GET | `/api/system/onboarding` | 僅登入工作階段 | 是否需要首次啟動引導 |
-| POST | `/api/system/onboarding/dismiss` | 僅登入工作階段 | 完成或略過首次啟動引導 |
+| GET | `/api/system/onboarding` | 僅登入工作階段 | 首次啟動引導狀態 |
+| POST | `/api/system/onboarding/dismiss` | 僅登入工作階段 | 完成或關閉首次啟動引導 |
+| POST | `/api/system/onboarding/scenes` | 僅登入工作階段 | 記錄選擇的使用場景 |
+| POST | `/api/system/onboarding/done` | 僅登入工作階段 | 把「開始使用」清單項標記為完成 |
+| POST | `/api/system/probe` | 僅登入工作階段 | 測試後端位址是否可連線 |
 | GET | `/api/openapi.json` | 任意有效權杖 | 取得本 API 的 OpenAPI 描述 |
 
 ## 設定匯入
@@ -1540,6 +1543,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `hits` | 對應 of integer |
 | `openPorts` | integer |
 | `reason` | string |
+| `redirect` | boolean |
 | `trapPorts` | string |
 | `trapSkipped` | 陣列 of integer |
 | `version` | string |
@@ -2068,6 +2072,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `listenAddress` | string |
 | `listenPorts` | string |
 | `maxConnections` | integer |
+| `maxConnsPerSource` | integer |
 | `mode` | string |
 | `name` | string |
 | `protocols` | 陣列 of string |
@@ -2119,6 +2124,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `listenAddress` | string |
 | `listenPorts` | string |
 | `maxConnections` | integer |
+| `maxConnsPerSource` | integer |
 | `name` | string |
 | `protocols` | 陣列 of string |
 | `proxyProtocol` | string |
