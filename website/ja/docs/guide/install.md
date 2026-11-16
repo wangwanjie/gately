@@ -7,9 +7,10 @@
 ```bash
 docker run -d --name gately --network host --cap-add NET_ADMIN \
   -v ./gately-data:/etc/gately \
-  -v /var/run/docker.sock:/var/run/docker.sock \
   ghcr.io/wangwanjie/gately:latest
 ```
+
+Gately から Docker を管理する場合は、コマンドに `-v /var/run/docker.sock:/var/run/docker.sock` を追加してください。
 
 ### Docker Compose
 
@@ -27,10 +28,10 @@ services:
     volumes:
       # 設定ディレクトリ（平文の JSON。git でのバックアップも可能。ssl.json には証明書の秘密鍵が含まれます）
       - ./data:/etc/gately
-      # Docker 管理（不要なら削除してください）
-      - /var/run/docker.sock:/var/run/docker.sock
+      # Docker 管理：必要なら次の行のコメントを外す
+      # - /var/run/docker.sock:/var/run/docker.sock
     environment:
-      - TZ=Asia/Shanghai
+      - TZ=Asia/Tokyo
 ```
 
 `--cap-add NET_ADMIN` と `cap_add` は、[侵入防御](/ja/docs/modules/guard)がブロックをホストの nftables ファイアウォールに書き込むためのものです。不要なら外してもかまいません。その場合もブロックは Gately 自身のサービスに適用されます。

@@ -261,7 +261,8 @@
     "installTitle": "一分鐘裝好",
     "installDesc": "映像支援 amd64、arm64、arm/v7。啟動後造訪 <code>http://裝置IP:16680</code>，以預設帳號 <code>admin</code> 與預設密碼 <code>gately.cn</code> 登入，登入後請立即修改密碼。",
     "installTabBinary": "執行檔",
-    "installDocker": "docker run -d --name gately --network host \\\n  -v ./gately-data:/etc/gately \\\n  -v /var/run/docker.sock:/var/run/docker.sock \\\n  ghcr.io/wangwanjie/gately:latest",
+    "installDocker": "docker run -d --name gately --network host --cap-add NET_ADMIN \\\n  -v ./gately-data:/etc/gately \\\n  ghcr.io/wangwanjie/gately:latest\n\n# 需要 Docker 管理時再加上：\n#   -v /var/run/docker.sock:/var/run/docker.sock",
+    "composeDockerHint": "需要 Docker 管理時取消下一行的註解",
     "installBinary": "# 從 Releases 下載對應平台的壓縮檔並解壓縮\n./gately -c /etc/gately\n\n# 管理介面預設監聽 :16680\n# 預設帳號 admin，預設密碼 gately.cn",
     "installTabFnos": "飛牛 fnOS",
     "installFnos": "# 1. 從 Releases 下載 gately_<版本>_fnos_x86.fpk（ARM 裝置選 _arm.fpk）\n# 2. 飛牛「應用中心 → 手動安裝」，選擇檔案並完成精靈\n# 3. 點擊飛牛桌面上的 Gately 圖示，經統一閘道開啟管理介面\n\n# 預設帳號 admin，預設密碼 gately.cn",
@@ -285,7 +286,7 @@
       },
       {
         "q": "連接埠轉發、STUN 為什麼建議使用 host 網路？",
-        "a": "這些模組需要直接監聽主機的連接埠。不需要 Docker 管理時，可以移除 docker.sock 掛載。"
+        "a": "這些模組需要直接監聽主機的連接埠。--cap-add NET_ADMIN 讓入侵防護把封鎖寫入主機防火牆；需要 Docker 管理時再掛載 /var/run/docker.sock。"
       }
     ],
     "moreFaq": "更多問題 →",

@@ -261,7 +261,8 @@
     "installTitle": "Running in a minute",
     "installDesc": "Images are available for amd64, arm64 and arm/v7. After starting, open <code>http://DEVICE_IP:16680</code> and sign in with the default account <code>admin</code> and default password <code>gately.cn</code>, then change the password right away.",
     "installTabBinary": "Binary",
-    "installDocker": "docker run -d --name gately --network host \\\n  -v ./gately-data:/etc/gately \\\n  -v /var/run/docker.sock:/var/run/docker.sock \\\n  ghcr.io/wangwanjie/gately:latest",
+    "installDocker": "docker run -d --name gately --network host --cap-add NET_ADMIN \\\n  -v ./gately-data:/etc/gately \\\n  ghcr.io/wangwanjie/gately:latest\n\n# To manage Docker from Gately, also add:\n#   -v /var/run/docker.sock:/var/run/docker.sock",
+    "composeDockerHint": "Uncomment the next line to manage Docker from Gately",
     "installBinary": "# Download the archive for your platform from Releases and extract it\n./gately -c /etc/gately\n\n# The admin UI listens on :16680 by default\n# Default account admin, default password gately.cn",
     "installTabFnos": "fnOS",
     "installFnos": "# 1. Download gately_<version>_fnos_x86.fpk from Releases (_arm.fpk for ARM devices)\n# 2. In fnOS, open App Center → Manual install, pick the file and finish the wizard\n# 3. Click the Gately icon on the fnOS desktop to open it through the unified gateway\n\n# Default account admin, default password gately.cn",
@@ -285,7 +286,7 @@
       },
       {
         "q": "Why is host networking recommended for port forwarding and STUN?",
-        "a": "These modules listen directly on host ports. If you do not need Docker management, you can drop the docker.sock mount."
+        "a": "These modules listen directly on host ports. --cap-add NET_ADMIN lets intrusion prevention write bans to the host firewall; mount /var/run/docker.sock only if you want Docker management."
       }
     ],
     "moreFaq": "More questions →",

@@ -261,7 +261,8 @@
     "installTitle": "Запуск за минуту",
     "installDesc": "Образы доступны для amd64, arm64 и arm/v7. После запуска откройте <code>http://IP_УСТРОЙСТВА:16680</code> и войдите с учётной записью по умолчанию <code>admin</code> и паролем по умолчанию <code>gately.cn</code>, затем сразу смените пароль.",
     "installTabBinary": "Бинарный файл",
-    "installDocker": "docker run -d --name gately --network host \\\n  -v ./gately-data:/etc/gately \\\n  -v /var/run/docker.sock:/var/run/docker.sock \\\n  ghcr.io/wangwanjie/gately:latest",
+    "installDocker": "docker run -d --name gately --network host --cap-add NET_ADMIN \\\n  -v ./gately-data:/etc/gately \\\n  ghcr.io/wangwanjie/gately:latest\n\n# Чтобы управлять Docker из Gately, добавьте:\n#   -v /var/run/docker.sock:/var/run/docker.sock",
+    "composeDockerHint": "Раскомментируйте следующую строку для управления Docker из Gately",
     "installBinary": "# Скачайте архив для своей платформы со страницы Releases и распакуйте его\n./gately -c /etc/gately\n\n# Панель управления по умолчанию слушает порт :16680\n# Учётная запись по умолчанию admin, пароль по умолчанию gately.cn",
     "installTabFnos": "fnOS",
     "installFnos": "# 1. Скачайте gately_<version>_fnos_x86.fpk со страницы Releases (_arm.fpk для устройств ARM)\n# 2. В fnOS откройте Центр приложений → Ручная установка, выберите файл и пройдите мастер\n# 3. Щёлкните значок Gately на рабочем столе fnOS, чтобы открыть его через единый шлюз\n\n# Учётная запись по умолчанию admin, пароль по умолчанию gately.cn",
@@ -285,7 +286,7 @@
       },
       {
         "q": "Почему для проброса портов и STUN рекомендуется сеть хоста?",
-        "a": "Эти модули слушают порты непосредственно на хосте. Если управление Docker не нужно, монтирование docker.sock можно убрать."
+        "a": "Эти модули слушают порты непосредственно на хосте. --cap-add NET_ADMIN позволяет защите от вторжений записывать блокировки в брандмауэр хоста; монтируйте /var/run/docker.sock, только если нужно управление Docker."
       }
     ],
     "moreFaq": "Другие вопросы →",

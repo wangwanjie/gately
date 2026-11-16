@@ -7,9 +7,10 @@ Image: `ghcr.io/wangwanjie/gately`, zusätzlich auf Docker Hub als `vanjayak/gat
 ```bash
 docker run -d --name gately --network host --cap-add NET_ADMIN \
   -v ./gately-data:/etc/gately \
-  -v /var/run/docker.sock:/var/run/docker.sock \
   ghcr.io/wangwanjie/gately:latest
 ```
+
+Um Docker aus Gately zu verwalten, ergänzen Sie den Befehl um `-v /var/run/docker.sock:/var/run/docker.sock`.
 
 ### Docker Compose
 
@@ -27,10 +28,10 @@ services:
     volumes:
       # Konfigurationsverzeichnis (einfaches JSON, kann in Git gesichert werden; ssl.json enthält private Zertifikatsschlüssel)
       - ./data:/etc/gately
-      # Docker-Verwaltung (entfernen, wenn nicht benötigt)
-      - /var/run/docker.sock:/var/run/docker.sock
+      # Docker-Verwaltung: bei Bedarf die nächste Zeile einkommentieren
+      # - /var/run/docker.sock:/var/run/docker.sock
     environment:
-      - TZ=Asia/Shanghai
+      - TZ=Europe/Berlin
 ```
 
 `--cap-add NET_ADMIN` und `cap_add` erlauben dem [Einbruchschutz](/de/docs/modules/guard), Sperren in die nftables-Firewall des Hosts zu schreiben. Sie können sie weglassen; Sperren gelten dann weiterhin für Gatelys eigene Dienste.

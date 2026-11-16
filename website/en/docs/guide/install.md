@@ -7,9 +7,10 @@ Image: `ghcr.io/wangwanjie/gately`, also published to Docker Hub as `vanjayak/ga
 ```bash
 docker run -d --name gately --network host --cap-add NET_ADMIN \
   -v ./gately-data:/etc/gately \
-  -v /var/run/docker.sock:/var/run/docker.sock \
   ghcr.io/wangwanjie/gately:latest
 ```
+
+To manage Docker from Gately, add `-v /var/run/docker.sock:/var/run/docker.sock` to the command.
 
 ### Docker Compose
 
@@ -27,10 +28,8 @@ services:
     volumes:
       # Config directory (plain JSON, safe to keep in git; ssl.json contains certificate private keys)
       - ./data:/etc/gately
-      # Docker management (remove if not needed)
-      - /var/run/docker.sock:/var/run/docker.sock
-    environment:
-      - TZ=Asia/Shanghai
+      # Docker management: uncomment the next line if needed
+      # - /var/run/docker.sock:/var/run/docker.sock
 ```
 
 `--cap-add NET_ADMIN` and `cap_add` let [Intrusion Prevention](/en/docs/modules/guard) write bans to the host's nftables firewall. You can drop them; bans then still apply to Gately's own services.

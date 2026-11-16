@@ -261,7 +261,8 @@
     "installTitle": "1 分でセットアップ",
     "installDesc": "イメージは amd64、arm64、arm/v7 に対応しています。起動後に <code>http://デバイスのIP:16680</code> へアクセスし、デフォルトのアカウント <code>admin</code> とパスワード <code>gately.cn</code> でログインして、すぐにパスワードを変更してください。",
     "installTabBinary": "バイナリ",
-    "installDocker": "docker run -d --name gately --network host \\\n  -v ./gately-data:/etc/gately \\\n  -v /var/run/docker.sock:/var/run/docker.sock \\\n  ghcr.io/wangwanjie/gately:latest",
+    "installDocker": "docker run -d --name gately --network host --cap-add NET_ADMIN \\\n  -v ./gately-data:/etc/gately \\\n  ghcr.io/wangwanjie/gately:latest\n\n# Gately から Docker を管理する場合は次を追加：\n#   -v /var/run/docker.sock:/var/run/docker.sock",
+    "composeDockerHint": "Docker 管理を使う場合は次の行のコメントを外す",
     "installBinary": "# Releases から使用するプラットフォーム向けのアーカイブをダウンロードして展開\n./gately -c /etc/gately\n\n# 管理画面はデフォルトで :16680 で待ち受け\n# デフォルトのアカウントは admin、パスワードは gately.cn",
     "installTabFnos": "fnOS",
     "installFnos": "# 1. Releases から gately_<version>_fnos_x86.fpk をダウンロード（ARM デバイスは _arm.fpk）\n# 2. fnOS でアプリセンター → 手動インストールを開き、ファイルを選んでウィザードを完了\n# 3. fnOS デスクトップの Gately アイコンをクリックすると、統一ゲートウェイ経由で開きます\n\n# デフォルトのアカウントは admin、パスワードは gately.cn",
@@ -285,7 +286,7 @@
       },
       {
         "q": "ポート転送と STUN で host ネットワークを推奨するのはなぜですか？",
-        "a": "これらのモジュールはホストのポートを直接待ち受ける必要があるためです。Docker 管理が不要なら、docker.sock のマウントは外せます。"
+        "a": "これらのモジュールはホストのポートを直接待ち受けるためです。--cap-add NET_ADMIN は侵入防御が BAN をホストのファイアウォールに書き込むために使います。Docker 管理を使う場合だけ /var/run/docker.sock をマウントしてください。"
       }
     ],
     "moreFaq": "その他の質問 →",
