@@ -31,6 +31,8 @@
   "loading": "로딩 중",
   "abnormal": "{count}건 이상",
   "attention": "{count}건 확인 필요",
+  "showAttention": "확인이 필요한 서비스 보기",
+  "idle": "아직 설정되지 않았거나 사용 안 함",
   "allOk": "모두 정상",
   "proc": {
     "version": "버전",

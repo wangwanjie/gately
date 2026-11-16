@@ -29,7 +29,11 @@
         </div>
         <div class="hero-kv">
           <span class="k">{{ t('overview.service') }}</span>
-          <StatusBadge :type="health.type" :text="health.text" />
+          <!-- 有需要关注的服务时可点击，滚动到第一个异常的服务行 -->
+          <button v-if="attentionIndex >= 0" type="button" class="health-btn" :title="t('overview.showAttention')" @click="showAttention">
+            <StatusBadge :type="health.type" :text="health.text" />
+          </button>
+          <StatusBadge v-else :type="health.type" :text="health.text" />
         </div>
         <el-button size="small" round :icon="Stethoscope" @click="selfCheck?.open()">{{ t('selfcheck.run') }}</el-button>
       </div>
@@ -184,11 +188,21 @@
       <div class="g-card services-card">
         <div class="g-card-head">
           <div class="g-card-title"><HeartPulse :size="16" />{{ t('overview.serviceStatus') }}</div>
-          <StatusBadge :type="health.type" :text="health.text" />
+          <button v-if="attentionIndex >= 0" type="button" class="health-btn" :title="t('overview.showAttention')" @click="showAttention">
+            <StatusBadge :type="health.type" :text="health.text" />
+          </button>
+          <StatusBadge v-else :type="health.type" :text="health.text" />
         </div>
         <div class="services">
-          <router-link v-for="s in services" :key="s.id" :to="s.path" class="service">
-            <span class="svc-dot" :class="s.level" />
+          <router-link
+            v-for="(s, i) in services"
+            :key="s.id"
+            :ref="(el) => setServiceRef(i, el)"
+            :to="s.path"
+            class="service"
+            :class="{ 'is-flash': flashIndex === i, 'is-idle': s.level === 'idle' }"
+          >
+            <span class="svc-dot" :class="s.level" :title="s.level === 'idle' ? t('overview.idle') : undefined" />
             <span class="svc-name">{{ s.title }}</span>
             <span class="svc-items">
               <span v-for="it in s.items" :key="it.label" class="svc-item">
@@ -236,6 +250,7 @@ import Sparkline from '../components/Sparkline.vue'
 import ManagedProcList from '../components/ManagedProcList.vue'
 import StatusBadge, { type StatusType } from '../components/StatusBadge.vue'
 import { navByModule } from '../nav'
+import { firstAttention, serviceLevel, type SvcLevel } from '../overviewStatus'
 
 const { t } = useI18n()
 
@@ -298,10 +313,9 @@ const publicIPs = computed(() => {
   return (ddns?.summary ?? []).filter((it) => it.label === 'IPv4' || it.label === 'IPv6')
 })
 
-// 每个有摘要的模块一行，状态取摘要中最严重的等级；公网 IP 已在网卡区域展示，这里略去
-const rank: Record<string, number> = { ok: 1, warn: 2, error: 3 }
+// 每个有摘要的模块一行，状态取摘要中最严重的等级；还没有配置条目或未启用的模块为 idle（灰点，不计入异常）。公网 IP 已在网卡区域展示，这里略去
 const services = computed(() => {
-  const out: { id: string; title: string; path: string; level: string; items: { label: string; value: string; level?: string }[] }[] = []
+  const out: { id: string; title: string; path: string; level: SvcLevel; items: { label: string; value: string; level?: string }[] }[] = []
   for (const m of status.value?.modules ?? []) {
     const nav = navByModule(m.id)
     const items = (m.summary ?? []).filter((it) => it.label !== 'IPv4' && it.label !== 'IPv6')
@@ -309,16 +323,35 @@ const services = computed(() => {
     if (!nav || !m.enabled || !items.length) {
       continue
     }
-    let level = 'ok'
-    for (const it of items) {
-      if (it.level && (rank[it.level] ?? 0) > (rank[level] ?? 0)) {
-        level = it.level
-      }
-    }
-    out.push({ id: m.id, title: t(nav.titleKey), path: nav.path, level, items })
+    out.push({ id: m.id, title: t(nav.titleKey), path: nav.path, level: serviceLevel(items), items })
   }
   return out
 })
+
+// attentionIndex 为第一个需要关注（错误优先，其次警告）的服务行
+const attentionIndex = computed(() => firstAttention(services.value.map((s) => s.level)))
+const serviceEls: (HTMLElement | undefined)[] = []
+const flashIndex = ref(-1)
+let flashTimer: number | undefined
+
+function setServiceRef(i: number, el: unknown) {
+  const node = (el as { $el?: HTMLElement } | null)?.$el ?? (el as HTMLElement | null)
+  serviceEls[i] = node ?? undefined
+}
+
+// showAttention 滚动到第一个异常的服务行，短暂高亮并把焦点移过去（键盘用户回车即可进入该模块）
+function showAttention() {
+  const i = attentionIndex.value
+  const el = serviceEls[i]
+  if (!el) {
+    return
+  }
+  el.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'center' })
+  el.focus({ preventScroll: true })
+  flashIndex.value = i
+  window.clearTimeout(flashTimer)
+  flashTimer = window.setTimeout(() => (flashIndex.value = -1), 1600)
+}
 
 const health = computed<{ type: StatusType; text: string }>(() => {
   if (!status.value) {
@@ -445,6 +478,7 @@ onMounted(() => {
   document.addEventListener('visibilitychange', onVisibility)
 })
 onBeforeUnmount(() => {
+  window.clearTimeout(flashTimer)
   window.clearInterval(timer)
   document.removeEventListener('visibilitychange', onVisibility)
 })
@@ -880,6 +914,30 @@ onBeforeUnmount(() => {
 .service:hover {
   background: var(--el-fill-color-light);
 }
+.service:focus-visible {
+  outline: 2px solid var(--el-color-primary);
+  outline-offset: -2px;
+}
+/* 点击“N 项需关注”后短暂高亮对应的服务行 */
+.service.is-flash {
+  background: var(--el-color-warning-light-9);
+  box-shadow: inset 3px 0 0 var(--el-color-warning);
+}
+.health-btn {
+  display: inline-flex;
+  padding: 0;
+  border: 0;
+  background: none;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.health-btn:hover :deep(.status-badge) {
+  text-decoration: underline;
+}
+.health-btn:focus-visible {
+  outline: 2px solid var(--el-color-primary);
+  outline-offset: 2px;
+}
 .svc-dot {
   width: 8px;
   height: 8px;
@@ -901,6 +959,10 @@ onBeforeUnmount(() => {
   .svc-dot.error {
     animation: none;
   }
+}
+.svc-dot.idle {
+  background: var(--el-text-color-placeholder);
+  box-shadow: 0 0 0 3px var(--el-fill-color);
 }
 .svc-dot.warn {
   background: var(--el-color-warning);
@@ -949,6 +1011,10 @@ onBeforeUnmount(() => {
 }
 .svc-value.error {
   color: var(--el-color-danger);
+}
+/* 未配置的模块：数值不用状态色，避免“0 / 0”显示成绿色的正常 */
+.service.is-idle .svc-value {
+  color: var(--el-text-color-regular);
 }
 .empty {
   padding: 24px 16px;
@@ -1012,6 +1078,19 @@ onBeforeUnmount(() => {
 @media (max-width: 767.98px) {
   .overview {
     gap: 12px;
+  }
+  /* 手机上先回答“服务正常吗”：服务状态卡片排在资源仪表之前，网卡与进程信息放到最后 */
+  .cols {
+    display: contents;
+  }
+  .services-card {
+    order: 1;
+  }
+  .gauges {
+    order: 2;
+  }
+  .col {
+    order: 3;
   }
   .hero {
     padding: 16px;

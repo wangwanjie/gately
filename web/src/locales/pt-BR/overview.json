@@ -31,6 +31,8 @@
   "loading": "Carregando",
   "abnormal": "{count} com anormalidade",
   "attention": "{count} exigem atenção",
+  "showAttention": "Ver os serviços que precisam de atenção",
+  "idle": "Ainda não configurado ou ativado",
   "allOk": "Tudo normal",
   "proc": {
     "version": "Versão",
