@@ -2,7 +2,7 @@
 
 Thanks for helping. Issues and pull requests are welcome. By taking part you agree to follow the [Code of Conduct](CODE_OF_CONDUCT.md). Security problems go through private reporting as described in [SECURITY.md](SECURITY.md), not through public issues or pull requests.
 
-Questions about using Gately belong in [GitHub Discussions](https://github.com/wangwanjie/gately/discussions) or the Telegram group [t.me/gately_chat](https://t.me/gately_chat). Bug reports go to [GitHub Issues](https://github.com/wangwanjie/gately/issues) together with a [diagnostics bundle](docs/en/DIAGNOSTICS.md) (Settings → Diagnostics).
+Questions about using Gately belong in [GitHub Discussions Q&A](https://github.com/wangwanjie/gately/discussions/categories/q-a), where answers stay searchable; the Telegram group [t.me/gately_chat](https://t.me/gately_chat) is for instant chat. Bug reports go to [GitHub Issues](https://github.com/wangwanjie/gately/issues) together with a [diagnostics bundle](docs/en/DIAGNOSTICS.md) (Settings → Diagnostics).
 
 ## Development setup
 
