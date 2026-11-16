@@ -1247,6 +1247,9 @@
           "reason": {
             "type": "string"
           },
+          "redirect": {
+            "type": "boolean"
+          },
           "trapPorts": {
             "type": "string"
           },
@@ -2492,6 +2495,9 @@
           "maxConnections": {
             "type": "integer"
           },
+          "maxConnsPerSource": {
+            "type": "integer"
+          },
           "mode": {
             "type": "string"
           },
@@ -2641,6 +2647,9 @@
             "type": "string"
           },
           "maxConnections": {
+            "type": "integer"
+          },
+          "maxConnsPerSource": {
             "type": "integer"
           },
           "name": {
@@ -43543,7 +43552,7 @@
     },
     "/api/system/onboarding": {
       "get": {
-        "description": "Solo disponible para sesiones iniciadas. `pending` es true en una instalación nueva hasta que se completa la configuración inicial.\n\n**Solo disponible para sesiones de inicio de sesión; los tokens de API no pueden acceder a este endpoint.**",
+        "description": "Solo sesiones iniciadas. `pending` es true en una instalación nueva cuya guía no ha terminado (se muestra la lista Primeros pasos); `scenePending` es true cuando aún hay que elegir el escenario de uso (solo en una instalación nueva cuyo directorio de configuración no tenía archivos de configuración); `scenes` contiene los escenarios elegidos y `done` los elementos marcados como hechos.\n\n**Solo disponible para sesiones de inicio de sesión; los tokens de API no pueden acceder a este endpoint.**",
         "responses": {
           "200": {
             "description": "Correcto"
@@ -43579,7 +43588,7 @@
             "description": "Al token le falta el permiso necesario"
           }
         },
-        "summary": "Si la configuración inicial está pendiente",
+        "summary": "Estado de la guía del primer inicio",
         "tags": [
           "Sistema"
         ],
@@ -43589,7 +43598,7 @@
     },
     "/api/system/onboarding/dismiss": {
       "post": {
-        "description": "Solo disponible para sesiones iniciadas.\n\n**Solo disponible para sesiones de inicio de sesión; los tokens de API no pueden acceder a este endpoint.**",
+        "description": "Solo sesiones iniciadas. Después ya no se muestra la lista Primeros pasos ni se pregunta el escenario de uso.\n\n**Solo disponible para sesiones de inicio de sesión; los tokens de API no pueden acceder a este endpoint.**",
         "responses": {
           "200": {
             "description": "Correcto"
@@ -43625,7 +43634,172 @@
             "description": "Al token le falta el permiso necesario"
           }
         },
-        "summary": "Completar u omitir la configuración inicial",
+        "summary": "Terminar o cerrar la guía del primer inicio",
+        "tags": [
+          "Sistema"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/onboarding/done": {
+      "post": {
+        "description": "Solo sesiones iniciadas. El cuerpo es `{\"item\": \"check\"}`; se usa para elementos cuya finalización no se puede deducir de la configuración (como la autocomprobación de red).\n\n**Solo disponible para sesiones de inicio de sesión; los tokens de API no pueden acceder a este endpoint.**",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parámetros de solicitud incorrectos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token no válido, caducado o sin sesión iniciada"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Al token le falta el permiso necesario"
+          }
+        },
+        "summary": "Marcar como hecho un elemento de Primeros pasos",
+        "tags": [
+          "Sistema"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/onboarding/scenes": {
+      "post": {
+        "description": "Solo sesiones iniciadas. El cuerpo es `{\"scenes\": [...]}` con cualquiera de `web`, `forward`, `ddns`, `mesh`, `files`, `vps`, `all`; una lista vacía omite la elección. Solo registra la elección y termina el paso de escenarios; los módulos se activan o desactivan con `disabledModules` de `PUT /api/system/settings`.\n\n**Solo disponible para sesiones de inicio de sesión; los tokens de API no pueden acceder a este endpoint.**",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parámetros de solicitud incorrectos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token no válido, caducado o sin sesión iniciada"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Al token le falta el permiso necesario"
+          }
+        },
+        "summary": "Registrar los escenarios de uso elegidos",
+        "tags": [
+          "Sistema"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/probe": {
+      "post": {
+        "description": "Solo sesiones de administrador (las cuentas de solo lectura y los tokens de API no pueden llamarlo). El cuerpo es `{\"target\": \"http://192.168.1.10:8123\"}`: una dirección `http(s)://` recibe una petición HEAD a la ruta raíz sin seguir redirecciones; `host:puerto` solo prueba una conexión TCP; tiempo límite de 5 segundos. Devuelve `reachable`, `status` (código de estado HTTP), `insecure` (el certificado del backend https no supera la verificación, pero sin verificar se puede conectar), `reason` (motivo: refused, timeout, dns, tls, protocol, unreachable, error) y `elapsedMs`; nunca devuelve cabeceras ni cuerpo de la respuesta.\n\n**Solo disponible para sesiones de inicio de sesión; los tokens de API no pueden acceder a este endpoint.**",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parámetros de solicitud incorrectos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token no válido, caducado o sin sesión iniciada"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Al token le falta el permiso necesario"
+          }
+        },
+        "summary": "Probar si una dirección de backend es accesible",
         "tags": [
           "Sistema"
         ],

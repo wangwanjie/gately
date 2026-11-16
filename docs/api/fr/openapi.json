@@ -1247,6 +1247,9 @@
           "reason": {
             "type": "string"
           },
+          "redirect": {
+            "type": "boolean"
+          },
           "trapPorts": {
             "type": "string"
           },
@@ -2492,6 +2495,9 @@
           "maxConnections": {
             "type": "integer"
           },
+          "maxConnsPerSource": {
+            "type": "integer"
+          },
           "mode": {
             "type": "string"
           },
@@ -2641,6 +2647,9 @@
             "type": "string"
           },
           "maxConnections": {
+            "type": "integer"
+          },
+          "maxConnsPerSource": {
             "type": "integer"
           },
           "name": {
@@ -43543,7 +43552,7 @@
     },
     "/api/system/onboarding": {
       "get": {
-        "description": "Disponible uniquement pour les sessions de connexion. `pending` vaut true sur une nouvelle installation tant que l'assistant de démarrage n'est pas terminé.\n\n**Disponible uniquement pour les sessions de connexion ; les jetons d'API ne peuvent pas accéder à ce point d'accès.**",
+        "description": "Sessions connectées uniquement. `pending` vaut true sur une nouvelle installation dont la prise en main n’est pas terminée (la liste Bien démarrer est affichée) ; `scenePending` vaut true quand l’usage reste à choisir (uniquement sur une nouvelle installation dont le dossier de configuration ne contenait encore aucun fichier) ; `scenes` liste les usages choisis et `done` les éléments marqués comme faits.\n\n**Disponible uniquement pour les sessions de connexion ; les jetons d'API ne peuvent pas accéder à ce point d'accès.**",
         "responses": {
           "200": {
             "description": "Succès"
@@ -43579,7 +43588,7 @@
             "description": "Il manque au jeton la permission requise"
           }
         },
-        "summary": "Indique si l'assistant de premier démarrage est en attente",
+        "summary": "État de la prise en main du premier démarrage",
         "tags": [
           "Système"
         ],
@@ -43589,7 +43598,7 @@
     },
     "/api/system/onboarding/dismiss": {
       "post": {
-        "description": "Disponible uniquement pour les sessions de connexion.\n\n**Disponible uniquement pour les sessions de connexion ; les jetons d'API ne peuvent pas accéder à ce point d'accès.**",
+        "description": "Sessions connectées uniquement. Ensuite la liste Bien démarrer n’est plus affichée et l’usage n’est plus demandé.\n\n**Disponible uniquement pour les sessions de connexion ; les jetons d'API ne peuvent pas accéder à ce point d'accès.**",
         "responses": {
           "200": {
             "description": "Succès"
@@ -43625,7 +43634,172 @@
             "description": "Il manque au jeton la permission requise"
           }
         },
-        "summary": "Terminer ou ignorer l'assistant de premier démarrage",
+        "summary": "Terminer ou fermer la prise en main du premier démarrage",
+        "tags": [
+          "Système"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/onboarding/done": {
+      "post": {
+        "description": "Sessions connectées uniquement. Le corps est `{\"item\": \"check\"}` ; sert aux éléments dont l’achèvement ne peut pas être déduit de la configuration (comme l’autodiagnostic réseau).\n\n**Disponible uniquement pour les sessions de connexion ; les jetons d'API ne peuvent pas accéder à ce point d'accès.**",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "summary": "Marquer un élément de Bien démarrer comme fait",
+        "tags": [
+          "Système"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/onboarding/scenes": {
+      "post": {
+        "description": "Sessions connectées uniquement. Le corps est `{\"scenes\": [...]}` avec `web`, `forward`, `ddns`, `mesh`, `files`, `vps` ou `all` ; une liste vide ignore le choix. Enregistre seulement le choix et termine l’étape des usages ; l’activation des modules s’enregistre via `disabledModules` de `PUT /api/system/settings`.\n\n**Disponible uniquement pour les sessions de connexion ; les jetons d'API ne peuvent pas accéder à ce point d'accès.**",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "summary": "Enregistrer les usages choisis",
+        "tags": [
+          "Système"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/probe": {
+      "post": {
+        "description": "Sessions administrateur uniquement (comptes en lecture seule et jetons d’API refusés). Le corps est `{\"target\": \"http://192.168.1.10:8123\"}` : une adresse `http(s)://` reçoit une requête HEAD vers la racine sans suivre les redirections, `hôte:port` teste seulement une connexion TCP ; délai de 5 secondes. Renvoie `reachable`, `status` (code HTTP), `insecure` (le certificat du backend https échoue à la vérification mais la connexion sans vérification fonctionne), `reason` (cause : refused, timeout, dns, tls, protocol, unreachable, error) et `elapsedMs` ; les en-têtes et le corps de la réponse ne sont jamais renvoyés.\n\n**Disponible uniquement pour les sessions de connexion ; les jetons d'API ne peuvent pas accéder à ce point d'accès.**",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "summary": "Tester si une adresse de backend est joignable",
         "tags": [
           "Système"
         ],

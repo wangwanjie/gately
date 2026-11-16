@@ -1247,6 +1247,9 @@
           "reason": {
             "type": "string"
           },
+          "redirect": {
+            "type": "boolean"
+          },
           "trapPorts": {
             "type": "string"
           },
@@ -2492,6 +2495,9 @@
           "maxConnections": {
             "type": "integer"
           },
+          "maxConnsPerSource": {
+            "type": "integer"
+          },
           "mode": {
             "type": "string"
           },
@@ -2641,6 +2647,9 @@
             "type": "string"
           },
           "maxConnections": {
+            "type": "integer"
+          },
+          "maxConnsPerSource": {
             "type": "integer"
           },
           "name": {
@@ -43543,7 +43552,7 @@
     },
     "/api/system/onboarding": {
       "get": {
-        "description": "로그인 세션에서만 사용할 수 있습니다. 새로 설치한 후 온보딩을 완료하기 전까지 `pending`은 true입니다.\n\n**로그인 세션에서만 사용할 수 있으며, API 토큰으로는 이 엔드포인트에 접근할 수 없습니다.**",
+        "description": "로그인 세션에서만 사용할 수 있습니다. 새로 설치했고 안내를 마치지 않았으면 `pending`이 true(「시작하기」 체크리스트 표시)이고, `scenePending`이 true이면 먼저 용도를 골라야 합니다(새로 설치해 설정 디렉터리에 설정 파일이 아직 없을 때만). `scenes`는 고른 용도, `done`은 수동으로 완료 표시한 항목입니다.\n\n**로그인 세션에서만 사용할 수 있으며, API 토큰으로는 이 엔드포인트에 접근할 수 없습니다.**",
         "responses": {
           "200": {
             "description": "성공"
@@ -43579,7 +43588,7 @@
             "description": "토큰에 필요한 권한이 없음"
           }
         },
-        "summary": "최초 실행 온보딩 필요 여부",
+        "summary": "첫 실행 안내 상태",
         "tags": [
           "시스템"
         ],
@@ -43589,7 +43598,7 @@
     },
     "/api/system/onboarding/dismiss": {
       "post": {
-        "description": "로그인 세션에서만 사용할 수 있습니다.\n\n**로그인 세션에서만 사용할 수 있으며, API 토큰으로는 이 엔드포인트에 접근할 수 없습니다.**",
+        "description": "로그인 세션에서만 사용할 수 있습니다. 이후 「시작하기」 체크리스트를 표시하지 않고 용도도 묻지 않습니다.\n\n**로그인 세션에서만 사용할 수 있으며, API 토큰으로는 이 엔드포인트에 접근할 수 없습니다.**",
         "responses": {
           "200": {
             "description": "성공"
@@ -43625,7 +43634,172 @@
             "description": "토큰에 필요한 권한이 없음"
           }
         },
-        "summary": "최초 실행 온보딩 완료 또는 건너뛰기",
+        "summary": "첫 실행 안내 완료 또는 닫기",
+        "tags": [
+          "시스템"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/onboarding/done": {
+      "post": {
+        "description": "로그인 세션에서만 사용할 수 있습니다. body는 `{\"item\": \"check\"}`이며, 설정으로 완료 여부를 판단할 수 없는 항목(네트워크 자가 진단 등)에 사용합니다.\n\n**로그인 세션에서만 사용할 수 있으며, API 토큰으로는 이 엔드포인트에 접근할 수 없습니다.**",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "summary": "「시작하기」 체크리스트 항목을 완료로 표시",
+        "tags": [
+          "시스템"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/onboarding/scenes": {
+      "post": {
+        "description": "로그인 세션에서만 사용할 수 있습니다. body는 `{\"scenes\": [...]}`이며 `web`, `forward`, `ddns`, `mesh`, `files`, `vps`, `all` 중에서 고릅니다. 비어 있으면 선택을 건너뜁니다. 선택을 기록하고 용도 선택을 마칠 뿐이며, 기능 모듈 스위치는 `PUT /api/system/settings`의 `disabledModules`로 저장합니다.\n\n**로그인 세션에서만 사용할 수 있으며, API 토큰으로는 이 엔드포인트에 접근할 수 없습니다.**",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "summary": "고른 용도 기록",
+        "tags": [
+          "시스템"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/probe": {
+      "post": {
+        "description": "관리자 로그인 세션에서만 사용할 수 있습니다(읽기 전용 계정과 API 토큰은 호출할 수 없음). body는 `{\"target\": \"http://192.168.1.10:8123\"}`: `http(s)://` 주소는 루트 경로로 리디렉션을 따르지 않는 HEAD 요청을 한 번 보내고, `호스트:포트`는 TCP 연결만 시험합니다. 시간 제한 5초. `reachable`, `status`(HTTP 상태 코드), `insecure`(https 백엔드 인증서가 검증에 실패하지만 검증을 건너뛰면 연결됨), `reason`(연결할 수 없는 이유: refused, timeout, dns, tls, protocol, unreachable, error), `elapsedMs`를 반환하며 응답 헤더와 본문은 반환하지 않습니다.\n\n**로그인 세션에서만 사용할 수 있으며, API 토큰으로는 이 엔드포인트에 접근할 수 없습니다.**",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "summary": "백엔드 주소에 연결할 수 있는지 시험",
         "tags": [
           "시스템"
         ],

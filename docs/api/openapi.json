@@ -1247,6 +1247,9 @@
           "reason": {
             "type": "string"
           },
+          "redirect": {
+            "type": "boolean"
+          },
           "trapPorts": {
             "type": "string"
           },
@@ -2492,6 +2495,9 @@
           "maxConnections": {
             "type": "integer"
           },
+          "maxConnsPerSource": {
+            "type": "integer"
+          },
           "mode": {
             "type": "string"
           },
@@ -2641,6 +2647,9 @@
             "type": "string"
           },
           "maxConnections": {
+            "type": "integer"
+          },
+          "maxConnsPerSource": {
             "type": "integer"
           },
           "name": {
@@ -43543,7 +43552,7 @@
     },
     "/api/system/onboarding": {
       "get": {
-        "description": "仅登录会话可用。全新安装且尚未完成引导时 `pending` 为 true。\n\n**仅登录会话可用，API 令牌无法访问此接口。**",
+        "description": "仅登录会话可用。全新安装且尚未完成引导时 `pending` 为 true（显示「开始使用」清单）；`scenePending` 为 true 时需要先选择使用场景（只在全新安装、配置目录里还没有任何配置文件时出现）；`scenes` 为选择的使用场景，`done` 为手动标记完成的清单项。\n\n**仅登录会话可用，API 令牌无法访问此接口。**",
         "responses": {
           "200": {
             "description": "成功"
@@ -43579,7 +43588,7 @@
             "description": "令牌缺少所需权限"
           }
         },
-        "summary": "是否需要首次启动引导",
+        "summary": "首次启动引导状态",
         "tags": [
           "系统"
         ],
@@ -43589,7 +43598,7 @@
     },
     "/api/system/onboarding/dismiss": {
       "post": {
-        "description": "仅登录会话可用。\n\n**仅登录会话可用，API 令牌无法访问此接口。**",
+        "description": "仅登录会话可用。之后不再显示「开始使用」清单，也不再询问使用场景。\n\n**仅登录会话可用，API 令牌无法访问此接口。**",
         "responses": {
           "200": {
             "description": "成功"
@@ -43625,7 +43634,172 @@
             "description": "令牌缺少所需权限"
           }
         },
-        "summary": "完成或跳过首次启动引导",
+        "summary": "完成或关闭首次启动引导",
+        "tags": [
+          "系统"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/onboarding/done": {
+      "post": {
+        "description": "仅登录会话可用。body 为 `{\"item\": \"check\"}`，用于无法从配置判断是否完成的项目（如网络自检）。\n\n**仅登录会话可用，API 令牌无法访问此接口。**",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "summary": "把「开始使用」清单项标记为完成",
+        "tags": [
+          "系统"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/onboarding/scenes": {
+      "post": {
+        "description": "仅登录会话可用。body 为 `{\"scenes\": [...]}`，可选 `web`、`forward`、`ddns`、`mesh`、`files`、`vps`、`all`，为空表示跳过选择。只记录选择并结束场景选择，功能模块开关通过 `PUT /api/system/settings` 的 `disabledModules` 保存。\n\n**仅登录会话可用，API 令牌无法访问此接口。**",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "summary": "记录选择的使用场景",
+        "tags": [
+          "系统"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/probe": {
+      "post": {
+        "description": "仅管理员登录会话可用（只读账号与 API 令牌不能调用）。body 为 `{\"target\": \"http://192.168.1.10:8123\"}`：`http(s)://` 地址向根路径发一次不跟随跳转的 HEAD 请求，`主机:端口` 只测试 TCP 连接，5 秒超时。返回 `reachable`、`status`（HTTP 状态码）、`insecure`（https 后端证书无法通过校验、跳过校验后可连接）、`reason`（不可达的类别：refused、timeout、dns、tls、protocol、unreachable、error）与 `elapsedMs`，不返回响应头和响应体。\n\n**仅登录会话可用，API 令牌无法访问此接口。**",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "summary": "测试后端地址是否可达",
         "tags": [
           "系统"
         ],

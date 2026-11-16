@@ -1247,6 +1247,9 @@
           "reason": {
             "type": "string"
           },
+          "redirect": {
+            "type": "boolean"
+          },
           "trapPorts": {
             "type": "string"
           },
@@ -2492,6 +2495,9 @@
           "maxConnections": {
             "type": "integer"
           },
+          "maxConnsPerSource": {
+            "type": "integer"
+          },
           "mode": {
             "type": "string"
           },
@@ -2641,6 +2647,9 @@
             "type": "string"
           },
           "maxConnections": {
+            "type": "integer"
+          },
+          "maxConnsPerSource": {
             "type": "integer"
           },
           "name": {
@@ -43543,7 +43552,7 @@
     },
     "/api/system/onboarding": {
       "get": {
-        "description": "Nur für Anmeldesitzungen verfügbar. Bei einer Neuinstallation ist `pending` true, bis die Ersteinrichtung abgeschlossen ist.\n\n**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",
+        "description": "Nur für angemeldete Sitzungen. `pending` ist true bei einer Neuinstallation mit unvollständiger Einführung (die Checkliste „Erste Schritte“ wird angezeigt); `scenePending` ist true, solange der Einsatzzweck noch gewählt werden muss (nur bei einer Neuinstallation, deren Konfigurationsverzeichnis noch keine Konfigurationsdateien enthielt); `scenes` enthält die gewählten Einsatzzwecke, `done` die als erledigt markierten Punkte.\n\n**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",
         "responses": {
           "200": {
             "description": "Erfolgreich"
@@ -43579,7 +43588,7 @@
             "description": "Dem Token fehlt die erforderliche Berechtigung"
           }
         },
-        "summary": "Ob die Ersteinrichtung aussteht",
+        "summary": "Status der Einführung beim ersten Start",
         "tags": [
           "System"
         ],
@@ -43589,7 +43598,7 @@
     },
     "/api/system/onboarding/dismiss": {
       "post": {
-        "description": "Nur für Anmeldesitzungen verfügbar.\n\n**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",
+        "description": "Nur für angemeldete Sitzungen. Danach wird die Checkliste „Erste Schritte“ nicht mehr angezeigt und der Einsatzzweck nicht mehr abgefragt.\n\n**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",
         "responses": {
           "200": {
             "description": "Erfolgreich"
@@ -43625,7 +43634,172 @@
             "description": "Dem Token fehlt die erforderliche Berechtigung"
           }
         },
-        "summary": "Ersteinrichtung abschließen oder überspringen",
+        "summary": "Einführung beim ersten Start abschließen oder schließen",
+        "tags": [
+          "System"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/onboarding/done": {
+      "post": {
+        "description": "Nur für angemeldete Sitzungen. Der Body ist `{\"item\": \"check\"}`; für Punkte, deren Erledigung sich nicht aus der Konfiguration ablesen lässt (etwa der Netzwerk-Selbsttest).\n\n**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "summary": "Punkt der Checkliste „Erste Schritte“ als erledigt markieren",
+        "tags": [
+          "System"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/onboarding/scenes": {
+      "post": {
+        "description": "Nur für angemeldete Sitzungen. Der Body ist `{\"scenes\": [...]}` mit `web`, `forward`, `ddns`, `mesh`, `files`, `vps` oder `all`; eine leere Liste überspringt die Auswahl. Speichert nur die Auswahl und beendet den Schritt; Module werden über `disabledModules` von `PUT /api/system/settings` geschaltet.\n\n**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "summary": "Gewählte Einsatzzwecke speichern",
+        "tags": [
+          "System"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/probe": {
+      "post": {
+        "description": "Nur für Administrator-Sitzungen (schreibgeschützte Konten und API-Token sind ausgeschlossen). Der Body ist `{\"target\": \"http://192.168.1.10:8123\"}`: An eine `http(s)://`-Adresse geht eine HEAD-Anfrage an den Wurzelpfad ohne Weiterleitungen zu folgen, `Host:Port` testet nur eine TCP-Verbindung; Zeitlimit 5 Sekunden. Liefert `reachable`, `status` (HTTP-Statuscode), `insecure` (das Zertifikat des https-Backends besteht die Prüfung nicht, ohne Prüfung klappt die Verbindung), `reason` (Grund: refused, timeout, dns, tls, protocol, unreachable, error) und `elapsedMs`; Antwort-Header und -Body werden nie zurückgegeben.\n\n**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "summary": "Testen, ob eine Backend-Adresse erreichbar ist",
         "tags": [
           "System"
         ],

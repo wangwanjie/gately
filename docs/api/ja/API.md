@@ -963,8 +963,11 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/system/restore` | ログインセッションのみ | バックアップから設定を復元 |
 | POST | `/api/system/restart` | ログインセッションのみ | Gately を再起動 |
 | POST | `/api/system/selfcheck` | ログインセッションのみ | ネットワークと設定のセルフチェック |
-| GET | `/api/system/onboarding` | ログインセッションのみ | 初回起動セットアップが必要かどうか |
-| POST | `/api/system/onboarding/dismiss` | ログインセッションのみ | 初回起動セットアップを完了またはスキップ |
+| GET | `/api/system/onboarding` | ログインセッションのみ | 初回起動ガイドの状態 |
+| POST | `/api/system/onboarding/dismiss` | ログインセッションのみ | 初回起動ガイドを完了または閉じる |
+| POST | `/api/system/onboarding/scenes` | ログインセッションのみ | 選んだ用途を記録 |
+| POST | `/api/system/onboarding/done` | ログインセッションのみ | 「はじめに」チェックリストの項目を完了にする |
+| POST | `/api/system/probe` | ログインセッションのみ | バックエンドのアドレスに到達できるか試す |
 | GET | `/api/openapi.json` | 任意の有効なトークン | この API の OpenAPI 定義を取得 |
 
 ## 設定のインポート
@@ -1540,6 +1543,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `hits` | マップ of integer |
 | `openPorts` | integer |
 | `reason` | string |
+| `redirect` | boolean |
 | `trapPorts` | string |
 | `trapSkipped` | 配列 of integer |
 | `version` | string |
@@ -2068,6 +2072,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `listenAddress` | string |
 | `listenPorts` | string |
 | `maxConnections` | integer |
+| `maxConnsPerSource` | integer |
 | `mode` | string |
 | `name` | string |
 | `protocols` | 配列 of string |
@@ -2119,6 +2124,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `listenAddress` | string |
 | `listenPorts` | string |
 | `maxConnections` | integer |
+| `maxConnsPerSource` | integer |
 | `name` | string |
 | `protocols` | 配列 of string |
 | `proxyProtocol` | string |
