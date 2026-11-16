@@ -459,6 +459,9 @@ func (a *App) run(parent context.Context) error {
 		a.closeLogs()
 		return err
 	}
+	// 登记后台实际监听的地址（-listen 覆盖时为覆盖后的地址）：Web 服务只把后台登录 Cookie 转给反向代理到这些地址的站点后端
+	adminAddrs := []string{httpLn.Addr().String()}
+	defer httpx.SetAdminListen(nil)
 	go func() {
 		a.sysLogs.Add(logbuf.LevelInfo, "", "管理界面监听 "+s.Listen)
 		errCh <- servers[0].Serve(&denyListener{Listener: httpLn, a: a})
@@ -475,6 +478,7 @@ func (a *App) run(parent context.Context) error {
 			a.sysLogs.Add(logbuf.LevelError, "", "HTTPS 管理界面监听失败: "+err.Error())
 		} else {
 			a.httpsReady.Store(true)
+			adminAddrs = append(adminAddrs, ln.Addr().String())
 			a.sysLogs.Add(logbuf.LevelInfo, "", "HTTPS 管理界面监听 "+s.HTTPSListen)
 			go func() {
 				if err := tlsSrv.ServeTLS(&denyListener{Listener: ln, a: a}, "", ""); err != nil && !errors.Is(err, http.ErrServerClosed) {
@@ -483,6 +487,7 @@ func (a *App) run(parent context.Context) error {
 			}()
 		}
 	}
+	httpx.SetAdminListen(adminAddrs)
 	if a.opts.GatewaySocket != "" {
 		// 统一网关监听失败只记录日志，不影响 TCP 管理界面
 		gwSrv := &http.Server{Handler: a.gatewayHandler(a.opts.GatewayPrefix, handler), ReadHeaderTimeout: 10 * time.Second}
