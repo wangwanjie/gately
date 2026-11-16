@@ -162,6 +162,10 @@ type Module struct {
 	loadErr error
 	// accountsKey 为当前服务使用的账号指纹，共享用户变化后据此判断是否需要重启
 	accountsKey string
+	// accounts 为当前服务使用的账号，只改了密码时据此找出改了密码的用户
+	accounts []account
+	// throttle 为认证失败限流，由模块持有：修改设置或共享用户后重启服务，失败次数也不清零
+	throttle fileusers.Throttle
 }
 
 // New 创建模块。
@@ -229,7 +233,8 @@ func (m *Module) Init(env module.Env) error {
 	return nil
 }
 
-// reloadShared 在共享用户修改后按需重启服务。重启会断开现有连接，因此只在本服务实际使用的账号变化时进行。
+// reloadShared 在共享用户修改后按需重启服务。重启会断开现有连接，因此只在本服务实际使用的账号变化时进行；
+// 只改了密码（含共享用户自助修改密码）时不重启：换用新密码，只断开改了密码的用户已登录的连接，其他用户不受影响。
 func (m *Module) reloadShared() {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -238,6 +243,13 @@ func (m *Module) reloadShared() {
 	}
 	accounts, _ := buildAccounts(m.settings, fileusers.Default.List())
 	if accountsKey(accounts) == m.accountsKey {
+		return
+	}
+	if accountsShape(accounts) == accountsShape(m.accounts) {
+		changed := passwordChanged(m.accounts, accounts)
+		n := m.srv.updatePasswords(accounts, changed)
+		m.accounts, m.accountsKey = accounts, accountsKey(accounts)
+		m.logs.Add(logbuf.LevelInfo, "", fmt.Sprintf("共享用户 %s 的密码已修改，已断开其 %d 个连接", strings.Join(changed, ", "), n))
 		return
 	}
 	m.logs.Add(logbuf.LevelInfo, "", "共享用户已修改，重新加载 SMB 服务")
@@ -281,14 +293,14 @@ func (m *Module) restartLocked() {
 	for _, is := range issues {
 		m.logs.Add(logbuf.LevelWarn, "", issueLogText(is))
 	}
-	srv, err := startServer(m.settings, accounts, m.logs)
+	srv, err := startServer(m.settings, accounts, m.logs, &m.throttle)
 	if err != nil {
 		m.err = err.Error()
 		m.logs.Add(logbuf.LevelError, "", "监听失败: "+err.Error())
 		return
 	}
 	m.srv = srv
-	m.accountsKey = accountsKey(accounts)
+	m.accounts, m.accountsKey = accounts, accountsKey(accounts)
 	if m.settings.SharedUsers {
 		m.logs.Add(logbuf.LevelInfo, "", fmt.Sprintf("SMB 监听 %s（%d 个用户，其中 %d 个共享用户）", srv.Addr(), len(accounts), len(accounts)-len(m.settings.Users)))
 	} else {

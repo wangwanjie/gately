@@ -1,4 +1,4 @@
-// Gately 修改：按客户端请求的格式回复裸 NTLMSSP 或 SPNEGO；AES-256 时另备 L=256 的签名密钥，签名密钥的读写都经过 signingMu（见 parent/gately.go）；仅在 Linux 与 macOS 编译（构建约束）。
+// Gately 修改：按客户端请求的格式回复裸 NTLMSSP 或 SPNEGO；AES-256 时另备 L=256 的签名密钥，签名密钥的读写都经过 signingMu（见 parent/gately.go）；仅在 Linux 与 macOS 编译（构建约束）；UsersFunc 每次认证时读取用户列表。
 
 //go:build linux || darwin
 
@@ -492,8 +492,11 @@ type SessionSetupHandler struct {
 	Conn     *Connection
 	Sessions *SessionTable
 	Users    []config.UserConfig
-	Shares   []config.ShareConfig
-	Log      *slog.Logger
+	// UsersFunc 为 Gately 新增：非空时每次认证都调用它取得用户列表，取代 Users，
+	// 服务运行中修改密码无需重启、不断开其他用户
+	UsersFunc func() []config.UserConfig
+	Shares    []config.ShareConfig
+	Log       *slog.Logger
 
 	// RequireEncryption mirrors the server's encryption policy. It decides
 	// whether the SESSION_SETUP response carries SMB2_SESSION_FLAG_ENCRYPT_DATA,
@@ -724,12 +727,20 @@ func (h *SessionSetupHandler) isAnonymous(name string) bool {
 	if name != "" && !strings.EqualFold(name, "GUEST") {
 		return false
 	}
-	for i := range h.Users {
-		if strings.EqualFold(h.Users[i].Name, name) {
+	for _, u := range h.users() {
+		if strings.EqualFold(u.Name, name) {
 			return false
 		}
 	}
 	return true
+}
+
+// users 返回当前的用户列表：设置了 UsersFunc 时每次重新读取。
+func (h *SessionSetupHandler) users() []config.UserConfig {
+	if h.UsersFunc != nil {
+		return h.UsersFunc()
+	}
+	return h.Users
 }
 
 // handleType3 在认证前向限流器占位：来源失败过多时直接拒绝并写日志，否则按结果记录成功或失败。
@@ -764,9 +775,10 @@ func (h *SessionSetupHandler) verifyType3(rw io.ReadWriter, hdr smb2.Header, typ
 	}
 
 	var user *config.UserConfig
-	for i := range h.Users {
-		if strings.EqualFold(h.Users[i].Name, auth.UserName) {
-			user = &h.Users[i]
+	users := h.users()
+	for i := range users {
+		if strings.EqualFold(users[i].Name, auth.UserName) {
+			user = &users[i]
 			break
 		}
 	}

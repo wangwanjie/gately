@@ -1,4 +1,4 @@
-// Gately 修改：仅在 Linux 与 macOS 编译（构建约束）；客户端给出的偏移与长度改用 bounds 包在 uint64 中判断边界；连接与工作协程中的 panic 只断开本连接（见 parent/gately_recover.go）；认证前的截止时间、帧大小与并发上限（见 parent/gately_preauth.go）。
+// Gately 修改：仅在 Linux 与 macOS 编译（构建约束）；客户端给出的偏移与长度改用 bounds 包在 uint64 中判断边界；连接与工作协程中的 panic 只断开本连接（见 parent/gately_recover.go）；认证前的截止时间、帧大小与并发上限（见 parent/gately_preauth.go）；ConnOptions.UsersFunc 传给 SESSION_SETUP。
 
 //go:build linux || darwin
 
@@ -96,6 +96,9 @@ type ConnOptions struct {
 
 	// PreAuth 为 Gately 新增：认证完成前的超时、单帧上限与并发上限（见 gately_preauth.go），为空时不限制。
 	PreAuth *PreAuthLimits
+
+	// UsersFunc 为 Gately 新增：非空时每次认证都调用它取得用户列表，取代 Users（见 SessionSetupHandler.UsersFunc）。
+	UsersFunc func() []config.UserConfig
 }
 
 // Bounds on per-connection concurrency.
@@ -453,6 +456,7 @@ func ServeConn(ctx context.Context, c net.Conn, log *slog.Logger, maxFrame uint3
 		Conn:              conn,
 		Sessions:          sessions,
 		Users:             opts.Users,
+		UsersFunc:         opts.UsersFunc,
 		Shares:            opts.Shares,
 		Log:               log,
 		RequireEncryption: opts.RequireEncryption,

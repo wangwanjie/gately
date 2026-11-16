@@ -962,6 +962,7 @@
   "共享用户 %s 的 TOTP 密钥无效": "ungültiger TOTP-Schlüssel für gemeinsamen Benutzer %s",
   "共享用户 %s 的分组 %q 无效（不能包含空格或逗号）": "Die Gruppe %[2]q des gemeinsamen Benutzers %[1]s ist ungültig (keine Leerzeichen oder Kommas)",
   "共享用户 %s 的密码哈希无效": "ungültiger Passwort-Hash für gemeinsamen Benutzer %s",
+  "共享用户 %s 的密码已修改，已断开其 %d 个连接": "Passwort des gemeinsamen Benutzers %s geändert; %d seiner Verbindungen getrennt",
   "共享用户 %s 的密码是 bcrypt 哈希，SMB 需要明文密码，已跳过": "Der gemeinsame Benutzer %s hat einen bcrypt-Passworthash; SMB braucht das Klartextpasswort, übersprungen",
   "共享用户 %s 的用户名不能用于 SMB，已跳过": "Der Name des gemeinsamen Benutzers %s kann nicht für SMB verwendet werden, übersprungen",
   "共享用户 %s 的目录名称不能作为 SMB 共享名或重复，已跳过": "Ein Verzeichnisname des gemeinsamen Benutzers %s ist als SMB-Freigabename ungültig oder doppelt, übersprungen",

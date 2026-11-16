@@ -331,8 +331,8 @@ func TestLogHandlerFilters(t *testing.T) {
 	}
 }
 
-// TestAuthThrottle 验证同一来源认证失败 10 次后被拒绝（即使密码正确）并写入日志，
-// 重启服务后清空计数。
+// TestAuthThrottle 验证同一来源认证失败 10 次后被拒绝（即使密码正确）并写入日志；
+// 限流器由模块持有，重启服务后计数仍然保留，不能借修改设置或共享用户触发重启来清零。
 func TestAuthThrottle(t *testing.T) {
 	root := t.TempDir()
 	m, port := startTestModule(t, Settings{Users: []User{{Name: "alice", Password: "p1", Root: root}}})
@@ -351,8 +351,8 @@ func TestAuthThrottle(t *testing.T) {
 	m.mu.Lock()
 	m.restartLocked()
 	m.mu.Unlock()
-	if _, err := dial(t, port, "alice", "p1"); err != nil {
-		t.Fatalf("重启后限流应清空: %v", err)
+	if _, err := dial(t, port, "alice", "p1"); err == nil {
+		t.Fatal("重启服务后失败计数应保留")
 	}
 }
 
