@@ -2266,6 +2266,7 @@
   "查询 %s 的权威服务器失败: %w": "Falha ao consultar os servidores autoritativos de %s: %w",
   "查询操作审计日志": "Consultar o log de auditoria",
   "查询网关外网地址失败，按单层 NAT 处理: %v": "Falha ao consultar o endereço externo do gateway; tratando como NAT único: %v",
+  "标准错误输出写入过慢，有 %d 行日志没有回显（日志页与日志文件不受影响）": "A gravação na saída de erro padrão está lenta demais; %d linhas de log não foram exibidas (a página de logs e os arquivos de log não são afetados)",
   "标签页图标: %w": "Ícone da aba: %w",
   "标签页标题": "Título da aba",
   "校验终端两步验证码": "Verificar o código de verificação em duas etapas do terminal",

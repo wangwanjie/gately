@@ -2266,6 +2266,7 @@
   "查询 %s 的权威服务器失败: %w": "Abfrage der autoritativen Server von %s fehlgeschlagen: %w",
   "查询操作审计日志": "Audit-Protokoll abfragen",
   "查询网关外网地址失败，按单层 NAT 处理: %v": "Externe Adresse des Gateways konnte nicht abgefragt werden, wird als einfaches NAT behandelt: %v",
+  "标准错误输出写入过慢，有 %d 行日志没有回显（日志页与日志文件不受影响）": "Das Schreiben auf die Standardfehlerausgabe ist zu langsam; %d Protokollzeilen wurden nicht ausgegeben (Protokollseite und Protokolldateien sind nicht betroffen)",
   "标签页图标: %w": "Tab-Symbol: %w",
   "标签页标题": "Tab-Titel",
   "校验终端两步验证码": "Code der Zwei-Faktor-Authentifizierung des Terminals prüfen",
