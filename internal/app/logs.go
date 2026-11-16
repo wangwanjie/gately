@@ -126,6 +126,38 @@ func echoTranslate(source, msg, format string, args logbuf.ArgLens) (string, str
 	return i18n.TrLogSource(lang, source), i18n.TrFormatLines(lang, format, msg, args.Slice())
 }
 
+// translateLogMessage 按 lang 翻译一条日志的内容。
+func translateLogMessage(lang string, e *logbuf.Entry) string {
+	return i18n.TrFormat(lang, e.Format, e.Message, e.Args.Slice())
+}
+
+// translateLogEntries 把日志接口返回的日志按 lang 翻译：来源、内容与字段值，与翻译中间件对日志接口的处理范围相同。
+// 字段表与缓冲中的日志共用，有字段需要翻译时换成新的表，不修改原日志。
+func translateLogEntries(lang string, entries []logbuf.Entry) {
+	for i := range entries {
+		e := &entries[i]
+		e.Message = translateLogMessage(lang, e)
+		e.Source = i18n.Tr(lang, e.Source)
+		var fields logbuf.Fields
+		for k, v := range e.Fields {
+			tr := i18n.Tr(lang, v)
+			if tr == v {
+				continue
+			}
+			if fields == nil {
+				fields = make(logbuf.Fields, len(e.Fields))
+				for k2, v2 := range e.Fields {
+					fields[k2] = v2
+				}
+			}
+			fields[k] = tr
+		}
+		if fields != nil {
+			e.Fields = fields
+		}
+	}
+}
+
 // validateLogDir 校验日志目录的格式：必须是绝对路径，不能是根目录，不能含控制字符。
 func validateLogDir(dir string) error {
 	if dir == "" {
@@ -342,10 +374,13 @@ func (a *App) logExportHandler(buf *logbuf.Buffer, name string) http.HandlerFunc
 			lang = l
 		}
 		tr := func(s string) string { return s }
+		trMsg := func(e *logbuf.Entry) string { return e.Message }
 		if lang != i18n.SourceLang {
 			tr = func(s string) string { return i18n.Tr(lang, s) }
+			trMsg = func(e *logbuf.Entry) string { return translateLogMessage(lang, e) }
 			if f != nil {
 				f.Translate = tr
+				f.TranslateMessage = trMsg
 			}
 		}
 		ext, ctype := "jsonl", "application/x-ndjson; charset=utf-8"
@@ -368,7 +403,8 @@ func (a *App) logExportHandler(buf *logbuf.Buffer, name string) http.HandlerFunc
 				redactLogEntry(&out)
 			}
 			out.Source = tr(out.Source)
-			out.Message = tr(out.Message)
+			// 脱敏改动过内容时格式串与内容对不上，translateLogMessage 会自动改为整句翻译
+			out.Message = trMsg(&out)
 			return out
 		}
 		bw := bufio.NewWriterSize(w, 64<<10)

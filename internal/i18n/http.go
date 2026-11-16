@@ -3,6 +3,7 @@ package i18n
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"net"
@@ -120,9 +121,19 @@ func Middleware(next http.Handler) http.Handler {
 			return
 		}
 		tw := &transWriter{ResponseWriter: w, lang: lang, path: r.URL.Path, get: r.Method == http.MethodGet}
-		next.ServeHTTP(tw, r)
+		next.ServeHTTP(tw, r.WithContext(context.WithValue(r.Context(), transWriterKey{}, tw)))
 		tw.finish()
 	})
+}
+
+type transWriterKey struct{}
+
+// SkipTranslation 声明本次请求的成功响应已由处理器按请求语言翻译好（见 RequestLang），中间件原样输出。
+// 须在写出响应之前调用；错误响应（状态码 >= 400）仍由中间件翻译。不经过 Middleware 的请求调用它没有任何效果。
+func SkipTranslation(r *http.Request) {
+	if tw, ok := r.Context().Value(transWriterKey{}).(*transWriter); ok {
+		tw.skip = true
+	}
 }
 
 type transWriter struct {
@@ -136,6 +147,8 @@ type transWriter struct {
 	// capture 为 true 时响应体被缓存，结束后翻译再输出
 	capture bool
 	decided bool
+	// skip 为 true 时成功响应不再翻译，见 SkipTranslation
+	skip bool
 }
 
 func (t *transWriter) decide(status int) {
@@ -150,7 +163,7 @@ func (t *transWriter) decide(status int) {
 	switch {
 	case status >= 400 && (isJSON || isText):
 		t.capture = true
-	case status == http.StatusOK && isJSON && t.get && !skipTranslate(t.path):
+	case status == http.StatusOK && isJSON && t.get && !t.skip && !skipTranslate(t.path):
 		t.capture = true
 	}
 }

@@ -1005,10 +1005,19 @@ func (a *App) logsHandler(buf *logbuf.Buffer) http.HandlerFunc {
 			return
 		}
 		// 返回的日志会按请求语言翻译，关键词也要能匹配译文
-		if lang := i18n.RequestLang(r); f != nil && lang != i18n.SourceLang {
+		lang := i18n.RequestLang(r)
+		if f != nil && lang != i18n.SourceLang {
 			f.Translate = func(s string) string { return i18n.Tr(lang, s) }
+			f.TranslateMessage = func(e *logbuf.Entry) string { return translateLogMessage(lang, e) }
 		}
-		httpx.OK(w, buf.QueryContext(r.Context(), since, before, limit, f))
+		entries := buf.QueryContext(r.Context(), since, before, limit, f)
+		// 这里直接按请求语言翻译好再返回：内存里的日志带着格式串，一次查表就能得到译文，
+		// 交给翻译中间件则只能拿到渲染后的文字、逐句整句匹配。只读身份的响应还要先脱敏再翻译，仍由中间件处理
+		if lang != i18n.SourceLang && !needsRedaction(r) {
+			translateLogEntries(lang, entries)
+			i18n.SkipTranslation(r)
+		}
+		httpx.OK(w, entries)
 	}
 }
 
