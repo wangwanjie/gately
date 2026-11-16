@@ -97,6 +97,58 @@
       "tour": "Voir la visite de 2 minutes",
       "close": "Fermer"
     },
+    "replaces": {
+      "title": "Ce que Gately remplace",
+      "desc": "Les outils que vous utilisez aujourd'hui et le module Gately qui prend le relais.",
+      "note": "Vous pouvez désactiver les modules inutiles, ou générer sur <a href=\"https://build.gately.cn\" target=\"_blank\" rel=\"noreferrer\">build.gately.cn</a> un binaire ne contenant que les modules choisis.",
+      "items": [
+        {
+          "from": "nginx, Nginx Proxy Manager",
+          "module": "Services Web",
+          "text": "Reverse proxy, sites statiques, redirections, HTTP/3, règles d'accès par site ; import de la configuration nginx"
+        },
+        {
+          "from": "certbot, acme.sh",
+          "module": "Certificats SSL",
+          "text": "DNS-01 et HTTP-01, wildcard, renouvellement et déploiement automatiques"
+        },
+        {
+          "from": "ddns-go, scripts DDNS",
+          "module": "DNS dynamique",
+          "text": "Plus de 35 fournisseurs, IPv4 et IPv6"
+        },
+        {
+          "from": "Routage SNI haproxy, sslh",
+          "module": "Routage par protocole",
+          "text": "HTTPS, SSH, RDP et d'autres partagent un seul port"
+        },
+        {
+          "from": "fail2ban",
+          "module": "Prévention d'intrusion",
+          "text": "Règles sur les journaux, ports leurres et détection de scans ; bannissements dans nftables ou iptables"
+        },
+        {
+          "from": "Un WAF séparé",
+          "module": "Pare-feu WAF",
+          "text": "Coraza avec OWASP CRS v4, par site"
+        },
+        {
+          "from": "Une passerelle de connexion devant les applications",
+          "module": "Authentification Web",
+          "text": "Connexion intégrée, TOTP, Passkeys et fournisseur OIDC ; forward auth également pris en charge"
+        },
+        {
+          "from": "frpc, cloudflared et tailscaled lancés à la main",
+          "module": "Réseaux et tunnels",
+          "text": "frp, Cloudflare Tunnel, Tailscale, NetBird et EasyTier gérés, avec installation, mise à jour et retour arrière"
+        },
+        {
+          "from": "Les solutions de perçage NAT sans IPv4 publique",
+          "module": "Traversée STUN",
+          "text": "Perçage TCP et UDP ; les changements d'adresse sont répercutés dans le DNS et les notifications"
+        }
+      ]
+    },
     "featuresTitle": "Les outils réseau du quotidien, prêts à l'emploi",
     "featuresDesc": "Du nom de domaine qui pointe vers chez vous à la protection de toute une série de sites, tout se passe dans la même interface.",
     "features": [

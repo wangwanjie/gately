@@ -97,6 +97,58 @@
       "tour": "2 分間のツアー動画を見る",
       "close": "閉じる"
     },
+    "replaces": {
+      "title": "置き換えられるツール",
+      "desc": "いま使っているツールと、Gately で対応するモジュール。",
+      "note": "不要なモジュールは無効にできます。<a href=\"https://build.gately.cn\" target=\"_blank\" rel=\"noreferrer\">build.gately.cn</a> で必要なモジュールだけを選んだバイナリも作れます。",
+      "items": [
+        {
+          "from": "nginx、Nginx Proxy Manager",
+          "module": "Web サービス",
+          "text": "リバースプロキシ、静的サイト、リダイレクト、HTTP/3、サイトごとのアクセス制御。nginx 設定をインポート可能"
+        },
+        {
+          "from": "certbot、acme.sh",
+          "module": "SSL 証明書",
+          "text": "DNS-01 / HTTP-01、ワイルドカード、自動更新と配布"
+        },
+        {
+          "from": "ddns-go、DDNS スクリプト",
+          "module": "ダイナミック DNS",
+          "text": "35 以上のプロバイダー、IPv4 / IPv6"
+        },
+        {
+          "from": "haproxy の SNI 振り分け、sslh",
+          "module": "プロトコル振り分け",
+          "text": "HTTPS、SSH、RDP などがひとつのポートを共有"
+        },
+        {
+          "from": "fail2ban",
+          "module": "侵入防御",
+          "text": "ログルール、おとりポート、スキャン検知。BAN は nftables / iptables に反映"
+        },
+        {
+          "from": "別途導入した WAF",
+          "module": "WAF ファイアウォール",
+          "text": "Coraza + OWASP CRS v4、サイトごとに有効化"
+        },
+        {
+          "from": "アプリの前に置くログインゲートウェイ",
+          "module": "Web 認証",
+          "text": "組み込みのログイン、二要素認証、Passkey、OIDC プロバイダー。フォワード認証にも対応"
+        },
+        {
+          "from": "手動で動かす frpc、cloudflared、tailscaled",
+          "module": "ネットワーク接続と NAT 越え",
+          "text": "frp、Cloudflare Tunnel、Tailscale、NetBird、EasyTier を管理。インストール、更新、ロールバック付き"
+        },
+        {
+          "from": "グローバル IPv4 がないときのホールパンチング",
+          "module": "STUN 穿孔",
+          "text": "TCP / UDP ホールパンチング。アドレスの変化を DNS と通知に自動反映"
+        }
+      ]
+    },
     "featuresTitle": "よく使うネットワーク機能は、ひと通りそろっています",
     "featuresDesc": "自宅にドメインを向けるところから、ずらりと並んだサイトを守るところまで、ひとつの画面で完結します。",
     "features": [
