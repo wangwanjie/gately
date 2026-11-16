@@ -391,7 +391,7 @@
                       />
                       <el-button text type="danger" :icon="Trash2" @click="site.locations.splice(i, 1)" />
                     </div>
-                    <!-- 去掉路径前缀：/api/zyqd/abc 发往后端为 /abc，相当于 nginx 的 proxy_pass 带 URI（#86） -->
+                    <!-- 去掉路径前缀：/api/users 发往后端为 /users，相当于 nginx 的 proxy_pass 带 URI（#86） -->
                     <el-checkbox v-model="loc.stripPrefix" class="location-strip">{{ t('web.locationStrip') }}</el-checkbox>
                     <!-- 该路径追加的请求头，与站点请求头共用预设和校验 -->
                     <HeaderEditor v-model="loc.requestHeaders" direction="request" :placeholder="t('web.locationHeadersPlaceholder')" :show-help="false" />
