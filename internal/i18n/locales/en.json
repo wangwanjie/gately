@@ -2736,6 +2736,7 @@
   "管理后台登录失败": "Admin console sign-in failed",
   "管理后台登录成功": "Admin console sign-in succeeded",
   "管理后台登录成功的地址 %s 在 %d 小时内免于自动封禁": "Address %s signed in to the admin console successfully and is exempt from automatic bans for %d hours",
+  "管理后台登录成功的地址 %s 在 %d 小时内免于诱饵端口与扫描检测的封禁": "Address %s signed in to the admin console successfully and is exempt from decoy-port and port-scan bans for %d hours",
   "管理后台第三方登录：已迁移 %d 个允许的身份，需在「系统设置 → 第三方登录」填写你自己的 OAuth 应用与回调基础地址后启用": "Admin console third-party sign-in: %d allowed identities migrated; to enable it, set your own OAuth app and callback base URL under \"System settings → Third-party sign-in\"",
   "管理后台访问敏感内容": "Sensitive content accessed in the admin console",
   "管理后台配置变更": "Configuration changed in the admin console",

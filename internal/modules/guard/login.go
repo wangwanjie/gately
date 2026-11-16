@@ -11,9 +11,10 @@ import (
 	"github.com/wangwanjie/gately/internal/trustsrc"
 )
 
-// 管理后台登录成功的地址在一段时间内免于自动封禁：登录要经过 TCP 握手与密码（或 Passkey、飞牛登录态）验证，
-// 地址确实属于管理员。这样即使有人设法让入侵防护针对这个地址（例如诱导共用出口的设备触发规则），
-// 管理员也不会被自己的网关挡在门外。手动封禁不受影响。
+// 管理后台登录成功的地址在一段时间内免于诱饵端口与扫描检测（端口扫描）两类封禁：登录要经过 TCP 握手与密码
+// （或 Passkey、飞牛登录态）验证，地址确实属于管理员。家宽出口由多台设备共用，其中一台做 TCP 打洞时会连接大量
+// 未开放端口，触发扫描检测把整个出口封掉，管理员就进不了自己的网关。
+// 日志规则、Web 路径探测、TLS 握手失败、敲门失败、文件服务登录失败等其他自动封禁照常生效，手动封禁也不受影响。
 var (
 	// loginTrustTTL 为免封时长，可在测试中调整
 	loginTrustTTL = 24 * time.Hour
@@ -24,7 +25,8 @@ var (
 // loginTrustMax 为同时免封的地址数上限，超出时去掉最早到期的
 const loginTrustMax = 64
 
-// loginTrustOwner 为在 trustsrc 中登记的名字：登记后这些地址也加入防火墙的放行集合，诱饵端口与扫描检测不处理它们
+// loginTrustOwner 为在 trustsrc 中登记的名字：登记后这些地址加入防火墙的放行集合，该集合只让诱饵端口与扫描检测的
+// 重定向规则与握手确认跳过它们，不影响封禁集合（已被封禁的地址仍被内核丢弃）
 const loginTrustOwner = "guard-login"
 
 // loginTrust 记录最近登录成功的地址及免封截止时间。
@@ -77,7 +79,7 @@ func (l *loginTrust) publishLocked() {
 	trustsrc.Set(loginTrustOwner, list)
 }
 
-// overlaps 判断将被封禁的网段（IPv6 为 /64）是否包含仍在免封期内的登录地址。
+// overlaps 判断网段（IPv6 为 /64）是否包含仍在免封期内的登录地址。
 func (l *loginTrust) overlaps(p netip.Prefix) bool {
 	now := loginNow()
 	l.mu.Lock()
@@ -98,7 +100,7 @@ func (l *loginTrust) clear() {
 	trustsrc.Clear(loginTrustOwner)
 }
 
-// noteLogin 处理管理后台登录成功事件：地址在 loginTrustTTL 内免于自动封禁。
+// noteLogin 处理管理后台登录成功事件：地址在 loginTrustTTL 内免于诱饵端口与扫描检测的封禁。
 func (m *Module) noteLogin(e events.Event) {
 	a, ok := parseAddr(e.Fields["ip"])
 	if !ok || !a.IsValid() || a.IsUnspecified() {
@@ -109,14 +111,12 @@ func (m *Module) noteLogin(e events.Event) {
 	added := m.started && m.logins.note(a)
 	m.mu.Unlock()
 	if added {
-		m.logs.Logger("").Infof("管理后台登录成功的地址 %s 在 %d 小时内免于自动封禁", banlist.KeyFor(a), int(loginTrustTTL/time.Hour))
+		m.logs.Logger("").Infof("管理后台登录成功的地址 %s 在 %d 小时内免于诱饵端口与扫描检测的封禁", banlist.KeyFor(a), int(loginTrustTTL/time.Hour))
 	}
 }
 
-// ignoreFunc 返回封禁表使用的白名单判断：设置中的白名单（含内网与本机 IPv6 网段）加上最近登录成功的地址。
-func (m *Module) ignoreFunc(s Settings, local []netip.Prefix) func(netip.Prefix) bool {
-	set := s.ignoreSet(local)
-	return func(p netip.Prefix) bool {
-		return set.overlaps(p) || m.logins.overlaps(p)
-	}
+// skipPortBan 判断诱饵端口、扫描检测的封禁是否应跳过该地址：它（IPv6 为所在 /64）与仍在免封期内的登录地址重叠。
+func (m *Module) skipPortBan(a netip.Addr) bool {
+	p, ok := banlist.KeyPrefix(banlist.KeyFor(a))
+	return ok && m.logins.overlaps(p)
 }

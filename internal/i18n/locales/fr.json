@@ -2736,6 +2736,7 @@
   "管理后台登录失败": "Échec de la connexion à l'interface d'administration",
   "管理后台登录成功": "Connexion à l'interface d'administration réussie",
   "管理后台登录成功的地址 %s 在 %d 小时内免于自动封禁": "L'adresse %s s'est connectée à la console d'administration et est exemptée des bannissements automatiques pendant %d heures",
+  "管理后台登录成功的地址 %s 在 %d 小时内免于诱饵端口与扫描检测的封禁": "L'adresse %s s'est connectée à la console d'administration et est exemptée des bannissements liés aux ports leurres et à la détection de scan de ports pendant %d heures",
   "管理后台第三方登录：已迁移 %d 个允许的身份，需在「系统设置 → 第三方登录」填写你自己的 OAuth 应用与回调基础地址后启用": "Connexion tierce de l'interface d'administration : %d identités autorisées migrées ; pour l'activer, renseignez votre propre application OAuth et l'adresse de base de rappel dans « Paramètres système → Connexion tierce »",
   "管理后台访问敏感内容": "Accès à du contenu sensible dans l'interface d'administration",
   "管理后台配置变更": "Configuration modifiée dans l'interface d'administration",
