@@ -21,7 +21,7 @@
         <EntityCard v-bind="bind" :off="!c.enable" :compact="compact || sorting">
           <template #lead>
             <SortCheck v-if="sorting" :gl="gl" :id="it.id" />
-            <el-switch v-else :model-value="c.enable" @change="(v: string | number | boolean) => toggle(c, Boolean(v))" />
+            <el-switch v-else :model-value="c.enable" :aria-label="t('common.toggleItem', { name: c.remark || c.acme?.domains?.[0] || '-' })" @change="(v: string | number | boolean) => toggle(c, Boolean(v))" />
           </template>
           <template #title>
             <span>{{ c.remark || t('ssl.unnamed') }}</span>

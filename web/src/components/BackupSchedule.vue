@@ -36,7 +36,7 @@
     </div>
     <el-empty v-if="!targets.length" :image-size="40" :description="t('backupSchedule.targetsEmpty')" />
     <div v-for="tg in targets" :key="tg.key" class="target">
-      <el-switch :model-value="tg.enable" size="small" @change="(v: string | number | boolean) => toggleTarget(tg, Boolean(v))" />
+      <el-switch :model-value="tg.enable" :aria-label="t('common.toggleItem', { name: tg.name || '-' })" size="small" @change="(v: string | number | boolean) => toggleTarget(tg, Boolean(v))" />
       <div class="t-main">
         <div class="t-name">{{ tg.name }}</div>
         <div class="t-sub mono">{{ mountName(tg.mount) }}:/{{ tg.dir }}</div>

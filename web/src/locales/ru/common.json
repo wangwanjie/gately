@@ -58,6 +58,7 @@
   "advancedChanged": "(изменено: {count})",
   "docs": "Документация",
   "docsTitle": "Открыть документацию по этой странице в новом окне",
+  "toggleItem": "Включить или выключить «{name}»",
   "durationDaysHours": "{d} д {h} ч",
   "durationHoursMinutes": "{h} ч {m} мин",
   "durationMinutes": "{m} мин",

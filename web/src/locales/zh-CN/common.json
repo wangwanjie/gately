@@ -58,6 +58,7 @@
   "advancedChanged": "（{count} 项已修改）",
   "docs": "文档",
   "docsTitle": "在新窗口打开本页的使用文档",
+  "toggleItem": "启用或停用「{name}」",
   "durationDaysHours": "{d} 天 {h} 小时",
   "durationHoursMinutes": "{h} 小时 {m} 分",
   "durationMinutes": "{m} 分钟",

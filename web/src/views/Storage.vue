@@ -25,7 +25,7 @@
             <SortMoves :gl="gl" :it="it" />
           </template>
           <template v-else #actions>
-            <el-switch :model-value="m.enable" size="small" @change="(v: boolean) => toggle(m, v)" />
+            <el-switch :model-value="m.enable" :aria-label="t('common.toggleItem', { name: m.name || '-' })" size="small" @change="(v: boolean) => toggle(m, v)" />
             <el-button text size="small" :icon="Pencil" @click="openEditor(m)">{{ t('common.edit') }}</el-button>
             <el-button text size="small" :icon="CopyPlus" @click="openEditor(m, true)">{{ t('common.duplicate') }}</el-button>
             <el-popconfirm :title="t('storage.confirmRemove')" @confirm="remove(m)">

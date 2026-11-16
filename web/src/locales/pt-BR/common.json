@@ -58,6 +58,7 @@
   "advancedChanged": "({count} alterados)",
   "docs": "Documentação",
   "docsTitle": "Abrir a documentação desta página em uma nova janela",
+  "toggleItem": "Ativar ou desativar \"{name}\"",
   "durationDaysHours": "{d}d {h}h",
   "durationHoursMinutes": "{h}h {m}min",
   "durationMinutes": "{m} min",

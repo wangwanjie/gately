@@ -110,7 +110,7 @@
             <EntityCard v-bind="bind" :off="!j.enable" :compact="compact || sorting">
               <template #lead>
                 <SortCheck v-if="sorting" :gl="gl" :id="it.id" />
-                <el-switch v-else :model-value="j.enable" @change="(v: string | number | boolean) => toggleJail(j, Boolean(v))" />
+                <el-switch v-else :model-value="j.enable" :aria-label="t('common.toggleItem', { name: j.name || '-' })" @change="(v: string | number | boolean) => toggleJail(j, Boolean(v))" />
               </template>
               <template #title>
                 <span>{{ j.name }}</span>

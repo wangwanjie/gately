@@ -35,7 +35,7 @@
             <SortMoves :gl="gl" :it="row" />
           </template>
           <template v-else #actions>
-            <el-switch :model-value="it.enable" size="small" @change="(v: boolean | string | number) => toggle(it, Boolean(v))" />
+            <el-switch :model-value="it.enable" :aria-label="t('common.toggleItem', { name: it.name || '-' })" size="small" @change="(v: boolean | string | number) => toggle(it, Boolean(v))" />
             <el-button text size="small" :icon="RefreshCw" :disabled="!it.enable" @click="restart(it)">{{ t('common.restart') }}</el-button>
             <el-button text size="small" :icon="Pencil" @click="openEditor(it)">{{ t('common.edit') }}</el-button>
             <el-button text size="small" :icon="CopyPlus" @click="openEditor(it, true)">{{ t('common.duplicate') }}</el-button>

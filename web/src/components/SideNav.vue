@@ -1,6 +1,6 @@
 <template>
   <!-- 分组侧边导航：桌面侧栏与移动端抽屉共用 -->
-  <nav class="side-nav" :class="{ collapsed }">
+  <nav class="side-nav" :class="{ collapsed }" :aria-label="t('sideNav.ariaLabel')">
     <div class="brand">
       <AppLogo :size="30" />
       <div v-if="!collapsed" class="brand-text">

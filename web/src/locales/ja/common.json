@@ -58,6 +58,7 @@
   "advancedChanged": "（{count} 件変更済み）",
   "docs": "ドキュメント",
   "docsTitle": "このページのドキュメントを新しいウィンドウで開く",
+  "toggleItem": "「{name}」の有効／無効",
   "durationDaysHours": "{d} 日 {h} 時間",
   "durationHoursMinutes": "{h} 時間 {m} 分",
   "durationMinutes": "{m} 分",

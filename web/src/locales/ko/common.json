@@ -58,6 +58,7 @@
   "advancedChanged": "({count}개 변경됨)",
   "docs": "문서",
   "docsTitle": "이 페이지의 문서를 새 창에서 열기",
+  "toggleItem": "\"{name}\" 사용 또는 사용 안 함",
   "durationDaysHours": "{d}일 {h}시간",
   "durationHoursMinutes": "{h}시간 {m}분",
   "durationMinutes": "{m}분",

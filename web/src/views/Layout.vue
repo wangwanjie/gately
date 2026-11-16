@@ -1,5 +1,7 @@
 <template>
   <div class="layout" :class="{ collapsed }">
+    <!-- 键盘与读屏用户跳过约 40 个导航项，直接进入正文；平时隐藏，获得焦点时显示 -->
+    <a href="#main-content" class="skip-link" @click.prevent="skipToContent">{{ t('layout.skipToContent') }}</a>
     <aside v-if="!isMobile" class="aside">
       <SideNav :collapsed="collapsed" />
       <button class="collapse-btn" :title="collapsed ? t('layout.expandSidebar') : t('layout.collapseSidebar')" @click="toggleCollapse">
@@ -49,7 +51,7 @@
           </el-dropdown>
         </div>
       </header>
-      <main class="content">
+      <main id="main-content" ref="mainEl" class="content" tabindex="-1">
         <!-- 顶部提醒区：高度写入 --g-banners-h，供一屏布局的页面（如系统日志）扣除 -->
         <div ref="bannersEl" class="top-banners">
           <!-- 管理端安全评分不理想时提醒加固：高风险一直显示，建议加固级别可暂缓 7 天。默认密码与弱密码由强制修改对话框处理，不再重复提示 -->
@@ -161,6 +163,13 @@ async function onCommand(cmd: string) {
     // 官网文档：当前页面有对应的模块文档时打开它，否则打开文档首页
     window.open(docsUrl(locale.value, '/docs/' + (pageDoc() || 'guide/quick-start')), '_blank', 'noopener')
   }
+}
+
+// skipToContent 把焦点移到正文（hash 路由下不能用锚点跳转）
+const mainEl = ref<HTMLElement>()
+function skipToContent() {
+  mainEl.value?.focus()
+  mainEl.value?.scrollIntoView()
 }
 
 // pageDoc 返回当前页面对应的文档路径（读取页头上的文档链接），没有时为空
@@ -352,6 +361,27 @@ onMounted(async () => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.skip-link {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 3000;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #fff;
+  background: var(--el-color-primary);
+  text-decoration: none;
+  transform: translateY(-200%);
+}
+.skip-link:focus {
+  transform: none;
+  outline: 2px solid var(--el-color-primary-dark-2);
+  outline-offset: 2px;
+}
+.content:focus {
+  outline: none;
 }
 .content {
   flex: 1;

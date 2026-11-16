@@ -34,7 +34,7 @@
                     <SortMoves :gl="glClients" :it="it" />
                   </template>
                   <template v-else #actions>
-                    <el-switch :model-value="c.enable" size="small" @change="(v: boolean | string | number) => toggleInstance('clients', c.key, Boolean(v))" />
+                    <el-switch :model-value="c.enable" :aria-label="t('common.toggleItem', { name: c.name || '-' })" size="small" @change="(v: boolean | string | number) => toggleInstance('clients', c.key, Boolean(v))" />
                     <el-button text size="small" :icon="RefreshCw" :disabled="!c.enable" @click="restart('clients', c.key)">{{ t('common.restart') }}</el-button>
                     <el-button text size="small" :icon="Pencil" @click="openClient(c)">{{ t('common.edit') }}</el-button>
                     <el-button text size="small" :icon="CopyPlus" @click="openClient(c, true)">{{ t('common.duplicate') }}</el-button>
@@ -92,7 +92,7 @@
                     <SortMoves :gl="glProxies" :it="it" />
                   </template>
                   <template v-else #actions>
-                    <el-switch :model-value="p.enable" size="small" @change="(v: boolean | string | number) => toggleProxy(p, Boolean(v))" />
+                    <el-switch :model-value="p.enable" :aria-label="t('common.toggleItem', { name: p.name || '-' })" size="small" @change="(v: boolean | string | number) => toggleProxy(p, Boolean(v))" />
                     <el-button text size="small" :icon="Pencil" @click="openProxy(p)">{{ t('common.edit') }}</el-button>
                     <el-button text size="small" :icon="CopyPlus" @click="openProxy(p, true)">{{ t('common.duplicate') }}</el-button>
                     <el-popconfirm :title="t('frp.confirmDeleteProxy')" @confirm="removeProxy(p)">
@@ -145,7 +145,7 @@
                     <SortMoves :gl="glServers" :it="it" />
                   </template>
                   <template v-else #actions>
-                    <el-switch :model-value="s.enable" size="small" @change="(v: boolean | string | number) => toggleInstance('servers', s.key, Boolean(v))" />
+                    <el-switch :model-value="s.enable" :aria-label="t('common.toggleItem', { name: s.name || '-' })" size="small" @change="(v: boolean | string | number) => toggleInstance('servers', s.key, Boolean(v))" />
                     <el-button text size="small" :icon="RefreshCw" :disabled="!s.enable" @click="restart('servers', s.key)">{{ t('common.restart') }}</el-button>
                     <el-button text size="small" :icon="Pencil" @click="openServer(s)">{{ t('common.edit') }}</el-button>
                     <el-button text size="small" :icon="CopyPlus" @click="openServer(s, true)">{{ t('common.duplicate') }}</el-button>

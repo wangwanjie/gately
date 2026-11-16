@@ -29,7 +29,7 @@
         <template #title>{{ p.name }}</template>
         <template v-if="p.title || p.subtitle" #sub>{{ [p.title, p.subtitle].filter(Boolean).join(' · ') }}</template>
         <template #status>
-          <el-switch v-if="!isReadonly" :model-value="p.enable" size="small" :loading="toggling[p.key ?? '']" @change="(v: string | number | boolean) => toggle(p, !!v)" />
+          <el-switch v-if="!isReadonly" :model-value="p.enable" :aria-label="t('common.toggleItem', { name: p.name || '-' })" size="small" :loading="toggling[p.key ?? '']" @change="(v: string | number | boolean) => toggle(p, !!v)" />
           <StatusBadge v-else :type="p.enable ? 'running' : 'off'" :text="p.enable ? t('common.enabled') : t('common.disabled')" />
         </template>
         <Field :label="t('panels.links')">
