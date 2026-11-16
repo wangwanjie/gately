@@ -28,6 +28,7 @@ import (
 	"github.com/wangwanjie/gately/internal/crashlog"
 	"github.com/wangwanjie/gately/internal/events"
 	"github.com/wangwanjie/gately/internal/fileusers"
+	"github.com/wangwanjie/gately/internal/fsperm"
 	"github.com/wangwanjie/gately/internal/httpcompress"
 	"github.com/wangwanjie/gately/internal/httpx"
 	"github.com/wangwanjie/gately/internal/i18n"
@@ -163,6 +164,8 @@ func New(opts Options) (_ *App, err error) {
 	}
 	store.EnableHistory(historyKeep, historySkip...)
 	if opts.ApplyDir != "" {
+		// 声明式配置目录里同样是带密钥的配置文件，与配置目录一样不允许被存储挂载、静态站点或文件服务提供出去
+		fsperm.Protect(opts.ApplyDir)
 		n, err := applyConfigDir(store, opts.ApplyDir)
 		if err != nil {
 			return nil, fmt.Errorf("应用声明式配置失败: %w", err)
@@ -265,6 +268,10 @@ func New(opts Options) (_ *App, err error) {
 	// 文件服务共享用户由 WebDAV、FTP、SMB 共用，接口 /api/fileusers 属于应用本身，三个模块都关闭时也能读写
 	if err := fileusers.Default.Init(store); err != nil {
 		return nil, fmt.Errorf("加载文件服务共享用户失败: %w", err)
+	}
+	// 升级前保存的共享用户目录可能与配置目录重叠：这样的目录不再提供，提示用户修改
+	for _, msg := range fileusers.Default.Blocked() {
+		a.sysLogs.Add(logbuf.LevelWarn, "", msg)
 	}
 	// 需要迁移配置的模块先迁移，再统一初始化：迁移可能改写其他模块的配置文件
 	inherits, err := a.migrateModules(opts.Modules)

@@ -18,6 +18,7 @@ import (
 
 	"github.com/wangwanjie/gately/internal/config"
 	"github.com/wangwanjie/gately/internal/crud"
+	"github.com/wangwanjie/gately/internal/fsperm"
 	"github.com/wangwanjie/gately/internal/httpx"
 	"github.com/wangwanjie/gately/internal/logbuf"
 	"github.com/wangwanjie/gately/internal/module"
@@ -117,6 +118,18 @@ func (mt *Mount) Validate() error {
 	return nil
 }
 
+// validate 在 Validate 之外再拒绝与 Gately 配置目录重叠的本地目录：配置目录里有会话签名密钥，
+// 挂载后可经文件管理读出。新增、修改、复制与导入都经过这里。
+func validate(mt *Mount) error {
+	if err := mt.Validate(); err != nil {
+		return err
+	}
+	if mt.Type == TypeLocal {
+		return fsperm.CheckExposable(mt.Path)
+	}
+	return nil
+}
+
 func isWinAbs(p string) bool {
 	return len(p) > 2 && p[1] == ':' && (p[2] == '\\' || p[2] == '/')
 }
@@ -160,7 +173,7 @@ func (m *Module) Init(env module.Env) error {
 		Key:      func(mt *Mount) *string { return &mt.Key },
 		Enabled:  func(mt *Mount) *bool { return &mt.Enable },
 		Group:    func(mt *Mount) *string { return &mt.Group },
-		Validate: func(mt *Mount) error { return mt.Validate() },
+		Validate: validate,
 		Merge:    func(old, updated *Mount) { crud.KeepSecret(old.Password, &updated.Password) },
 		Copy:     func(src, dst *Mount) { crud.KeepSecret(src.Password, &dst.Password) },
 		View:     func(mt *Mount) any { return mt.view() },
@@ -168,6 +181,12 @@ func (m *Module) Init(env module.Env) error {
 		Secrets: func(mt *Mount) map[string]string { return map[string]string{"password": mt.Password} },
 		Changed: m.dropBackend,
 		Removed: m.dropBackend,
+	}
+	// 升级前保存的挂载点没有经过上面的校验：与配置目录重叠的不再提供访问（见 open），这里提示用户修改
+	for _, mt := range m.cfg.Mounts {
+		if mt.Type == TypeLocal && fsperm.Protected(mt.Path) != "" {
+			m.logs.Add(logbuf.LevelWarn, "", fmt.Sprintf("挂载点 %s 的目录 %s 与 Gately 的配置目录重叠，已停止提供访问，请改为其他目录", mt.Name, mt.Path))
+		}
 	}
 	return nil
 }
@@ -227,6 +246,11 @@ func (m *Module) open(key string, write bool) (backend, error) {
 	var err error
 	switch mt.Type {
 	case TypeLocal:
+		// 保存时已拒绝；这里兜住升级前保存的挂载点，以及保存之后目录才被换成指向配置目录的符号链接的情况
+		// （后端按挂载点缓存，修改或停用挂载点后重新打开时再次检查）
+		if err := fsperm.CheckExposable(mt.Path); err != nil {
+			return nil, err
+		}
 		b, err = newLocal(mt.Path)
 	case TypeSMB:
 		b, err = newSMB(mt.URL, mt.Username, mt.Password, mt.Domain)

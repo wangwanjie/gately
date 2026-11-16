@@ -26,7 +26,7 @@ func (m *Module) ImportLucky(doc luckyimport.Document, opts luckyimport.Options)
 			rep.Warnings = append(rep.Warnings, fmt.Sprintf("%s: 跳过，%s", it.Remark, skip))
 			continue
 		}
-		if err := mt.Validate(); err != nil {
+		if err := validate(&mt); err != nil {
 			rep.Warnings = append(rep.Warnings, fmt.Sprintf("%s: 跳过，%v", it.Remark, err))
 			continue
 		}

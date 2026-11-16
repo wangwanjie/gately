@@ -61,7 +61,8 @@ func sharedIssue(u fileusers.User) string {
 func buildAccounts(s Settings, shared []fileusers.User) (out []account, issues []Issue) {
 	local := map[string]bool{}
 	for _, u := range s.Users {
-		out = append(out, account{User: u})
+		// 与配置目录重叠的目录不提供，见 usable
+		out = append(out, account{User: usable(u, nil)})
 		local[strings.ToLower(u.Name)] = true
 	}
 	if !s.SharedUsers {
