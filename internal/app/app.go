@@ -423,7 +423,7 @@ func (a *App) Handler() http.Handler {
 	mux.Handle("/", a.staticHandler())
 	// 压缩放在翻译之外，压缩的是翻译后的最终内容；已预压缩的静态资源自带 Content-Encoding，不会重复压缩
 	// 最外层限制请求体读取速度，登录等未认证接口同样受限
-	return limitBodyRead(securityHeaders(httpcompress.Handler(i18n.Middleware(a.accessControl(httpx.SameOrigin(mux))))))
+	return limitBodyRead(securityHeaders(httpcompress.Handler(i18n.Middleware(a.accessControl(httpx.SameOrigin(apiSecurityHeaders(mux)))))))
 }
 
 // Run 启动所有模块和管理服务，阻塞直到 ctx 取消。收到重启请求时停止全部服务后重新执行自身。
@@ -1072,6 +1072,7 @@ func (a *App) staticHandler() http.Handler {
 		}
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.Header().Set("Cache-Control", "no-cache")
+		w.Header().Set("Content-Security-Policy", uiCSP)
 		_, _ = w.Write(index)
 	})
 }
@@ -1082,6 +1083,30 @@ func securityHeaders(next http.Handler) http.Handler {
 		h.Set("X-Content-Type-Options", "nosniff")
 		h.Set("X-Frame-Options", "DENY")
 		h.Set("Referrer-Policy", "same-origin")
+		next.ServeHTTP(w, r)
+	})
+}
+
+// uiCSP 是管理界面页面（index.html）的内容安全策略，作为出现注入漏洞时的兜底：脚本只能来自管理界面自己的文件，
+// 页面里即使被插入了 <script>、事件属性或外部脚本地址也不会执行；页面不能被其他站点嵌入，表单只能提交回自身。
+//   - style-src 允许内联样式：Element Plus、终端等组件在运行时写入样式；
+//   - img-src 允许 data:、blob: 与任意 http(s) 图片：二维码是 data: 地址，导航面板的图标与背景可以填任意图片地址；
+//   - connect-src 允许 ws:/wss:：终端与容器 Shell 走 WebSocket，部分浏览器不认为 'self' 包含它们；
+//   - 页面内嵌的预览（错误页、导航面板、未授权访问页面）是 srcdoc 内联框架，沿用这份策略，并各自带有更严格的策略。
+const uiCSP = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https: http:; " +
+	"font-src 'self' data:; media-src 'self' data: blob:; connect-src 'self' ws: wss:; worker-src 'self' blob:; frame-src 'self'; " +
+	"object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+
+// apiCSP 是接口响应的内容安全策略：接口只返回数据与下载内容，即使某个响应被浏览器当成页面打开，其中的脚本与外部资源也不会加载。
+const apiCSP = "default-src 'none'; frame-ancestors 'none'"
+
+// apiSecurityHeaders 给 /api/ 下的响应加上 apiCSP。放在访问控制之后：被访问控制拦下的请求返回的是
+// “未授权访问响应”（可能是用户自定义的页面，有自己的策略），不经过这里。
+func apiSecurityHeaders(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasPrefix(r.URL.Path, "/api/") {
+			w.Header().Set("Content-Security-Policy", apiCSP)
+		}
 		next.ServeHTTP(w, r)
 	})
 }
