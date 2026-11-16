@@ -19,7 +19,7 @@ import (
 // 可信来源（见 trustsrc）：模块确认过身份的来源地址（如用正确令牌登录 frps 的 frpc）。
 // 家宽出口地址由局域网里的多台设备共用，其中一台做 TCP 打洞时会在短时间内连接服务器的大量未开放端口，
 // 扫描检测会把整个出口地址封掉，同一地址上的 frpc 随之断开、无法重连。
-// 可信来源加入 input 链的放行集合，只免于诱饵端口与扫描检测；日志规则与其他封禁照常生效。
+// 可信来源加入诱饵端口与扫描检测的放行集合，Gately 确认握手时也跳过它们；日志规则与其他封禁照常生效。
 
 // establishedPeersFn 可在测试中替换
 var establishedPeersFn = establishedPeers
@@ -121,27 +121,7 @@ func effectiveTrusted(list []trustsrc.Source, now time.Time, lapsed map[trustKey
 	return mergePrefixes(out), next
 }
 
-// trustedFilterLocked 包装导入内核封禁的回调，跳过可信来源：内核规则可能在放行集合更新之前
-// 把刚登录的来源加入了临时集合，这些地址不写入封禁表（临时集合中的元素随后照常删除）。调用方持有 f.mu。
-func (f *firewall) trustedFilterLocked(fn func(string, []netip.Addr, portHits)) func(string, []netip.Addr, portHits) {
-	if fn == nil || len(f.trusted) == 0 {
-		return fn
-	}
-	// IPv6 的内核封禁按 /64 记录，放宽到与放行集合相同的粒度再判断
-	wide := allowPrefixes(f.trusted)
-	return func(source string, addrs []netip.Addr, hits portHits) {
-		kept := make([]netip.Addr, 0, len(addrs))
-		for _, a := range addrs {
-			if !prefixesContain(wide, a) {
-				kept = append(kept, a)
-			}
-		}
-		if len(kept) > 0 {
-			fn(source, kept, hits)
-		}
-	}
-}
-
+// prefixesContain 判断地址是否在任一网段中。
 func prefixesContain(list []netip.Prefix, a netip.Addr) bool {
 	a = a.Unmap()
 	for _, p := range list {

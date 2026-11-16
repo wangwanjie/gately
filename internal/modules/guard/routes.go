@@ -214,7 +214,7 @@ func (m *Module) handlePutSettings(w http.ResponseWriter, r *http.Request) {
 	}
 	m.settings.Store(&s)
 	if m.started {
-		banlist.Default.SetIgnore(s.ignoreSet(m.local).overlaps)
+		banlist.Default.SetIgnore(m.ignoreFunc(s, m.local))
 		m.fw.apply(m.ctx, s)
 		m.applyTrapLocked()
 	}

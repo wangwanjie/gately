@@ -283,6 +283,8 @@ type Module struct {
 	fw       *firewall
 	trap     *userTrap
 	unsub    []func()
+	// logins 为最近登录管理后台成功的地址，免于自动封禁（见 login.go）
+	logins loginTrust
 
 	// saveTimer 延迟保存封禁表，合并短时间内的多次变化；fileMu 保证同一时间只有一次写文件
 	saveMu    sync.Mutex
@@ -398,7 +400,7 @@ func (m *Module) Start(ctx context.Context) error {
 	m.started = true
 	s := m.cfg.Settings
 	m.local = localPrefixes()
-	banlist.Default.SetIgnore(s.ignoreSet(m.local).overlaps)
+	banlist.Default.SetIgnore(m.ignoreFunc(s, m.local))
 	m.loadBans()
 	m.unsub = append(m.unsub, banlist.Default.Subscribe(m.onBanChange))
 	m.unsub = append(m.unsub, events.Subscribe(m.onEvent))
@@ -406,7 +408,7 @@ func (m *Module) Start(ctx context.Context) error {
 	m.unsub = append(m.unsub, func() { webprobe.SetHandler(nil) })
 	// TLS 握手失败处理函数只在有规则时注册（见 refreshTLSLocked），没有规则时 Web 服务连分类都不做
 	m.unsub = append(m.unsub, func() { webprobe.SetTLSHandler(nil) })
-	m.fw.start(m.ctx, s, m.local, m.importKernelBans, m.onFirewallActive)
+	m.fw.start(m.ctx, s, m.local, m.importPortBans, m.onFirewallActive)
 	m.applyTrapLocked()
 	for _, j := range m.cfg.Jails {
 		m.startJailLocked(j)
@@ -440,6 +442,7 @@ func (m *Module) Stop() error {
 	m.mu.Unlock()
 	m.fw.stop()
 	banlist.Default.SetIgnore(nil)
+	m.logins.clear()
 	m.saveMu.Lock()
 	if m.saveTimer != nil {
 		m.saveTimer.Stop()
@@ -483,7 +486,7 @@ func (m *Module) refreshLocal() {
 	}
 	m.local = local
 	s := m.cfg.Settings
-	banlist.Default.SetIgnore(s.ignoreSet(local).overlaps)
+	banlist.Default.SetIgnore(m.ignoreFunc(s, local))
 	m.mu.Unlock()
 	m.fw.setLocal(m.ctx, local)
 }
@@ -493,7 +496,7 @@ func (m *Module) localSnapshotLocked() []netip.Prefix {
 	return append([]netip.Prefix{}, m.local...)
 }
 
-// onFirewallActive 在防火墙规则生效状态变化时调用：生效后由内核处理诱饵端口，不再由 Gately 监听。
+// onFirewallActive 在防火墙规则生效状态或重定向是否可用变化时调用：重定向生效后诱饵端口由内核交给 Gately 确认，不再直接监听。
 func (m *Module) onFirewallActive() {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -504,6 +507,9 @@ func (m *Module) onFirewallActive() {
 
 // onBanChange 在封禁表变化时同步防火墙、保存文件。
 func (m *Module) onBanChange(c banlist.Change) {
+	for _, e := range c.Evicted {
+		m.logs.Logger("").Warnf("封禁表已满（上限 %d 条），已移除最早的临时封禁 %s（%s）", banlist.DefaultLimit, e.Key, e.Reason)
+	}
 	m.fw.change(c)
 	if c.Expired && len(c.Added) == 0 {
 		// 只是到期清除：文件里留着到期记录无害（加载时会跳过），不为此单独重写文件，
@@ -554,14 +560,14 @@ func (m *Module) ban(a netip.Addr, sec int, reason, source, jailName string) {
 	})
 }
 
-// kernelBanReasonMaxPorts 为封禁原因中最多列出的端口数
-const kernelBanReasonMaxPorts = 8
+// portBanReasonMaxPorts 为封禁原因中最多列出的端口数
+const portBanReasonMaxPorts = 8
 
-// kernelBanReason 生成内核规则封禁的原因，ports 为该来源最近命中的端口（升序，可能为空）。
-func kernelBanReason(source string, ports []int) string {
+// portBanReason 生成诱饵端口与扫描检测封禁的原因，ports 为该来源命中的端口（升序，可能为空）。
+func portBanReason(source string, ports []int) string {
 	shown := ports
-	if len(shown) > kernelBanReasonMaxPorts {
-		shown = shown[:kernelBanReasonMaxPorts]
+	if len(shown) > portBanReasonMaxPorts {
+		shown = shown[:portBanReasonMaxPorts]
 	}
 	texts := make([]string, 0, len(shown))
 	for _, p := range shown {
@@ -584,9 +590,9 @@ func kernelBanReason(source string, ports []int) string {
 	return fmt.Sprintf("连接诱饵端口 %s", list)
 }
 
-// importKernelBans 接收防火墙中由诱饵端口或扫描检测规则直接加入的地址，写入封禁表（按设置递增时长）。
-// ports 为内核记录的各来源最近命中的端口，写入封禁原因，方便事后判断是真实扫描还是自家设备误触。
-func (m *Module) importKernelBans(source string, addrs []netip.Addr, ports portHits) {
+// importPortBans 接收防火墙经握手确认的诱饵端口与扫描检测来源，写入封禁表（按设置递增时长）。
+// ports 为各来源命中的端口，写入封禁原因，方便事后判断是真实扫描还是自家设备误触。
+func (m *Module) importPortBans(source string, addrs []netip.Addr, ports portHits) {
 	s := m.cur()
 	sec, name := s.Trap.BanSeconds, "诱饵端口"
 	if source == banlist.SourceScan {
@@ -594,9 +600,9 @@ func (m *Module) importKernelBans(source string, addrs []netip.Addr, ports portH
 	}
 	var keys []string
 	// base 为不含端口的原因，用于批量通知的标题；detail 为单个地址的原因（含命中的端口）
-	base, detail := kernelBanReason(source, nil), ""
+	base, detail := portBanReason(source, nil), ""
 	for _, a := range addrs {
-		reason := kernelBanReason(source, ports[banlist.KeyFor(a)])
+		reason := portBanReason(source, ports[banlist.KeyFor(a)])
 		e, added, err := banlist.Default.Ban(banlist.KeyFor(a), s.banOptions(sec, reason, source))
 		if err != nil || !added {
 			continue
@@ -632,10 +638,15 @@ func (m *Module) importKernelBans(source string, addrs []netip.Addr, ports portH
 	})
 }
 
-// onEvent 把 Gately 内部事件（管理后台登录失败、WAF 拦截）交给来源为“内部事件”的规则计数。
+// onEvent 把 Gately 内部事件（管理后台登录失败、WAF 拦截）交给来源为“内部事件”的规则计数；
+// 管理后台登录成功的地址记为免封（见 noteLogin）。
 func (m *Module) onEvent(e events.Event) {
 	ip := e.Fields["ip"]
 	if ip == "" {
+		return
+	}
+	if e.Type == events.LoginSuccessful {
+		m.noteLogin(e)
 		return
 	}
 	a, ok := parseAddr(ip)

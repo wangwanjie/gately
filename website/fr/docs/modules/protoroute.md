@@ -11,6 +11,8 @@ Chaque règle comporte :
 - Une cible par défaut : les adresses cibles, les ports cibles et le réglage du protocole PROXY de la règle elle-même, utilisée quand aucune route ne correspond ou que le protocole n'est pas reconnu ;
 - Un délai de détection : le nombre de secondes d'attente pour recevoir du client des données reconnaissables ; 0 correspond à la valeur par défaut de 5 secondes.
 
+Chaque port limite aussi les connexions simultanées d'une même source (une adresse IPv4 ou un /64 IPv6), par défaut à la moitié des connexions max. ; indiquez « Connexions max. par source » dans une règle ou changez la valeur par défaut dans les réglages globaux. Les adresses de bouclage et privées ne sont pas limitées ; les connexions qui n'envoient aucune donnée relèvent du délai de détection.
+
 ## Protocoles reconnus
 
 | Protocole de la route | Reconnu par | Correspondance supplémentaire |

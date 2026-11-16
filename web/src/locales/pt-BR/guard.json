@@ -176,6 +176,8 @@
     "title": "Detecção de varredura de portas",
     "help": "Conta quantas vezes cada origem se conecta a portas fechadas deste host e a bloqueia quando passa do limite por minuto. Só contam conexões novas a este host; tráfego encaminhado a contêineres ou dispositivos da LAN não conta.",
     "needFirewall": "As portas armadilha no kernel e a detecção de varredura exigem a sincronização com o firewall ativa. Veja o status acima.",
+    "needRedirect": "O kernel não consegue redirecionar conexões ao Gately para confirmar o handshake (nftables exige Linux 5.2 ou posterior; iptables, o alvo REDIRECT da tabela nat): o Gately escuta diretamente nas portas isca e a detecção de varreduras fica indisponível.",
+    "handshakeHelp": "Uma conexão só conta depois de concluir o handshake TCP, então SYNs com endereço de origem forjado não conseguem bloquear ninguém; varreduras que só enviam SYN sem concluir o handshake (como o masscan) veem as portas abertas, mas não são bloqueadas.",
     "threshold": "Limite",
     "perMinute": "por minuto",
     "thresholdHelp": "Uma origem é bloqueada se conectar a portas fechadas mais vezes por minuto do que este valor. Um cliente normal tenta de novo uma porta fechada cerca de 5 vezes por minuto, então use 10 ou mais.",

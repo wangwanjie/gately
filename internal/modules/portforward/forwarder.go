@@ -6,11 +6,13 @@ import (
 	"fmt"
 	"github.com/wangwanjie/gately/internal/fwopen"
 	"net"
+	"net/netip"
 	"slices"
 	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
+	"syscall"
 	"time"
 
 	"github.com/wangwanjie/gately/internal/banlist"
@@ -89,17 +91,18 @@ func (r *runner) current() *route {
 	return r.routes.Load()
 }
 
-// effectiveLimits 返回规则实际使用的每端口最大连接数与 UDP 会话超时（规则未设置时取全局默认值）。
-func effectiveLimits(rule Rule, settings Settings) (maxConns int, udpTimeout time.Duration) {
-	maxConns = rule.MaxConnections
-	if maxConns <= 0 {
-		maxConns = settings.DefaultMaxConnections
+// effectiveLimits 返回规则实际使用的每端口连接上限与 UDP 会话超时（规则未设置时取全局默认值）。
+func effectiveLimits(rule Rule, settings Settings) (limits l4proxy.Limits, udpTimeout time.Duration) {
+	limits.Max = rule.MaxConnections
+	if limits.Max <= 0 {
+		limits.Max = settings.DefaultMaxConnections
 	}
+	limits.PerSource = l4proxy.PerSourceLimit(rule.MaxConnsPerSource, settings.DefaultMaxConnsPerSource, limits.Max)
 	udpTimeout = time.Duration(rule.UDPSessionTimeout) * time.Second
 	if udpTimeout <= 0 {
 		udpTimeout = time.Duration(settings.DefaultUDPSessionTimeout) * time.Second
 	}
-	return maxConns, udpTimeout
+	return limits, udpTimeout
 }
 
 // canUpdate 判断新配置能否在不重新监听的情况下生效：监听协议、地址、端口映射与连接上限都不变，
@@ -133,7 +136,7 @@ func (r *runner) start(parent context.Context) error {
 	ctx := r.srv.Context(parent)
 	log := r.current().log
 
-	maxConns, udpTimeout := effectiveLimits(r.rule, r.settings)
+	limits, udpTimeout := effectiveLimits(r.rule, r.settings)
 
 	okCount := 0
 	for _, proto := range r.rule.Protocols {
@@ -142,7 +145,7 @@ func (r *runner) start(parent context.Context) error {
 			var startErr error
 			if strings.HasPrefix(proto, "tcp") {
 				targetPort := pair.Target
-				startErr = r.srv.ServeTCP(ctx, proto, addr, maxConns, func(format string, args ...any) {
+				startErr = r.srv.ServeTCP(ctx, proto, addr, limits, func(format string, args ...any) {
 					r.current().log.Warnf(format, args...)
 				}, func(conn net.Conn) {
 					// 每个连接固定使用建立时的配置，热更新只影响之后的新连接
@@ -204,6 +207,13 @@ func (r *runner) handleTCP(ctx context.Context, rt *route, client net.Conn, targ
 		return
 	}
 	rt.log.Debugf("%s -> %s 已连接", client.RemoteAddr(), target.RemoteAddr())
+	// 双方都不发送数据的空连接只会占用连接名额，超时断开
+	if err := netpipe.WaitFirstData(ctx, client, target, time.Duration(rt.settings.FirstDataTimeout)*time.Second); err != nil {
+		if errors.Is(err, netpipe.ErrNoData) {
+			rt.log.Debugf("%s 连接后 %d 秒内双方都没有发送数据，已断开", client.RemoteAddr(), rt.settings.FirstDataTimeout)
+		}
+		return
+	}
 
 	in, out := netpipe.Join(ctx, client, target)
 	r.stats.BytesIn.Add(in)
@@ -216,6 +226,16 @@ type udpSession struct {
 	lastActive atomic.Int64 // UnixNano
 }
 
+// udpBufSize 为 UDP 数据报读缓冲的大小（能容纳任何数据报）
+const udpBufSize = 64 * 1024
+
+// udpBufPool 为会话读回包用的缓冲池：会话在等待回包期间不占用缓冲，只在目标有数据可读时借出，转发完立即归还。
+// 公网 UDP 端口遇到伪造来源扫描时会建立大量只有一个包的会话，常驻缓冲会让每个会话多占 64 KB 直到空闲超时
+var udpBufPool = sync.Pool{New: func() any {
+	b := make([]byte, udpBufSize)
+	return &b
+}}
+
 func (r *runner) startUDP(ctx context.Context, network, addr string, targetPort int, idle time.Duration) error {
 	var lc net.ListenConfig
 	pc, err := lc.ListenPacket(ctx, network, addr)
@@ -223,10 +243,16 @@ func (r *runner) startUDP(ctx context.Context, network, addr string, targetPort 
 		return err
 	}
 	r.srv.Track(pc)
+	uc, ok := pc.(*net.UDPConn)
+	if !ok {
+		pc.Close()
+		return fmt.Errorf("%s 不是 UDP 监听", addr)
+	}
 
 	var (
-		mu       sync.Mutex
-		sessions = map[string]*udpSession{}
+		mu sync.Mutex
+		// 会话键用 netip.AddrPort：可比较、不分配，省掉每个数据包的 String() 与 UDPAddr
+		sessions = map[netip.AddrPort]*udpSession{}
 	)
 	closeAll := func() {
 		mu.Lock()
@@ -239,9 +265,9 @@ func (r *runner) startUDP(ctx context.Context, network, addr string, targetPort 
 
 	r.srv.Go(func() {
 		defer closeAll()
-		buf := make([]byte, 64*1024)
+		buf := make([]byte, udpBufSize)
 		for {
-			n, clientAddr, err := pc.ReadFrom(buf)
+			n, client, err := uc.ReadFromUDPAddrPort(buf)
 			if err != nil {
 				if ctx.Err() != nil || errors.Is(err, net.ErrClosed) {
 					return
@@ -249,22 +275,22 @@ func (r *runner) startUDP(ctx context.Context, network, addr string, targetPort 
 				r.current().log.Warnf("UDP 读取失败: %v", err)
 				continue
 			}
+			ip := client.Addr().Unmap()
 			// 丢弃被封禁地址的数据包（已有会话随空闲超时自然结束）
-			if banlist.Default.BannedAddr(clientAddr) {
+			if banlist.Default.Banned(ip) {
 				continue
 			}
 			// 新会话使用当前配置的目标与上限，已有会话保持原目标
 			rt := r.current()
 			// 封禁优先，再按来源 IP 名单判断；名单每个数据包都判断，名单变化后已有会话的上行也立即被拦下。
 			// 敲门只在新建会话时检查：与防火墙拦截保持已建立连接一致，授权到期后 WireGuard 等已有会话不被切断
-			reason := rt.filter.Reason(clientAddr)
+			reason := rt.filter.ReasonIP(ip)
 			if reason == iplist.DenyList {
 				r.denied.Add(1)
 				continue
 			}
-			key := clientAddr.String()
 			mu.Lock()
-			sess := sessions[key]
+			sess := sessions[client]
 			if sess == nil {
 				if reason == iplist.DenyKnock {
 					mu.Unlock()
@@ -273,14 +299,14 @@ func (r *runner) startUDP(ctx context.Context, network, addr string, targetPort 
 				}
 				if len(sessions) >= rt.settings.MaxUDPSessions {
 					mu.Unlock()
-					rt.log.Warnf("%s UDP 会话数达到上限 %d，丢弃 %s 的数据包", addr, rt.settings.MaxUDPSessions, key)
+					rt.log.Warnf("%s UDP 会话数达到上限 %d，丢弃 %s 的数据包", addr, rt.settings.MaxUDPSessions, client)
 					continue
 				}
 				// 目标为域名时拨号需要解析，放到锁外，避免阻塞会话清理
 				mu.Unlock()
 				conn, err := rt.dialTarget("udp", targetPort)
 				if err != nil {
-					rt.log.Warnf("%s 建立 UDP 会话失败: %v", key, err)
+					rt.log.Warnf("%s 建立 UDP 会话失败: %v", client, err)
 					continue
 				}
 				mu.Lock()
@@ -291,14 +317,14 @@ func (r *runner) startUDP(ctx context.Context, network, addr string, targetPort 
 				}
 				sess = &udpSession{conn: conn}
 				sess.lastActive.Store(time.Now().UnixNano())
-				sessions[key] = sess
+				sessions[client] = sess
 				r.stats.ActiveConns.Add(1)
 				r.stats.TotalConns.Add(1)
 				r.srv.Go(func() {
-					r.pumpUDP(pc, clientAddr, sess, idle, func() {
+					r.pumpUDP(uc, client, sess, idle, func() {
 						mu.Lock()
-						if sessions[key] == sess {
-							delete(sessions, key)
+						if sessions[client] == sess {
+							delete(sessions, client)
 						}
 						mu.Unlock()
 					})
@@ -316,15 +342,31 @@ func (r *runner) startUDP(ctx context.Context, network, addr string, targetPort 
 }
 
 // pumpUDP 把目标的回包发回客户端，空闲超时后关闭会话。
-func (r *runner) pumpUDP(pc net.PacketConn, client net.Addr, sess *udpSession, idle time.Duration, remove func()) {
+// 先不带缓冲地等到目标连接可读（见 netpipe.WaitReadable），再从池中借缓冲读取并转发：等待回包的会话只占一个协程，不占读缓冲。
+func (r *runner) pumpUDP(pc *net.UDPConn, client netip.AddrPort, sess *udpSession, idle time.Duration, remove func()) {
 	defer r.stats.ActiveConns.Add(-1)
 	defer remove()
 	defer sess.conn.Close()
-	buf := make([]byte, 64*1024)
+	var raw syscall.RawConn
+	if sc, ok := sess.conn.(syscall.Conn); ok {
+		raw, _ = sc.SyscallConn()
+	}
 	for {
 		_ = sess.conn.SetReadDeadline(time.Now().Add(idle))
-		n, err := sess.conn.Read(buf)
+		var err error
+		if raw != nil {
+			err = netpipe.WaitReadable(raw)
+		}
+		n := 0
+		var bp *[]byte
+		if err == nil {
+			bp = udpBufPool.Get().(*[]byte)
+			n, err = sess.conn.Read(*bp)
+		}
 		if err != nil {
+			if bp != nil {
+				udpBufPool.Put(bp)
+			}
 			var ne net.Error
 			if errors.As(err, &ne) && ne.Timeout() {
 				// 读超时期间客户端仍有发送则继续等待
@@ -336,7 +378,9 @@ func (r *runner) pumpUDP(pc net.PacketConn, client net.Addr, sess *udpSession, i
 			return
 		}
 		sess.lastActive.Store(time.Now().UnixNano())
-		if _, err := pc.WriteTo(buf[:n], client); err != nil {
+		_, err = pc.WriteToUDPAddrPort((*bp)[:n], client)
+		udpBufPool.Put(bp)
+		if err != nil {
 			return
 		}
 		r.stats.BytesOut.Add(int64(n))

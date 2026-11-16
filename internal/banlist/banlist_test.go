@@ -1,6 +1,7 @@
 package banlist
 
 import (
+	"errors"
 	"net"
 	"net/netip"
 	"testing"
@@ -251,4 +252,75 @@ func TestListenerHoldsOpenPort(t *testing.T) {
 		t.Fatalf("关闭后端口 %d 应撤销登记", port)
 	}
 	_ = wrapped.Close()
+}
+
+// 总条数上限：表满时新增自动封禁淘汰最早创建的临时自动封禁（优先已到期的记录），永久封禁与手动封禁不被淘汰；
+// 全部不可淘汰时拒绝新的自动封禁，手动封禁不受上限约束。淘汰通过变化通知的 Removed / Evicted 告知订阅方。
+func TestLimitEvictsOldestTemporary(t *testing.T) {
+	s := New()
+	s.SetLimit(4)
+	var changes []Change
+	s.Subscribe(func(c Change) { changes = append(changes, c) })
+	ban := func(key string, o Options) error {
+		t.Helper()
+		_, _, err := s.Ban(key, o)
+		time.Sleep(2 * time.Millisecond)
+		return err
+	}
+	hour := Options{Duration: time.Hour, Source: SourceScan}
+	_ = ban("10.0.0.1", Options{Duration: time.Hour, Source: SourceManual, Force: true})
+	_ = ban("10.0.0.2", Options{Permanent: true, Source: SourceTrap})
+	_ = ban("10.0.0.3", hour)
+	_ = ban("10.0.0.4", hour)
+	if s.Len() != 4 {
+		t.Fatalf("应有 4 条: %d", s.Len())
+	}
+	// 表满：淘汰最早的临时自动封禁 10.0.0.3
+	if err := ban("10.0.0.5", hour); err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := s.Get("10.0.0.3"); ok {
+		t.Fatal("最早的临时自动封禁应被淘汰")
+	}
+	last := changes[len(changes)-1]
+	if len(last.Evicted) != 1 || last.Evicted[0].Key != "10.0.0.3" || len(last.Removed) != 1 || len(last.Added) != 1 {
+		t.Fatalf("变化通知应带被淘汰的记录: %+v", last)
+	}
+	// 已有记录延长时长不占新名额，不淘汰
+	if _, added, err := s.Ban("10.0.0.5", Options{Duration: 5 * time.Hour, Source: SourceScan}); err != nil || !added {
+		t.Fatalf("延长已有封禁: %v %v", added, err)
+	}
+	if s.Len() != 4 {
+		t.Fatalf("延长封禁不应改变条数: %d", s.Len())
+	}
+	// 再淘汰一次后只剩手动与永久封禁之外的最新记录
+	_ = ban("10.0.0.6", hour)
+	for _, k := range []string{"10.0.0.1", "10.0.0.2", "10.0.0.5", "10.0.0.6"} {
+		if _, ok := s.Get(k); !ok {
+			t.Fatalf("%s 不应被淘汰", k)
+		}
+	}
+	// 全部不可淘汰时拒绝自动封禁，手动封禁仍可超出上限
+	s2 := New()
+	s2.SetLimit(2)
+	_, _, _ = s2.Ban("10.1.0.1", Options{Permanent: true})
+	_, _, _ = s2.Ban("10.1.0.2", Options{Duration: time.Hour, Source: SourceManual, Force: true})
+	if _, _, err := s2.Ban("10.1.0.3", hour); !errors.Is(err, ErrFull) {
+		t.Fatalf("没有可淘汰的记录时应返回 ErrFull: %v", err)
+	}
+	if _, _, err := s2.Ban("10.1.0.4", Options{Duration: time.Hour, Source: SourceManual, Force: true}); err != nil || s2.Len() != 3 {
+		t.Fatalf("手动封禁不受上限约束: %v %d", err, s2.Len())
+	}
+	// 已到期但尚未清理的记录优先淘汰
+	s3 := New()
+	s3.SetLimit(2)
+	_, _, _ = s3.Ban("10.2.0.1", Options{Duration: time.Millisecond, Source: SourceScan})
+	_, _, _ = s3.Ban("10.2.0.2", Options{Permanent: true})
+	time.Sleep(5 * time.Millisecond)
+	if _, _, err := s3.Ban("10.2.0.3", hour); err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := s3.Get("10.2.0.3"); !ok || s3.Len() != 2 {
+		t.Fatal("应淘汰已到期的记录")
+	}
 }

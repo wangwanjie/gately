@@ -60,10 +60,14 @@ type FirewallStatus struct {
 	Version string `json:"version,omitempty"`
 	// Backend 为写入规则使用的防火墙：nftables，或内核没有 nf_tables 时的 iptables（legacy + ipset）
 	Backend string `json:"backend,omitempty"`
-	// Dropped 为各类规则丢弃的数据包数：ban（封禁表）、deny（网段与永久封禁）、trap、scan（内核直接封禁的地址）
+	// Dropped 为各类规则丢弃的数据包数：ban（封禁表）、deny（网段与永久封禁）；
+	// 旧版本由内核直接封禁诱饵端口与扫描来源时还有 trap、scan，升级后保留累计值
 	Dropped map[string]uint64 `json:"dropped"`
-	// Hits 为诱饵端口与扫描检测规则的触发次数
+	// Hits 为诱饵端口与扫描检测经 Gately 完成握手确认的连接数
 	Hits map[string]uint64 `json:"hits"`
+	// Redirect 为诱饵端口与扫描检测的重定向规则是否已写入：为 false 且规则已生效时，内核不支持重定向，
+	// 诱饵端口改由 Gately 直接监听，扫描检测不可用
+	Redirect bool `json:"redirect"`
 	// OpenPorts 为扫描检测视为开放的端口数
 	OpenPorts int `json:"openPorts"`
 	// TrapPorts 为实际生效的诱饵端口，TrapSkipped 为因正在监听而排除的诱饵端口
@@ -112,12 +116,25 @@ type firewall struct {
 	// dynWarned 为最近一次提示过的「使用随机端口的模块」，内容不变时不重复提示
 	dynWarned string
 	// dirty 表示封禁表有变化，等待轮询协程对账写入
-	dirty    bool
+	dirty bool
+	// importFn 接收握手确认后应封禁的来源（诱饵端口或扫描检测），写入封禁表
 	importFn func(source string, addrs []netip.Addr, ports portHits)
-	// portLogWarned 表示已提示过无法记录命中端口（内核或 nft 不支持地址 . 端口的集合），只提示一次
-	portLogWarned bool
-	// onActive 在轮询协程中发现规则生效状态变化（重试成功或重写失败）时调用，调用时不持有 f.mu
+	// onActive 在轮询协程中发现规则生效状态或重定向是否可用发生变化（重试成功或重写失败）时调用，调用时不持有 f.mu
 	onActive func()
+	// hs 为接收诱饵端口与可疑来源重定向连接的用户态监听（见 handshake.go），诱饵端口或扫描检测开启时创建
+	hs *hsListener
+	// redirOK 表示重定向规则已写入内核（nftables 需要 Linux 5.2 起支持 inet 族的 nat，iptables 需要 nat 表的 REDIRECT 目标）
+	redirOK bool
+	// redirWarned 为最近一次提示过的「内核不支持重定向」错误，相同时不重复提示
+	redirWarned string
+	// scans 为可疑来源一分钟内完成握手的未开放端口连接计数
+	scans map[string]*scanCount
+	// pending 与 pendingPorts 为待写入封禁表的握手命中，pendingTimer 到时后批量写入
+	pending      map[string][]netip.Addr
+	pendingPorts portHits
+	pendingTimer *time.Timer
+	// own 为模块自己监听的端口（防火墙不可用时的用户态诱饵端口），不算作开放端口，也不从诱饵端口中排除
+	own map[int]bool
 	// local 为本机网卡所在的 IPv6 网段，忽略内网地址时加入白名单
 	local []netip.Prefix
 	// trusted 为模块登记、当前仍然有效的可信来源（见 trustsrc），诱饵端口与扫描检测不统计；
@@ -261,6 +278,75 @@ func (f *firewall) stop() {
 	f.dirty = false
 	// 重新启动后各服务要重新开始监听，严格模式需要再等一轮端口同步
 	f.strictReady, f.strictAt = false, time.Time{}
+	f.redirOK, f.scans = false, nil
+	hs := f.hs
+	f.hs = nil
+	if f.pendingTimer != nil {
+		f.pendingTimer.Stop()
+		f.pending, f.pendingPorts, f.pendingTimer = nil, nil, nil
+	}
+	if hs != nil {
+		hs.stop()
+		// 接受连接的协程回调时要获取 f.mu，释放后再等待它们退出
+		f.mu.Unlock()
+		hs.wait()
+		f.mu.Lock()
+	}
+}
+
+// kernelTrap 判断诱饵端口与扫描检测是否由防火墙规则（重定向到 Gately 确认握手）处理：规则已生效且重定向可用。
+func (f *firewall) kernelTrap() bool {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	return f.kernelTrapLocked()
+}
+
+func (f *firewall) kernelTrapLocked() bool {
+	return f.status.Active && f.redirOK
+}
+
+// setOwnPorts 登记模块自己监听的端口（用户态诱饵端口），读取监听端口时排除它们。
+func (f *firewall) setOwnPorts(ports []int) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	f.own = map[int]bool{}
+	for _, p := range ports {
+		f.own[p] = true
+	}
+}
+
+// stopHandshakeLocked 关闭接收重定向连接的监听（规则不再生效时调用），不等待协程退出。调用方持有 f.mu。
+func (f *firewall) stopHandshakeLocked() {
+	if f.hs != nil {
+		f.hs.stop()
+		f.hs = nil
+	}
+}
+
+// warnRedirLocked 提示内核不支持重定向规则，同一错误只提示一次。调用方持有 f.mu。
+func (f *firewall) warnRedirLocked(err error) {
+	if f.redirWarned == err.Error() {
+		return
+	}
+	f.redirWarned = err.Error()
+	f.log.Warnf("当前内核不支持把诱饵端口与可疑来源的连接重定向给 Gately 确认握手（nftables 需要 Linux 5.2 及以上，iptables 需要 nat 表的 REDIRECT 目标），诱饵端口改由 Gately 直接监听，端口扫描检测不可用: %v", err)
+}
+
+// ensureHandshakeLocked 按设置启停接收重定向连接的监听，返回写入规则使用的端口（不需要或监听失败时为零值）。调用方持有 f.mu。
+func (f *firewall) ensureHandshakeLocked(s Settings) redirPorts {
+	if !s.Trap.Enable && !s.Scan.Enable {
+		f.stopHandshakeLocked()
+		return redirPorts{}
+	}
+	if f.hs == nil {
+		hs, err := startHandshake(f.onHandshake)
+		if err != nil {
+			f.log.Errorf("诱饵端口与扫描检测无法监听确认握手的端口: %v", err)
+			return redirPorts{}
+		}
+		f.hs = hs
+	}
+	return f.hs.ports
 }
 
 // snapshot 返回当前状态。
@@ -314,6 +400,8 @@ func (f *firewall) apply(ctx context.Context, s Settings) {
 
 func (f *firewall) applyLocked(ctx context.Context, s Settings) {
 	f.cfg = s
+	f.redirOK = false
+	f.status.Redirect = false
 	strict := s.Scan.Enable && s.Scan.IPv6Strict
 	switch {
 	case !strict:
@@ -329,6 +417,7 @@ func (f *firewall) applyLocked(ctx context.Context, s Settings) {
 	f.dirty, f.resync = false, false
 	f.members, f.capped = map[string]time.Time{}, map[string]time.Time{}
 	if !s.Firewall {
+		f.stopHandshakeLocked()
 		if wasActive {
 			if err := f.removeLocked(ctx); err != nil {
 				f.log.Warnf("删除防火墙规则失败: %v", err)
@@ -353,6 +442,7 @@ func (f *firewall) applyLocked(ctx context.Context, s Settings) {
 		}
 		if f.nft == "" && f.ipt == nil {
 			f.status.Reason = reason
+			f.stopHandshakeLocked()
 			return
 		}
 	}
@@ -378,29 +468,30 @@ func (f *firewall) applyLocked(ctx context.Context, s Settings) {
 	var members, capped map[string]time.Time
 	var deny string
 	var err error
+	rp := f.ensureHandshakeLocked(s)
+	redir := rp.ok()
 	if f.ipt != nil {
 		f.warnClampLocked(ss)
-		members, capped, err = f.ipt.rebuild(ctx, ss, f.iptPlanLocked(entries, open, trap), entries, time.Now())
+		plan := f.iptPlanLocked(entries, open, trap)
+		plan.redir = rp
+		members, capped, err = f.ipt.rebuild(ctx, ss, plan, entries, time.Now())
 		deny = iptDenyText(entries)
-		if err == nil && f.ipt.portLogErr != nil && !f.portLogWarned {
-			f.portLogWarned = true
-			f.log.Warnf("当前内核不支持 ipset 的 hash:ip,port 集合，封禁原因将不包含端口: %v", f.ipt.portLogErr)
+		if err == nil && rp.ok() && f.ipt.redirErr != nil {
+			redir = false
+			f.warnRedirLocked(f.ipt.redirErr)
 		}
 	} else {
-		var script string
 		allow := f.allowLocked()
-		script, members, deny = buildScriptWith(true, ss, allow, entries, open, trap, time.Now())
+		var script string
+		script, members, deny = buildScriptWith(rp, ss, allow, entries, open, trap, time.Now())
 		_, err = f.run(ctx, script, "-f", "-")
-		if err != nil && (ss.Trap.Enable || ss.Scan.Enable) {
-			// 较旧的 nft 或内核不支持 (地址 . 端口) 连接集合时，放弃记录命中端口，其余规则照常写入。
-			// 每次重写都先按记录端口尝试：第一次失败可能只是偶发错误（锁冲突等），不能因此永久关闭端口记录
-			script2, members2, deny2 := buildScriptWith(false, ss, allow, entries, open, trap, time.Now())
+		if err != nil && rp.ok() {
+			// 内核不支持 inet 族的 nat（Linux 5.2 之前）或缺少重定向模块时，不写重定向规则，其余规则照常写入。
+			// 每次重写都先按重定向尝试：第一次失败可能只是偶发错误（锁冲突等），不能因此永久关闭
+			script2, members2, deny2 := buildScriptWith(redirPorts{}, ss, allow, entries, open, trap, time.Now())
 			if _, err2 := f.run(ctx, script2, "-f", "-"); err2 == nil {
-				script, members, deny, err = script2, members2, deny2, nil
-				if !f.portLogWarned {
-					f.portLogWarned = true
-					f.log.Warnf("当前 nftables 不支持记录命中端口的连接集合，封禁原因将不包含端口")
-				}
+				f.warnRedirLocked(err)
+				members, deny, err, redir = members2, deny2, nil, false
 			}
 		}
 	}
@@ -445,6 +536,11 @@ func (f *firewall) applyLocked(ctx context.Context, s Settings) {
 	}
 	f.lastErr = ""
 	f.status.Active = true
+	f.redirOK = redir
+	f.status.Redirect = redir
+	if redir {
+		f.redirWarned = ""
+	}
 	f.status.OpenPorts = countPorts(open)
 	f.status.TrapPorts = formatPorts(trap)
 	f.status.TrapSkipped = skipped
@@ -472,6 +568,14 @@ func (f *firewall) listeningLocked() (map[int]bool, error) {
 	listening, err := listeningPortsFn()
 	if err != nil {
 		return listening, err
+	}
+	// 用户态诱饵端口与确认握手的端口是 Gately 自己的监听，不是对外的服务
+	for p := range f.own {
+		delete(listening, p)
+	}
+	if f.hs != nil {
+		delete(listening, f.hs.ports.trap)
+		delete(listening, f.hs.ports.scan)
 	}
 	now := time.Now()
 	if f.seen == nil {
@@ -533,26 +637,30 @@ func portSets(s Settings, listening map[int]bool) (open, trap []portRange, skipp
 const v6Mask = "ffff:ffff:ffff:ffff::"
 
 // buildScript 生成重建整张表的 nft 脚本。先声明再删除表，保证表不存在时脚本也能执行，且整个替换是原子的。
-func buildScript(s Settings, local []netip.Prefix, entries []banlist.Entry, open, trap []portRange, now time.Time) (script string, members map[string]time.Time, deny string) {
-	return buildScriptWith(true, s, allowFor(s, local, nil), entries, open, trap, now)
+func buildScript(s Settings, local []netip.Prefix, entries []banlist.Entry, open, trap []portRange, rp redirPorts, now time.Time) (script string, members map[string]time.Time, deny string) {
+	return buildScriptWith(rp, s, allowFor(s, local, nil), entries, open, trap, now)
 }
 
-// allowFor 返回 input 链放行集合的网段：白名单（含忽略的内网与本机 IPv6 网段）加上可信来源。
+// allowFor 返回诱饵端口与扫描检测放行集合的网段：白名单（含忽略的内网与本机 IPv6 网段）加上可信来源。
 func allowFor(s Settings, local, trusted []netip.Prefix) []netip.Prefix {
 	list := append(append([]netip.Prefix(nil), s.ignoreSet(local).prefixes...), trusted...)
 	return mergePrefixes(allowPrefixes(list))
 }
 
-// buildScriptWith 同 buildScript，portLog 为 true 时额外记录命中的端口；allow 为 input 链放行的网段（见 allowFor）。
-func buildScriptWith(portLog bool, s Settings, allow []netip.Prefix, entries []banlist.Entry, open, trap []portRange, now time.Time) (script string, members map[string]time.Time, deny string) {
+// nftSetSize 为 nftables 中按地址的集合的容量：封禁集合由封禁表写入（封禁表本身有总量上限，见 banlist.DefaultLimit），
+// 计数与可疑来源集合由内核按收到的包写入，满了以后新的来源不再加入，不会无限增长
+const nftSetSize = 65536
+
+// suspectSeconds 为可疑来源（连接未开放端口超过阈值）的连接被交给 Gately 确认握手的时长
+const suspectSeconds = 600
+
+// buildScriptWith 同 buildScript，allow 为诱饵端口与扫描检测放行的网段（见 allowFor）。
+// rp 为确认握手的监听端口，为零值时不写重定向规则（诱饵端口与扫描检测都不由内核处理）。
+func buildScriptWith(rp redirPorts, s Settings, allow []netip.Prefix, entries []banlist.Entry, open, trap []portRange, now time.Time) (script string, members map[string]time.Time, deny string) {
 	var b strings.Builder
 	fmt.Fprintf(&b, "table inet %s {}\ndelete table inet %s\ntable inet %s {\n", tableName, tableName, tableName)
-	for _, set := range []string{"ban4", "trap4", "scan4"} {
-		fmt.Fprintf(&b, "\tset %s {\n\t\ttype ipv4_addr\n\t\tflags timeout\n\t}\n", set)
-	}
-	for _, set := range []string{"ban6", "trap6", "scan6"} {
-		fmt.Fprintf(&b, "\tset %s {\n\t\ttype ipv6_addr\n\t\tflags timeout\n\t}\n", set)
-	}
+	fmt.Fprintf(&b, "\tset ban4 {\n\t\ttype ipv4_addr\n\t\tsize %d\n\t\tflags timeout\n\t}\n", nftSetSize)
+	fmt.Fprintf(&b, "\tset ban6 {\n\t\ttype ipv6_addr\n\t\tsize %d\n\t\tflags timeout\n\t}\n", nftSetSize)
 	b.WriteString("\tset deny4 {\n\t\ttype ipv4_addr\n\t\tflags interval\n\t}\n")
 	b.WriteString("\tset deny6 {\n\t\ttype ipv6_addr\n\t\tflags interval\n\t}\n")
 	allow4, allow6 := splitFamilies(allow)
@@ -560,58 +668,50 @@ func buildScriptWith(portLog bool, s Settings, allow []netip.Prefix, entries []b
 	writeIntervalSet(&b, "allow6", "ipv6_addr", allow6)
 	writePortSet(&b, "open", open)
 	writePortSet(&b, "trap", trap)
-	// 诱饵端口与扫描检测都关闭时没有写入端口的规则，也就不声明端口集合
-	portLog = portLog && (s.Trap.Enable || s.Scan.Enable)
-	if portLog {
-		// 记录最近命中诱饵端口或未开放端口的 (来源地址 . 目的端口)，供写入封禁原因；满了以后新的组合不再记录
-		b.WriteString("\tset port4 {\n\t\ttype ipv4_addr . inet_service\n\t\tsize 16384\n\t\tflags dynamic,timeout\n\t\ttimeout 5m\n\t}\n")
-		b.WriteString("\tset port6 {\n\t\ttype ipv6_addr . inet_service\n\t\tsize 16384\n\t\tflags dynamic,timeout\n\t\ttimeout 5m\n\t}\n")
+	fmt.Fprintf(&b, "\tset meter4 {\n\t\ttype ipv4_addr\n\t\tsize %d\n\t\tflags dynamic,timeout\n\t\ttimeout 1m\n\t}\n", nftSetSize-1)
+	fmt.Fprintf(&b, "\tset meter6 {\n\t\ttype ipv6_addr\n\t\tsize %d\n\t\tflags dynamic,timeout\n\t\ttimeout 1m\n\t}\n", nftSetSize-1)
+	redir := rp.ok() && (s.Trap.Enable || s.Scan.Enable)
+	if redir && s.Scan.Enable {
+		// 可疑来源：一分钟内连接未开放端口超过阈值（IPv6 严格模式下第一次连接即是），之后的连接交给 Gately 确认握手
+		fmt.Fprintf(&b, "\tset sus4 {\n\t\ttype ipv4_addr\n\t\tsize %d\n\t\tflags dynamic,timeout\n\t\ttimeout %ds\n\t}\n", nftSetSize, suspectSeconds)
+		fmt.Fprintf(&b, "\tset sus6 {\n\t\ttype ipv6_addr\n\t\tsize %d\n\t\tflags dynamic,timeout\n\t\ttimeout %ds\n\t}\n", nftSetSize, suspectSeconds)
 	}
-	b.WriteString("\tset meter4 {\n\t\ttype ipv4_addr\n\t\tsize 65535\n\t\tflags dynamic,timeout\n\t\ttimeout 1m\n\t}\n")
-	b.WriteString("\tset meter6 {\n\t\ttype ipv6_addr\n\t\tsize 65535\n\t\tflags dynamic,timeout\n\t\ttimeout 1m\n\t}\n")
 
 	// 封禁规则放在连接跟踪（-200）之后、目的地址转换（-100）之前的 prerouting：发往本机、转发给容器或内网设备的流量都会被丢弃。
 	// 回复方向的包属于本机（或内网设备）主动发起的连接，照常放行，即使对方地址被封禁，本机访问它（如 DNS、软件源）也不受影响
 	b.WriteString("\tchain pre {\n\t\ttype filter hook prerouting priority -190; policy accept;\n")
 	b.WriteString("\t\tiif \"lo\" accept\n")
 	b.WriteString("\t\tct direction reply accept\n")
-	for _, set := range []string{"ban", "trap", "scan"} {
-		fmt.Fprintf(&b, "\t\tip saddr @%s4 counter drop comment \"%s\"\n", set, set)
-		fmt.Fprintf(&b, "\t\tip6 saddr & %s @%s6 counter drop comment \"%s\"\n", v6Mask, set, set)
-	}
+	b.WriteString("\t\tip saddr @ban4 counter drop comment \"ban\"\n")
+	fmt.Fprintf(&b, "\t\tip6 saddr & %s @ban6 counter drop comment \"ban\"\n", v6Mask)
 	b.WriteString("\t\tip saddr @deny4 counter drop comment \"deny\"\n")
 	b.WriteString("\t\tip6 saddr @deny6 counter drop comment \"deny\"\n")
 	b.WriteString("\t}\n")
 
-	// 诱饵端口与扫描检测只看发往本机的新连接（SYN），白名单地址不参与
-	if s.Trap.Enable || s.Scan.Enable {
-		b.WriteString("\tchain in {\n\t\ttype filter hook input priority -10; policy accept;\n")
+	// 诱饵端口与扫描检测：内核不再凭 SYN 封禁（源地址可以伪造），只把发往本机的新连接重定向给 Gately 确认握手（见 handshake.go）。
+	// nat 链在目的地址转换（-100）之后：Docker、OpenWrt 端口转发等已经做了地址转换的连接不再经过这里；白名单地址不参与
+	if redir {
+		b.WriteString("\tchain redir {\n\t\ttype nat hook prerouting priority -90; policy accept;\n")
 		b.WriteString("\t\tiif \"lo\" accept\n")
+		b.WriteString("\t\tmeta l4proto != tcp accept\n")
+		b.WriteString("\t\ttcp flags & (fin|syn|rst|ack) != syn accept\n")
+		b.WriteString("\t\tfib daddr type != local accept\n")
 		b.WriteString("\t\tip saddr @allow4 accept\n\t\tip6 saddr @allow6 accept\n")
-		syn := "tcp flags & (fin|syn|rst|ack) == syn"
 		// 诱饵端口集合为空时规则不匹配任何连接，之后端口不再被监听时由轮询补上
 		if s.Trap.Enable {
-			if portLog {
-				fmt.Fprintf(&b, "\t\tmeta nfproto ipv4 %s tcp dport @trap add @port4 { ip saddr . tcp dport }\n", syn)
-				fmt.Fprintf(&b, "\t\tmeta nfproto ipv6 %s tcp dport @trap add @port6 { ip6 saddr . tcp dport }\n", syn)
-			}
-			sec := banSeconds(s, s.Trap.BanSeconds)
-			fmt.Fprintf(&b, "\t\tmeta nfproto ipv4 %s tcp dport @trap add @trap4 { ip saddr timeout %ds } counter drop comment \"trap-hit\"\n", syn, sec)
-			fmt.Fprintf(&b, "\t\tmeta nfproto ipv6 %s tcp dport @trap add @trap6 { ip6 saddr & %s timeout %ds } counter drop comment \"trap-hit\"\n", syn, v6Mask, sec)
+			fmt.Fprintf(&b, "\t\ttcp dport @trap redirect to :%d\n", rp.trap)
 		}
 		if s.Scan.Enable {
-			if portLog {
-				fmt.Fprintf(&b, "\t\tmeta nfproto ipv4 %s tcp dport != @open add @port4 { ip saddr . tcp dport }\n", syn)
-				fmt.Fprintf(&b, "\t\tmeta nfproto ipv6 %s tcp dport != @open add @port6 { ip6 saddr . tcp dport }\n", syn)
-			}
-			sec := banSeconds(s, s.Scan.BanSeconds)
 			n := s.Scan.Threshold
-			fmt.Fprintf(&b, "\t\tmeta nfproto ipv4 %s tcp dport != @open add @meter4 { ip saddr limit rate over %d/minute burst %d packets } add @scan4 { ip saddr timeout %ds } counter drop comment \"scan-hit\"\n", syn, n, n, sec)
+			b.WriteString("\t\ttcp dport @open accept\n")
+			fmt.Fprintf(&b, "\t\tip saddr @sus4 tcp dport != @open redirect to :%d\n", rp.scan)
+			fmt.Fprintf(&b, "\t\tip6 saddr & %s @sus6 tcp dport != @open redirect to :%d\n", v6Mask, rp.scan)
+			fmt.Fprintf(&b, "\t\tmeta nfproto ipv4 tcp dport != @open add @meter4 { ip saddr limit rate over %d/minute burst %d packets } add @sus4 { ip saddr } redirect to :%d\n", n, n, rp.scan)
 			if s.Scan.IPv6Strict {
-				// 严格模式：IPv6 来源第一次连接开放端口以外的端口即封禁（按 /64）
-				fmt.Fprintf(&b, "\t\tmeta nfproto ipv6 %s tcp dport != @open add @scan6 { ip6 saddr & %s timeout %ds } counter drop comment \"scan-hit\"\n", syn, v6Mask, sec)
+				// 严格模式：IPv6 来源第一次连接开放端口以外的端口即交给 Gately 确认（按 /64）
+				fmt.Fprintf(&b, "\t\tmeta nfproto ipv6 tcp dport != @open add @sus6 { ip6 saddr & %s } redirect to :%d\n", v6Mask, rp.scan)
 			} else {
-				fmt.Fprintf(&b, "\t\tmeta nfproto ipv6 %s tcp dport != @open add @meter6 { ip6 saddr & %s limit rate over %d/minute burst %d packets } add @scan6 { ip6 saddr & %s timeout %ds } counter drop comment \"scan-hit\"\n", syn, v6Mask, n, n, v6Mask, sec)
+				fmt.Fprintf(&b, "\t\tmeta nfproto ipv6 tcp dport != @open add @meter6 { ip6 saddr & %s limit rate over %d/minute burst %d packets } add @sus6 { ip6 saddr & %s } redirect to :%d\n", v6Mask, n, n, v6Mask, rp.scan)
 			}
 		}
 		b.WriteString("\t}\n")
@@ -623,6 +723,10 @@ func buildScriptWith(portLog bool, s Settings, allow []netip.Prefix, entries []b
 	for _, e := range entries {
 		elem, set, ok := timedElement(e, now)
 		if !ok {
+			continue
+		}
+		// 集合容量有限：超出的部分（只可能来自旧版本留下的超大封禁表）只在 Gately 自身的服务上生效。entries 按封禁时间从新到旧排列
+		if set == "ban4" && len(ban4) >= nftSetSize || set == "ban6" && len(ban6) >= nftSetSize {
 			continue
 		}
 		members[e.Key] = e.Until
@@ -887,11 +991,28 @@ func (f *firewall) flush(ctx context.Context) {
 		}
 		delete(f.members, key)
 	}
+	// 集合容量有限：已满时新的单个来源只在 Gately 自身的服务上生效（封禁表本身有总量上限，正常不会走到这里）
+	n4, n6 := 0, 0
+	for key := range f.members {
+		if p, _ := banlist.KeyPrefix(key); p.Addr().Is4() {
+			n4++
+		} else {
+			n6++
+		}
+	}
 	for key, e := range want {
 		if _, ok := f.members[key]; ok {
 			continue
 		}
 		elem, set, _ := timedElement(e, now)
+		if set == "ban4" && n4 >= nftSetSize || set == "ban6" && n6 >= nftSetSize {
+			continue
+		}
+		if set == "ban4" {
+			n4++
+		} else {
+			n6++
+		}
 		stmts = append(stmts, fmt.Sprintf("add element inet %s %s { %s }", tableName, set, elem))
 		f.members[key] = e.Until
 	}
@@ -932,10 +1053,7 @@ func (f *firewall) rewriteAllowLocked(ctx context.Context) bool {
 	}
 	if f.ipt != nil {
 		open, trap := f.iptCurrentPortsLocked()
-		err := f.rewriteIPTLocked(ctx, iptInChains, func() error {
-			return f.ipt.restoreChains(ctx, f.effectiveLocked(), f.iptPlanLocked(nil, open, trap), iptInChains)
-		})
-		if err != nil {
+		if err := f.rewriteNatLocked(ctx, open, trap); err != nil {
 			f.log.Warnf("更新白名单失败: %v", err)
 			f.resync = true
 			return false
@@ -1034,24 +1152,6 @@ func (d nftDoc) counters() (dropped, hits map[string]uint64) {
 	return dropped, hits
 }
 
-// elemAddr 解析集合元素：可能是字符串，也可能是带超时信息的对象。
-func elemAddr(raw json.RawMessage) (netip.Addr, bool) {
-	var s string
-	if json.Unmarshal(raw, &s) != nil {
-		var obj struct {
-			Elem struct {
-				Val string `json:"val"`
-			} `json:"elem"`
-		}
-		if json.Unmarshal(raw, &obj) != nil {
-			return netip.Addr{}, false
-		}
-		s = obj.Elem.Val
-	}
-	a, err := netip.ParseAddr(s)
-	return a, err == nil
-}
-
 // portHits 记录各来源（封禁表的键：IPv4 地址或 IPv6 /64）最近命中的目的端口，已去重并升序。
 type portHits map[string][]int
 
@@ -1069,35 +1169,6 @@ func (h portHits) add(a netip.Addr, port int) {
 	copy(ps[i+1:], ps[i:])
 	ps[i] = port
 	h[key] = ps
-}
-
-// elemAddrPort 解析 (地址 . 端口) 连接集合的元素，元素可能带超时信息。
-func elemAddrPort(raw json.RawMessage) (netip.Addr, int, bool) {
-	var obj struct {
-		Elem struct {
-			Val struct {
-				Concat []json.RawMessage `json:"concat"`
-			} `json:"val"`
-		} `json:"elem"`
-		Concat []json.RawMessage `json:"concat"`
-	}
-	if json.Unmarshal(raw, &obj) != nil {
-		return netip.Addr{}, 0, false
-	}
-	parts := obj.Concat
-	if len(parts) == 0 {
-		parts = obj.Elem.Val.Concat
-	}
-	if len(parts) != 2 {
-		return netip.Addr{}, 0, false
-	}
-	var as string
-	var port int
-	if json.Unmarshal(parts[0], &as) != nil || json.Unmarshal(parts[1], &port) != nil {
-		return netip.Addr{}, 0, false
-	}
-	a, err := netip.ParseAddr(as)
-	return a.Unmap(), port, err == nil
 }
 
 // ruleCounter 返回规则表达式中计数器的包数。
@@ -1131,11 +1202,12 @@ func (f *firewall) poll(ctx context.Context) {
 		if strings.Contains(err.Error(), "No such file") {
 			// 表被其他程序（例如防火墙重载时清空全部规则）删除，重新写入
 			f.log.Warnf("防火墙规则已被外部清除，重新写入")
+			before := f.kernelTrapLocked()
 			f.status.Active = false
 			f.applyLocked(ctx, f.cfg)
-			active, onActive := f.status.Active, f.onActive
+			changed, onActive := before != f.kernelTrapLocked(), f.onActive
 			f.mu.Unlock()
-			if !active && onActive != nil {
+			if changed && onActive != nil {
 				onActive()
 			}
 			return
@@ -1151,68 +1223,23 @@ func (f *firewall) poll(ctx context.Context) {
 		return
 	}
 	f.status.Error = ""
-	inbox := map[string][]netip.Addr{}
-	hits := newPortHits()
-	for _, item := range doc.Nftables {
-		if item.Set != nil {
-			switch item.Set.Name {
-			case "port4", "port6":
-				for _, raw := range item.Set.Elem {
-					if a, port, ok := elemAddrPort(raw); ok {
-						hits.add(a, port)
-					}
-				}
-			case "trap4", "trap6", "scan4", "scan6":
-				for _, raw := range item.Set.Elem {
-					if a, ok := elemAddr(raw); ok {
-						inbox[item.Set.Name] = append(inbox[item.Set.Name], a)
-					}
-				}
-			}
-		}
-	}
 	dropped, hitCounts := doc.counters()
 	f.status.Dropped, f.status.Hits = addCounts(f.baseDropped, dropped), addCounts(f.baseHits, hitCounts)
 	f.status.CheckedAt = time.Now()
+	before := f.kernelTrapLocked()
 	portsOK := f.refreshPortsLocked(ctx)
 	f.refreshTrustLocked(ctx)
 	if portsOK && f.cfg.Scan.Enable && f.cfg.Scan.IPv6Strict && !f.strictReady && !f.strictAt.IsZero() && !time.Now().Before(f.strictAt) {
 		f.strictReady = true
 		f.applyLocked(ctx, f.cfg)
 		if f.status.Active {
-			f.log.Infof("IPv6 严格模式已启用：IPv6 来源连接开放端口以外的端口即被封禁")
+			f.log.Infof("IPv6 严格模式已启用：IPv6 来源连接开放端口以外的端口即交给 Gately 确认握手，完成握手即被封禁")
 		}
 	}
-	importFn := f.trustedFilterLocked(f.importFn)
+	changed, onActive := before != f.kernelTrapLocked(), f.onActive
 	f.mu.Unlock()
-
-	// 先写入封禁表（随后由 flush 加入 ban 集合），再从内核的临时集合中删除，避免出现空档
-	for name, addrs := range inbox {
-		source := banlist.SourceTrap
-		if strings.HasPrefix(name, "scan") {
-			source = banlist.SourceScan
-		}
-		if importFn != nil {
-			importFn(source, addrs, hits)
-		}
-	}
-	if len(inbox) > 0 {
-		f.flush(ctx)
-		var stmts []string
-		for name, addrs := range inbox {
-			elems := make([]string, 0, len(addrs))
-			for _, a := range addrs {
-				elems = append(elems, a.String())
-			}
-			stmts = append(stmts, fmt.Sprintf("delete element inet %s %s { %s }", tableName, name, strings.Join(elems, ", ")))
-		}
-		f.mu.Lock()
-		for _, st := range stmts {
-			if _, err := f.run(ctx, st+"\n", "-f", "-"); err != nil && !strings.Contains(err.Error(), "No such file") {
-				f.log.Warnf("清理临时集合失败: %v", err)
-			}
-		}
-		f.mu.Unlock()
+	if changed && onActive != nil {
+		onActive()
 	}
 }
 
@@ -1232,11 +1259,7 @@ func (f *firewall) refreshPortsLocked(ctx context.Context) bool {
 		return true
 	}
 	if f.ipt != nil {
-		ss := f.effectiveLocked()
-		err := f.rewriteIPTLocked(ctx, iptInChains, func() error {
-			return f.ipt.restoreChains(ctx, ss, iptPlan{allow: f.allowLocked(), open: open, trap: trap}, iptInChains)
-		})
-		if err != nil {
+		if err := f.rewriteNatLocked(ctx, open, trap); err != nil {
 			f.log.Warnf("更新端口集合失败: %v", err)
 			return false
 		}

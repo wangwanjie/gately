@@ -3,6 +3,8 @@ package protoroute
 import (
 	"strings"
 	"testing"
+
+	"github.com/wangwanjie/gately/internal/l4proxy"
 )
 
 func TestSNIRuleValidate(t *testing.T) {
@@ -128,5 +130,29 @@ func TestRouteDomainsNormalize(t *testing.T) {
 	// Minecraft 客户端按输入原样发送国际化域名，需转为 punycode 才能匹配
 	if h := normalizeMinecraftHost("中文.COM.\x00FML\x00"); h != "xn--fiq228c.com" {
 		t.Fatalf("Minecraft 主机名规范化错误: %q", h)
+	}
+}
+
+// 单来源上限：未设置时取最大连接数的一半，规则设置优先于全局默认值；变化时需要重新监听。
+func TestEffectiveLimitsPerSource(t *testing.T) {
+	s := defaultSettings()
+	if got := effectiveLimits(Rule{}, s); got != (l4proxy.Limits{Max: 256, PerSource: 128}) {
+		t.Fatalf("默认上限: %+v", got)
+	}
+	s.DefaultMaxConnsPerSource = 16
+	if got := effectiveLimits(Rule{MaxConnections: 64}, s); got != (l4proxy.Limits{Max: 64, PerSource: 16}) {
+		t.Fatalf("全局默认值: %+v", got)
+	}
+	if got := effectiveLimits(Rule{MaxConnsPerSource: 4}, s); got != (l4proxy.Limits{Max: 256, PerSource: 4}) {
+		t.Fatalf("规则设置: %+v", got)
+	}
+	r := &runner{rule: Rule{}, settings: defaultSettings()}
+	if r.canUpdate(Rule{MaxConnsPerSource: 4}, defaultSettings()) {
+		t.Fatal("单来源上限变化时应重新监听")
+	}
+	n := Settings{DefaultMaxConnsPerSource: -1}
+	n.normalize()
+	if n.DefaultMaxConnsPerSource != 0 {
+		t.Fatalf("负数应规范化为 0: %d", n.DefaultMaxConnsPerSource)
 	}
 }

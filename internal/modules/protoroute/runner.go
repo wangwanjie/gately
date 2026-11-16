@@ -116,12 +116,14 @@ func (r *runner) snapshot() StatsSnapshot {
 	return snap
 }
 
-// effectiveMaxConns 返回规则实际使用的每端口最大连接数（规则未设置时取全局默认值）。
-func effectiveMaxConns(rule Rule, settings Settings) int {
+// effectiveLimits 返回规则实际使用的每端口连接上限（规则未设置时取全局默认值）。
+func effectiveLimits(rule Rule, settings Settings) l4proxy.Limits {
+	limits := l4proxy.Limits{Max: settings.DefaultMaxConnections}
 	if rule.MaxConnections > 0 {
-		return rule.MaxConnections
+		limits.Max = rule.MaxConnections
 	}
-	return settings.DefaultMaxConnections
+	limits.PerSource = l4proxy.PerSourceLimit(rule.MaxConnsPerSource, settings.DefaultMaxConnsPerSource, limits.Max)
+	return limits
 }
 
 // canUpdate 判断新配置能否在不重新监听的情况下生效：监听协议、地址、端口映射与连接上限都不变，
@@ -135,7 +137,7 @@ func (r *runner) canUpdate(rule Rule, settings Settings) bool {
 		old.ListenPorts != rule.ListenPorts || old.TargetPorts != rule.TargetPorts {
 		return false
 	}
-	return effectiveMaxConns(old, r.settings) == effectiveMaxConns(rule, settings)
+	return effectiveLimits(old, r.settings) == effectiveLimits(rule, settings)
 }
 
 // update 热替换路由表、默认目标与识别超时，监听器与已建立的连接保持不断，各路由与默认目标的命中计数沿用旧值。
@@ -153,13 +155,13 @@ func (r *runner) start(parent context.Context) error {
 	}
 	ctx := r.srv.Context(parent)
 	log := r.current().log
-	maxConns := effectiveMaxConns(r.rule, r.settings)
+	limits := effectiveLimits(r.rule, r.settings)
 
 	okCount := 0
 	for _, proto := range r.rule.Protocols {
 		for _, pair := range pairs {
 			addr := net.JoinHostPort(r.rule.ListenAddress, strconv.Itoa(pair.Listen))
-			err := r.srv.ServeTCP(ctx, proto, addr, maxConns, func(format string, args ...any) {
+			err := r.srv.ServeTCP(ctx, proto, addr, limits, func(format string, args ...any) {
 				r.current().log.Warnf(format, args...)
 			}, func(conn net.Conn) {
 				// 每个连接固定使用建立时的配置，热更新只影响之后的新连接
