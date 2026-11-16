@@ -165,8 +165,9 @@ type connTracker struct {
 		m  map[uint64]*activeReq
 	}
 	histMu sync.Mutex
-	// hist 为环形缓冲，next 为下一个写入位置，full 表示已写满一圈
-	hist   [connHistorySize]ConnView
+	// hist 为环形缓冲（约 52 KB），next 为下一个写入位置，full 表示已写满一圈。
+	// 首条历史写入时才分配：大多数站点只有短请求，永远不会产生历史记录
+	hist   []ConnView
 	next   int
 	full   bool
 	closed atomic.Int64
@@ -228,6 +229,9 @@ func (t *connTracker) end(a *activeReq) {
 		v.Result = "closed"
 	}
 	t.histMu.Lock()
+	if t.hist == nil {
+		t.hist = make([]ConnView, connHistorySize)
+	}
 	t.hist[t.next] = v
 	t.next = (t.next + 1) % connHistorySize
 	if t.next == 0 {
@@ -324,6 +328,7 @@ func (t *connTracker) snapshot(q string, now time.Time) ConnsView {
 		}
 	}
 	t.histMu.Lock()
+	// 未分配时 next 为 0、full 为 false，下面的循环不会访问 hist
 	n := t.next
 	if t.full {
 		n = connHistorySize
