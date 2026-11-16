@@ -962,6 +962,7 @@
   "共享用户 %s 的 TOTP 密钥无效": "invalid TOTP key for shared user %s",
   "共享用户 %s 的分组 %q 无效（不能包含空格或逗号）": "Group %[2]q of shared user %[1]s is invalid (no spaces or commas)",
   "共享用户 %s 的密码哈希无效": "invalid password hash for shared user %s",
+  "共享用户 %s 的密码已修改，已断开其 %d 个连接": "Password of shared user %s changed; disconnected %d of their connections",
   "共享用户 %s 的密码是 bcrypt 哈希，SMB 需要明文密码，已跳过": "Shared user %s has a bcrypt password hash; SMB needs the plain password, skipped",
   "共享用户 %s 的用户名不能用于 SMB，已跳过": "The name of shared user %s cannot be used for SMB, skipped",
   "共享用户 %s 的目录名称不能作为 SMB 共享名或重复，已跳过": "A directory name of shared user %s cannot be used as an SMB share name or is duplicated, skipped",

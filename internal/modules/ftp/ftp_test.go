@@ -95,7 +95,7 @@ func TestFTPLogin(t *testing.T) {
 
 // 同一来源连续猜错密码达到上限后，即使随后给出正确密码也被拒绝，防止暴力猜测。
 func TestFTPLoginThrottle(t *testing.T) {
-	d := &driver{s: Settings{}, users: map[string]User{"rw": {Name: "rw", Password: "p1", Root: t.TempDir()}}, logs: logbuf.New(20, log.New(io.Discard, "", 0))}
+	d := &driver{s: Settings{}, users: map[string]User{"rw": {Name: "rw", Password: "p1", Root: t.TempDir()}}, logs: logbuf.New(20, log.New(io.Discard, "", 0)), throttle: &fileusers.Throttle{}}
 	cc := &fakeClient{}
 	for i := 0; i < fileusers.ThrottleMaxFailures; i++ {
 		if _, err := d.AuthUser(cc, "rw", "bad"); err == nil {

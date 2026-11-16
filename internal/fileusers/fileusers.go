@@ -586,3 +586,32 @@ func CountShared(local []string, shared []User, fold bool) int {
 	}
 	return n
 }
+
+// Shape 返回不含密码的共享用户列表指纹（用户名与目录配置）。文件服务据此判断一次修改是否只改了密码：
+// 只改了密码时不必重启服务，只需断开改了密码的用户已登录的连接，其他用户不受影响。
+func Shape(users []User) string {
+	var b strings.Builder
+	for _, u := range users {
+		fmt.Fprintf(&b, "%q\x00%q\x00%t\x00", u.Name, u.Root, u.ReadOnly)
+		for _, mt := range u.Mounts {
+			fmt.Fprintf(&b, "%q\x01%q\x01%t\x00", mt.Name, mt.Path, mt.ReadOnly)
+		}
+		b.WriteByte('\n')
+	}
+	return b.String()
+}
+
+// PasswordChanged 返回 updated 中密码与 old 中同名用户（区分大小写）不同的用户名，以及 old 中没有的用户名。
+func PasswordChanged(old, updated []User) []string {
+	prev := make(map[string]string, len(old))
+	for _, u := range old {
+		prev[u.Name] = u.Password
+	}
+	var out []string
+	for _, u := range updated {
+		if p, ok := prev[u.Name]; !ok || p != u.Password {
+			out = append(out, u.Name)
+		}
+	}
+	return out
+}
