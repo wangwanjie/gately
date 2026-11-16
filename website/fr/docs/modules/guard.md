@@ -5,7 +5,7 @@ Prévention d'intrusion à la fail2ban : Gately repère les attaques par force b
 ## Fonctionnalités
 
 - **Règles de journaux** : lisent des fichiers journaux, le journal systemd, la sortie d'une commande (comme `logread -f` sur OpenWrt) ou les journaux d'un conteneur Docker, repèrent les échecs avec des expressions régulières et bannissent l'IP qui atteint le nombre d'échecs dans la fenêtre de temps. Des modèles sont fournis pour SSH, Dropbear, Nginx, Vaultwarden, Home Assistant, Proxmox VE et d'autres, et l'éditeur permet de coller des lignes d'exemple pour tester les filtres ;
-- **Événements Gately** : les échecs de connexion à la console, les blocages du WAF et les knocks refusés du [Port Knocking](/fr/docs/modules/knock) peuvent aussi alimenter une règle, sans expression régulière ;
+- **Événements Gately** : les échecs de connexion à la console, les blocages du WAF, les knocks refusés du [Port Knocking](/fr/docs/modules/knock) et les échecs de connexion à WebDAV / FTP / SMB peuvent aussi alimenter une règle, sans expression régulière ;
 - **Sondage de chemins web** : compte directement les requêtes traitées par le service web par écouteur, chemin et code d’état, sans lire de journal ; les sources qui demandent des chemins leurres comme `/.env` ou `/.git`, ou qui scannent sans cesse des domaines inconnus, sont bannies ;
 - **Échecs de handshake TLS** : compte les échecs de handshake sur les écouteurs HTTPS du service web par type d'échec (coupure en plein handshake, réinitialisation, délai dépassé, pas du TLS ou erreur de protocole, non négociable, domaine inconnu, etc.), écouteur et nombre de fois ; bloque les scans qui coupent pendant le handshake sans jamais envoyer de requête HTTP ;
 - **Ports pièges** : pièges sur des ports que cet hôte n'utilise pas (23, 135, 1433, 3389, 5900, 6379 et d'autres par défaut). Toute source qui s'y connecte est bannie ;
@@ -62,7 +62,7 @@ Sans cela, les bannissements s'appliquent toujours aux services de Gately. Pour 
 | Journal systemd | Unités de service comme `ssh.service` | Lu via `journalctl -f` |
 | Sortie de commande | Une commande comme `logread -f` | Relancée si elle s'arrête |
 | Conteneur Docker | Nom du conteneur | Lu via la connexion Docker du module Docker |
-| Événement Gately | Échec de connexion / blocage WAF / knock refusé | Les événements contiennent l'IP source, aucun filtre n'est nécessaire |
+| Événement Gately | Échec de connexion / blocage WAF / knock refusé / échec de connexion aux services de fichiers | Les événements contiennent l'IP source, aucun filtre n'est nécessaire |
 | Sondage de chemins web | Écouteurs (facultatif) et règles de chemin | Compte les requêtes du service web, voir plus bas |
 | Échecs de handshake TLS | Écouteurs (facultatif) et types d'échec | Compte les échecs de handshake sur les écouteurs HTTPS du service web, voir ci-dessous |
 
@@ -73,6 +73,8 @@ Failed password for (?:invalid user )?\S* ?from <HOST>
 ```
 
 Les lignes correspondant à une « Exclusion » ne sont pas comptées. La fenêtre de temps, le nombre d'échecs et la durée du bannissement se règlent par règle ; la durée peut être celle par défaut, personnalisée ou permanente.
+
+La source d'événements Gately propose le modèle « Échecs de connexion aux services de fichiers » (préréglage `gately-files`). Les échecs de connexion à WebDAV, FTP et SMB, ainsi que les tentatives refusées après trop d'échecs, sont comptés par IP source ; par défaut, 10 en 10 minutes bannissent la source, avec la durée de bannissement par défaut. Une source n'est comptée qu'une fois toutes les 5 secondes au plus : un client qui envoie plusieurs requêtes ou réessaie avec un mauvais mot de passe compte une seule fois. L'adresse source provient de la connexion TCP (WebDAV n'utilise les en-têtes transmis que si un proxy de confiance est configuré). Les requêtes sans identifiants ne sont pas comptées (WebDAV qui attend le défi 401, sonde anonyme de l'Explorateur Windows sur SMB).
 
 ## Sondage de chemins web
 

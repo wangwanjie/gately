@@ -136,6 +136,7 @@ Ao criar uma regra, clique em um modelo para preencher eventos, nível e tempo d
 | `backup.done` | Backup: concluído | Info | Um backup agendado ou manual foi bem-sucedido em todos os destinos; veja [Backup da configuração](/pt-BR/docs/modules/backup) |
 | `backup.failed` | Backup: falhou | Erro | O empacotamento do backup falhou, ou a gravação em algum destino falhou |
 | `auth.failed` | Autenticação: falhas repetidas | Aviso | Um login na interface de administração falhou, com o campo `ip` |
+| `fileauth.failed` | Serviços de arquivos: falha de login | Aviso | Um login no WebDAV, FTP ou SMB falhou ou foi recusado por excesso de falhas. A origem é o nome do serviço; o evento traz os campos `ip` e `service` (`WebDAV`, `FTP` ou `SMB`), além de `user` quando um nome de usuário foi enviado. No máximo um evento por origem a cada 5 segundos; a prevenção de intrusão pode contá-lo para banir a origem, veja [Prevenção de intrusão](/pt-BR/docs/modules/guard) |
 | `auth.banned` | Autenticação: IP banido | Aviso | Falhas repetidas de autenticação em serviços Web dispararam um banimento automático |
 | `guard.banned` | Prevenção de intrusão: IP banido | Aviso | Uma regra de logs, uma porta armadilha ou a detecção de varredura de portas baniu um IP ou uma rede, com os campos `ip` e `reason` (e `count` quando vários endereços são banidos juntos) |
 | `knock.opened` | Port knocking: knock bem-sucedido | Info | Um knock foi autenticado e o endereço de origem liberado, com os campos `ip`, `rule` e `ports`; veja [Port Knocking](/pt-BR/docs/modules/knock) |
