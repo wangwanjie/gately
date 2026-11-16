@@ -15,6 +15,7 @@
   "sidebar": {
     "groups": {
       "start": "Начало работы",
+      "tutorials": "Руководства",
       "modules": "Модули",
       "security": "Безопасность",
       "reference": "Справочник"
@@ -28,6 +29,12 @@
       "guide/cli-mcp": "CLI и MCP",
       "guide/migration": "Руководство по миграции",
       "guide/faq": "FAQ",
+      "tutorials/remote-access-without-public-ip": "Доступ к NAS без публичного IPv4",
+      "tutorials/one-port-443": "Всё на одном порту 443",
+      "tutorials/https-and-login-for-apps": "HTTPS и вход для популярных приложений",
+      "tutorials/wildcard-cert-ddns": "Wildcard-сертификат и динамический DNS",
+      "tutorials/migrate-from-nginx": "Переход с nginx или NPM",
+      "tutorials/replace-haproxy-nginx-fail2ban": "Замена haproxy + nginx + fail2ban",
       "modules/index": "Обзор модулей",
       "modules/ddns": "Динамический DNS (DDNS)",
       "modules/stun": "STUN-обход NAT",

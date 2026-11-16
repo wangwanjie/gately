@@ -124,3 +124,68 @@ func TestRedactEnvAndExtraArgs(t *testing.T) {
 		}
 	}
 }
+
+// DNS 服务商凭据的附加字段：自定义回调的请求头（多行文本）与请求体、OVH 的 Consumer Key 以及未登记的字段都脱敏，
+// 接入点、请求方法、成功标识等非密钥字段保留，回调地址按地址规则脱敏。
+func TestRedactDDNSCredentialExtra(t *testing.T) {
+	raw := `[{"name":"cb","provider":"callback","credentials":{"id":"","secret":"topsecret","extra":{
+	  "url":"https://ddns.example.com/update?domain={domain}&key=urlkey123","method":"POST",
+	  "headers":"Authorization: Bearer hdrtoken\nX-Api-Key: hdrkey\nnocolonline","body":"{\"apikey\":\"bodykey\"}","successContent":"good\nnochg"}}},
+	 {"name":"ovh","provider":"ovh","credentials":{"id":"appkey","secret":"appsecret","extra":{"consumerKey":"consumer123","endpoint":"ovh-eu","Future":"futuresecret"}}},
+	 {"name":"cf","provider":"cloudflare","credentials":{"id":"","secret":"cftoken","extra":{"proxied":"true"}}},
+	 {"name":"term","credentials":[{"name":"c","password":"credpw","username":"root"}]}]`
+	var v any
+	if err := json.Unmarshal([]byte(raw), &v); err != nil {
+		t.Fatal(err)
+	}
+	out, _ := json.Marshal(redactJSON(v))
+	s := string(out)
+	for _, leak := range []string{"topsecret", "urlkey123", "hdrtoken", "hdrkey", "nocolonline", "bodykey", "appsecret", "consumer123", "futuresecret", "cftoken", "credpw"} {
+		if strings.Contains(s, leak) {
+			t.Errorf("脱敏后仍含明文 %q: %s", leak, s)
+		}
+	}
+	for _, keep := range []string{`"method":"POST"`, `"headers":"********"`, `"successContent":"good\nnochg"`, `"endpoint":"ovh-eu"`,
+		`"proxied":"true"`, `"id":"appkey"`, "https://ddns.example.com/update?", `"username":"root"`, `"provider":"callback"`} {
+		if !strings.Contains(s, keep) {
+			t.Errorf("应保留 %q: %s", keep, s)
+		}
+	}
+}
+
+// 守护进程的环境变量与各类附加参数、命令与脚本、HTTP 请求体模板对只读身份整段隐藏；
+// 版本更新说明等其他名为 body 的字段不受影响。
+func TestRedactArgsCommandsAndBodies(t *testing.T) {
+	in := map[string]any{
+		"instances": []any{map[string]any{
+			"name": "ts", "daemonEnv": "TS_AUTHKEY=tskey-envsecret\nTS_DEBUG=1", "extraUpArgs": "--auth-key=tskey-upsecret --ssh",
+			"daemonExtraArgs": "--state=mem: --x=daemonsecret", "hostname": "nas",
+		}},
+		"tasks": []any{
+			map[string]any{"name": "c", "type": "command", "spec": "0 3 * * *", "command": "mysql -pcmdsecret"},
+			map[string]any{"name": "h", "type": "http", "http": map[string]any{"url": "https://x.example/hook", "method": "POST", "headers": []any{"X-K: hdrsecret"}, "body": `{"token":"bodysecret"}`}},
+		},
+		"rule":     map[string]any{"script": "echo scriptsecret", "scriptEnable": true},
+		"device":   map[string]any{"shutdownCommand": "sshpass -p shutdownsecret poweroff"},
+		"args":     []any{"--token", "listsecret"},
+		"release":  map[string]any{"version": "v1.2.3", "body": "更新说明：修复若干问题", "publishedAt": "2026-01-01"},
+		"icon":     map[string]any{"name": "nas", "body": "<path d=\"M0 0\"/>"},
+		"emptyCmd": map[string]any{"command": "", "extraArgs": ""},
+		// 请求头写成多行文本时只隐藏值
+		"callback": map[string]any{"headers": "Authorization: Bearer textsecret\nX-Plain: v\nnocolonsecret\n"},
+	}
+	out, _ := json.Marshal(redactJSON(in))
+	s := string(out)
+	for _, leak := range []string{"envsecret", "upsecret", "daemonsecret", "cmdsecret", "hdrsecret", "bodysecret", "scriptsecret", "shutdownsecret", "listsecret", "--ssh", "TS_DEBUG=1", "textsecret", "nocolonsecret"} {
+		if strings.Contains(s, leak) {
+			t.Errorf("脱敏后仍含明文 %q: %s", leak, s)
+		}
+	}
+	for _, keep := range []string{"TS_AUTHKEY=********", `"hostname":"nas"`, `"spec":"0 3 * * *"`, `"scriptEnable":true`, "更新说明：修复若干问题", `M0 0`,
+		`"method":"POST"`, "https://x.example/hook", `"command":""`, `"extraArgs":""`, `"version":"v1.2.3"`,
+		`Authorization: ********\nX-Plain: ********\n********\n`} {
+		if !strings.Contains(s, keep) {
+			t.Errorf("应保留 %q: %s", keep, s)
+		}
+	}
+}

@@ -1062,6 +1062,12 @@ func (d *Dispatcher) handleCreate(rw io.ReadWriter, hdr smb2.Header, body []byte
 		d.respondError(rw, hdr, statusFromResolveErr(err), sess)
 		return true
 	}
+	// Gately 补丁：被屏蔽的路径（共享目录中的 Gately 配置目录）按不存在处理，见 gately_guard.go。
+	// 判断会解析符号链接，指向配置目录的链接同样被拒绝
+	if shareHidden(tree, osPath) {
+		d.respondError(rw, hdr, smb2.StatusObjectNameNotFound, sess)
+		return true
+	}
 	wantedDir := req.CreateOptions&smb2.CreateOptDirectoryFile != 0
 	wantedNonDir := req.CreateOptions&smb2.CreateOptNonDirFile != 0
 	wantsWrite := req.DesiredAccess&(smb2.AccessFileWriteData|smb2.AccessFileAppendData|smb2.AccessGenericAll|smb2.AccessGenericWrite) != 0
@@ -2031,6 +2037,11 @@ func (d *Dispatcher) handleSetInfo(rw io.ReadWriter, hdr smb2.Header, body []byt
 			d.respondError(rw, hdr, smb2.StatusAccessDenied, sess)
 			return true
 		}
+		// Gately 补丁：不能改名到被屏蔽的路径中，也不能移动被屏蔽的部分或它的上级目录
+		if shareTouches(open.Tree, newPath) || shareTouches(open.Tree, open.namePath()) {
+			d.respondError(rw, hdr, smb2.StatusAccessDenied, sess)
+			return true
+		}
 		// Lstat, not Stat, so an existing symlink at the destination is judged
 		// as an object in its own right rather than by whatever it points at.
 		// That is the same rule the rename below follows.
@@ -2289,6 +2300,11 @@ func (d *Dispatcher) handleClose(rw io.ReadWriter, hdr smb2.Header, body []byte,
 			d.respondError(rw, hdr, smb2.StatusAccessDenied, sess)
 			return true
 		}
+		// Gately 补丁：被屏蔽的部分及其上级目录不能删除
+		if shareTouches(open.Tree, victim) {
+			d.respondError(rw, hdr, smb2.StatusAccessDenied, sess)
+			return true
+		}
 		// A failed unlink must not be reported as a successful CLOSE: the
 		// client (rclone especially) records the file as deleted and never
 		// retries, while the file is still on disk. Surface the real reason —
@@ -2411,6 +2427,19 @@ func (d *Dispatcher) handleQueryDirectory(rw io.ReadWriter, hdr smb2.Header, bod
 			d.Log.Warn("query-dir: ReadDir failed", "path", open.Path, "err", err, "status", statusFromErr(err))
 			d.respondError(rw, hdr, statusFromErr(err), sess)
 			return true
+		}
+		// Gately 补丁：列表中去掉被屏蔽的条目（共享目录中的 Gately 配置目录及指向它的符号链接）
+		if open.Tree != nil && open.Tree.Share.Guard != nil {
+			kept := entries[:0]
+			for _, e := range entries {
+				if e.IsDir() || e.Type()&os.ModeSymlink != 0 {
+					if fi, ierr := e.Info(); ierr == nil && open.Tree.Share.Guard.HiddenChild(open.Path, fi) {
+						continue
+					}
+				}
+				kept = append(kept, e)
+			}
+			entries = kept
 		}
 		// Prepend synthetic "." and ".." entries — Windows/macOS clients expect
 		// them. Both stats can fail even though the ReadDir above succeeded
@@ -3695,6 +3724,10 @@ func (d *Dispatcher) handleChangeNotify(rw io.ReadWriter, hdr smb2.Header, body 
 	accept := func(ev inotify.InotifyEvent) (smb2.NotifyEntry, bool) {
 		rel, err := filepath.Rel(open.Path, ev.Path)
 		if err != nil {
+			return smb2.NotifyEntry{}, false
+		}
+		// Gately 补丁：被屏蔽部分里的变化不通知，否则递归监视上级目录就能得知其中的文件名
+		if shareHidden(open.Tree, ev.Path) {
 			return smb2.NotifyEntry{}, false
 		}
 		if !watchTree && strings.Contains(rel, string(filepath.Separator)) {

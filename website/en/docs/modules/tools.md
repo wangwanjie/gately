@@ -17,8 +17,13 @@ Each user can map to one directory, or mount several directories:
 
 - **Single directory**: set `root` and `readOnly`. After login, the root is that directory.
 - **Multiple directories**: click "Mount multiple directories" in the UI, or fill in several entries in `mounts`. Each entry has `name` (display name, cannot contain `/`, unique within one user), `path` (an absolute path) and `readOnly`. After login, the root lists the directories by name. The root itself is not writable, and files cannot be moved between different directories.
+- Directories (`root` and the `path` of `mounts`) cannot be Gately's configuration directory or a directory inside it: the configuration directory holds the sign-in keys, and a file service user who can read it can become an administrator. Such directories saved before the upgrade no longer serve any content while other directories and users keep working, and the run log asks you to change them. A directory that contains the configuration directory (for example sharing the whole `/vol1` volume with Gately's data directory inside it) works as usual and the configuration directory is hidden automatically: it is not listed, cannot be reached by path, through `..`, symbolic links or a different letter case, files cannot be renamed, moved or copied into or out of it, and the directories above it cannot be renamed or deleted. The same applies to [shared users](#shared-users), local directories of storage mounts and directories of static sites in Web Services. File Browser reads directories directly as an external program and cannot hide the configuration directory, so its shared directories are refused whenever they overlap it, including when they contain it.
 
-**Login throttling**: WebDAV, FTP and SMB limit wrong passwords per source address. After 10 failures within 15 minutes, every login from that source is refused until the window ends (WebDAV returns `429`, FTP and SMB return a login failure, and SMB also writes "too many failed logins, refused" to the run log), even with the correct password. A successful login does not reset the count, and IPv6 sources are counted per /64. When WebDAV sits behind a local reverse proxy such as the Gately web service, the visitor address passed by the proxy is used.
+**Login throttling**: WebDAV, FTP and SMB limit wrong passwords per source address. After 10 failures within 15 minutes, every login from that source is refused until the window ends (WebDAV returns `429`, FTP and SMB return a login failure, and SMB also writes "too many failed logins, refused" to the run log), even with the correct password. A successful login does not reset the count, and IPv6 sources are counted per /64. When WebDAV sits behind a local reverse proxy such as the Gately web service, the visitor address passed by the proxy is used. The failure count is kept by the module, so restarting a service after changing its settings or the shared users does not reset it. Each failed sign-in (including refused ones) also publishes a `fileauth.failed` event; in [Intrusion Prevention](/en/docs/modules/guard) the "File service sign-in failures" template can ban sources by count, and the event is listed in the [Notification Center](/en/docs/modules/notify).
+
+**Connection timeouts**: an idle keep-alive connection is closed after 2 minutes and the client reconnects on its next request; an upload is dropped when no request body data arrives for 2 minutes. Steady slow uploads and long transfers are not affected.
+
+**Symbolic links**: the share directory is accessed through os.Root. A symbolic link inside the directory that points outside it cannot be followed, so reading, writing, listing, renaming, copying and moving never leave the share directory and the access is refused; links that point inside the share work as usual.
 
 ## FTP
 
@@ -37,6 +42,8 @@ Configure it under "FTP Service" in the "File Services" group. FTP and FTPS are 
 | `disableActiveMode` | Off | Use passive mode only, which suits NAT environments better |
 | `users` | None | Multiple users, with the same fields as WebDAV: `name`, `password`, `root`, `readOnly` or `mounts`; user names must be unique |
 | `sharedUsers` | Off | Allow [shared users](#shared-users) to sign in to this service |
+
+**Symbolic links and ownership**: the user directory is also accessed through os.Root, so a symbolic link pointing outside it cannot be followed (links inside the directory work as usual); `SITE CHOWN` is always refused.
 
 ## SMB
 
@@ -59,6 +66,8 @@ Shares belong to users, and a signed-in user only sees and connects to their own
 
 User and share names cannot contain `" / \ [ ] : ; | = , + * ? < >` and cannot start or end with `.`. NTLM authentication needs the plain password, so users whose password is stored as a bcrypt hash must set it again. Files are read and written as the Gately process.
 
+**Limits before sign-in**: connections that have not signed in are restricted so empty connections and malicious requests cannot hold resources. A connection is closed when no next request arrives within 30 seconds (including a connection that never sends a negotiate request) or when it is still not signed in 60 seconds after connecting. A single request before sign-in may not exceed 128 KiB, otherwise the connection is closed. At most 256 connections in total and 32 per source (IPv6 counted per /64) may be unsigned at once; further new connections are closed immediately, and refusals are logged at most once every 30 seconds in the run log. The limits are lifted once the client has signed in, so large transfers are not affected.
+
 "Connection addresses" at the bottom of the page lists the address of every share from the saved settings:
 
 - Windows: enter `\\host\share` in the Explorer address bar, or run `net use Z: \\host\share /user:username`
@@ -74,7 +83,7 @@ WebDAV, FTP and SMB share one list of "shared users" with the same fields as eac
 - Each service decides on its own whether to accept shared users: turn on "Allow shared users" in the "Shared users" card of the service page (field `sharedUsers`) and save, and shared users can sign in to that service; the card also lists the saved shared users, and "Manage shared users" opens the "File shared users" page;
 - When a local user has the same name, only the local user is checked (case-insensitive for SMB);
 - Shared user names must be unique regardless of case and cannot contain a colon;
-- Changes to shared users take effect at once: WebDAV checks the new settings on the next request, FTP and SMB restart, and connected clients need to reconnect;
+- Changes to shared users take effect at once: WebDAV checks the new settings on the next request; when only passwords changed, FTP and SMB keep running and drop only the connections of the users whose password changed (those clients reconnect with the new password, other users are unaffected); adding or removing users or changing directories or read-only settings restarts FTP and SMB, and connected clients need to reconnect;
 - With the switch on and at least one shared user, the service can be enabled without any local user;
 - A service enabled with shared users only must still have a shared user that can sign in after a change (for SMB, one usable by SMB), otherwise the change is rejected;
 - If `fileusers.json` is broken by hand (for example an empty password or a directory that is not an absolute path), no shared user can sign in and the page shows a warning; fix it and save to restore them;
@@ -82,7 +91,7 @@ WebDAV, FTP and SMB share one list of "shared users" with the same fields as eac
 
 The API is `GET` / `PUT /api/fileusers`, which needs the `fileusers:read` / `fileusers:write` permission for API tokens; `services` in the response shows how each service uses them. The former `GET` / `PUT /api/<service>/shared-users` of each service are deprecated but still work and read and write the same list: reading uses the read permission of that service, and a change needs `webdav:write`, `ftp:write` and `smb:write` together.
 
-**Self-service password change**: turn on Self-service password change on the File shared users page and save, and shared users can change their own password at `https://site-domain/__gately_auth/password` on any web service site with web authentication by entering the username, current password and new password (8–128 characters). WebDAV, FTP and SMB use the new password right away (FTP and SMB restart, so connected clients reconnect). Plaintext passwords stay plaintext and bcrypt hashes stay hashed; a wrong current password counts toward the same rate limit and automatic ban as web logins. The switch is stored as `selfService` in `fileusers.json`, with the same field name in the API. For web login shared users, see [self-service password change in the web service](/en/docs/modules/web#self-service-password).
+**Self-service password change**: turn on Self-service password change on the File shared users page and save, and shared users can change their own password at `https://site-domain/__gately_auth/password` on any web service site with web authentication by entering the username, current password and new password (8–128 characters). WebDAV, FTP and SMB use the new password right away (FTP and SMB do not restart, they only drop that user's signed-in connections, and the client reconnects with the new password). Plaintext passwords stay plaintext and bcrypt hashes stay hashed; a wrong current password counts toward the same rate limit and automatic ban as web logins. The switch is stored as `selfService` in `fileusers.json`, with the same field name in the API. For web login shared users, see [self-service password change in the web service](/en/docs/modules/web#self-service-password).
 
 ## File Browser {#filebrowser}
 
@@ -98,7 +107,7 @@ Each instance is a separate File Browser process:
 | `port` | 8080 | Listen port |
 | `baseUrl` | `/` | Base path; when reverse proxying by path in the Web Service (for example `/files`), enter the same path |
 | `accessUrls` | Empty | Access URLs, several allowed, such as `https://files.example.com/` reverse proxied by the Web service; shown on the instance card. When empty, the URL is guessed from the listen address and port. The scheme, host and port of the first URL are written to File Browser's `http.externalUrl`, which share links use |
-| `sources` | none | Shared directories, each with `path` (absolute), `name` (display name, defaults to the directory name) and `readOnly`; new users can access all of them by default |
+| `sources` | none | Shared directories, each with `path` (absolute), `name` (display name, defaults to the directory name) and `readOnly`; new users can access all of them by default; they cannot overlap Gately's configuration directory (be it, lie inside it or contain it), because File Browser reads the directories directly and cannot hide the configuration directory |
 | `authMethod` | `password` | Sign-in method: `password` for username and password, `proxy` to trust the username header from a reverse proxy, `noauth` for no sign-in |
 | `proxyHeader` | `Remote-User` | Header that carries the username for `proxy`; missing users are created automatically |
 | `adminUser` | `admin` | Admin username |
@@ -122,7 +131,7 @@ Add mounts under "Storage Mounts" in the "File Services" group, and manage files
 | --- | --- |
 | `name`, `remark`, `enable` | Name, remark and enable switch |
 | `type` | `local` (local directory), `webdav` (remote WebDAV) or `smb` (SMB share) |
-| `path` | Local directory, must be an existing absolute path (used by `local`) |
+| `path` | Local directory, must be an existing absolute path (used by `local`); it cannot be Gately's configuration directory or a directory inside it; a directory containing it (such as a whole data volume) can be used and the configuration directory is hidden automatically |
 | `url`, `username`, `password` | Remote address and account; the password is masked in the UI (used by `webdav` and `smb`). A WebDAV address starts with `http://` or `https://`; an SMB address looks like `smb://host[:port]/share[/subdir]`, SMB2/3 is supported and an empty username connects as guest |
 | `skipVerify` | Skip HTTPS certificate verification (used by `webdav`) |
 | `domain` | Domain or workgroup for SMB authentication, usually empty (used by `smb`) |

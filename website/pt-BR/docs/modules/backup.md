@@ -79,7 +79,7 @@ Quando uma senha é definida, os backups são criptografados da seguinte forma:
 - Criptografia: AES-256-GCM, com um nonce aleatório de 12 bytes.
 - Formato do arquivo: o magic `GATELYBK1`, o salt, o nonce e o texto cifrado concatenados nessa ordem. O magic também é usado como dado autenticado adicional do GCM.
 
-A senha é armazenada somente no `backup.json` do diretório de configuração. Se a senha for perdida, o backup não pode ser descriptografado.
+A senha é armazenada somente no `backup.json` do diretório de configuração. Se a senha for perdida, o backup não pode ser descriptografado. A frase secreta só pode ser vista e alterada depois de entrar na interface de administração; tokens de API não podem lê-la, alterá-la nem apagá-la, mas as demais configurações de backup continuam podendo ser alteradas com um token.
 
 ::: warning Atenção
 Quando o `backup.json` e os arquivos de backup ficam na mesma máquina, a proteção por senha agrega pouco valor. Grave os backups criptografados em uma montagem de outro dispositivo e registre a senha separadamente.

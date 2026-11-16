@@ -27,6 +27,33 @@ var secretKeys = map[string]bool{
 	"adminpassword": true, "totpsecret": true, "psk": true, "sessionsecret": true,
 	// 网络唤醒客户端凭据：设备列表本身已脱敏，这里兜住配置历史对比等其他返回原始配置的接口
 	"agenttoken": true,
+	// 以下字段各模块的列表接口本身已脱敏，同样在这里兜底：组网密钥与认证密钥、端口敲门密钥、ACME EAB 密钥、
+	// frps 面板密码、OVH 的 Consumer Key、终端两步验证密钥、OIDC 签名私钥、证书私钥、双层部署的认证标记密钥
+	"authkey": true, "setupkey": true, "networksecret": true, "enckey": true, "hmackey": true, "eabhmac": true,
+	"dashboardpwd": true, "consumerkey": true, "twofakey": true, "signingkey": true, "keypem": true, "authmarkerkey": true,
+}
+
+// opaqueKeys 是内容由用户自由填写、常夹带密钥的字段名（小写），只读身份一律看不到内容：
+// 命令与脚本（如 curl -H 'Authorization: …'、mysql -p…）。
+var opaqueKeys = map[string]bool{"command": true, "script": true, "shutdowncommand": true}
+
+// isRequestBody 判断对象 m 中的 body 字段是否为 HTTP 请求体模板（Webhook、网络唤醒的 HTTP 关机等，
+// 常含接口密钥，如 {"token":"…"} 或表单 key=…）：同一对象里有 method 或 headers 字段时即是。
+// 版本更新说明、导航面板图标等其他名为 body 的字段不受影响。
+func isRequestBody(m map[string]any) bool {
+	for k := range m {
+		if lk := strings.ToLower(k); lk == "method" || lk == "headers" {
+			return true
+		}
+	}
+	return false
+}
+
+// extraPlainKeys 是 DNS 服务商凭据的附加字段（credentials.extra）中不属于密钥的字段名（小写），其余附加字段一律脱敏。
+// 新增服务商的附加字段默认按密钥处理，确认不含凭据后再加入这里。
+var extraPlainKeys = map[string]bool{
+	"endpoint": true, "authtype": true, "proxied": true, "server": true, "url": true, "method": true,
+	"successcontent": true, "hostedzoneid": true, "teamid": true,
 }
 
 // headerKeys 是值为 "名称: 值" 列表（或名称到值的映射）的字段名（小写），只脱敏值的部分。
@@ -36,6 +63,7 @@ var headerKeys = map[string]bool{"headers": true, "requestheaders": true, "respo
 func redactJSON(v any) any {
 	switch t := v.(type) {
 	case map[string]any:
+		requestBody := isRequestBody(t)
 		for k, val := range t {
 			lk := strings.ToLower(k)
 			switch {
@@ -49,25 +77,16 @@ func redactJSON(v any) any {
 				t[k] = redactJSON(val)
 			case headerKeys[lk]:
 				t[k] = redactHeaders(val)
-			case lk == "extraargs":
-				// 附加启动参数常写有密钥（如 --network-secret=…），整段脱敏
-				if str, ok := val.(string); ok && str != "" {
-					t[k] = crud.SecretMask
-					continue
-				}
-				t[k] = redactJSON(val)
-			case lk == "env":
+			case strings.Contains(lk, "args") || opaqueKeys[lk] || lk == "body" && requestBody:
+				// 附加启动参数常写有密钥（如 --network-secret=…、--auth-key=…），命令、脚本与请求体同样常夹带密钥，整段脱敏
+				t[k] = redactOpaque(val)
+			case strings.HasSuffix(lk, "env"):
+				// env、daemonEnv 等环境变量
 				t[k] = redactEnv(val)
 			case lk == "users":
 				t[k] = redactUsers(val)
-			case lk == "shutdownhttp":
-				// 网络唤醒的 HTTP 关机请求体常含接口密钥（如 {"token": "…"} 或表单 key=…），整段脱敏
-				if m, ok := val.(map[string]any); ok {
-					if b, ok := m["body"].(string); ok && b != "" {
-						m["body"] = crud.SecretMask
-					}
-				}
-				t[k] = redactJSON(val)
+			case lk == "credentials":
+				t[k] = redactCredentials(val)
 			default:
 				t[k] = redactJSON(val)
 			}
@@ -109,9 +128,67 @@ func tokenLike(seg string) bool {
 	return letter && digit
 }
 
-// redactHeaders 脱敏请求头列表（"名称: 值"）或映射，保留名称。
+// redactOpaque 整段隐藏自由文本：非空字符串换成掩码，字符串列表逐项处理，映射隐藏全部值（保留键名）。
+func redactOpaque(v any) any {
+	switch t := v.(type) {
+	case string:
+		if t != "" {
+			return crud.SecretMask
+		}
+		return t
+	case []any:
+		for i := range t {
+			t[i] = redactOpaque(t[i])
+		}
+		return t
+	case map[string]any:
+		for k := range t {
+			t[k] = redactOpaque(t[k])
+		}
+		return t
+	}
+	return v
+}
+
+// redactCredentials 处理 DNS 服务商凭据（{id, secret, extra}）：secret 按普通规则脱敏，
+// extra 中只有 extraPlainKeys 列出的字段保留（其中的地址仍按地址规则脱敏），其余一律隐藏。
+// 其他形态的 credentials（如 Web 终端的凭据列表）按普通规则处理。
+func redactCredentials(v any) any {
+	m, ok := v.(map[string]any)
+	if !ok {
+		return redactJSON(v)
+	}
+	if extra, ok := m["extra"].(map[string]any); ok {
+		for k, val := range extra {
+			if extraPlainKeys[strings.ToLower(k)] {
+				extra[k] = redactJSON(val)
+				continue
+			}
+			extra[k] = redactOpaque(val)
+		}
+		delete(m, "extra")
+		redactJSON(m)
+		m["extra"] = extra
+		return m
+	}
+	return redactJSON(m)
+}
+
+// redactHeaders 脱敏请求头列表（"名称: 值"）、每行一个 "名称: 值" 的文本或映射，保留名称。
 func redactHeaders(v any) any {
 	switch t := v.(type) {
+	case string:
+		// DDNS 自定义回调等把请求头写成多行文本
+		lines := strings.Split(t, "\n")
+		for i, line := range lines {
+			if name, val, found := strings.Cut(line, ":"); found && strings.TrimSpace(val) != "" {
+				lines[i] = name + ": " + crud.SecretMask
+			} else if !found && strings.TrimSpace(line) != "" {
+				// 没有冒号的行无法区分名称与值，整行隐藏
+				lines[i] = crud.SecretMask
+			}
+		}
+		return strings.Join(lines, "\n")
 	case []any:
 		for i, e := range t {
 			s, ok := e.(string)

@@ -185,7 +185,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | POST | `/api/tailscale/instances/{key}/restart` | `tailscale:write` | Reiniciar uma instância do Tailscale |
 | POST | `/api/tailscale/instances/{key}/logout` | `tailscale:write` | Sair do login de uma instância do Tailscale |
 | GET | `/api/tailscale/settings` | `tailscale:read` | Ler as configurações do programa Tailscale |
-| PUT | `/api/tailscale/settings` | `tailscale:write` | Salvar as configurações do programa Tailscale |
+| PUT | `/api/tailscale/settings` | Somente sessão de login | Salvar as configurações do programa Tailscale |
 | GET | `/api/tailscale/install` | `tailscale:read` | Ver as informações de instalação e o progresso de um programa gerenciado |
 | POST | `/api/tailscale/install` | `tailscale:write` | Instalar ou atualizar online um programa gerenciado |
 | POST | `/api/tailscale/install/check` | `tailscale:write` | Verificar atualizações de um programa gerenciado |
@@ -218,7 +218,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | POST | `/api/netbird/instances/{key}/restart` | `netbird:write` | Reiniciar uma instância do NetBird |
 | POST | `/api/netbird/instances/{key}/logout` | `netbird:write` | Sair de uma instância do NetBird |
 | GET | `/api/netbird/settings` | `netbird:read` | Ler as configurações do programa NetBird |
-| PUT | `/api/netbird/settings` | `netbird:write` | Salvar as configurações do programa NetBird |
+| PUT | `/api/netbird/settings` | Somente sessão de login | Salvar as configurações do programa NetBird |
 | GET | `/api/netbird/install` | `netbird:read` | Ver as informações de instalação e o progresso de um programa gerenciado |
 | POST | `/api/netbird/install` | `netbird:write` | Instalar ou atualizar online um programa gerenciado |
 | POST | `/api/netbird/install/check` | `netbird:write` | Verificar atualizações de um programa gerenciado |
@@ -250,7 +250,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | GET | `/api/easytier/instances/{key}/status` | `easytier:read` | Ver o status de execução de uma instância do EasyTier |
 | POST | `/api/easytier/instances/{key}/restart` | `easytier:write` | Reiniciar uma instância do EasyTier |
 | GET | `/api/easytier/settings` | `easytier:read` | Ler as configurações do programa EasyTier |
-| PUT | `/api/easytier/settings` | `easytier:write` | Salvar as configurações do programa EasyTier |
+| PUT | `/api/easytier/settings` | Somente sessão de login | Salvar as configurações do programa EasyTier |
 | GET | `/api/easytier/install` | `easytier:read` | Ver as informações de instalação e o progresso de um programa gerenciado |
 | POST | `/api/easytier/install` | `easytier:write` | Instalar ou atualizar online um programa gerenciado |
 | POST | `/api/easytier/install/check` | `easytier:write` | Verificar atualizações de um programa gerenciado |
@@ -918,7 +918,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | POST | `/api/backup/targets-delete` | `backup:write` | Excluir em lote: Destino do backup |
 | GET | `/api/backup/settings` | `backup:read` | Configurações de backup |
 | PUT | `/api/backup/settings` | `backup:write` | Modificar configurações de backup (enviar o marcador no lugar da senha mantém o valor atual) |
-| GET | `/api/backup/secrets` | `backup:write` | Ver segredos em texto puro |
+| GET | `/api/backup/secrets` | Somente sessão de login | Ver segredos em texto puro |
 | POST | `/api/backup/run` | `backup:write` | Fazer um backup agora |
 | GET | `/api/backup/status` | `backup:read` | Resultado do último backup e horário da próxima execução |
 | GET | `/api/backup/mounts` | `backup:read` | Pontos de montagem de armazenamento que podem ser destino de backup |
@@ -1357,6 +1357,9 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `key` | string |
 | `name` | string |
 | `protocol` | string |
+| `quicKeepalivePeriod` | integer |
+| `quicMaxIdleTimeout` | integer |
+| `quicMaxIncomingStreams` | integer |
 | `remark` | string |
 | `serverAddr` | string |
 | `serverPort` | integer |
@@ -1377,6 +1380,9 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | Campo | Tipo |
 | --- | --- |
 | `protocol` | string |
+| `quicKeepalivePeriod` | integer |
+| `quicMaxIdleTimeout` | integer |
+| `quicMaxIncomingStreams` | integer |
 | `serverAddr` | string |
 | `serverPort` | integer |
 | `token` | string |
@@ -1429,6 +1435,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | Campo | Tipo |
 | --- | --- |
 | `allowPorts` | string |
+| `autoFirewall` | boolean |
 | `bindAddr` | string |
 | `bindPort` | integer |
 | `dashboardAddr` | string |
@@ -1442,9 +1449,14 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `ipList` | Array de string |
 | `ipMode` | string |
 | `ipSets` | Array de string |
+| `kcpBindPort` | integer |
 | `key` | string |
 | `name` | string |
 | `proxyBindAddr` | string |
+| `quicBindPort` | integer |
+| `quicKeepalivePeriod` | integer |
+| `quicMaxIdleTimeout` | integer |
+| `quicMaxIncomingStreams` | integer |
 | `remark` | string |
 | `subdomainHost` | string |
 | `token` | string |
@@ -1456,6 +1468,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | Campo | Tipo |
 | --- | --- |
 | `allowPorts` | string |
+| `autoFirewall` | boolean |
 | `bindAddr` | string |
 | `bindPort` | integer |
 | `dashboardAddr` | string |
@@ -1467,7 +1480,12 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `ipList` | Array de string |
 | `ipMode` | string |
 | `ipSets` | Array de string |
+| `kcpBindPort` | integer |
 | `proxyBindAddr` | string |
+| `quicBindPort` | integer |
+| `quicKeepalivePeriod` | integer |
+| `quicMaxIdleTimeout` | integer |
+| `quicMaxIncomingStreams` | integer |
 | `subdomainHost` | string |
 | `token` | string |
 | `vhostHttpPort` | integer |
@@ -2707,7 +2725,17 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 
 | Campo | Tipo |
 | --- | --- |
+| `background` | string |
+| `bgBlur` | integer |
+| `bgDim` | integer |
+| `defaultEngine` | integer |
+| `description` | string |
 | `enable` | boolean |
+| `engines` | Array de `webservice.PanelEngine` |
+| `favicon` | string |
+| `footer` | string |
+| `footerUrl` | string |
+| `hideFooter` | boolean |
 | `icon` | string |
 | `key` | string |
 | `lanCidrs` | Array de string |
@@ -2716,10 +2744,18 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `remark` | string |
 | `skin` | string |
 | `subtitle` | string |
+| `tabTitle` | string |
 | `theme` | string |
 | `title` | string |
 
 ### webservice.PanelAlt
+
+| Campo | Tipo |
+| --- | --- |
+| `name` | string |
+| `url` | string |
+
+### webservice.PanelEngine
 
 | Campo | Tipo |
 | --- | --- |
@@ -2742,14 +2778,18 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | Campo | Tipo |
 | --- | --- |
 | `alts` | Array de `webservice.PanelAlt` |
+| `authOnly` | boolean |
 | `color` | string |
 | `description` | string |
 | `group` | string |
 | `hide` | boolean |
+| `hideDesc` | boolean |
+| `hideName` | boolean |
 | `icon` | string |
 | `lanUrl` | string |
 | `name` | string |
 | `sameTab` | boolean |
+| `size` | string |
 | `url` | string |
 
 ### webservice.PanelPreview

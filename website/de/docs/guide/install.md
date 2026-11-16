@@ -32,6 +32,11 @@ services:
       # - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - TZ=Europe/Berlin
+    # Begrenzt die Größe des Container-Protokolls (docker logs); Docker setzt standardmäßig keine Grenze
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
 ```
 
 `--cap-add NET_ADMIN` und `cap_add` erlauben dem [Einbruchschutz](/de/docs/modules/guard), Sperren in die nftables-Firewall des Hosts zu schreiben. Sie können sie weglassen; Sperren gelten dann weiterhin für Gatelys eigene Dienste.

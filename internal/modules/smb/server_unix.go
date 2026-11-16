@@ -19,6 +19,7 @@ import (
 
 	"github.com/wangwanjie/gately/internal/banlist"
 	"github.com/wangwanjie/gately/internal/fileusers"
+	"github.com/wangwanjie/gately/internal/fsperm"
 	"github.com/wangwanjie/gately/internal/gosamba/config"
 	"github.com/wangwanjie/gately/internal/gosamba/discovery"
 	"github.com/wangwanjie/gately/internal/gosamba/parent"
@@ -79,7 +80,13 @@ func userConfigs(accounts []account, logs *logbuf.Buffer, warn bool) []config.Us
 			if st, err := os.Stat(sh.Path); warn && (err != nil || !st.IsDir()) {
 				logs.Add(logbuf.LevelWarn, "", fmt.Sprintf("用户 %s 的共享 %s 目录不可用: %s", u.Name, sh.Name, sh.Path))
 			}
-			shares = append(shares, config.ShareConfig{Name: sh.Name, Path: sh.Path, ReadOnly: sh.ReadOnly})
+			share := config.ShareConfig{Name: sh.Name, Path: sh.Path, ReadOnly: sh.ReadOnly}
+			// 共享目录包含 Gately 的配置目录时隐藏配置目录（目录就是配置目录或位于其中的，已在 buildAccounts 中换成不存在的路径）。
+			// 只在需要时设置，nil 的 *Guard 放进接口后不是 nil
+			if g := fsperm.NewGuard(sh.Path); g != nil {
+				share.Guard = g
+			}
+			shares = append(shares, share)
 		}
 		users = append(users, config.UserConfig{
 			Name:   u.Name,

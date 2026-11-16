@@ -79,7 +79,7 @@ When a passphrase is set, backups are encrypted as follows:
 - Encryption: AES-256-GCM, with a 12-byte random nonce.
 - File format: the magic `GATELYBK1`, salt, nonce and ciphertext concatenated in that order. The magic is also used as GCM additional authenticated data.
 
-The passphrase is stored only in `backup.json` in the configuration directory. If the passphrase is lost, the backup cannot be decrypted.
+The passphrase is stored only in `backup.json` in the configuration directory. If the passphrase is lost, the backup cannot be decrypted. The passphrase can only be viewed and changed after signing in to the admin UI; API tokens cannot read, change or clear it, while the other backup settings can still be changed with a token.
 
 ::: warning Note
 When `backup.json` and the backup files sit on the same machine, passphrase protection adds limited value. Write encrypted backups to a mount on another device, and record the passphrase separately.

@@ -189,6 +189,13 @@
   },
   "runtime": {
     "title": "Runtime parameters",
+    "logLevel": "Log level",
+    "logLevelDefault": "Default (info and above)",
+    "logLevelDebug": "Debug and above (everything)",
+    "logLevelInfo": "Info and above",
+    "logLevelWarn": "Warning and above",
+    "logLevelError": "Errors only",
+    "logLevelHelp": "Only runtime logs at the selected level or above are recorded; lower levels do not reach the log pages, log files or standard error (docker logs). Takes effect as soon as it is saved. Debug includes one line per connection for port forwarding and protocol routing, which adds noticeable overhead under many connections; web service access logs are info level. \"Default\" uses the GATELY_LOG_LEVEL environment variable, or info and above when it is not set",
     "logLines": "Log retention lines",
     "logLinesHelp": "Number of log lines each module keeps in memory; with log persistence on they are restored from disk after a restart",
     "logPersist": "Persist logs",

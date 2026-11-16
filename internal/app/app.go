@@ -12,7 +12,6 @@ import (
 	"mime/multipart"
 	"net"
 	"net/http"
-	"os"
 	"path/filepath"
 	"runtime"
 	"strconv"
@@ -28,6 +27,7 @@ import (
 	"github.com/wangwanjie/gately/internal/crashlog"
 	"github.com/wangwanjie/gately/internal/events"
 	"github.com/wangwanjie/gately/internal/fileusers"
+	"github.com/wangwanjie/gately/internal/fsperm"
 	"github.com/wangwanjie/gately/internal/httpcompress"
 	"github.com/wangwanjie/gately/internal/httpx"
 	"github.com/wangwanjie/gately/internal/i18n"
@@ -77,6 +77,8 @@ type Options struct {
 	// CrashLog 为 true 时把运行时崩溃信息保存到配置目录的 crash.log，并在启动时报告上次运行是否异常结束。
 	// 只有服务进程开启：它会设置整个进程的崩溃输出，测试与导出文档等场景不需要
 	CrashLog bool
+	// Echo 为日志回显使用的标准错误输出；为 nil 时使用进程共用的 StderrEcho
+	Echo *logbuf.Echo
 }
 
 type moduleEntry struct {
@@ -131,14 +133,19 @@ type App struct {
 	// hostStats 采集概览页展示的主机信息，保存上一次采样用于计算使用率与速率
 	hostStats *sysstat.Collector
 	logger    *log.Logger
+	// echo 把运行日志异步回显到标准错误输出，退出与重启前要 Flush
+	echo *logbuf.Echo
 	// pendingTOTP 是生成后尚未确认的两步验证密钥
 	loginUsed usedStates
-	// passkeyChallenges 保存已下发的 WebAuthn 挑战
-	passkeyChallenges challengeStore
-	pendingMu         sync.Mutex
-	pendingTOTP       string
+	// passkeyChallenges 保存已下发的 WebAuthn 登录挑战（未登录即可请求），passkeyRegChallenges 保存注册挑战（需要登录会话）
+	passkeyChallenges    challengeStore
+	passkeyRegChallenges challengeStore
+	pendingMu            sync.Mutex
+	pendingTOTP          string
 	// crash 为本次运行的崩溃记录，未开启时为 nil（方法均可在 nil 上调用）
 	crash *crashlog.Recorder
+	// gwOrigins 为经统一网关访问时已确认的管理界面页面来源，见 gatewayOriginHost
+	gwOrigins gatewayOrigins
 }
 
 // New 加载配置并初始化所有模块，但不启动网络服务。
@@ -163,14 +170,20 @@ func New(opts Options) (_ *App, err error) {
 	}
 	store.EnableHistory(historyKeep, historySkip...)
 	if opts.ApplyDir != "" {
+		// 声明式配置目录里同样是带密钥的配置文件，与配置目录一样不允许被存储挂载、静态站点或文件服务提供出去
+		fsperm.Protect(opts.ApplyDir)
 		n, err := applyConfigDir(store, opts.ApplyDir)
 		if err != nil {
 			return nil, fmt.Errorf("应用声明式配置失败: %w", err)
 		}
 		log.Printf("已从 %s 应用 %d 个配置文件", opts.ApplyDir, n)
 	}
-	// 标准日志按服务端语言翻译后输出
-	logger := log.New(i18n.NewWriter(os.Stderr), "", log.LstdFlags)
+	// 运行日志异步回显到标准错误输出；标准日志按服务端语言翻译后经同一个出口输出，两者的先后顺序保持一致
+	echo := opts.Echo
+	if echo == nil {
+		echo = StderrEcho()
+	}
+	logger := log.New(i18n.NewWriter(echo), "", log.LstdFlags)
 	holdCtx, holdCancel := context.WithCancel(context.Background())
 	a := &App{
 		holdCtx:    holdCtx,
@@ -178,10 +191,11 @@ func New(opts Options) (_ *App, err error) {
 		opts:       opts,
 		store:      store,
 		settings:   Settings{Listen: DefaultListen},
-		sysLogs:    logbuf.New(defaultLogLines, logger),
+		sysLogs:    logbuf.New(defaultLogLines, nil),
 		startTime:  time.Now(),
 		hostStats:  sysstat.New(opts.ConfigDir),
 		logger:     logger,
+		echo:       echo,
 		restartCh:  make(chan struct{}, 1),
 		updWake:    make(chan struct{}, 1),
 		audit:      audit.New(opts.ConfigDir),
@@ -190,6 +204,8 @@ func New(opts Options) (_ *App, err error) {
 		return nil, err
 	}
 	a.settings.normalize()
+	a.sysLogs.SetEcho(echo)
+	a.sysLogs.SetMinLevel(effectiveLogLevel(a.settings))
 	// 先按设置开启日志落盘并恢复上次的日志，后续初始化过程中的日志也能写入文件
 	a.sysLogs.Resize(a.settings.LogLines)
 	a.persistLogs(a.sysLogs, settingsName, false, a.settings)
@@ -266,6 +282,13 @@ func New(opts Options) (_ *App, err error) {
 	if err := fileusers.Default.Init(store); err != nil {
 		return nil, fmt.Errorf("加载文件服务共享用户失败: %w", err)
 	}
+	// 升级前保存的共享用户目录可能与配置目录重叠：这样的目录不再提供，提示用户修改
+	for _, msg := range fileusers.Default.Blocked() {
+		a.sysLogs.Add(logbuf.LevelWarn, "", msg)
+	}
+	for _, msg := range fileusers.Default.HiddenNotes() {
+		a.sysLogs.Add(logbuf.LevelInfo, "", msg)
+	}
 	// 需要迁移配置的模块先迁移，再统一初始化：迁移可能改写其他模块的配置文件
 	inherits, err := a.migrateModules(opts.Modules)
 	if err != nil {
@@ -279,7 +302,9 @@ func New(opts Options) (_ *App, err error) {
 			return nil, fmt.Errorf("模块 ID 冲突: %s", m.ID())
 		}
 		seen[m.ID()] = true
-		entry := &moduleEntry{mod: m, logs: logbuf.New(a.settings.LogLines, logger)}
+		entry := &moduleEntry{mod: m, logs: logbuf.New(a.settings.LogLines, nil)}
+		entry.logs.SetEcho(echo)
+		entry.logs.SetMinLevel(effectiveLogLevel(a.settings))
 		_, access := m.(module.AccessLogger)
 		a.persistLogs(entry.logs, m.ID(), access, a.settings)
 		if hc, ok := m.(module.HTTPClientAware); ok {
@@ -413,7 +438,7 @@ func (a *App) Handler() http.Handler {
 	mux.Handle("/", a.staticHandler())
 	// 压缩放在翻译之外，压缩的是翻译后的最终内容；已预压缩的静态资源自带 Content-Encoding，不会重复压缩
 	// 最外层限制请求体读取速度，登录等未认证接口同样受限
-	return limitBodyRead(securityHeaders(httpcompress.Handler(i18n.Middleware(a.accessControl(httpx.SameOrigin(mux))))))
+	return limitBodyRead(securityHeaders(httpcompress.Handler(i18n.Middleware(a.accessControl(httpx.SameOrigin(apiSecurityHeaders(mux)))))))
 }
 
 // Run 启动所有模块和管理服务，阻塞直到 ctx 取消。收到重启请求时停止全部服务后重新执行自身。
@@ -587,7 +612,8 @@ func (a *App) handleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	ip := httpx.ClientIP(r)
-	token, exp, err := a.auth.Login(ip, req.Username, req.Password, req.Code)
+	src, ipTrusted := a.loginSource(r, ip)
+	token, exp, err := a.auth.Login(src, req.Username, req.Password, req.Code)
 	if errors.Is(err, auth.ErrTOTPRequired) {
 		// 密码正确但缺少验证码，提示前端显示验证码输入框
 		httpx.WriteJSON(w, http.StatusUnauthorized, map[string]any{"error": err.Error(), "totpRequired": true})
@@ -597,7 +623,7 @@ func (a *App) handleLogin(w http.ResponseWriter, r *http.Request) {
 		a.sysLogs.Add(logbuf.LevelWarn, "auth", fmt.Sprintf("来自 %s 的登录失败: %v", ip, err))
 		a.audit.Record(audit.Entry{Actor: clipActor(req.Username), IP: ip, Via: audit.Via(r), Category: audit.CategoryLogin, Method: "POST", Path: "/api/login", Status: http.StatusUnauthorized, Detail: err.Error()})
 		events.Publish(events.Event{Type: events.AuthFailed, Source: "管理后台", Level: events.LevelWarn,
-			Title: "管理后台登录失败", Message: fmt.Sprintf("来自 %s 的登录失败：%v", ip, err), Fields: map[string]string{"ip": ip}})
+			Title: "管理后台登录失败", Message: fmt.Sprintf("来自 %s 的登录失败：%v", ip, err), Fields: authFailedFields(ip, ipTrusted)})
 		status := http.StatusUnauthorized
 		if errors.Is(err, auth.ErrLocked) || errors.Is(err, auth.ErrBusy) {
 			status = http.StatusTooManyRequests
@@ -614,6 +640,9 @@ func (a *App) handleLogin(w http.ResponseWriter, r *http.Request) {
 	events.Publish(events.Event{Type: events.LoginSuccessful, Source: "管理后台", Level: events.LevelInfo,
 		Title: "管理后台登录成功", Message: fmt.Sprintf("%s 从 %s 登录", req.Username, ip), Fields: map[string]string{"ip": ip, "user": req.Username}})
 	a.noteLoginIP(ip, req.Username, "密码")
+	if req.Username == a.auth.Username() {
+		a.learnGatewayLoginOrigin(r)
+	}
 	http.SetCookie(w, &http.Cookie{
 		Name:     auth.CookieName,
 		Value:    token,
@@ -621,7 +650,7 @@ func (a *App) handleLogin(w http.ResponseWriter, r *http.Request) {
 		Expires:  exp,
 		HttpOnly: true,
 		SameSite: http.SameSiteStrictMode,
-		Secure:   r.TLS != nil,
+		Secure:   cookieSecure(r),
 	})
 	httpx.OK(w, map[string]any{"username": req.Username, "expires": exp})
 }
@@ -824,7 +853,8 @@ func (a *App) handleLuckyImport(w http.ResponseWriter, r *http.Request) {
 	opts := luckyimport.Options{DryRun: r.URL.Query().Get("dryRun") == "1", KeepEnabled: r.URL.Query().Get("enable") == "1"}
 	// API 令牌只有 import:write 权限，不能借 enable=1 让导入的 DDNS 命令来源、定时任务等直接生效执行；
 	// 需要启用时由管理员会话导入，或导入后在对应模块里手动启用
-	if strings.HasPrefix(auth.UserFromContext(r.Context()), "api-token:") {
+	viaToken := auth.IsToken(r.Context())
+	if viaToken {
 		opts.KeepEnabled = false
 	}
 	type fileResult struct {
@@ -873,7 +903,7 @@ func (a *App) handleLuckyImport(w http.ResponseWriter, r *http.Request) {
 		if pe.err != nil {
 			continue
 		}
-		if rep := a.importLuckyIdentities(pe.doc, &ids, opts); rep != nil {
+		if rep := a.importLuckyIdentities(pe.doc, &ids, opts, viaToken); rep != nil {
 			identityReports[i] = rep
 		}
 	}
@@ -922,7 +952,7 @@ func (a *App) handleLuckyImport(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 			if err == nil {
-				if rep := a.importLuckyBase(doc, opts); rep != nil {
+				if rep := a.importLuckyBase(doc, opts, viaToken); rep != nil {
 					res.Reports = append(res.Reports, rep)
 				}
 			}
@@ -1000,10 +1030,19 @@ func (a *App) logsHandler(buf *logbuf.Buffer) http.HandlerFunc {
 			return
 		}
 		// 返回的日志会按请求语言翻译，关键词也要能匹配译文
-		if lang := i18n.RequestLang(r); f != nil && lang != i18n.SourceLang {
+		lang := i18n.RequestLang(r)
+		if f != nil && lang != i18n.SourceLang {
 			f.Translate = func(s string) string { return i18n.Tr(lang, s) }
+			f.TranslateMessage = func(e *logbuf.Entry) string { return translateLogMessage(lang, e) }
 		}
-		httpx.OK(w, buf.QueryContext(r.Context(), since, before, limit, f))
+		entries := buf.QueryContext(r.Context(), since, before, limit, f)
+		// 这里直接按请求语言翻译好再返回：内存里的日志带着格式串，一次查表就能得到译文，
+		// 交给翻译中间件则只能拿到渲染后的文字、逐句整句匹配。只读身份的响应还要先脱敏再翻译，仍由中间件处理
+		if lang != i18n.SourceLang && !needsRedaction(r) {
+			translateLogEntries(lang, entries)
+			i18n.SkipTranslation(r)
+		}
+		httpx.OK(w, entries)
 	}
 }
 
@@ -1069,6 +1108,7 @@ func (a *App) staticHandler() http.Handler {
 		}
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.Header().Set("Cache-Control", "no-cache")
+		w.Header().Set("Content-Security-Policy", uiCSP)
 		_, _ = w.Write(index)
 	})
 }
@@ -1081,6 +1121,40 @@ func securityHeaders(next http.Handler) http.Handler {
 		h.Set("Referrer-Policy", "same-origin")
 		next.ServeHTTP(w, r)
 	})
+}
+
+// uiCSP 是管理界面页面（index.html）的内容安全策略，作为出现注入漏洞时的兜底：脚本只能来自管理界面自己的文件，
+// 页面里即使被插入了 <script>、事件属性或外部脚本地址也不会执行；页面不能被其他站点嵌入，表单只能提交回自身。
+//   - style-src 允许内联样式：Element Plus、终端等组件在运行时写入样式；
+//   - img-src 允许 data:、blob: 与任意 http(s) 图片：二维码是 data: 地址，导航面板的图标与背景可以填任意图片地址；
+//   - connect-src 允许 ws:/wss:：终端与容器 Shell 走 WebSocket，部分浏览器不认为 'self' 包含它们；
+//   - 页面内嵌的预览（错误页、导航面板、未授权访问页面）是 srcdoc 内联框架，沿用这份策略，并各自带有更严格的策略。
+const uiCSP = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https: http:; " +
+	"font-src 'self' data:; media-src 'self' data: blob:; connect-src 'self' ws: wss:; worker-src 'self' blob:; frame-src 'self'; " +
+	"object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+
+// apiCSP 是接口响应的内容安全策略：接口只返回数据与下载内容，即使某个响应被浏览器当成页面打开，其中的脚本与外部资源也不会加载。
+const apiCSP = "default-src 'none'; frame-ancestors 'none'"
+
+// apiSecurityHeaders 给 /api/ 下的响应加上 apiCSP。放在访问控制之后：被访问控制拦下的请求返回的是
+// “未授权访问响应”（可能是用户自定义的页面，有自己的策略），不经过这里。
+func apiSecurityHeaders(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasPrefix(r.URL.Path, "/api/") {
+			w.Header().Set("Content-Security-Policy", apiCSP)
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
+// cookieSecure 判断登录 Cookie 是否加 Secure 属性（只经 HTTPS 发送）：请求本身是 HTTPS，或者经 HTTPS 的反向代理而来。
+// X-Forwarded-Proto 只在请求来自可信代理或飞牛统一网关时采信，访客自己带上这个请求头没有作用。
+func cookieSecure(r *http.Request) bool {
+	if requestSecure(r) {
+		return true
+	}
+	_, viaGateway := gatewayPrefix(r)
+	return viaGateway && strings.EqualFold(r.Header.Get("X-Forwarded-Proto"), "https")
 }
 
 // prefixRouter 把模块的相对路由挂到 /api/<ID> 前缀下，并登记接口文档。

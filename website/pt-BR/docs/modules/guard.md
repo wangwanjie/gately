@@ -5,7 +5,7 @@ Prevenção de intrusão no estilo fail2ban: o Gately encontra tentativas de for
 ## Recursos
 
 - **Regras de logs**: leem arquivos de log, o journal do systemd, a saída de um comando (como `logread -f` no OpenWrt) ou os logs de um contêiner Docker, encontram falhas com expressões regulares e bloqueiam o IP que atinge o número de falhas na janela de tempo. Há modelos para SSH, Dropbear, Nginx, Vaultwarden, Home Assistant, Proxmox VE e outros, e no editor você pode colar linhas de exemplo para testar os filtros;
-- **Eventos do Gately**: falhas de login no painel, bloqueios do WAF e knocks recusados do [Port Knocking](/pt-BR/docs/modules/knock) também podem alimentar uma regra, sem expressão regular;
+- **Eventos do Gately**: falhas de login no painel, bloqueios do WAF, knocks recusados do [Port Knocking](/pt-BR/docs/modules/knock) e falhas de login no WebDAV / FTP / SMB também podem alimentar uma regra, sem expressão regular;
 - **Sondagem de caminhos web**: conta diretamente as requisições tratadas pelo serviço web por listener, caminho e código de status, sem ler logs; origens que pedem caminhos isca como `/.env` ou `/.git`, ou que varrem domínios desconhecidos sem parar, são bloqueadas;
 - **Falhas de handshake TLS**: conta as falhas de handshake nos listeners HTTPS do serviço web por tipo de falha (corte no meio, reinício, tempo esgotado, não é TLS ou erro de protocolo, não negociável, domínio desconhecido e mais), listener e número de vezes; barra varreduras que cortam durante o handshake e nunca enviam uma requisição HTTP;
 - **Portas armadilha**: armadilhas em portas que este host não usa (por padrão 23, 135, 1433, 3389, 5900, 6379 e outras). Qualquer origem que se conecte é bloqueada;
@@ -62,7 +62,7 @@ Sem isso, os bloqueios continuam valendo para os serviços do Gately. Para ler l
 | Journal do systemd | Unidades de serviço como `ssh.service` | Lido com `journalctl -f` |
 | Saída de comando | Um comando como `logread -f` | Reiniciado quando termina |
 | Contêiner Docker | Nome do contêiner | Lido pela conexão com o Docker do módulo Docker |
-| Evento do Gately | Falha de login / bloqueio do WAF / knock recusado | Os eventos trazem o IP de origem; não precisa de filtro |
+| Evento do Gately | Falha de login / bloqueio do WAF / knock recusado / falha de login nos serviços de arquivos | Os eventos trazem o IP de origem; não precisa de filtro |
 | Sondagem de caminhos web | Listeners (opcional) e regras de caminho | Conta as requisições do serviço web, veja abaixo |
 | Falhas de handshake TLS | Listeners (opcional) e tipos de falha | Conta as falhas de handshake nos listeners HTTPS do serviço web, veja abaixo |
 
@@ -73,6 +73,8 @@ Failed password for (?:invalid user )?\S* ?from <HOST>
 ```
 
 Linhas que correspondem a "Ignorar" não são contadas. A janela de tempo, o número de falhas e a duração do bloqueio são definidos por regra; a duração pode ser a padrão, personalizada ou permanente.
+
+A origem de eventos do Gately inclui o modelo "Falhas de login nos serviços de arquivos" (predefinição `gately-files`). Falhas de login no WebDAV, FTP e SMB, e tentativas recusadas por excesso de falhas, são contadas por IP de origem; por padrão, 10 em 10 minutos banem a origem, com a duração de banimento padrão. Uma origem é contada no máximo uma vez a cada 5 segundos, então um cliente que envia várias requisições ou repete a tentativa com senha errada conta uma vez só. O endereço de origem vem da conexão TCP (o WebDAV só usa cabeçalhos encaminhados quando há um proxy confiável configurado). Requisições sem credenciais não são contadas (WebDAV aguardando o desafio 401, sondagem anônima do Explorador de Arquivos do Windows no SMB).
 
 ## Sondagem de caminhos web
 

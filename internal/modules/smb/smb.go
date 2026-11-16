@@ -293,6 +293,10 @@ func (m *Module) restartLocked() {
 	for _, is := range issues {
 		m.logs.Add(logbuf.LevelWarn, "", issueLogText(is))
 	}
+	// 本地用户中与配置目录重叠的目录已在 buildAccounts 里换成不存在的路径，这里写日志提示修改
+	for _, u := range m.settings.Users {
+		usable(u, m.logs)
+	}
 	srv, err := startServer(m.settings, accounts, m.logs, &m.throttle)
 	if err != nil {
 		m.err = err.Error()
@@ -350,6 +354,10 @@ func (m *Module) Routes(r module.Router) {
 		defer m.mu.Unlock()
 		keepPasswords(m.settings.Users, s.Users)
 		if err := s.Validate(); err != nil {
+			httpx.Error(w, http.StatusBadRequest, "%v", err)
+			return
+		}
+		if err := s.checkDirs(); err != nil {
 			httpx.Error(w, http.StatusBadRequest, "%v", err)
 			return
 		}

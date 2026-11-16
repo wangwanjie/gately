@@ -1,8 +1,11 @@
-// Gately 修改：按用户解析共享（见 parent/gately.go 与 config.UserConfig.Shares）。
+// Gately 修改：按用户解析共享（见 parent/gately.go 与 config.UserConfig.Shares）；ShareConfig.Guard 屏蔽共享目录中的一部分。
 
 package config
 
-import "time"
+import (
+	"io/fs"
+	"time"
+)
 
 // Config is the fully merged, validated runtime configuration.
 // All fields are populated; no nil pointers, no zero-value-as-unset.
@@ -66,6 +69,19 @@ type ShareConfig struct {
 	Path     string
 	ReadOnly bool
 	GuestOK  bool
+	// Guard 非 nil 时屏蔽共享目录中的一部分（Gately 补丁：共享目录包含 Gately 的配置目录时隐藏配置目录），
+	// 只由调用方在代码中设置，不出现在配置文件里
+	Guard PathGuard
+}
+
+// PathGuard 决定共享目录中哪些路径对客户端不可见（Gately 补丁）。参数均为本机绝对路径。
+type PathGuard interface {
+	// Hidden 判断路径是否被屏蔽：打开、创建、作为改名目标一律按不存在处理
+	Hidden(path string) bool
+	// Touches 判断改名或删除该路径是否会动到被屏蔽的部分（路径在其中，或是它的上级目录）
+	Touches(path string) bool
+	// HiddenChild 判断目录 dir 中由 fi（条目自身的 Lstat 信息）描述的条目是否从列表中隐藏
+	HiddenChild(dir string, fi fs.FileInfo) bool
 }
 
 type UserConfig struct {

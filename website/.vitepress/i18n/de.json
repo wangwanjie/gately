@@ -15,6 +15,7 @@
   "sidebar": {
     "groups": {
       "start": "Erste Schritte",
+      "tutorials": "Anleitungen",
       "modules": "Module",
       "security": "Sicherheit",
       "reference": "Referenz"
@@ -28,6 +29,12 @@
       "guide/cli-mcp": "CLI & MCP",
       "guide/migration": "Migrationsanleitung",
       "guide/faq": "FAQ",
+      "tutorials/remote-access-without-public-ip": "NAS ohne öffentliche IPv4 erreichen",
+      "tutorials/one-port-443": "Alles über einen Port 443",
+      "tutorials/https-and-login-for-apps": "HTTPS und Anmeldung für beliebte Apps",
+      "tutorials/wildcard-cert-ddns": "Wildcard-Zertifikat und Dynamic DNS",
+      "tutorials/migrate-from-nginx": "Von nginx oder NPM migrieren",
+      "tutorials/replace-haproxy-nginx-fail2ban": "haproxy + nginx + fail2ban ersetzen",
       "modules/index": "Modulübersicht",
       "modules/ddns": "Dynamisches DNS (DDNS)",
       "modules/stun": "STUN-Traversal",

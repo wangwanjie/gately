@@ -16,6 +16,7 @@ import (
 
 	robfig "github.com/robfig/cron/v3"
 
+	"github.com/wangwanjie/gately/internal/auth"
 	"github.com/wangwanjie/gately/internal/backup"
 	"github.com/wangwanjie/gately/internal/config"
 	"github.com/wangwanjie/gately/internal/crud"
@@ -367,7 +368,7 @@ func (m *Module) Routes(r module.Router) {
 	targets.Register(r, "/targets")
 	r.HandleFunc("GET /settings", m.handleGetSettings)
 	r.HandleFunc("PUT /settings", m.handlePutSettings)
-	// 查看被脱敏的备份加密口令明文
+	// 查看被脱敏的备份加密口令明文；只允许登录会话调用，API 令牌一律拒绝（见 apitoken.Required）
 	r.HandleFunc("GET /secrets", crud.SecretsHandler(&m.mu, func() map[string]string {
 		return map[string]string{"password": m.cfg.Settings.Password}
 	}))
@@ -406,6 +407,12 @@ func (m *Module) handlePutSettings(w http.ResponseWriter, r *http.Request) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	crud.KeepSecret(m.cfg.Settings.Password, &in.Password)
+	// 加密口令只允许登录会话修改：令牌能改口令（包括清空）的话，之后生成的备份就能被它解开，
+	// 而备份里有会话签名密钥等全部密钥。其余设置（计划、保留数量、开关）令牌仍可修改
+	if auth.IsToken(r.Context()) && in.Password != m.cfg.Settings.Password {
+		httpx.Error(w, http.StatusForbidden, "备份加密口令只能在登录会话中修改，API 令牌不能修改")
+		return
+	}
 	if err := in.Validate(); err != nil {
 		httpx.Error(w, http.StatusBadRequest, "%v", err)
 		return
