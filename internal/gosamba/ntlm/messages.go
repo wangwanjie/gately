@@ -1,3 +1,5 @@
+// Gately 修改：报文中的偏移与长度改用 bounds 包在 uint64 中判断边界，32 位平台上不会因 int 转换为负数而越界。
+
 package ntlm
 
 import (
@@ -5,6 +7,9 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
+	"math"
+
+	"github.com/wangwanjie/gately/internal/gosamba/bounds"
 )
 
 var ErrShortMessage = errors.New("ntlm: message truncated")
@@ -93,15 +98,17 @@ func DecodeAuthenticate(b []byte) (AuthenticateMessage, error) {
 	}
 
 	read := func(off int) ([]byte, error) {
-		l := int(binary.LittleEndian.Uint16(b[off:]))
-		o := int(binary.LittleEndian.Uint32(b[off+4:]))
+		l := binary.LittleEndian.Uint16(b[off:])
+		o := binary.LittleEndian.Uint32(b[off+4:])
 		if l == 0 {
 			return nil, nil
 		}
-		if o+l > len(b) {
+		// 偏移来自客户端，先在 uint64 中确认字段完整落在消息内再转换为 int
+		start, end, ok := bounds.Span(uint64(o), uint64(l), len(b))
+		if !ok {
 			return nil, fmt.Errorf("%w: field at off=%d (l=%d, o=%d)", ErrShortMessage, off, l, o)
 		}
-		return b[o : o+l], nil
+		return b[start:end], nil
 	}
 
 	var m AuthenticateMessage
@@ -142,7 +149,7 @@ func DecodeAuthenticate(b []byte) (AuthenticateMessage, error) {
 	const micOffset = 72
 	if len(b) >= micOffset+16 {
 		minPayload := smallestPayloadOffset(b)
-		if minPayload >= micOffset+16 {
+		if minPayload >= uint64(micOffset+16) {
 			copy(m.MIC[:], b[micOffset:micOffset+16])
 			m.HasMIC = true
 		}
@@ -162,14 +169,16 @@ func DecodeAuthenticate(b []byte) (AuthenticateMessage, error) {
 // read a length out of one descriptor's offset field and an offset out of the
 // next descriptor's length words. The garbage that produced usually came out
 // below 88, so HasMIC was reported false for messages that did carry a MIC.
-func smallestPayloadOffset(b []byte) int {
-	min := int(^uint(0) >> 1)
+//
+// 返回 uint64：偏移是 uint32，32 位平台上转换为 int 会把 0x80000000 以上的值变成负数。
+func smallestPayloadOffset(b []byte) uint64 {
+	min := uint64(math.MaxUint64)
 	for _, off := range []int{12, 20, 28, 36, 44, 52} {
 		if len(b) < off+8 {
 			break
 		}
-		l := int(binary.LittleEndian.Uint16(b[off:]))
-		o := int(binary.LittleEndian.Uint32(b[off+4:]))
+		l := binary.LittleEndian.Uint16(b[off:])
+		o := uint64(binary.LittleEndian.Uint32(b[off+4:]))
 		if l > 0 && o < min {
 			min = o
 		}

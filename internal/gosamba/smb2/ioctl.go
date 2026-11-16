@@ -1,9 +1,13 @@
+// Gately 修改：报文中的偏移与长度改用 bounds 包在 uint64 中判断边界，32 位平台上不会因 int 转换为负数而越界。
+
 package smb2
 
 import (
 	"encoding/binary"
 	"errors"
 	"fmt"
+
+	"github.com/wangwanjie/gately/internal/gosamba/bounds"
 )
 
 const (
@@ -40,9 +44,8 @@ func DecodeIoctlRequest(body []byte) (IoctlRequest, error) {
 	inLen := binary.LittleEndian.Uint32(body[28:])
 	r.Flags = binary.LittleEndian.Uint32(body[48:])
 	if inLen > 0 {
-		off := int(inOffAbs) - headerSize
-		if off >= 0 && off+int(inLen) <= len(body) {
-			r.InputBuffer = append([]byte(nil), body[off:off+int(inLen)]...)
+		if start, end, ok := bounds.RelSpan(uint64(inOffAbs), headerSize, uint64(inLen), len(body)); ok {
+			r.InputBuffer = append([]byte(nil), body[start:end]...)
 		}
 	}
 	return r, nil
@@ -162,8 +165,9 @@ func DecodeSrvCopyChunkCopy(b []byte, maxChunks uint32) (SrvCopyChunkCopy, error
 	if count > maxChunks {
 		return c, fmt.Errorf("%w: ChunkCount %d exceeds %d", ErrCopyChunkLimit, count, maxChunks)
 	}
-	need := srvCopyChunkHeaderLen + int(count)*srvCopyChunkEntryLen
-	if len(b) < need {
+	// count 已受 maxChunks 限制，仍在 uint64 中计算所需长度，不依赖调用方传入的上限大小
+	need := uint64(srvCopyChunkHeaderLen) + uint64(count)*srvCopyChunkEntryLen
+	if uint64(len(b)) < need {
 		return c, fmt.Errorf("%w: SRV_COPYCHUNK_COPY needs %d bytes for %d chunks, got %d",
 			ErrShortBuffer, need, count, len(b))
 	}

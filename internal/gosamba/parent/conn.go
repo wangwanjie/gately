@@ -1,4 +1,4 @@
-// Gately 修改：仅在 Linux 与 macOS 编译（构建约束）。
+// Gately 修改：仅在 Linux 与 macOS 编译（构建约束）；客户端给出的偏移与长度改用 bounds 包在 uint64 中判断边界。
 
 //go:build linux || darwin
 
@@ -22,6 +22,8 @@ import (
 	"github.com/wangwanjie/gately/internal/gosamba/smb2"
 	"github.com/wangwanjie/gately/internal/gosamba/smb3"
 	"github.com/wangwanjie/gately/internal/gosamba/transport"
+
+	"github.com/wangwanjie/gately/internal/gosamba/bounds"
 )
 
 const (
@@ -187,8 +189,9 @@ func frameNeedsSerialExecution(frame []byte) bool {
 		if hdr.NextCommand < smb2.HeaderSize {
 			return true
 		}
-		next := off + int(hdr.NextCommand)
-		if next > len(frame) {
+		// NextCommand 来自客户端，在 uint64 中确认不越过帧尾再转换为 int（32 位平台上 int 转换可能变成负数）
+		next, _, ok := bounds.Span(uint64(off)+uint64(hdr.NextCommand), 0, len(frame))
+		if !ok {
 			return true
 		}
 		off = next
@@ -459,11 +462,13 @@ func ServeConn(ctx context.Context, c net.Conn, log *slog.Logger, maxFrame uint3
 					log.Warn("NextCommand shorter than header", "next_command", hdr.NextCommand)
 					return false
 				}
-				end = off + int(hdr.NextCommand)
-				if end > len(frame) {
+				// 在 uint64 中判断：32 位平台上 int(NextCommand) 可能变成负数而越过检查
+				next, _, ok := bounds.Span(uint64(off)+uint64(hdr.NextCommand), 0, len(frame))
+				if !ok {
 					log.Warn("NextCommand overruns frame", "next_command", hdr.NextCommand, "len", len(frame))
 					return false
 				}
+				end = next
 			}
 			msgBytes := frame[off:end]
 			body := msgBytes[smb2.HeaderSize:]
