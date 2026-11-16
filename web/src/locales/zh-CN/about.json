@@ -37,6 +37,7 @@
     "later": "稍后",
     "retry": "重试",
     "failed": "升级失败",
+    "unsigned": "该版本没有发布签名（checksums.txt.minisig），只能核对 SHA-256，无法确认来源。签名上线之前发布的版本都是这样。",
     "progressTitle": "正在升级到 {version}",
     "keepOpen": "请保持页面打开，升级完成后会自动重启并刷新。",
     "steps": {

@@ -37,6 +37,7 @@
     "later": "Plus tard",
     "retry": "Réessayer",
     "failed": "Échec de la mise à niveau",
+    "unsigned": "Cette version n'a pas de signature (checksums.txt.minisig) : seul son SHA-256 peut être vérifié et son origine ne peut pas être confirmée. C'est le cas des versions publiées avant l'introduction de la signature.",
     "progressTitle": "Mise à niveau vers {version}",
     "keepOpen": "Gardez cette page ouverte ; Gately redémarre et recharge la page automatiquement à la fin.",
     "steps": {
