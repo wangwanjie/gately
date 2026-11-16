@@ -283,8 +283,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { CopyPlus, Download, Pencil, Plus, RotateCw, Send, ShieldCheck, SlidersHorizontal, Trash2, Upload } from 'lucide-vue-next'
 import { api, errorText } from '../api'
@@ -430,6 +431,8 @@ const enabling = ref(false)
 const targets = ref<DeployTargets>({ ssh: [], containers: [] })
 const deploying = ref('')
 const { t } = useI18n()
+const route = useRoute()
+const router = useRouter()
 // 列表最近一次加载失败的原因，空为成功；接口出错时列表显示错误而不是空状态
 const loadError = ref('')
 const { isMobile, labelPosition } = useFormLayout()
@@ -799,8 +802,36 @@ onMounted(async () => {
     // 服务商列表读取失败不阻止证书列表加载；列表本身失败时显示错误
   }
   await load()
+  openFromQuery()
   polling.start()
 })
+
+// openFromQuery 处理从其他页面带来的参数：?add=域名1,域名2 打开新增证书表单并预填域名（如 Web 服务里缺证书的站点），
+// ?q=关键字 筛选证书列表。处理后去掉参数，刷新页面不会重复打开
+function openFromQuery() {
+  const add = route.query.add
+  const q = route.query.q
+  if (typeof add !== 'string' && typeof q !== 'string') {
+    return
+  }
+  if (typeof q === 'string' && q) {
+    gl.filterText.value = q
+  }
+  if (typeof add === 'string') {
+    openEditor()
+    editing.value.acme.domains = add
+      .split(',')
+      .map((d) => d.trim())
+      .filter(Boolean)
+  }
+  void router.replace({ query: {} })
+}
+
+// 已在证书页时再从其他入口带参数跳来，组件不会重新挂载，需要监听参数变化
+watch(
+  () => [route.query.add, route.query.q],
+  () => openFromQuery(),
+)
 </script>
 
 <style scoped>

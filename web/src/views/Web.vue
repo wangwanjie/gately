@@ -133,6 +133,21 @@
                   </template>
                 </div>
                 <div v-if="item.item.site.name" class="meta">{{ item.item.site.name }}</div>
+                <!-- HTTPS 站点的证书：匹配到的证书与剩余天数；缺证书、已过期或临近到期时醒目提示，并可带上域名去申请 -->
+                <div v-if="certState(l, item.item)" class="site-cert" :class="`is-${certState(l, item.item)!.kind}`" data-test="site-cert">
+                  <component :is="certState(l, item.item)!.kind === 'ok' ? ShieldCheck : ShieldAlert" :size="14" class="site-cert-icon" aria-hidden="true" />
+                  <span :title="certTitle(l, item.item)">{{ certText(certState(l, item.item)!) }}</span>
+                  <el-button
+                    v-if="certState(l, item.item)!.kind !== 'ok' && !sortMode"
+                    link
+                    type="primary"
+                    size="small"
+                    class="site-cert-action"
+                    @click="requestCert(certState(l, item.item)!)"
+                  >
+                    {{ certState(l, item.item)!.kind === 'missing' ? t('web.certRequest') : t('web.certView') }}
+                  </el-button>
+                </div>
               </div>
               <div class="site-target">
                 <el-tag size="small" effect="plain">{{ typeText(item.item.site.type) }}</el-tag>
@@ -713,7 +728,9 @@ import {
   Search,
   Server,
   Shield,
+  ShieldAlert,
   ShieldBan,
+  ShieldCheck,
   SlidersHorizontal,
   Trash2,
   Workflow,
@@ -757,6 +774,7 @@ import CopyHint from '../components/CopyHint.vue'
 import { createItem, uniqueName, type CopySource } from '../copyDraft'
 import UrlLink from '../components/UrlLink.vue'
 import { accessPort, accessScheme, forwardedEntry, siteLink, type ForwardEntry, type ForwardSource, type SiteLink } from '../siteUrl'
+import { certRequestDomains, siteCertState, type SiteCert, type SiteCertState } from '../siteCert'
 import { loadForwardSources } from '../forwardSources'
 import { useFormLayout } from '../composables/useIsMobile'
 import { useListText, splitLines } from '../composables/useListText'
@@ -916,6 +934,8 @@ interface ListenerView extends Listener {
   // 自动放行防火墙的结果说明与是否失败
   firewall?: string
   firewallFailed?: boolean
+  // HTTPS 监听中各站点域名匹配到的证书，键为站点 key
+  siteCerts?: Record<string, SiteCert[]>
 }
 
 interface SiteRow {
@@ -1800,6 +1820,41 @@ function statKey(row: SiteRow) {
 }
 
 // siteStat 返回站点的请求统计，监听未运行或站点未生效时为 undefined
+// certState 返回 HTTPS 站点的证书状态；HTTP 监听、默认站点与没有可检查域名的站点为 null（不显示）
+function certState(l: ListenerView, row: SiteRow): SiteCertState | null {
+  if (!l.tls || row.isDefault || !row.site.key) {
+    return null
+  }
+  return siteCertState(l.siteCerts?.[row.site.key], Date.now())
+}
+
+// certText 为站点行上的证书说明
+function certText(st: SiteCertState): string {
+  switch (st.kind) {
+    case 'missing':
+      return t('web.certMissing', { domains: st.missing.join(', ') })
+    case 'expired':
+      return t('web.certExpired')
+    case 'expiring':
+      return t('web.certExpiring', { days: Math.max(0, st.days ?? 0) })
+  }
+  return st.days === null ? t('web.certOkNoDate') : t('web.certOk', { days: st.days })
+}
+
+// certTitle 为悬停提示：逐个域名列出匹配到的证书
+function certTitle(l: ListenerView, row: SiteRow): string {
+  return (l.siteCerts?.[row.site.key ?? ''] ?? []).map((c) => `${c.domain} → ${c.name || t('web.certNone')}`).join('\n')
+}
+
+// requestCert 缺证书时带上缺少的域名打开证书页的新增表单；过期或临近到期时打开证书页查看
+function requestCert(st: SiteCertState) {
+  if (st.kind === 'missing') {
+    router.push({ name: 'ssl', query: { add: certRequestDomains(st).join(',') } })
+  } else {
+    router.push({ name: 'ssl', query: st.names.length ? { q: st.names[0] } : {} })
+  }
+}
+
 function siteStat(l: ListenerView, row: SiteRow) {
   const k = statKey(row)
   return k ? l.stats?.[k] : undefined
@@ -2395,6 +2450,41 @@ onMounted(async () => {
 }
 .site-domains {
   word-break: break-all;
+}
+.site-cert {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 2px 6px;
+  margin-top: 2px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--el-text-color-secondary);
+  overflow-wrap: anywhere;
+}
+.site-cert-icon {
+  flex-shrink: 0;
+  color: var(--el-color-success);
+}
+.site-cert.is-missing,
+.site-cert.is-expired {
+  font-weight: 500;
+  color: var(--g-text-danger, var(--el-color-danger));
+}
+.site-cert.is-expiring {
+  color: var(--g-text-warning, var(--el-color-warning));
+}
+.site-cert.is-missing .site-cert-icon,
+.site-cert.is-expired .site-cert-icon {
+  color: var(--g-text-danger, var(--el-color-danger));
+}
+.site-cert.is-expiring .site-cert-icon {
+  color: var(--g-text-warning, var(--el-color-warning));
+}
+.site-cert-action {
+  height: auto;
+  padding: 0;
+  font-size: 12px;
 }
 .domain-list {
   display: flex;
