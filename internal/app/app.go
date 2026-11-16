@@ -12,7 +12,6 @@ import (
 	"mime/multipart"
 	"net"
 	"net/http"
-	"os"
 	"path/filepath"
 	"runtime"
 	"strconv"
@@ -78,6 +77,8 @@ type Options struct {
 	// CrashLog 为 true 时把运行时崩溃信息保存到配置目录的 crash.log，并在启动时报告上次运行是否异常结束。
 	// 只有服务进程开启：它会设置整个进程的崩溃输出，测试与导出文档等场景不需要
 	CrashLog bool
+	// Echo 为日志回显使用的标准错误输出；为 nil 时使用进程共用的 StderrEcho
+	Echo *logbuf.Echo
 }
 
 type moduleEntry struct {
@@ -132,6 +133,8 @@ type App struct {
 	// hostStats 采集概览页展示的主机信息，保存上一次采样用于计算使用率与速率
 	hostStats *sysstat.Collector
 	logger    *log.Logger
+	// echo 把运行日志异步回显到标准错误输出，退出与重启前要 Flush
+	echo *logbuf.Echo
 	// pendingTOTP 是生成后尚未确认的两步验证密钥
 	loginUsed usedStates
 	// passkeyChallenges 保存已下发的 WebAuthn 登录挑战（未登录即可请求），passkeyRegChallenges 保存注册挑战（需要登录会话）
@@ -175,8 +178,12 @@ func New(opts Options) (_ *App, err error) {
 		}
 		log.Printf("已从 %s 应用 %d 个配置文件", opts.ApplyDir, n)
 	}
-	// 标准日志按服务端语言翻译后输出
-	logger := log.New(i18n.NewWriter(os.Stderr), "", log.LstdFlags)
+	// 运行日志异步回显到标准错误输出；标准日志按服务端语言翻译后经同一个出口输出，两者的先后顺序保持一致
+	echo := opts.Echo
+	if echo == nil {
+		echo = StderrEcho()
+	}
+	logger := log.New(i18n.NewWriter(echo), "", log.LstdFlags)
 	holdCtx, holdCancel := context.WithCancel(context.Background())
 	a := &App{
 		holdCtx:    holdCtx,
@@ -184,10 +191,11 @@ func New(opts Options) (_ *App, err error) {
 		opts:       opts,
 		store:      store,
 		settings:   Settings{Listen: DefaultListen},
-		sysLogs:    logbuf.New(defaultLogLines, logger),
+		sysLogs:    logbuf.New(defaultLogLines, nil),
 		startTime:  time.Now(),
 		hostStats:  sysstat.New(opts.ConfigDir),
 		logger:     logger,
+		echo:       echo,
 		restartCh:  make(chan struct{}, 1),
 		updWake:    make(chan struct{}, 1),
 		audit:      audit.New(opts.ConfigDir),
@@ -196,6 +204,8 @@ func New(opts Options) (_ *App, err error) {
 		return nil, err
 	}
 	a.settings.normalize()
+	a.sysLogs.SetEcho(echo)
+	a.sysLogs.SetMinLevel(effectiveLogLevel(a.settings))
 	// 先按设置开启日志落盘并恢复上次的日志，后续初始化过程中的日志也能写入文件
 	a.sysLogs.Resize(a.settings.LogLines)
 	a.persistLogs(a.sysLogs, settingsName, false, a.settings)
@@ -292,7 +302,9 @@ func New(opts Options) (_ *App, err error) {
 			return nil, fmt.Errorf("模块 ID 冲突: %s", m.ID())
 		}
 		seen[m.ID()] = true
-		entry := &moduleEntry{mod: m, logs: logbuf.New(a.settings.LogLines, logger)}
+		entry := &moduleEntry{mod: m, logs: logbuf.New(a.settings.LogLines, nil)}
+		entry.logs.SetEcho(echo)
+		entry.logs.SetMinLevel(effectiveLogLevel(a.settings))
 		_, access := m.(module.AccessLogger)
 		a.persistLogs(entry.logs, m.ID(), access, a.settings)
 		if hc, ok := m.(module.HTTPClientAware); ok {
@@ -1018,10 +1030,19 @@ func (a *App) logsHandler(buf *logbuf.Buffer) http.HandlerFunc {
 			return
 		}
 		// 返回的日志会按请求语言翻译，关键词也要能匹配译文
-		if lang := i18n.RequestLang(r); f != nil && lang != i18n.SourceLang {
+		lang := i18n.RequestLang(r)
+		if f != nil && lang != i18n.SourceLang {
 			f.Translate = func(s string) string { return i18n.Tr(lang, s) }
+			f.TranslateMessage = func(e *logbuf.Entry) string { return translateLogMessage(lang, e) }
 		}
-		httpx.OK(w, buf.QueryContext(r.Context(), since, before, limit, f))
+		entries := buf.QueryContext(r.Context(), since, before, limit, f)
+		// 这里直接按请求语言翻译好再返回：内存里的日志带着格式串，一次查表就能得到译文，
+		// 交给翻译中间件则只能拿到渲染后的文字、逐句整句匹配。只读身份的响应还要先脱敏再翻译，仍由中间件处理
+		if lang != i18n.SourceLang && !needsRedaction(r) {
+			translateLogEntries(lang, entries)
+			i18n.SkipTranslation(r)
+		}
+		httpx.OK(w, entries)
 	}
 }
 
