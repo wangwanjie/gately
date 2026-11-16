@@ -14,6 +14,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/wangwanjie/gately/internal/auth"
@@ -96,11 +97,91 @@ func (a *App) applyLogPersist(s Settings) {
 	}
 }
 
-// closeLogs 把尚未写盘的日志写入文件并停止落盘，在退出或重启前调用。
+// closeLogs 把尚未写盘的日志写入文件并停止落盘，同时等回显到标准错误输出的内容写完，在退出或重启前调用。
 func (a *App) closeLogs() {
 	a.sysLogs.ClosePersist()
 	for _, e := range a.modules {
 		e.logs.ClosePersist()
+	}
+	a.echo.Flush()
+}
+
+// stderrEcho 为进程共用的标准错误输出回显，首次使用时创建
+var stderrEcho = sync.OnceValue(func() *logbuf.Echo {
+	return logbuf.NewEcho(os.Stderr, echoTranslate)
+})
+
+// StderrEcho 返回进程共用的日志回显：运行日志经它异步写到标准错误输出并按服务端语言翻译。
+// 主程序把标准库 log 的输出也接到它上面，并在退出前调用它的 Flush。
+func StderrEcho() *logbuf.Echo {
+	return stderrEcho()
+}
+
+// echoTranslate 把回显的日志翻译为服务端语言。日志带着格式串时一次查表得到译文，见 i18n.TrFormat。
+func echoTranslate(source, msg, format string, args logbuf.ArgLens) (string, string) {
+	lang := i18n.ServerLang()
+	if lang == i18n.SourceLang {
+		return source, msg
+	}
+	return i18n.TrLogSource(lang, source), i18n.TrFormatLines(lang, format, msg, args.Slice())
+}
+
+// translateLogMessage 按 lang 翻译一条日志的内容。
+func translateLogMessage(lang string, e *logbuf.Entry) string {
+	return i18n.TrFormat(lang, e.Format, e.Message, e.Args.Slice())
+}
+
+// translateLogEntries 把日志接口返回的日志按 lang 翻译：来源、内容与字段值，与翻译中间件对日志接口的处理范围相同。
+// 字段表与缓冲中的日志共用，有字段需要翻译时换成新的表，不修改原日志。
+func translateLogEntries(lang string, entries []logbuf.Entry) {
+	for i := range entries {
+		e := &entries[i]
+		e.Message = translateLogMessage(lang, e)
+		e.Source = i18n.Tr(lang, e.Source)
+		var fields logbuf.Fields
+		for k, v := range e.Fields {
+			tr := i18n.Tr(lang, v)
+			if tr == v {
+				continue
+			}
+			if fields == nil {
+				fields = make(logbuf.Fields, len(e.Fields))
+				for k2, v2 := range e.Fields {
+					fields[k2] = v2
+				}
+			}
+			fields[k] = tr
+		}
+		if fields != nil {
+			e.Fields = fields
+		}
+	}
+}
+
+// 日志级别设置：环境变量名与默认值
+const (
+	logLevelEnv     = "GATELY_LOG_LEVEL"
+	defaultLogLevel = logbuf.LevelInfo
+)
+
+// effectiveLogLevel 返回实际生效的日志级别：优先使用设置中的级别，其次是环境变量 GATELY_LOG_LEVEL，都没有时为 info。
+// 无法识别的值（手工改坏的配置文件、写错的环境变量）当作没有设置。
+func effectiveLogLevel(s Settings) string {
+	if logbuf.ValidLevel(s.LogLevel) {
+		return s.LogLevel
+	}
+	if l := strings.ToLower(strings.TrimSpace(os.Getenv(logLevelEnv))); logbuf.ValidLevel(l) {
+		return l
+	}
+	return defaultLogLevel
+}
+
+// applyLogLevel 把日志级别应用到系统日志与全部模块日志。
+func (a *App) applyLogLevel(s Settings) {
+	level := effectiveLogLevel(s)
+	a.sysLogs.SetMinLevel(level)
+	for _, e := range a.modules {
+		e.logs.SetMinLevel(level)
 	}
 }
 
@@ -320,10 +401,13 @@ func (a *App) logExportHandler(buf *logbuf.Buffer, name string) http.HandlerFunc
 			lang = l
 		}
 		tr := func(s string) string { return s }
+		trMsg := func(e *logbuf.Entry) string { return e.Message }
 		if lang != i18n.SourceLang {
 			tr = func(s string) string { return i18n.Tr(lang, s) }
+			trMsg = func(e *logbuf.Entry) string { return translateLogMessage(lang, e) }
 			if f != nil {
 				f.Translate = tr
+				f.TranslateMessage = trMsg
 			}
 		}
 		ext, ctype := "jsonl", "application/x-ndjson; charset=utf-8"
@@ -346,7 +430,8 @@ func (a *App) logExportHandler(buf *logbuf.Buffer, name string) http.HandlerFunc
 				redactLogEntry(&out)
 			}
 			out.Source = tr(out.Source)
-			out.Message = tr(out.Message)
+			// 脱敏改动过内容时格式串与内容对不上，translateLogMessage 会自动改为整句翻译
+			out.Message = trMsg(&out)
 			return out
 		}
 		bw := bufio.NewWriterSize(w, 64<<10)

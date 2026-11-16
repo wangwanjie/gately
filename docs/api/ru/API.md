@@ -185,7 +185,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/tailscale/instances/{key}/restart` | `tailscale:write` | Перезапустить экземпляр Tailscale |
 | POST | `/api/tailscale/instances/{key}/logout` | `tailscale:write` | Выйти из учётной записи в экземпляре Tailscale |
 | GET | `/api/tailscale/settings` | `tailscale:read` | Получить настройки программы Tailscale |
-| PUT | `/api/tailscale/settings` | `tailscale:write` | Сохранить настройки программы Tailscale |
+| PUT | `/api/tailscale/settings` | Только сессия входа | Сохранить настройки программы Tailscale |
 | GET | `/api/tailscale/install` | `tailscale:read` | Просмотр сведений об установке и хода установки управляемой программы |
 | POST | `/api/tailscale/install` | `tailscale:write` | Установить или обновить управляемую программу онлайн |
 | POST | `/api/tailscale/install/check` | `tailscale:write` | Проверить обновления управляемой программы |
@@ -218,7 +218,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/netbird/instances/{key}/restart` | `netbird:write` | Перезапустить экземпляр NetBird |
 | POST | `/api/netbird/instances/{key}/logout` | `netbird:write` | Выйти из экземпляра NetBird |
 | GET | `/api/netbird/settings` | `netbird:read` | Прочитать настройки программы NetBird |
-| PUT | `/api/netbird/settings` | `netbird:write` | Сохранить настройки программы NetBird |
+| PUT | `/api/netbird/settings` | Только сессия входа | Сохранить настройки программы NetBird |
 | GET | `/api/netbird/install` | `netbird:read` | Просмотр сведений об установке и хода установки управляемой программы |
 | POST | `/api/netbird/install` | `netbird:write` | Установить или обновить управляемую программу онлайн |
 | POST | `/api/netbird/install/check` | `netbird:write` | Проверить обновления управляемой программы |
@@ -250,7 +250,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/easytier/instances/{key}/status` | `easytier:read` | Просмотреть состояние работы экземпляра EasyTier |
 | POST | `/api/easytier/instances/{key}/restart` | `easytier:write` | Перезапустить экземпляр EasyTier |
 | GET | `/api/easytier/settings` | `easytier:read` | Прочитать настройки программы EasyTier |
-| PUT | `/api/easytier/settings` | `easytier:write` | Сохранить настройки программы EasyTier |
+| PUT | `/api/easytier/settings` | Только сессия входа | Сохранить настройки программы EasyTier |
 | GET | `/api/easytier/install` | `easytier:read` | Просмотр сведений об установке и хода установки управляемой программы |
 | POST | `/api/easytier/install` | `easytier:write` | Установить или обновить управляемую программу онлайн |
 | POST | `/api/easytier/install/check` | `easytier:write` | Проверить обновления управляемой программы |
@@ -918,7 +918,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/backup/targets-delete` | `backup:write` | Пакетно удалить: Назначение резервных копий |
 | GET | `/api/backup/settings` | `backup:read` | Настройки резервного копирования |
 | PUT | `/api/backup/settings` | `backup:write` | Изменить настройки резервного копирования (передайте заполнитель вместо пароля, чтобы оставить его без изменений) |
-| GET | `/api/backup/secrets` | `backup:write` | Показать секреты открытым текстом |
+| GET | `/api/backup/secrets` | Только сессия входа | Показать секреты открытым текстом |
 | POST | `/api/backup/run` | `backup:write` | Выполнить резервное копирование сейчас |
 | GET | `/api/backup/status` | `backup:read` | Результат последней резервной копии и время следующего запуска |
 | GET | `/api/backup/mounts` | `backup:read` | Точки монтирования хранилищ, доступные как назначение резервных копий |
@@ -1357,6 +1357,9 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `key` | string |
 | `name` | string |
 | `protocol` | string |
+| `quicKeepalivePeriod` | integer |
+| `quicMaxIdleTimeout` | integer |
+| `quicMaxIncomingStreams` | integer |
 | `remark` | string |
 | `serverAddr` | string |
 | `serverPort` | integer |
@@ -1377,6 +1380,9 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | Поле | Тип |
 | --- | --- |
 | `protocol` | string |
+| `quicKeepalivePeriod` | integer |
+| `quicMaxIdleTimeout` | integer |
+| `quicMaxIncomingStreams` | integer |
 | `serverAddr` | string |
 | `serverPort` | integer |
 | `token` | string |
@@ -1429,6 +1435,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | Поле | Тип |
 | --- | --- |
 | `allowPorts` | string |
+| `autoFirewall` | boolean |
 | `bindAddr` | string |
 | `bindPort` | integer |
 | `dashboardAddr` | string |
@@ -1442,9 +1449,14 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `ipList` | Массив из string |
 | `ipMode` | string |
 | `ipSets` | Массив из string |
+| `kcpBindPort` | integer |
 | `key` | string |
 | `name` | string |
 | `proxyBindAddr` | string |
+| `quicBindPort` | integer |
+| `quicKeepalivePeriod` | integer |
+| `quicMaxIdleTimeout` | integer |
+| `quicMaxIncomingStreams` | integer |
 | `remark` | string |
 | `subdomainHost` | string |
 | `token` | string |
@@ -1456,6 +1468,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | Поле | Тип |
 | --- | --- |
 | `allowPorts` | string |
+| `autoFirewall` | boolean |
 | `bindAddr` | string |
 | `bindPort` | integer |
 | `dashboardAddr` | string |
@@ -1467,7 +1480,12 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `ipList` | Массив из string |
 | `ipMode` | string |
 | `ipSets` | Массив из string |
+| `kcpBindPort` | integer |
 | `proxyBindAddr` | string |
+| `quicBindPort` | integer |
+| `quicKeepalivePeriod` | integer |
+| `quicMaxIdleTimeout` | integer |
+| `quicMaxIncomingStreams` | integer |
 | `subdomainHost` | string |
 | `token` | string |
 | `vhostHttpPort` | integer |
@@ -2707,7 +2725,17 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 
 | Поле | Тип |
 | --- | --- |
+| `background` | string |
+| `bgBlur` | integer |
+| `bgDim` | integer |
+| `defaultEngine` | integer |
+| `description` | string |
 | `enable` | boolean |
+| `engines` | Массив из `webservice.PanelEngine` |
+| `favicon` | string |
+| `footer` | string |
+| `footerUrl` | string |
+| `hideFooter` | boolean |
 | `icon` | string |
 | `key` | string |
 | `lanCidrs` | Массив из string |
@@ -2716,10 +2744,18 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `remark` | string |
 | `skin` | string |
 | `subtitle` | string |
+| `tabTitle` | string |
 | `theme` | string |
 | `title` | string |
 
 ### webservice.PanelAlt
+
+| Поле | Тип |
+| --- | --- |
+| `name` | string |
+| `url` | string |
+
+### webservice.PanelEngine
 
 | Поле | Тип |
 | --- | --- |
@@ -2742,14 +2778,18 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | Поле | Тип |
 | --- | --- |
 | `alts` | Массив из `webservice.PanelAlt` |
+| `authOnly` | boolean |
 | `color` | string |
 | `description` | string |
 | `group` | string |
 | `hide` | boolean |
+| `hideDesc` | boolean |
+| `hideName` | boolean |
 | `icon` | string |
 | `lanUrl` | string |
 | `name` | string |
 | `sameTab` | boolean |
+| `size` | string |
 | `url` | string |
 
 ### webservice.PanelPreview

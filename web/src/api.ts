@@ -412,6 +412,8 @@ export interface ScopeDomain {
   readOnly?: boolean
   // 写权限可以在服务器上执行命令
   canExec?: boolean
+  // 写权限可以读取或修改服务器上的文件（把目录提供出去，或把配置备份写到存储挂载点）
+  canFiles?: boolean
 }
 
 // TokenInput 是创建/编辑令牌的请求体。

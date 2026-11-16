@@ -775,6 +775,15 @@
           "protocol": {
             "type": "string"
           },
+          "quicKeepalivePeriod": {
+            "type": "integer"
+          },
+          "quicMaxIdleTimeout": {
+            "type": "integer"
+          },
+          "quicMaxIncomingStreams": {
+            "type": "integer"
+          },
           "remark": {
             "type": "string"
           },
@@ -814,6 +823,15 @@
         "properties": {
           "protocol": {
             "type": "string"
+          },
+          "quicKeepalivePeriod": {
+            "type": "integer"
+          },
+          "quicMaxIdleTimeout": {
+            "type": "integer"
+          },
+          "quicMaxIncomingStreams": {
+            "type": "integer"
           },
           "serverAddr": {
             "type": "string"
@@ -940,6 +958,9 @@
           "allowPorts": {
             "type": "string"
           },
+          "autoFirewall": {
+            "type": "boolean"
+          },
           "bindAddr": {
             "type": "string"
           },
@@ -991,6 +1012,9 @@
             },
             "type": "array"
           },
+          "kcpBindPort": {
+            "type": "integer"
+          },
           "key": {
             "type": "string"
           },
@@ -999,6 +1023,18 @@
           },
           "proxyBindAddr": {
             "type": "string"
+          },
+          "quicBindPort": {
+            "type": "integer"
+          },
+          "quicKeepalivePeriod": {
+            "type": "integer"
+          },
+          "quicMaxIdleTimeout": {
+            "type": "integer"
+          },
+          "quicMaxIncomingStreams": {
+            "type": "integer"
           },
           "remark": {
             "type": "string"
@@ -1022,6 +1058,9 @@
         "properties": {
           "allowPorts": {
             "type": "string"
+          },
+          "autoFirewall": {
+            "type": "boolean"
           },
           "bindAddr": {
             "type": "string"
@@ -1068,8 +1107,23 @@
             },
             "type": "array"
           },
+          "kcpBindPort": {
+            "type": "integer"
+          },
           "proxyBindAddr": {
             "type": "string"
+          },
+          "quicBindPort": {
+            "type": "integer"
+          },
+          "quicKeepalivePeriod": {
+            "type": "integer"
+          },
+          "quicMaxIdleTimeout": {
+            "type": "integer"
+          },
+          "quicMaxIncomingStreams": {
+            "type": "integer"
           },
           "subdomainHost": {
             "type": "string"
@@ -4062,7 +4116,40 @@
       },
       "webservice.Panel": {
         "properties": {
+          "background": {
+            "type": "string"
+          },
+          "bgBlur": {
+            "type": "integer"
+          },
+          "bgDim": {
+            "type": "integer"
+          },
+          "defaultEngine": {
+            "type": "integer"
+          },
+          "description": {
+            "type": "string"
+          },
           "enable": {
+            "type": "boolean"
+          },
+          "engines": {
+            "items": {
+              "$ref": "#/components/schemas/webservice.PanelEngine"
+            },
+            "type": "array"
+          },
+          "favicon": {
+            "type": "string"
+          },
+          "footer": {
+            "type": "string"
+          },
+          "footerUrl": {
+            "type": "string"
+          },
+          "hideFooter": {
             "type": "boolean"
           },
           "icon": {
@@ -4095,6 +4182,9 @@
           "subtitle": {
             "type": "string"
           },
+          "tabTitle": {
+            "type": "string"
+          },
           "theme": {
             "type": "string"
           },
@@ -4105,6 +4195,17 @@
         "type": "object"
       },
       "webservice.PanelAlt": {
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.PanelEngine": {
         "properties": {
           "name": {
             "type": "string"
@@ -4146,6 +4247,9 @@
             },
             "type": "array"
           },
+          "authOnly": {
+            "type": "boolean"
+          },
           "color": {
             "type": "string"
           },
@@ -4156,6 +4260,12 @@
             "type": "string"
           },
           "hide": {
+            "type": "boolean"
+          },
+          "hideDesc": {
+            "type": "boolean"
+          },
+          "hideName": {
             "type": "boolean"
           },
           "icon": {
@@ -4169,6 +4279,9 @@
           },
           "sameTab": {
             "type": "boolean"
+          },
+          "size": {
+            "type": "string"
           },
           "url": {
             "type": "string"
@@ -7567,7 +7680,7 @@
     },
     "/api/backup/secrets": {
       "get": {
-        "description": "Erforderliche Berechtigung: `backup:write`.",
+        "description": "**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",
         "responses": {
           "200": {
             "content": {
@@ -7613,17 +7726,12 @@
             "description": "Dem Token fehlt die erforderliche Berechtigung"
           }
         },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
         "summary": "Geheimnisse im Klartext anzeigen",
         "tags": [
           "Konfigurations-Backup"
         ],
-        "x-required-scope": "backup:write",
-        "x-token-allowed": true
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
       }
     },
     "/api/backup/settings": {
@@ -19367,7 +19475,7 @@
         "x-token-allowed": true
       },
       "put": {
-        "description": "Request-Body `{\"corePath\": \"\"}`. Bleibt das Feld leer, wird easytier-core im bin-Ordner des Konfigurationsverzeichnisses und danach im PATH gesucht; `installProxy` wird nur über die Installations-API geändert. Starten Sie nach einer Pfadänderung die aktivierten Instanzen neu.\n\nErforderliche Berechtigung: `easytier:write`.",
+        "description": "Request-Body `{\"corePath\": \"\"}`. Bleibt das Feld leer, wird easytier-core im bin-Ordner des Konfigurationsverzeichnisses und danach im PATH gesucht; `installProxy` wird nur über die Installations-API geändert. Starten Sie nach einer Pfadänderung die aktivierten Instanzen neu.\n\n**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",
         "requestBody": {
           "content": {
             "application/json": {
@@ -19412,17 +19520,12 @@
             "description": "Dem Token fehlt die erforderliche Berechtigung"
           }
         },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
         "summary": "EasyTier-Programmeinstellungen speichern",
         "tags": [
           "EasyTier-Netzwerk"
         ],
-        "x-required-scope": "easytier:write",
-        "x-token-allowed": true
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
       }
     },
     "/api/easytier/status": {
@@ -31014,7 +31117,7 @@
         "x-token-allowed": true
       },
       "put": {
-        "description": "Body `{\"netbirdPath\": \"\"}`; ist der Wert leer, wird das Programm im bin-Verzeichnis des Konfigurationsverzeichnisses und dann in PATH gesucht. `installProxy` wird nur über die Installations-Endpunkte geändert. Aktivierte Instanzen werden neu gestartet, wenn sich der Pfad ändert.\n\nErforderliche Berechtigung: `netbird:write`.",
+        "description": "Body `{\"netbirdPath\": \"\"}`; ist der Wert leer, wird das Programm im bin-Verzeichnis des Konfigurationsverzeichnisses und dann in PATH gesucht. `installProxy` wird nur über die Installations-Endpunkte geändert. Aktivierte Instanzen werden neu gestartet, wenn sich der Pfad ändert.\n\n**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",
         "requestBody": {
           "content": {
             "application/json": {
@@ -31059,17 +31162,12 @@
             "description": "Dem Token fehlt die erforderliche Berechtigung"
           }
         },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
         "summary": "NetBird-Programmeinstellungen speichern",
         "tags": [
           "NetBird-Netzwerk"
         ],
-        "x-required-scope": "netbird:write",
-        "x-token-allowed": true
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
       }
     },
     "/api/netbird/status": {
@@ -45968,7 +46066,7 @@
         "x-token-allowed": true
       },
       "put": {
-        "description": "Body `{\"tailscaledPath\": \"\", \"tailscalePath\": \"\"}`; leer werden die Programme in bin im Konfigurationsverzeichnis und danach im PATH gesucht. `installProxy` wird nur über den Installations-Endpunkt geändert. Aktivierte Instanzen werden neu gestartet, wenn sich ein Pfad ändert.\n\nErforderliche Berechtigung: `tailscale:write`.",
+        "description": "Body `{\"tailscaledPath\": \"\", \"tailscalePath\": \"\"}`; leer werden die Programme in bin im Konfigurationsverzeichnis und danach im PATH gesucht. `installProxy` wird nur über den Installations-Endpunkt geändert. Aktivierte Instanzen werden neu gestartet, wenn sich ein Pfad ändert.\n\n**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",
         "requestBody": {
           "content": {
             "application/json": {
@@ -46013,17 +46111,12 @@
             "description": "Dem Token fehlt die erforderliche Berechtigung"
           }
         },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
         "summary": "Tailscale-Programmeinstellungen speichern",
         "tags": [
           "Tailscale-Netzwerk"
         ],
-        "x-required-scope": "tailscale:write",
-        "x-token-allowed": true
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
       }
     },
     "/api/tailscale/status": {

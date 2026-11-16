@@ -775,6 +775,15 @@
           "protocol": {
             "type": "string"
           },
+          "quicKeepalivePeriod": {
+            "type": "integer"
+          },
+          "quicMaxIdleTimeout": {
+            "type": "integer"
+          },
+          "quicMaxIncomingStreams": {
+            "type": "integer"
+          },
           "remark": {
             "type": "string"
           },
@@ -814,6 +823,15 @@
         "properties": {
           "protocol": {
             "type": "string"
+          },
+          "quicKeepalivePeriod": {
+            "type": "integer"
+          },
+          "quicMaxIdleTimeout": {
+            "type": "integer"
+          },
+          "quicMaxIncomingStreams": {
+            "type": "integer"
           },
           "serverAddr": {
             "type": "string"
@@ -940,6 +958,9 @@
           "allowPorts": {
             "type": "string"
           },
+          "autoFirewall": {
+            "type": "boolean"
+          },
           "bindAddr": {
             "type": "string"
           },
@@ -991,6 +1012,9 @@
             },
             "type": "array"
           },
+          "kcpBindPort": {
+            "type": "integer"
+          },
           "key": {
             "type": "string"
           },
@@ -999,6 +1023,18 @@
           },
           "proxyBindAddr": {
             "type": "string"
+          },
+          "quicBindPort": {
+            "type": "integer"
+          },
+          "quicKeepalivePeriod": {
+            "type": "integer"
+          },
+          "quicMaxIdleTimeout": {
+            "type": "integer"
+          },
+          "quicMaxIncomingStreams": {
+            "type": "integer"
           },
           "remark": {
             "type": "string"
@@ -1022,6 +1058,9 @@
         "properties": {
           "allowPorts": {
             "type": "string"
+          },
+          "autoFirewall": {
+            "type": "boolean"
           },
           "bindAddr": {
             "type": "string"
@@ -1068,8 +1107,23 @@
             },
             "type": "array"
           },
+          "kcpBindPort": {
+            "type": "integer"
+          },
           "proxyBindAddr": {
             "type": "string"
+          },
+          "quicBindPort": {
+            "type": "integer"
+          },
+          "quicKeepalivePeriod": {
+            "type": "integer"
+          },
+          "quicMaxIdleTimeout": {
+            "type": "integer"
+          },
+          "quicMaxIncomingStreams": {
+            "type": "integer"
           },
           "subdomainHost": {
             "type": "string"
@@ -4062,7 +4116,40 @@
       },
       "webservice.Panel": {
         "properties": {
+          "background": {
+            "type": "string"
+          },
+          "bgBlur": {
+            "type": "integer"
+          },
+          "bgDim": {
+            "type": "integer"
+          },
+          "defaultEngine": {
+            "type": "integer"
+          },
+          "description": {
+            "type": "string"
+          },
           "enable": {
+            "type": "boolean"
+          },
+          "engines": {
+            "items": {
+              "$ref": "#/components/schemas/webservice.PanelEngine"
+            },
+            "type": "array"
+          },
+          "favicon": {
+            "type": "string"
+          },
+          "footer": {
+            "type": "string"
+          },
+          "footerUrl": {
+            "type": "string"
+          },
+          "hideFooter": {
             "type": "boolean"
           },
           "icon": {
@@ -4095,6 +4182,9 @@
           "subtitle": {
             "type": "string"
           },
+          "tabTitle": {
+            "type": "string"
+          },
           "theme": {
             "type": "string"
           },
@@ -4105,6 +4195,17 @@
         "type": "object"
       },
       "webservice.PanelAlt": {
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.PanelEngine": {
         "properties": {
           "name": {
             "type": "string"
@@ -4146,6 +4247,9 @@
             },
             "type": "array"
           },
+          "authOnly": {
+            "type": "boolean"
+          },
           "color": {
             "type": "string"
           },
@@ -4156,6 +4260,12 @@
             "type": "string"
           },
           "hide": {
+            "type": "boolean"
+          },
+          "hideDesc": {
+            "type": "boolean"
+          },
+          "hideName": {
             "type": "boolean"
           },
           "icon": {
@@ -4169,6 +4279,9 @@
           },
           "sameTab": {
             "type": "boolean"
+          },
+          "size": {
+            "type": "string"
           },
           "url": {
             "type": "string"
@@ -7567,7 +7680,7 @@
     },
     "/api/backup/secrets": {
       "get": {
-        "description": "Permission requise : `backup:write`.",
+        "description": "**Disponible uniquement pour les sessions de connexion ; les jetons d'API ne peuvent pas accéder à ce point d'accès.**",
         "responses": {
           "200": {
             "content": {
@@ -7613,17 +7726,12 @@
             "description": "Il manque au jeton la permission requise"
           }
         },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
         "summary": "Afficher les secrets en clair",
         "tags": [
           "Sauvegarde de configuration"
         ],
-        "x-required-scope": "backup:write",
-        "x-token-allowed": true
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
       }
     },
     "/api/backup/settings": {
@@ -19367,7 +19475,7 @@
         "x-token-allowed": true
       },
       "put": {
-        "description": "Corps de requête `{\"corePath\": \"\"}`. Si vide, easytier-core est recherché dans le dossier bin du répertoire de configuration puis dans PATH ; `installProxy` n'est modifié que par l'API d'installation. Après un changement de chemin, redémarrez les instances activées.\n\nPermission requise : `easytier:write`.",
+        "description": "Corps de requête `{\"corePath\": \"\"}`. Si vide, easytier-core est recherché dans le dossier bin du répertoire de configuration puis dans PATH ; `installProxy` n'est modifié que par l'API d'installation. Après un changement de chemin, redémarrez les instances activées.\n\n**Disponible uniquement pour les sessions de connexion ; les jetons d'API ne peuvent pas accéder à ce point d'accès.**",
         "requestBody": {
           "content": {
             "application/json": {
@@ -19412,17 +19520,12 @@
             "description": "Il manque au jeton la permission requise"
           }
         },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
         "summary": "Enregistrer les paramètres du programme EasyTier",
         "tags": [
           "Réseau EasyTier"
         ],
-        "x-required-scope": "easytier:write",
-        "x-token-allowed": true
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
       }
     },
     "/api/easytier/status": {
@@ -31014,7 +31117,7 @@
         "x-token-allowed": true
       },
       "put": {
-        "description": "Corps `{\"netbirdPath\": \"\"}` ; vide, le programme est recherché dans le répertoire bin du répertoire de configuration puis dans PATH. `installProxy` n'est modifié que par les points d'accès d'installation. Les instances activées redémarrent lorsque le chemin change.\n\nPermission requise : `netbird:write`.",
+        "description": "Corps `{\"netbirdPath\": \"\"}` ; vide, le programme est recherché dans le répertoire bin du répertoire de configuration puis dans PATH. `installProxy` n'est modifié que par les points d'accès d'installation. Les instances activées redémarrent lorsque le chemin change.\n\n**Disponible uniquement pour les sessions de connexion ; les jetons d'API ne peuvent pas accéder à ce point d'accès.**",
         "requestBody": {
           "content": {
             "application/json": {
@@ -31059,17 +31162,12 @@
             "description": "Il manque au jeton la permission requise"
           }
         },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
         "summary": "Enregistrer les paramètres du programme NetBird",
         "tags": [
           "Réseau NetBird"
         ],
-        "x-required-scope": "netbird:write",
-        "x-token-allowed": true
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
       }
     },
     "/api/netbird/status": {
@@ -45968,7 +46066,7 @@
         "x-token-allowed": true
       },
       "put": {
-        "description": "Corps `{\"tailscaledPath\": \"\", \"tailscalePath\": \"\"}` ; vides, les programmes sont cherchés dans bin du répertoire de configuration puis dans PATH. `installProxy` ne se modifie que via l'API d'installation. Les instances activées redémarrent quand un chemin change.\n\nPermission requise : `tailscale:write`.",
+        "description": "Corps `{\"tailscaledPath\": \"\", \"tailscalePath\": \"\"}` ; vides, les programmes sont cherchés dans bin du répertoire de configuration puis dans PATH. `installProxy` ne se modifie que via l'API d'installation. Les instances activées redémarrent quand un chemin change.\n\n**Disponible uniquement pour les sessions de connexion ; les jetons d'API ne peuvent pas accéder à ce point d'accès.**",
         "requestBody": {
           "content": {
             "application/json": {
@@ -46013,17 +46111,12 @@
             "description": "Il manque au jeton la permission requise"
           }
         },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
         "summary": "Enregistrer les paramètres du programme Tailscale",
         "tags": [
           "Réseau Tailscale"
         ],
-        "x-required-scope": "tailscale:write",
-        "x-token-allowed": true
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
       }
     },
     "/api/tailscale/status": {

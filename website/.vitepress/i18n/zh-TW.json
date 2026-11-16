@@ -15,6 +15,7 @@
   "sidebar": {
     "groups": {
       "start": "開始使用",
+      "tutorials": "教學",
       "modules": "功能模組",
       "security": "安全",
       "reference": "參考"
@@ -28,6 +29,12 @@
       "guide/cli-mcp": "命令列與 MCP",
       "guide/migration": "遷移指南",
       "guide/faq": "常見問題",
+      "tutorials/remote-access-without-public-ip": "沒有公網 IPv4 也能存取 NAS",
+      "tutorials/one-port-443": "一個 443 連接埠跑所有服務",
+      "tutorials/https-and-login-for-apps": "為常見應用加上 HTTPS 與登入",
+      "tutorials/wildcard-cert-ddns": "萬用字元憑證與動態網域",
+      "tutorials/migrate-from-nginx": "從 nginx 或 NPM 遷移",
+      "tutorials/replace-haproxy-nginx-fail2ban": "取代 haproxy + nginx + fail2ban",
       "modules/index": "模組總覽",
       "modules/ddns": "動態網域 DDNS",
       "modules/stun": "STUN 穿透",

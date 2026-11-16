@@ -79,7 +79,7 @@ Cuando se define una contraseña de cifrado, las copias se cifran de la siguient
 - Cifrado: AES-256-GCM, con un nonce aleatorio de 12 bytes.
 - Formato de archivo: el número mágico `GATELYBK1`, la sal, el nonce y el texto cifrado, concatenados en ese orden. El número mágico también se usa como datos autenticados adicionales de GCM.
 
-La contraseña de cifrado solo se guarda en `backup.json`, dentro del directorio de configuración. Si se pierde la contraseña, la copia no se puede descifrar.
+La contraseña de cifrado solo se guarda en `backup.json`, dentro del directorio de configuración. Si se pierde la contraseña, la copia no se puede descifrar. La contraseña solo se puede ver y cambiar tras iniciar sesión en la interfaz de administración; los tokens de API no pueden leerla, cambiarla ni borrarla, aunque el resto de ajustes de la copia de seguridad sí se pueden cambiar con un token.
 
 ::: warning Nota
 Cuando `backup.json` y los archivos de copia están en la misma máquina, la protección por contraseña aporta poco valor. Escribe las copias cifradas en un montaje de otro dispositivo y guarda la contraseña por separado.

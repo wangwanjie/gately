@@ -34,14 +34,14 @@ func TestValidateDefaults(t *testing.T) {
 	i := validInstance()
 	i.Name = " files "
 	i.ListenIP = " [::1] "
-	i.Sources = []Source{{Path: "/srv/data/"}, {Path: "/", Name: " "}, {Path: "/mnt/x", Name: "照片", ReadOnly: true}}
+	i.Sources = []Source{{Path: "/srv/data/"}, {Path: "/mnt/x", Name: "照片", ReadOnly: true}}
 	if err := i.Validate(); err != nil {
 		t.Fatal(err)
 	}
 	if i.Name != "files" || i.ListenIP != "::1" || i.BaseURL != "/" || i.AuthMethod != AuthPassword || i.AdminUser != "admin" {
 		t.Errorf("默认值或规范化错误: %+v", i)
 	}
-	want := []Source{{Path: "/srv/data", Name: "data"}, {Path: "/", Name: "root"}, {Path: "/mnt/x", Name: "照片", ReadOnly: true}}
+	want := []Source{{Path: "/srv/data", Name: "data"}, {Path: "/mnt/x", Name: "照片", ReadOnly: true}}
 	if !slices.Equal(i.Sources, want) {
 		t.Errorf("共享目录规范化错误: %+v", i.Sources)
 	}
@@ -320,7 +320,7 @@ exec sleep 30
 
 	// 共享目录不存在时不启动，并给出原因
 	missing := validInstance()
-	missing.Enable, missing.Sources = true, []Source{{Path: filepath.Join(dir, "missing")}}
+	missing.Enable, missing.Sources = true, []Source{{Path: filepath.Join(t.TempDir(), "missing")}}
 	var bad InstanceView
 	if code := doJSON(t, http.MethodPost, srv.URL+"/api/filebrowser/instances", missing, &bad); code != 200 || !strings.Contains(bad.Error, "不存在") || bad.State.Running {
 		t.Fatalf("共享目录不存在应报错: %d %+v", code, bad)
@@ -328,7 +328,8 @@ exec sleep 30
 	doJSON(t, http.MethodDelete, srv.URL+"/api/filebrowser/instances/"+bad.Key, nil, nil)
 
 	inst := validInstance()
-	inst.Enable, inst.Sources = true, []Source{{Path: dir}}
+	// 共享目录不能是配置目录（dir），另用一个目录
+	inst.Enable, inst.Sources = true, []Source{{Path: t.TempDir()}}
 	var created InstanceView
 	if code := doJSON(t, http.MethodPost, srv.URL+"/api/filebrowser/instances", inst, &created); code != 200 {
 		t.Fatalf("创建失败: %d", code)
@@ -503,7 +504,8 @@ func TestReset(t *testing.T) {
 	}
 	defer m.Stop()
 	inst := validInstance()
-	inst.Enable, inst.Sources = true, []Source{{Path: dir}}
+	// 共享目录不能是配置目录（dir），另用一个目录
+	inst.Enable, inst.Sources = true, []Source{{Path: t.TempDir()}}
 	var v InstanceView
 	doJSON(t, http.MethodPost, srv.URL+"/api/filebrowser/instances", inst, &v)
 	doJSON(t, http.MethodPut, srv.URL+"/api/filebrowser/settings", Settings{BinPath: bin}, nil)

@@ -19,7 +19,7 @@ var builtinDomains = []scopeDomain{
 	{ID: apitoken.DomainLogs, Title: "系统日志", Builtin: true, ReadOnly: true},
 	{ID: apitoken.DomainMetrics, Title: "监控指标（Prometheus）", Builtin: true, ReadOnly: true},
 	{ID: apitoken.DomainImport, Title: "Lucky 配置导入", Builtin: true, WriteOnly: true},
-	{ID: apitoken.DomainFileUsers, Title: "文件服务共享用户", Builtin: true},
+	{ID: apitoken.DomainFileUsers, Title: "文件服务共享用户", Builtin: true, CanFiles: true},
 }
 
 // scopeDomain 是一个可授权的权限域（模块或内置域）。
@@ -34,21 +34,34 @@ type scopeDomain struct {
 	ReadOnly bool `json:"readOnly,omitempty"`
 	// CanExec 表示该域的写权限可以在服务器上执行命令（命令、脚本或程序路径），界面据此提示风险
 	CanExec bool `json:"canExec,omitempty"`
+	// CanFiles 表示该域的写权限可以读取或修改服务器上的文件（把目录提供出去，或把配置备份写到其他位置），界面据此提示风险
+	CanFiles bool `json:"canFiles,omitempty"`
 }
 
 // execDomains 是写权限可以在服务器上执行命令的模块：DDNS 命令取 IP、定时任务、入侵防护命令日志源、
 // STUN 规则脚本、证书映射脚本与本机部署命令、Web 终端、Docker 容器内执行与 Compose、
-// 以及可指定程序路径的 frp、File Browser、Cloudflare Tunnel。
+// 可指定程序路径的 frp、File Browser、Cloudflare Tunnel，以及可给守护进程追加启动参数与环境变量的
+// Tailscale、NetBird（例如打开它们自带的 SSH 服务，组网内的设备即可登录本机）。
 // 这些模块的写权限等同于 Gately 进程用户的命令执行权限，只应授予完全信任的脚本。
+// EasyTier 的程序路径只允许登录会话修改（见 apitoken 的 sessionOnly），附加参数没有执行命令的途径，不在其中。
 var execDomains = map[string]bool{
 	"ddns": true, "cron": true, "guard": true, "stun": true, "ssl": true, "webterminal": true,
 	"docker": true, "frp": true, "filebrowser": true, "cloudflared": true,
+	"tailscale": true, "netbird": true,
+}
+
+// fileDomains 是写权限可以读取或修改服务器上文件的模块：存储挂载（挂载任意目录后在文件管理中读写）、
+// Web 服务（把任意目录设为静态站点）、WebDAV / FTP / SMB（把任意目录共享给自己创建的用户），
+// 以及配置备份（把含全部密钥的备份写到存储挂载点）。文件服务共享用户是内置域，见 builtinDomains。
+// 这些功能都拒绝 Gately 自己的配置目录，但其余文件不受限制：Gately 以 root 运行时，能写入系统文件就等于能执行命令。
+var fileDomains = map[string]bool{
+	"storage": true, "webservice": true, "webdav": true, "ftp": true, "smb": true, "backup": true,
 }
 
 func (a *App) scopeDomains() []scopeDomain {
 	out := make([]scopeDomain, 0, len(a.modules)+len(builtinDomains))
 	for _, e := range a.modules {
-		out = append(out, scopeDomain{ID: e.mod.ID(), Title: e.mod.Title(), CanExec: execDomains[e.mod.ID()]})
+		out = append(out, scopeDomain{ID: e.mod.ID(), Title: e.mod.Title(), CanExec: execDomains[e.mod.ID()], CanFiles: fileDomains[e.mod.ID()]})
 	}
 	return append(out, builtinDomains...)
 }

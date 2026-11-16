@@ -185,7 +185,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/tailscale/instances/{key}/restart` | `tailscale:write` | Tailscale 인스턴스 다시 시작 |
 | POST | `/api/tailscale/instances/{key}/logout` | `tailscale:write` | Tailscale 인스턴스 로그아웃 |
 | GET | `/api/tailscale/settings` | `tailscale:read` | Tailscale 프로그램 설정 읽기 |
-| PUT | `/api/tailscale/settings` | `tailscale:write` | Tailscale 프로그램 설정 저장 |
+| PUT | `/api/tailscale/settings` | 로그인 세션 전용 | Tailscale 프로그램 설정 저장 |
 | GET | `/api/tailscale/install` | `tailscale:read` | 관리 프로그램의 설치 정보와 진행 상태 보기 |
 | POST | `/api/tailscale/install` | `tailscale:write` | 관리 프로그램 온라인 설치 또는 업데이트 |
 | POST | `/api/tailscale/install/check` | `tailscale:write` | 관리 프로그램 업데이트 확인 |
@@ -218,7 +218,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/netbird/instances/{key}/restart` | `netbird:write` | NetBird 인스턴스 다시 시작 |
 | POST | `/api/netbird/instances/{key}/logout` | `netbird:write` | NetBird 인스턴스 로그아웃 |
 | GET | `/api/netbird/settings` | `netbird:read` | NetBird 프로그램 설정 읽기 |
-| PUT | `/api/netbird/settings` | `netbird:write` | NetBird 프로그램 설정 저장 |
+| PUT | `/api/netbird/settings` | 로그인 세션 전용 | NetBird 프로그램 설정 저장 |
 | GET | `/api/netbird/install` | `netbird:read` | 관리 프로그램의 설치 정보와 진행 상태 보기 |
 | POST | `/api/netbird/install` | `netbird:write` | 관리 프로그램 온라인 설치 또는 업데이트 |
 | POST | `/api/netbird/install/check` | `netbird:write` | 관리 프로그램 업데이트 확인 |
@@ -250,7 +250,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/easytier/instances/{key}/status` | `easytier:read` | EasyTier 인스턴스의 실행 상태 보기 |
 | POST | `/api/easytier/instances/{key}/restart` | `easytier:write` | EasyTier 인스턴스 다시 시작 |
 | GET | `/api/easytier/settings` | `easytier:read` | EasyTier 프로그램 설정 읽기 |
-| PUT | `/api/easytier/settings` | `easytier:write` | EasyTier 프로그램 설정 저장 |
+| PUT | `/api/easytier/settings` | 로그인 세션 전용 | EasyTier 프로그램 설정 저장 |
 | GET | `/api/easytier/install` | `easytier:read` | 관리 프로그램의 설치 정보와 진행 상태 보기 |
 | POST | `/api/easytier/install` | `easytier:write` | 관리 프로그램 온라인 설치 또는 업데이트 |
 | POST | `/api/easytier/install/check` | `easytier:write` | 관리 프로그램 업데이트 확인 |
@@ -918,7 +918,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/backup/targets-delete` | `backup:write` | 백업 대상 일괄 삭제 |
 | GET | `/api/backup/settings` | `backup:read` | 백업 설정 |
 | PUT | `/api/backup/settings` | `backup:write` | 백업 설정 수정 (암호에 자리 표시자를 전달하면 기존 값 유지) |
-| GET | `/api/backup/secrets` | `backup:write` | 비밀 값 평문 보기 |
+| GET | `/api/backup/secrets` | 로그인 세션 전용 | 비밀 값 평문 보기 |
 | POST | `/api/backup/run` | `backup:write` | 지금 백업 실행 |
 | GET | `/api/backup/status` | `backup:read` | 최근 백업 결과와 다음 실행 시간 |
 | GET | `/api/backup/mounts` | `backup:read` | 백업 대상으로 사용할 수 있는 스토리지 마운트 지점 |
@@ -1357,6 +1357,9 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `key` | string |
 | `name` | string |
 | `protocol` | string |
+| `quicKeepalivePeriod` | integer |
+| `quicMaxIdleTimeout` | integer |
+| `quicMaxIncomingStreams` | integer |
 | `remark` | string |
 | `serverAddr` | string |
 | `serverPort` | integer |
@@ -1377,6 +1380,9 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 필드 | 타입 |
 | --- | --- |
 | `protocol` | string |
+| `quicKeepalivePeriod` | integer |
+| `quicMaxIdleTimeout` | integer |
+| `quicMaxIncomingStreams` | integer |
 | `serverAddr` | string |
 | `serverPort` | integer |
 | `token` | string |
@@ -1429,6 +1435,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 필드 | 타입 |
 | --- | --- |
 | `allowPorts` | string |
+| `autoFirewall` | boolean |
 | `bindAddr` | string |
 | `bindPort` | integer |
 | `dashboardAddr` | string |
@@ -1442,9 +1449,14 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `ipList` | Array of string |
 | `ipMode` | string |
 | `ipSets` | Array of string |
+| `kcpBindPort` | integer |
 | `key` | string |
 | `name` | string |
 | `proxyBindAddr` | string |
+| `quicBindPort` | integer |
+| `quicKeepalivePeriod` | integer |
+| `quicMaxIdleTimeout` | integer |
+| `quicMaxIncomingStreams` | integer |
 | `remark` | string |
 | `subdomainHost` | string |
 | `token` | string |
@@ -1456,6 +1468,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 필드 | 타입 |
 | --- | --- |
 | `allowPorts` | string |
+| `autoFirewall` | boolean |
 | `bindAddr` | string |
 | `bindPort` | integer |
 | `dashboardAddr` | string |
@@ -1467,7 +1480,12 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `ipList` | Array of string |
 | `ipMode` | string |
 | `ipSets` | Array of string |
+| `kcpBindPort` | integer |
 | `proxyBindAddr` | string |
+| `quicBindPort` | integer |
+| `quicKeepalivePeriod` | integer |
+| `quicMaxIdleTimeout` | integer |
+| `quicMaxIncomingStreams` | integer |
 | `subdomainHost` | string |
 | `token` | string |
 | `vhostHttpPort` | integer |
@@ -2707,7 +2725,17 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 
 | 필드 | 타입 |
 | --- | --- |
+| `background` | string |
+| `bgBlur` | integer |
+| `bgDim` | integer |
+| `defaultEngine` | integer |
+| `description` | string |
 | `enable` | boolean |
+| `engines` | Array of `webservice.PanelEngine` |
+| `favicon` | string |
+| `footer` | string |
+| `footerUrl` | string |
+| `hideFooter` | boolean |
 | `icon` | string |
 | `key` | string |
 | `lanCidrs` | Array of string |
@@ -2716,10 +2744,18 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `remark` | string |
 | `skin` | string |
 | `subtitle` | string |
+| `tabTitle` | string |
 | `theme` | string |
 | `title` | string |
 
 ### webservice.PanelAlt
+
+| 필드 | 타입 |
+| --- | --- |
+| `name` | string |
+| `url` | string |
+
+### webservice.PanelEngine
 
 | 필드 | 타입 |
 | --- | --- |
@@ -2742,14 +2778,18 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 필드 | 타입 |
 | --- | --- |
 | `alts` | Array of `webservice.PanelAlt` |
+| `authOnly` | boolean |
 | `color` | string |
 | `description` | string |
 | `group` | string |
 | `hide` | boolean |
+| `hideDesc` | boolean |
+| `hideName` | boolean |
 | `icon` | string |
 | `lanUrl` | string |
 | `name` | string |
 | `sameTab` | boolean |
+| `size` | string |
 | `url` | string |
 
 ### webservice.PanelPreview

@@ -60,6 +60,9 @@ Welche Berechtigung ein Endpunkt braucht, bestimmen sein Pfad und seine Methode:
 - Die älteren Endpunkte `PUT /api/webdav/shared-users`, `PUT /api/ftp/shared-users` und `PUT /api/smb/shared-users` ändern dieselbe gemeinsame Benutzerliste der drei Dienste und erfordern daher `webdav:write`, `ftp:write` und `smb:write` zugleich; der neuere Endpunkt `/api/fileusers` verwendet den Scope `fileusers`.
 - `GET /api/session` und `GET /api/openapi.json` akzeptieren jedes gültige Token.
 - Schreibzugriff auf die folgenden Module kann Befehle auf dem Server ausführen und entspricht der Befehlsausführung als Benutzer des Gately-Prozesses: `ddns` (IP-Quelle per Befehl), `cron` (geplante Aufgaben), `guard` (Logquelle per Befehl), `stun` (Regelskripte), `ssl` (Zuordnungsskripte und lokale Deploy-Befehle), `webterminal`, `docker` (Ausführen in Containern und Compose), `frp`, `filebrowser` und `cloudflared` (eigene Programmpfade). Beim Anlegen eines Tokens sind diese Module mit „Führt Befehle aus“ markiert; vergeben Sie sie nur an Skripte, denen Sie voll vertrauen. Ruft ein Token den Lucky-Import (`import:write`) auf, werden importierte Einträge immer deaktiviert; `enable=1` gilt nur für angemeldete Sitzungen.
+- Schreibzugriff auf `tailscale` und `netbird` kann den Daemons Startargumente und Umgebungsvariablen hinzufügen (zum Beispiel, um ihren eingebauten SSH-Server einzuschalten); diese Module tragen deshalb ebenfalls die Markierung „Führt Befehle aus“.
+- Schreibzugriff auf die folgenden Module kann Dateien auf dem Server lesen oder ändern: `storage` (beliebiges Verzeichnis einhängen und im Dateimanager verwenden), `webservice` (beliebiges Verzeichnis als statische Website ausliefern), `webdav`, `ftp`, `smb`, `fileusers` (beliebiges Verzeichnis für einen selbst angelegten Benutzer freigeben) und `backup` (Konfigurationssicherungen mit allen Geheimnissen auf einen Speicher-Mount schreiben). Beim Erstellen eines Tokens tragen diese Module die Markierung „Liest und schreibt Dateien“. Alle diese Funktionen lehnen das Konfigurationsverzeichnis von Gately ab, andere Dateien sind nicht eingeschränkt; läuft Gately als root, bedeutet das Überschreiben von Systemdateien die volle Kontrolle über den Server – vergeben Sie sie nur an Skripte, denen Sie voll vertrauen.
+- Ruft ein Token den Lucky-Import auf, werden die globalen Einstellungen und die Identitätstabelle der Drittanbieter-Anmeldung (`lucky_base`, `lucky_thirdPartyAuthManager`) nicht importiert; melden Sie sich in der Verwaltungsoberfläche an, um diese beiden zu importieren.
 
 ### Vorgänge, die Token nicht ausführen können
 
@@ -73,6 +76,8 @@ Die folgenden Endpunkte akzeptieren nur Anmeldesitzungen, und jeder Zugriff mit 
 - Download und Wiederherstellung der Konfigurationssicherung: `/api/system/backup`, `/api/system/restore`
 - Download lokaler Sicherungsdateien: `/api/backup/local`
 - Sicherheitseinstellungen des Web-Terminals: `/api/webterminal/security`
+- Pfade der verwalteten Programme: `PUT /api/easytier/settings`, `PUT /api/tailscale/settings`, `PUT /api/netbird/settings`
+- Verschlüsselungspassphrase der Sicherung: `GET /api/backup/secrets`; ruft ein Token `PUT /api/backup/settings` auf, muss die Passphrase unverändert bleiben (`********` senden), Ändern oder Löschen liefert 403
 - An- und Abmeldung: `/api/login`, `/api/logout`
 
 Eine Anfrage mit unzureichenden Berechtigungen liefert `token lacks permission <permission>` und protokolliert eine Warnung in den Systemprotokolle, einschließlich Token-Name, Quell-IP und des abgelehnten Endpunkts.

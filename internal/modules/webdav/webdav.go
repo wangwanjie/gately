@@ -227,7 +227,7 @@ func (m *Module) restartLocked() {
 	m.handlers = map[string]*userHandler{}
 	m.shared = map[string]*userHandler{}
 	for _, u := range m.settings.Users {
-		m.handlers[u.Name] = newUserHandler(u)
+		m.handlers[u.Name] = newUserHandler(usable(u, m.logs))
 	}
 	addr := net.JoinHostPort(m.settings.ListenIP, strconv.Itoa(m.settings.Port))
 	ln, err := net.Listen("tcp", addr)
@@ -406,6 +406,10 @@ func (m *Module) Routes(r module.Router) {
 		// 用户没有固定 ID，改名后仍按位置保留原密码，见 crud.KeepSecrets
 		crud.KeepSecrets(m.settings.Users, s.Users, func(u *User) string { return u.Name }, func(u *User) *string { return &u.Password })
 		if err := s.Validate(); err != nil {
+			httpx.Error(w, http.StatusBadRequest, "%v", err)
+			return
+		}
+		if err := s.checkDirs(); err != nil {
 			httpx.Error(w, http.StatusBadRequest, "%v", err)
 			return
 		}

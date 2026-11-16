@@ -29,7 +29,7 @@ func (a *App) applyLoginBudget(s Settings) {
 		a.auth.SetGlobalLimit(0, nil, nil)
 		return
 	}
-	a.auth.SetGlobalLimit(limit, a.loginIPs.IsKnown, a.onLoginBudgetTrip)
+	a.auth.SetGlobalLimit(limit, a.loginSourceKnown, a.onLoginBudgetTrip)
 }
 
 // onLoginBudgetTrip 在预算首次耗尽时记录日志并发布告警事件（窗口期内只触发一次）。

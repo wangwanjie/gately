@@ -40,6 +40,7 @@
           </div>
           <el-button link type="primary" size="small" :icon="FolderPlus" @click="u.mounts.push({ name: '', path: '', readOnly: false })">{{ t('fileUsers.addDirectory') }}</el-button>
         </div>
+        <ConfigDirHint :paths="u.mounts?.length ? u.mounts.map((mt) => mt.path) : [u.root]" />
       </div>
       <el-empty v-if="!users.length" :description="t('fileUsers.empty')" :image-size="60" />
     </div>
@@ -51,6 +52,7 @@ import { toRaw, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { FolderPlus, Trash2, UserPlus, Users } from 'lucide-vue-next'
 import SecretInput from './SecretInput.vue'
+import ConfigDirHint from './ConfigDirHint.vue'
 import { fetchSecret } from '../secrets'
 
 export interface FileMount {
