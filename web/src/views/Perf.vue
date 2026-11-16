@@ -53,7 +53,8 @@
         <template v-if="loadError" #empty>
           <LoadError compact :error="loadError" @retry="loadLive" />
         </template>
-        <el-table-column :label="t('perf.site')" min-width="200" show-overflow-tooltip>
+        <!-- 站点列固定在左侧，手机上横向滑动查看指标时仍知道是哪个站点 -->
+        <el-table-column :label="t('perf.site')" min-width="200" show-overflow-tooltip fixed="left">
           <template #default="{ row }">{{ row.name }}</template>
         </el-table-column>
         <el-table-column :label="t('perf.active')" width="100" align="right">

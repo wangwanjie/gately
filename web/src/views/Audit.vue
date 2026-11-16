@@ -38,7 +38,8 @@
               <div v-if="row.detail" class="meta">{{ row.detail }}</div>
             </template>
           </el-table-column>
-          <el-table-column :label="t('audit.status')" width="90" align="center">
+          <!-- 结果列固定在右侧，手机上横向滑动查看操作内容时成功与失败始终可见 -->
+          <el-table-column :label="t('audit.status')" width="90" align="center" fixed="right">
             <template #default="{ row }">
               <el-tag size="small" effect="plain" :type="row.status >= 400 ? 'danger' : 'success'">{{ row.status || '-' }}</el-tag>
             </template>

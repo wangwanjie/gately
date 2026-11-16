@@ -73,7 +73,8 @@
               <span v-else :title="formatTime(row.until)">{{ remaining(row.until) }}</span>
             </template>
           </el-table-column>
-          <el-table-column :label="t('common.actions')" width="90" align="center">
+          <!-- 操作列固定在右侧：手机上表格比屏幕宽，不固定时「解封」要横向滑到最右才看得到 -->
+          <el-table-column :label="t('common.actions')" width="90" align="center" fixed="right">
             <template #default="{ row }">
               <el-button text size="small" type="primary" @click="unban(row.key)">{{ t('guard.ban.unban') }}</el-button>
             </template>

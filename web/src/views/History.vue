@@ -22,7 +22,8 @@
           <el-table-column :label="t('history.size')" width="120">
             <template #default="{ row }">{{ formatSize(row.size) }}</template>
           </el-table-column>
-          <el-table-column :label="t('common.actions')" width="220" align="right">
+          <!-- 操作列固定在右侧，手机上不用横向滑动就能看到「回滚」 -->
+          <el-table-column :label="t('common.actions')" width="220" align="right" fixed="right">
             <template #default="{ row }">
               <el-button text :icon="FileDiff" @click="showDiff(row)">{{ t('history.diff') }}</el-button>
               <el-button text type="warning" :icon="Undo2" @click="restore(row)">{{ t('history.restore') }}</el-button>
