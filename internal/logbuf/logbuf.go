@@ -32,10 +32,12 @@ type Entry struct {
 
 // Buffer 是固定容量的环形缓冲，写满后覆盖最旧的日志。
 type Buffer struct {
-	mu      sync.Mutex
+	mu sync.Mutex
+	// entries 按写入量增长到 size 条，之后作为环形缓冲覆盖最旧的日志：大多数模块的日志远少于上限，不必一开始就占满
 	entries []Entry
-	start   int // 最旧一条在 entries 中的下标
-	count   int
+	size    int
+	start   int // 最旧一条在 entries 中的下标；未写满时为 0
+	count   int // 已有的日志条数，与 len(entries) 相同
 	nextSeq uint64
 	// echo 不为 nil 时同时输出到标准日志，便于 docker logs 查看
 	echo *log.Logger
@@ -55,7 +57,7 @@ func New(size int, echo *log.Logger) *Buffer {
 	if size <= 0 {
 		size = 500
 	}
-	return &Buffer{entries: make([]Entry, size), nextSeq: 1, echo: echo, sources: map[string]struct{}{}}
+	return &Buffer{size: size, nextSeq: 1, echo: echo, sources: map[string]struct{}{}}
 }
 
 // Add 追加一条日志。
@@ -70,22 +72,33 @@ func (b *Buffer) AddFields(level, source, msg string, fields Fields) {
 
 // addAt 以指定时间追加一条日志，测试用它模拟跨天写入。
 func (b *Buffer) addAt(t time.Time, level, source, msg string, fields Fields) {
+	b.add(Entry{Time: t, Level: level, Source: source, Message: msg, Fields: fields})
+}
+
+// add 追加一条日志，序号由缓冲分配（e.Seq 被忽略）。
+func (b *Buffer) add(e Entry) {
 	b.mu.Lock()
-	e := Entry{Seq: b.nextSeq, Time: t, Level: level, Source: source, Message: msg, Fields: fields}
+	e.Seq = b.nextSeq
 	b.nextSeq++
-	idx := (b.start + b.count) % len(b.entries)
-	b.entries[idx] = e
-	if b.count < len(b.entries) {
+	if len(b.entries) < b.size {
+		if len(b.entries) == cap(b.entries) {
+			// 按需扩容，但不超过容量上限
+			next := make([]Entry, len(b.entries), min(max(16, 2*len(b.entries)), b.size))
+			copy(next, b.entries)
+			b.entries = next
+		}
+		b.entries = append(b.entries, e)
 		b.count++
 	} else {
+		b.entries[b.start] = e
 		b.start = (b.start + 1) % len(b.entries)
 	}
 	// 第一次出现的来源记下来；map 查找很快，不影响写入性能
-	if source != "" {
-		if _, ok := b.sources[source]; !ok && len(b.sources) < maxSources {
-			b.sources[source] = struct{}{}
+	if e.Source != "" {
+		if _, ok := b.sources[e.Source]; !ok && len(b.sources) < maxSources {
+			b.sources[e.Source] = struct{}{}
 			if b.sink != nil {
-				b.sink.addSource(source)
+				b.sink.addSource(e.Source)
 			}
 		}
 	}
@@ -95,10 +108,10 @@ func (b *Buffer) addAt(t time.Time, level, source, msg string, fields Fields) {
 	}
 	b.mu.Unlock()
 	if b.echo != nil {
-		if source != "" {
-			b.echo.Printf("[%s] [%s] %s", level, source, msg)
+		if e.Source != "" {
+			b.echo.Printf("[%s] [%s] %s", e.Level, e.Source, e.Message)
 		} else {
-			b.echo.Printf("[%s] %s", level, msg)
+			b.echo.Printf("[%s] %s", e.Level, e.Message)
 		}
 	}
 }
@@ -132,6 +145,13 @@ func (b *Buffer) Range(after, before uint64, limit int) []Entry {
 	return out
 }
 
+// Cap 返回缓冲的容量上限（条数）。
+func (b *Buffer) Cap() int {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	return b.size
+}
+
 // at 返回从最旧一条起第 i 条日志，调用方需持有锁。
 func (b *Buffer) at(i int) Entry {
 	return b.entries[(b.start+i)%len(b.entries)]
@@ -154,6 +174,8 @@ func (b *Buffer) Sources() []string {
 // 记录的来源一并清空：日志已经删除，再列出这些来源也查不到内容。
 func (b *Buffer) Clear() {
 	b.mu.Lock()
+	// 连同底层数组一起释放，清空后不再占着旧日志的内存
+	b.entries = nil
 	b.start = 0
 	b.count = 0
 	b.sources = map[string]struct{}{}
@@ -229,13 +251,13 @@ func (b *Buffer) Resize(size int) {
 	}
 	b.mu.Lock()
 	defer b.mu.Unlock()
-	if size == len(b.entries) {
+	if size == b.size {
 		return
 	}
 	keep := min(b.count, size)
-	next := make([]Entry, size)
+	next := make([]Entry, keep)
 	for i := 0; i < keep; i++ {
 		next[i] = b.entries[(b.start+b.count-keep+i)%len(b.entries)]
 	}
-	b.entries, b.start, b.count = next, 0, keep
+	b.entries, b.size, b.start, b.count = next, size, 0, keep
 }
