@@ -353,7 +353,7 @@ Issue と Pull Request を歓迎します。コード、モジュール、テス
 
 ## コミュニティ
 
-質問やセットアップの共有は [GitHub Discussions](https://github.com/wangwanjie/gately/discussions) へ。気軽な雑談は Telegram グループ [t.me/gately_chat](https://t.me/gately_chat) で行っています。
+質問は [GitHub Discussions Q&A](https://github.com/wangwanjie/gately/discussions/categories/q-a) へ（回答は検索できます）。セットアップの共有も Discussions へ。すぐに話したいときは Telegram グループ [t.me/gately_chat](https://t.me/gately_chat) で行っています。
 
 不具合は [GitHub Issues](https://github.com/wangwanjie/gately/issues) に報告し、[診断パッケージ](../ja/DIAGNOSTICS.md)（設定 → 診断）を添付してください。診断パッケージはローカルで生成され、パスワード、トークン、ドメイン、実際の IP は含まれません。セキュリティ上の問題は [SECURITY.md](../../SECURITY.md) の手順に従って非公開で報告してください。
 
