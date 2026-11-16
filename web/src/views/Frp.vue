@@ -128,6 +128,8 @@
                   <template #title>{{ s.name }}</template>
                   <template #sub><span class="mono">{{ hostPort(s.bindAddr, s.bindPort) }}</span><template v-if="s.remark"> · {{ s.remark }}</template></template>
                   <template #status><StatusBadge v-bind="instanceBadge(s)" /></template>
+                  <Field v-if="s.kcpBindPort" label="KCP" mono>{{ s.kcpBindPort }}/udp</Field>
+                  <Field v-if="s.quicBindPort" label="QUIC" mono>{{ s.quicBindPort }}/udp</Field>
                   <Field v-if="s.vhostHttpPort" :label="t('frp.httpPort')" mono>{{ s.vhostHttpPort }}</Field>
                   <Field v-if="s.vhostHttpsPort" :label="t('frp.httpsPort')" mono>{{ s.vhostHttpsPort }}</Field>
                   <Field v-if="s.subdomainHost" :label="t('frp.subdomainHost')" mono>{{ s.subdomainHost }}</Field>
@@ -203,6 +205,7 @@
             <el-option label="websocket" value="websocket" />
             <el-option label="wss" value="wss" />
           </el-select>
+          <div class="form-help">{{ t('frp.protocolHelp') }}</div>
         </el-form-item>
         <!-- 只用于生成代理链接：frpc 不知道 frps 的 vhost 端口与子域名根域名，按 frps 一侧填写 -->
         <el-divider content-position="left">{{ t('frp.accessAddr') }}</el-divider>
@@ -251,6 +254,14 @@
           <div class="form-help">{{ t('frp.bindAddrHelp') }}</div>
         </el-form-item>
         <el-form-item :label="t('frp.bindPort')"><el-input-number v-model="editingServer.bindPort" :min="1" :max="65535" /></el-form-item>
+        <el-form-item :label="t('frp.kcpBindPort')">
+          <el-input-number v-model="editingServer.kcpBindPort" :min="0" :max="65535" />
+          <div class="form-help">{{ t('frp.kcpBindPortHelp') }}</div>
+        </el-form-item>
+        <el-form-item :label="t('frp.quicBindPort')">
+          <el-input-number v-model="editingServer.quicBindPort" :min="0" :max="65535" />
+          <div class="form-help">{{ t('frp.quicBindPortHelp') }}</div>
+        </el-form-item>
         <el-form-item :label="t('frp.token')">
           <SecretInput v-model="editingServer.token" :reveal="secretOf(serverSecretKey && `/api/frp/servers/${serverSecretKey}/secrets`, 'token')" :placeholder="t('frp.tokenServerPlaceholder')" />
         </el-form-item>
@@ -453,6 +464,9 @@ interface ClientSettings {
 interface ServerSettings {
   bindAddr: string
   bindPort: number
+  // kcpBindPort 与 quicBindPort 为 UDP 监听端口，0 表示不启用
+  kcpBindPort: number
+  quicBindPort: number
   token: string
   proxyBindAddr: string
   vhostHttpPort: number
@@ -691,6 +705,8 @@ function emptyServer(): Server {
     enable: true,
     bindAddr: '',
     bindPort: 7000,
+    kcpBindPort: 0,
+    quicBindPort: 0,
     token: '',
     proxyBindAddr: '',
     vhostHttpPort: 0,
@@ -779,6 +795,8 @@ function pickServer(v: Server): Server {
   for (const k of Object.keys(base) as (keyof Server)[]) {
     ;(out as unknown as Record<string, unknown>)[k] = v[k]
   }
+  out.kcpBindPort = out.kcpBindPort ?? 0
+  out.quicBindPort = out.quicBindPort ?? 0
   // 后端空名单返回 null，编辑时统一为数组
   out.ipList = out.ipList ?? []
   out.ipSets = out.ipSets ?? []
@@ -1042,6 +1060,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
+
 .block-gap {
   margin-bottom: 16px;
 }

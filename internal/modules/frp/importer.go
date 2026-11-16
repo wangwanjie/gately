@@ -352,6 +352,8 @@ func importServer(top map[string]any, legacy bool, res *ImportResult) *ServerSet
 	s := &ServerSettings{
 		BindAddr:       pick(top, "bindAddr", "bind_addr"),
 		BindPort:       pickInt(top, "bindPort", "bind_port"),
+		KCPBindPort:    pickInt(top, "kcpBindPort", "kcp_bind_port"),
+		QUICBindPort:   pickInt(top, "quicBindPort", "quic_bind_port"),
 		ProxyBindAddr:  pick(top, "proxyBindAddr", "proxy_bind_addr"),
 		Token:          pick(top, "auth.token", "token", "privilege_token"),
 		VhostHTTPPort:  pickInt(top, "vhostHTTPPort", "vhost_http_port"),
@@ -362,7 +364,7 @@ func importServer(top map[string]any, legacy bool, res *ImportResult) *ServerSet
 		DashboardUser:  pick(top, "webServer.user", "dashboard_user"),
 		DashboardPwd:   pick(top, "webServer.password", "dashboard_pwd"),
 	}
-	h.add("bindAddr", "bind_addr", "proxyBindAddr", "proxy_bind_addr", "bindPort", "bind_port", "auth.token", "token", "privilege_token", "vhostHTTPPort", "vhost_http_port", "vhostHTTPSPort", "vhost_https_port",
+	h.add("bindAddr", "bind_addr", "proxyBindAddr", "proxy_bind_addr", "bindPort", "bind_port", "kcpBindPort", "kcp_bind_port", "quicBindPort", "quic_bind_port", "auth.token", "token", "privilege_token", "vhostHTTPPort", "vhost_http_port", "vhostHTTPSPort", "vhost_https_port",
 		"subDomainHost", "subdomain_host", "webServer.port", "dashboard_port", "webServer.addr", "dashboard_addr",
 		"webServer.user", "dashboard_user", "webServer.password", "dashboard_pwd", "allowPorts", "allow_ports")
 	if s.BindPort == 0 {
