@@ -54,6 +54,8 @@
   "refreshFailed": "Не удалось обновить: {error}. Показаны данные последней успешной загрузки.",
   "retry": "Повторить",
   "networkError": "Не удаётся подключиться к Gately. Проверьте сеть или убедитесь, что служба работает",
+  "advancedSettings": "Дополнительные настройки",
+  "advancedChanged": "(изменено: {count})",
   "durationDaysHours": "{d} д {h} ч",
   "durationHoursMinutes": "{h} ч {m} мин",
   "durationMinutes": "{m} мин",

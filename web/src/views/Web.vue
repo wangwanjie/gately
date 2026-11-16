@@ -254,73 +254,77 @@
       <el-alert v-if="!editingListener.key && !copyListenerFrom" :title="t('web.newListenerHint')" type="info" :closable="false" show-icon class="listener-hint" />
       <el-form :model="editingListener" label-width="130px" :label-position="labelPosition">
         <el-form-item :label="t('common.name')"><el-input v-model="editingListener.name" /></el-form-item>
-        <el-form-item :label="t('web.network')">
-          <el-radio-group v-model="editingListener.network">
-            <el-radio-button value="tcp">{{ t('web.networkDual') }}</el-radio-button>
-            <el-radio-button value="tcp4">{{ t('web.networkIpv4') }}</el-radio-button>
-            <el-radio-button value="tcp6">{{ t('web.networkIpv6') }}</el-radio-button>
-          </el-radio-group>
-        </el-form-item>
         <el-form-item :label="t('web.listenIp')"><el-input v-model="editingListener.listenIp" :placeholder="t('web.listenIpPlaceholder')" /></el-form-item>
         <el-form-item :label="t('web.port')" required><el-input-number v-model="editingListener.port" :min="1" :max="65535" /></el-form-item>
         <el-form-item label="HTTPS">
           <el-switch v-model="editingListener.tls" />
           <span class="help">{{ t('web.tlsHelp') }}</span>
         </el-form-item>
-        <!-- 额外的明文 HTTP 端口：与主端口共用全部站点，HTTPS 监听常用它再开一个 80 -->
-        <el-form-item :label="t('web.httpPort')">
-          <div class="access-row">
-            <el-input-number v-model="httpPortInput" :min="1" :max="65535" :placeholder="t('web.httpPortOff')" controls-position="right" class="w-160" />
-            <el-radio-group v-if="editingListener.tls && editingListener.httpPort" v-model="editingListener.httpPortMode">
+        <el-form-item :label="t('common.enable')"><el-switch v-model="editingListener.enable" /></el-form-item>
+        <!-- 常用的是地址、端口与 HTTPS，其余收在「高级设置」里；打开已有监听时有改动的高级项会自动展开 -->
+        <AdvancedToggle v-model="listenerAdv" :count="listenerAdvCount" />
+        <div v-show="listenerAdv">
+          <el-form-item :label="t('web.network')">
+            <el-radio-group v-model="editingListener.network">
+              <el-radio-button value="tcp">{{ t('web.networkDual') }}</el-radio-button>
+              <el-radio-button value="tcp4">{{ t('web.networkIpv4') }}</el-radio-button>
+              <el-radio-button value="tcp6">{{ t('web.networkIpv6') }}</el-radio-button>
+            </el-radio-group>
+          </el-form-item>
+          <!-- 额外的明文 HTTP 端口：与主端口共用全部站点，HTTPS 监听常用它再开一个 80 -->
+          <el-form-item :label="t('web.httpPort')">
+            <div class="access-row">
+              <el-input-number v-model="httpPortInput" :min="1" :max="65535" :placeholder="t('web.httpPortOff')" controls-position="right" class="w-160" />
+              <el-radio-group v-if="editingListener.tls && editingListener.httpPort" v-model="editingListener.httpPortMode">
+                <el-radio-button value="redirect">{{ t('web.plainHttpRedirect') }}</el-radio-button>
+                <el-radio-button value="serve">{{ t('web.plainHttpServe') }}</el-radio-button>
+              </el-radio-group>
+            </div>
+            <div class="form-help">{{ editingListener.tls ? t('web.httpPortHelp') : t('web.httpPortPlainHelp') }}</div>
+            <div v-if="editingListener.httpPort && editingListener.httpPort === editingListener.port" class="form-help warn">{{ t('web.httpPortSame') }}</div>
+            <!-- 跳转端口取访问地址中的端口（后端不识别转发入口），经协议分流/端口转发访问且未填访问端口时提醒填写 -->
+            <div v-if="httpPortEntryWarn" class="form-help warn">{{ t('web.httpPortEntryWarn', { listen: editingListener.port, port: editingEntry!.port, rule: editingEntry!.rule }) }}</div>
+          </el-form-item>
+          <!-- 仅用于生成站点链接：经协议分流、端口映射或 CDN 访问时，对外的协议与端口可能与监听不同 -->
+          <el-form-item :label="t('web.accessAddr')">
+            <div class="access-row">
+              <el-select v-model="editingListener.accessScheme" class="w-120" :empty-values="[null, undefined]">
+                <el-option :label="t('web.accessSchemeAuto', { scheme: editingListener.tls ? 'https' : 'http' })" value="" />
+                <el-option label="http" value="http" />
+                <el-option label="https" value="https" />
+              </el-select>
+              <el-input-number v-model="accessPortInput" :min="1" :max="65535" :placeholder="String(editingEntry?.port || editingListener.port || '')" controls-position="right" class="w-160" />
+            </div>
+            <div class="form-help">{{ t('web.accessAddrHelp', { example: accessExample }) }}</div>
+            <div v-if="editingEntry && !editingListener.accessPort" class="form-help">{{ entryText(editingEntry) }}</div>
+          </el-form-item>
+          <el-form-item v-if="editingListener.tls" :label="t('web.minTls')">
+            <el-select v-model="editingListener.minTls" class="w-120">
+              <el-option v-for="v in ['1.0', '1.1', '1.2', '1.3']" :key="v" :label="'TLS ' + v" :value="v" />
+            </el-select>
+          </el-form-item>
+          <el-form-item v-if="editingListener.tls" :label="t('web.plainHttp')">
+            <el-radio-group v-model="editingListener.plainHttp">
+              <el-radio-button value="">{{ t('web.plainHttpOff') }}</el-radio-button>
               <el-radio-button value="redirect">{{ t('web.plainHttpRedirect') }}</el-radio-button>
               <el-radio-button value="serve">{{ t('web.plainHttpServe') }}</el-radio-button>
             </el-radio-group>
-          </div>
-          <div class="form-help">{{ editingListener.tls ? t('web.httpPortHelp') : t('web.httpPortPlainHelp') }}</div>
-          <div v-if="editingListener.httpPort && editingListener.httpPort === editingListener.port" class="form-help warn">{{ t('web.httpPortSame') }}</div>
-          <!-- 跳转端口取访问地址中的端口（后端不识别转发入口），经协议分流/端口转发访问且未填访问端口时提醒填写 -->
-          <div v-if="httpPortEntryWarn" class="form-help warn">{{ t('web.httpPortEntryWarn', { listen: editingListener.port, port: editingEntry!.port, rule: editingEntry!.rule }) }}</div>
-        </el-form-item>
-        <!-- 仅用于生成站点链接：经协议分流、端口映射或 CDN 访问时，对外的协议与端口可能与监听不同 -->
-        <el-form-item :label="t('web.accessAddr')">
-          <div class="access-row">
-            <el-select v-model="editingListener.accessScheme" class="w-120" :empty-values="[null, undefined]">
-              <el-option :label="t('web.accessSchemeAuto', { scheme: editingListener.tls ? 'https' : 'http' })" value="" />
-              <el-option label="http" value="http" />
-              <el-option label="https" value="https" />
-            </el-select>
-            <el-input-number v-model="accessPortInput" :min="1" :max="65535" :placeholder="String(editingEntry?.port || editingListener.port || '')" controls-position="right" class="w-160" />
-          </div>
-          <div class="form-help">{{ t('web.accessAddrHelp', { example: accessExample }) }}</div>
-          <div v-if="editingEntry && !editingListener.accessPort" class="form-help">{{ entryText(editingEntry) }}</div>
-        </el-form-item>
-        <el-form-item v-if="editingListener.tls" :label="t('web.minTls')">
-          <el-select v-model="editingListener.minTls" class="w-120">
-            <el-option v-for="v in ['1.0', '1.1', '1.2', '1.3']" :key="v" :label="'TLS ' + v" :value="v" />
-          </el-select>
-        </el-form-item>
-        <el-form-item v-if="editingListener.tls" :label="t('web.plainHttp')">
-          <el-radio-group v-model="editingListener.plainHttp">
-            <el-radio-button value="">{{ t('web.plainHttpOff') }}</el-radio-button>
-            <el-radio-button value="redirect">{{ t('web.plainHttpRedirect') }}</el-radio-button>
-            <el-radio-button value="serve">{{ t('web.plainHttpServe') }}</el-radio-button>
-          </el-radio-group>
-          <span class="help">{{ t('web.plainHttpHelp') }}</span>
-        </el-form-item>
-        <el-form-item v-if="editingListener.tls" label="HTTP/3">
-          <el-switch v-model="editingListener.http3" />
-          <span class="help">{{ t('web.http3Help') }}</span>
-        </el-form-item>
-        <el-form-item :label="t('web.acceptProxy')">
-          <el-switch v-model="editingListener.acceptProxyProtocol" />
-          <span class="help">{{ t('web.acceptProxyHelp') }}</span>
-        </el-form-item>
-        <el-form-item :label="t('common.autoFirewall')">
-          <el-switch v-model="editingListener.autoFirewall" />
-          <span class="help">{{ t('web.autoFirewallHelp') }}</span>
-        </el-form-item>
-        <el-form-item :label="t('common.remark')"><el-input v-model="editingListener.remark" /></el-form-item>
-        <el-form-item :label="t('common.enable')"><el-switch v-model="editingListener.enable" /></el-form-item>
+            <span class="help">{{ t('web.plainHttpHelp') }}</span>
+          </el-form-item>
+          <el-form-item v-if="editingListener.tls" label="HTTP/3">
+            <el-switch v-model="editingListener.http3" />
+            <span class="help">{{ t('web.http3Help') }}</span>
+          </el-form-item>
+          <el-form-item :label="t('web.acceptProxy')">
+            <el-switch v-model="editingListener.acceptProxyProtocol" />
+            <span class="help">{{ t('web.acceptProxyHelp') }}</span>
+          </el-form-item>
+          <el-form-item :label="t('common.autoFirewall')">
+            <el-switch v-model="editingListener.autoFirewall" />
+            <span class="help">{{ t('web.autoFirewallHelp') }}</span>
+          </el-form-item>
+          <el-form-item :label="t('common.remark')"><el-input v-model="editingListener.remark" /></el-form-item>
+        </div>
         <!-- 复制监听时可选是否带上站点；分享链接的令牌可绕过认证，不随副本复制 -->
         <el-form-item v-if="copyListenerFrom && copySiteCount" :label="t('web.copySites')">
           <el-checkbox v-model="copyListenerSites">{{ t('web.copySitesLabel', { count: copySiteCount }) }}</el-checkbox>
@@ -771,6 +775,7 @@ import { emptyKnockGrant, type KnockGrant } from '../siteKnock'
 import StatusBadge, { type StatusType } from '../components/StatusBadge.vue'
 import LogCard from '../components/LogCard.vue'
 import CopyHint from '../components/CopyHint.vue'
+import AdvancedToggle from '../components/AdvancedToggle.vue'
 import { createItem, uniqueName, type CopySource } from '../copyDraft'
 import UrlLink from '../components/UrlLink.vue'
 import { accessPort, accessScheme, forwardedEntry, siteLink, type ForwardEntry, type ForwardSource, type SiteLink } from '../siteUrl'
@@ -1760,8 +1765,27 @@ function withRow(lk: string, sk: string, fn: (l: ListenerView, row: SiteRow) => 
 }
 
 // openListener 打开监听编辑框：copy 为 true 时以 l 为模板新建副本，可选带上其中的站点
+// listenerAdv 为监听表单是否展开「高级设置」
+const listenerAdv = ref(false)
+// listenerAdvCount 为高级设置中与默认值不同的字段数，收起时提示
+const listenerAdvCount = computed(() => {
+  const l = editingListener.value
+  return [
+    l.network && l.network !== 'tcp',
+    !!l.httpPort,
+    !!(l.accessScheme || l.accessPort),
+    l.tls && l.minTls && l.minTls !== '1.2',
+    l.tls && !!l.plainHttp,
+    l.tls && l.http3,
+    l.acceptProxyProtocol,
+    l.autoFirewall,
+    !!l.remark?.trim(),
+  ].filter(Boolean).length
+})
+
 function openListener(l?: ListenerView, copy = false) {
   editingListener.value = l ? plain(l) : emptyListener()
+  listenerAdv.value = listenerAdvCount.value > 0
   copyListenerFrom.value = null
   copySiteCount.value = 0
   copyListenerSites.value = true

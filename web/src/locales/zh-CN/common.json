@@ -54,6 +54,8 @@
   "refreshFailed": "刷新失败：{error}。下面是上次加载的数据。",
   "retry": "重试",
   "networkError": "无法连接到 Gately，请检查网络，或确认服务仍在运行",
+  "advancedSettings": "高级设置",
+  "advancedChanged": "（{count} 项已修改）",
   "durationDaysHours": "{d} 天 {h} 小时",
   "durationHoursMinutes": "{h} 小时 {m} 分",
   "durationMinutes": "{m} 分钟",

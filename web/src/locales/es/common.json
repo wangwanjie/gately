@@ -54,6 +54,8 @@
   "refreshFailed": "No se pudo actualizar: {error}. Se muestran los datos de la última carga.",
   "retry": "Reintentar",
   "networkError": "No se puede conectar con Gately. Revisa la red o comprueba que el servicio sigue en marcha",
+  "advancedSettings": "Configuración avanzada",
+  "advancedChanged": "({count} modificados)",
   "durationDaysHours": "{d} d {h} h",
   "durationHoursMinutes": "{h} h {m} min",
   "durationMinutes": "{m} min",

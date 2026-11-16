@@ -54,6 +54,8 @@
   "refreshFailed": "새로 고치지 못했습니다: {error}. 마지막으로 불러온 데이터를 표시합니다.",
   "retry": "다시 시도",
   "networkError": "Gately에 연결할 수 없습니다. 네트워크를 확인하거나 서비스가 실행 중인지 확인하세요",
+  "advancedSettings": "고급 설정",
+  "advancedChanged": "({count}개 변경됨)",
   "durationDaysHours": "{d}일 {h}시간",
   "durationHoursMinutes": "{h}시간 {m}분",
   "durationMinutes": "{m}분",
