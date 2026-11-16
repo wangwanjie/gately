@@ -31,6 +31,11 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - TZ=Europe/Paris
+    # Limite la taille du journal du conteneur (docker logs) ; Docker ne fixe aucune limite par défaut
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
 ```
 
 `--cap-add NET_ADMIN` et `cap_add` permettent à la [prévention d'intrusion](/fr/docs/modules/guard) d'écrire les bannissements dans le pare-feu nftables de l'hôte. Vous pouvez les retirer ; les bannissements s'appliquent alors toujours aux services de Gately.

@@ -31,6 +31,11 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - TZ=Asia/Shanghai
+    # Limit the size of the container log (docker logs); Docker sets no limit by default
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
 ```
 
 `--cap-add NET_ADMIN` and `cap_add` let [Intrusion Prevention](/en/docs/modules/guard) write bans to the host's nftables firewall. You can drop them; bans then still apply to Gately's own services.

@@ -31,6 +31,11 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - TZ=Asia/Shanghai
+    # Limita o tamanho do log do contêiner (docker logs); por padrão o Docker não define limite
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
 ```
 
 `--cap-add NET_ADMIN` e `cap_add` permitem que a [Prevenção de intrusão](/pt-BR/docs/modules/guard) grave os bloqueios no firewall nftables do host. Você pode removê-los; os bloqueios continuam valendo para os serviços do Gately.
