@@ -87,6 +87,7 @@
   "basicAuth": "基本认证",
   "users": "用户",
   "usersPlaceholder": "每行一个 用户名:密码（密码可为 bcrypt 哈希）",
+  "usersHelp": "密码保存时转为 bcrypt 哈希，之后无法再查看原密码。已保存的密码显示为 ********：保持不变或只写「用户名:」表示不修改，要改密码时把 ******** 换成新密码",
   "thirdParty": "第三方登录",
   "oauthUsersPlaceholder": "每行一个允许的身份：提供方标识:账号，如 github:octocat、google:me{'@'}gmail.com、qq:openid；行尾可用 # 加备注；github:* 表示任意 GitHub 账号",
   "providerHelp": "提供方需先在「全局设置」中配置",

@@ -87,6 +87,7 @@
   "basicAuth": "Basic auth",
   "users": "Users",
   "usersPlaceholder": "One per line as username:password (the password may be a bcrypt hash)",
+  "usersHelp": "Passwords are stored as bcrypt hashes when saved and cannot be viewed afterwards. Saved passwords show as ********: leave them as they are, or write just \"username:\", to keep them; to change a password, replace ******** with the new one",
   "thirdParty": "Third-party sign-in",
   "oauthUsersPlaceholder": "One allowed identity per line as provider-key:account, e.g. github:octocat, google:me{'@'}gmail.com, qq:openid. Add a comment after # at the end of a line; github:* matches any GitHub account",
   "providerHelp": "Providers must be configured in \"Global settings\" first",

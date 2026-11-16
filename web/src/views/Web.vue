@@ -452,6 +452,7 @@
             </el-form-item>
             <el-form-item v-if="site.webAuth || site.basicAuth" :label="t('web.users')">
               <el-input v-model="usersText" type="textarea" :rows="3" class="mono" :placeholder="t('web.usersPlaceholder')" />
+              <div class="form-help">{{ t('web.usersHelp') }}</div>
             </el-form-item>
             <el-form-item v-if="site.webAuth" :label="t('web.thirdParty')">
               <el-input v-model="oauthUsersText" type="textarea" :rows="2" class="mono" :placeholder="t('web.oauthUsersPlaceholder')" />
