@@ -126,7 +126,8 @@
 
     <el-dialog v-model="editorVisible" :title="editing.key ? t('ddns.editTask') : t('ddns.addTask')" width="900px" top="5vh" :fullscreen="isMobile">
       <CopyHint :from="copyFrom" secrets />
-      <el-form :model="editing" label-width="120px" :label-position="labelPosition">
+      <!-- 标签宽 150px：服务商凭据的标签（如 AccessKey Secret）在 120px 下会换行压到下一行 -->
+      <el-form :model="editing" label-width="150px" :label-position="labelPosition">
         <el-tabs v-model="tab">
           <el-tab-pane :label="t('ddns.tabBasic')" name="basic">
             <el-form-item :label="t('ddns.taskName')"><el-input v-model="editing.name" /></el-form-item>
