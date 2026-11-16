@@ -60,6 +60,8 @@
 
 所有类型的站点均可设置访问日志、跨域（CORS）、自定义请求头与响应头（每行 `Key: Value`，Value 留空表示删除该头），并可引用一个 [WAF 防火墙](/docs/modules/waf) 实例（实例不存在或停用时放行）。请求头、响应头与 Content-Type 的编辑方式见 [请求头与响应头](#headers)。
 
+开启跨域时，Gately 按请求的 `Origin` 回写 `Access-Control-Allow-Origin` 并允许携带凭据。站点限制了访问者时（基本认证、网页认证、转发认证、转发 Gately 登录 Cookie、信任后端认证标记、站点或路径规则的 IP 白名单、敲门准入），只接受站点自身域名作为来源，其他网页无法借访客的登录态或所在网络读取站点内容；其余站点接受任意来源。
+
 访问日志会记录客户端 IP、方法、域名与路径、状态码、耗时、站点名称，行尾按 nginx 的格式附上 Referer 与 User-Agent（缺失时为 `-`），同一出口 IP 后面的不同设备可以通过 User-Agent 区分。可在日志中按站点、状态码、来源 IP 等条件筛选，见 [运行日志的查看与筛选](/docs/guide/configuration#log-filter)。
 
 ### 重定向变量 {#redirect-vars}

@@ -60,6 +60,8 @@ O endpoint correspondente é `POST /api/webservice/sites/batch`, com o corpo `{"
 
 Sites de qualquer tipo podem definir um log de acesso, cross-origin (CORS), cabeçalhos personalizados de requisição e resposta (um `Key: Value` por linha; um Value vazio remove aquele cabeçalho) e podem referenciar uma instância do [Firewall WAF](/pt-BR/docs/modules/waf) (se a instância não existir ou estiver desativada, as requisições passam direto). Veja [Cabeçalhos de requisição e de resposta](#headers) para saber como editar cabeçalhos de requisição, de resposta e o Content-Type.
 
+Com o cross-origin ativado, o Gately devolve o `Origin` da requisição em `Access-Control-Allow-Origin` e permite credenciais. Quando o site restringe quem pode acessá-lo (autenticação básica, autenticação web, autenticação encaminhada, encaminhamento dos cookies de login do Gately, confiança na marca de autenticação do backend, lista de IPs permitidos no site ou em uma regra de caminho, ou exigência de knock), só os domínios do próprio site são aceitos como origem, de modo que outras páginas não conseguem ler o site usando o login ou a rede do visitante; os demais sites aceitam qualquer origem.
+
 As entradas do log de acesso registram o IP do cliente, o método, o domínio e o caminho, o código de status, a duração e o nome do site, seguidos do Referer e do User-Agent no formato do nginx (`-` quando ausentes), então dispositivos diferentes atrás do mesmo IP público podem ser distinguidos pelo User-Agent. O log pode ser filtrado por site, código de status, IP de origem e mais; veja [visualizar e filtrar logs de execução](/pt-BR/docs/guide/configuration#log-filter).
 
 ### Variáveis de redirecionamento {#redirect-vars}
