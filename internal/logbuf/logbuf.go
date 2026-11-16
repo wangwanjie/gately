@@ -6,7 +6,6 @@ package logbuf
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"log"
 	"sort"
 	"sync"
@@ -31,6 +30,10 @@ type Entry struct {
 	Message string    `json:"message"`
 	// Fields 为可选的结构化字段（客户端 IP、域名、状态码等），用于按字段过滤
 	Fields Fields `json:"fields,omitempty"`
+	// Format、Args 为生成 Message 的格式串与各参数在其中的长度，只有经 Logger 的 Infof 等方法写入、
+	// 仍在内存缓冲里的日志才有：按语言翻译时据此直接查到译文模板并切出参数。不写入日志文件，从文件读回的日志没有这两项
+	Format string  `json:"-"`
+	Args   ArgLens `json:"-"`
 }
 
 // Buffer 是固定容量的环形缓冲，写满后覆盖最旧的日志。
@@ -275,22 +278,28 @@ func (l *Logger) Log(level, msg string) {
 
 // Debugf 写入调试日志。
 func (l *Logger) Debugf(format string, args ...any) {
-	l.buf.AddFields(LevelDebug, l.source, fmt.Sprintf(format, args...), l.fields)
+	l.logf(LevelDebug, format, args)
 }
 
 // Infof 写入普通日志。
 func (l *Logger) Infof(format string, args ...any) {
-	l.buf.AddFields(LevelInfo, l.source, fmt.Sprintf(format, args...), l.fields)
+	l.logf(LevelInfo, format, args)
 }
 
 // Warnf 写入警告日志。
 func (l *Logger) Warnf(format string, args ...any) {
-	l.buf.AddFields(LevelWarn, l.source, fmt.Sprintf(format, args...), l.fields)
+	l.logf(LevelWarn, format, args)
 }
 
 // Errorf 写入错误日志。
 func (l *Logger) Errorf(format string, args ...any) {
-	l.buf.AddFields(LevelError, l.source, fmt.Sprintf(format, args...), l.fields)
+	l.logf(LevelError, format, args)
+}
+
+// logf 格式化并写入一条日志，同时记下格式串与各参数的位置，供按语言翻译时使用。
+func (l *Logger) logf(level, format string, args []any) {
+	msg, lens := render(format, args)
+	l.buf.add(Entry{Time: time.Now(), Level: level, Source: l.source, Message: msg, Fields: l.fields, Format: format, Args: lens})
 }
 
 // Resize 修改缓冲容量，保留最新的日志。
