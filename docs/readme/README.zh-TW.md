@@ -1,11 +1,11 @@
 <p align="center">
-  <a href="https://gately.cn/zh-TW/"><img src="docs/images/banner.zh-TW.svg" alt="Gately — 一站式網路閘道，開源透明，開箱即用" width="100%"></a>
+  <a href="https://gately.cn/zh-TW/"><img src="../images/banner.zh-TW.svg" alt="Gately — 一站式網路閘道，開源透明，開箱即用" width="100%"></a>
 </p>
 
 <p align="center">
   <a href="https://github.com/wangwanjie/gately/releases/latest"><img src="https://img.shields.io/github/v/release/wangwanjie/gately?style=flat-square&color=0e7c66&label=release" alt="Release"></a>
   <a href="https://github.com/wangwanjie/gately/pkgs/container/gately"><img src="https://img.shields.io/badge/docker-ghcr.io%2Fwangwanjie%2Fgately-0e7c66?style=flat-square&logo=docker&logoColor=white" alt="Docker"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/github/license/wangwanjie/gately?style=flat-square&color=0e7c66" alt="License"></a>
+  <a href="../../LICENSE"><img src="https://img.shields.io/github/license/wangwanjie/gately?style=flat-square&color=0e7c66" alt="License"></a>
   <a href="https://github.com/wangwanjie/gately/stargazers"><img src="https://img.shields.io/github/stars/wangwanjie/gately?style=flat-square&color=0e7c66" alt="Stars"></a>
   <a href="https://gately.cn/zh-TW/"><img src="https://img.shields.io/badge/%E5%AE%98%E7%B6%B2-gately.cn-0e7c66?style=flat-square&logo=googlechrome&logoColor=white" alt="gately.cn"></a>
   <a href="https://t.me/gately_chat"><img src="https://img.shields.io/badge/Telegram-gately__chat-26A5E4?style=flat-square&logo=telegram&logoColor=white" alt="Telegram"></a>
@@ -20,7 +20,7 @@
 </p>
 
 <p align="center">
-  <a href="README.md">English</a> | <a href="README.zh-CN.md">简体中文</a> | <b>繁體中文</b> | <a href="README.ja.md">日本語</a> | <a href="README.ko.md">한국어</a> | <a href="README.es.md">Español</a> | <a href="README.fr.md">Français</a> | <a href="README.de.md">Deutsch</a> | <a href="README.ru.md">Русский</a> | <a href="README.pt-BR.md">Português (Brasil)</a>
+  <a href="../../README.md">English</a> | <a href="../../README.zh-CN.md">简体中文</a> | <b>繁體中文</b> | <a href="README.ja.md">日本語</a> | <a href="README.ko.md">한국어</a> | <a href="README.es.md">Español</a> | <a href="README.fr.md">Français</a> | <a href="README.de.md">Deutsch</a> | <a href="README.ru.md">Русский</a> | <a href="README.pt-BR.md">Português (Brasil)</a>
 </p>
 
 從網域解析、內網穿透，到反向代理、HTTPS 憑證；從 WAF、入侵防護，到統一登入與檔案分享，家用網路和伺服器入口需要的能力，Gately 都整合在同一個後台。裝在 NAS、軟路由或雲端主機上，打開瀏覽器就能設定和維運。原始碼以 Apache-2.0 授權開源，設定和資料只留在你自己的裝置上，不蒐集、不回報。
@@ -44,7 +44,7 @@ docker run -d --name gately --network host --cap-add NET_ADMIN \
   ghcr.io/wangwanjie/gately:latest
 ```
 
-開啟 `http://<裝置IP>:16680`，使用預設帳號 `admin` 與預設密碼 `gately.cn` 登入，然後在「設定」中修改密碼並開啟兩步驟驗證。完整的 Compose 範例見 [deploy/docker-compose.yml](deploy/docker-compose.yml)。
+開啟 `http://<裝置IP>:16680`，使用預設帳號 `admin` 與預設密碼 `gately.cn` 登入，然後在「設定」中修改密碼並開啟兩步驟驗證。完整的 Compose 範例見 [deploy/docker-compose.yml](../../deploy/docker-compose.yml)。
 
 忘記密碼或遺失兩步驟驗證器時，在伺服器上執行 `gately reset-password` 或 `gately reset-totp`（Docker 為 `docker exec -it gately gately reset-password`），確認後立即生效，詳見[重設密碼與兩步驟驗證](https://gately.cn/zh-TW/docs/guide/install#reset)。
 
@@ -67,7 +67,7 @@ docker run -d --name gately --network host --cap-add NET_ADMIN \
 
 開機自啟：解壓後執行 `sudo ./gately service install`（Windows 在系統管理員終端機執行 `.\gately.exe service install`）。Linux 會註冊 systemd 服務，macOS 註冊 launchd 常駐程式（加 `-user` 可免 sudo 註冊為登入項目），Windows 註冊為系統服務，安裝後立即啟動並在異常結束後自動重新啟動；設定目錄預設為 `/etc/gately`、`/usr/local/etc/gately` 或 `%ProgramData%\Gately`，可用 `-c`、`-listen` 指定。服務引用的是目前執行檔的路徑，請先把程式放到最終位置。之後用 `gately service uninstall|start|stop|restart|status` 管理，解除安裝時保留設定目錄。
 
-服務範本：[systemd](deploy/systemd/gately.service)、[OpenWrt procd](deploy/openwrt/gately.init)。驗證下載的壓縮檔與映像檔（cosign 簽章、建置來源證明、SBOM）請見[驗證發布產物](docs/zh-TW/VERIFY.md)。
+服務範本：[systemd](../../deploy/systemd/gately.service)、[OpenWrt procd](../../deploy/openwrt/gately.init)。驗證下載的壓縮檔與映像檔（cosign 簽章、建置來源證明、SBOM）請見[驗證發布產物](../zh-TW/VERIFY.md)。
 
 </details>
 
@@ -83,7 +83,7 @@ docker run -d --name gately --network host --cap-add NET_ADMIN \
 - 設定儲存在應用的 `var` 目錄，解除安裝時預設保留；在解除安裝精靈中選擇「全部刪除」才會清除。升級時手動安裝新版 `.fpk` 即可。
 - 安裝包同時提供命令列入口 `gately`（`/usr/local/bin/gately`），可使用 `gately ctl` 與 `gately mcp`。
 - 16680 連接埠與 Docker 映像檔相同，啟動原生應用前請先停止 `gately` 容器。
-- 下載後可依[驗證發布產物](docs/zh-TW/VERIFY.md)驗證，`.fpk` 的 SHA-256 同樣列在 `checksums.txt`。
+- 下載後可依[驗證發布產物](../zh-TW/VERIFY.md)驗證，`.fpk` 的 SHA-256 同樣列在 `checksums.txt`。
 
 </details>
 
@@ -102,7 +102,7 @@ docker run -d --name gately --network host --cap-add NET_ADMIN \
 <details>
 <summary><b>監控</b></summary>
 
-建立一組僅具 `metrics:read` 權限的 API 權杖，讓 Prometheus 抓取 `/api/metrics`。指標清單、告警範例與 Grafana 儀表板請見[監控指標](docs/zh-TW/MONITORING.md)。
+建立一組僅具 `metrics:read` 權限的 API 權杖，讓 Prometheus 抓取 `/api/metrics`。指標清單、告警範例與 Grafana 儀表板請見[監控指標](../zh-TW/MONITORING.md)。
 
 </details>
 
@@ -115,7 +115,7 @@ docker run -d --name gately --network host --cap-add NET_ADMIN \
 curl -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns/tasks
 ```
 
-帳號、兩步驟驗證、權杖管理以及備份、還原、重啟、系統設定介面只能使用登入工作階段。全部介面、所需權限與資料結構見管理後台「API 文件」頁，也可以用 `make api-docs` 匯出到 [docs/api](docs/api/zh-TW)（`openapi.json` 與 `API.md`），官網 https://gately.cn 發布時直接引用。
+帳號、兩步驟驗證、權杖管理以及備份、還原、重啟、系統設定介面只能使用登入工作階段。全部介面、所需權限與資料結構見管理後台「API 文件」頁，也可以用 `make api-docs` 匯出到 [docs/api](../api/zh-TW)（`openapi.json` 與 `API.md`），官網 https://gately.cn 發布時直接引用。
 
 從舊版升級時，原本的全域 API 權杖會自動變成一筆「舊版權杖」（值不變，擁有全部模組權限），建議在 API 權杖頁收緊權限或換成新權杖。
 
@@ -138,47 +138,47 @@ File Browser 模組託管 [FileBrowser Quantum](https://github.com/gtsteffaniak/
 
 概覽頁集中顯示 CPU、記憶體、磁碟與流量，網路卡及其公網 IPv4 / IPv6，以及每個模組的執行狀態，哪裡需要處理一目了然。
 
-<img src="docs/images/zh-TW/overview.webp" alt="一眼看清全局" width="100%">
+<img src="../images/zh-TW/overview.webp" alt="一眼看清全局" width="100%">
 
 ### 能取代 nginx 的 Web 服務
 
 依網域做反向代理、靜態檔案和重新導向，支援 HTTPS 與 HTTP/3。每個站點可以單獨啟用 WAF、IP 規則和登入驗證，改設定不會中斷現有連線。
 
-<img src="docs/images/zh-TW/web.webp" alt="能取代 nginx 的 Web 服務" width="100%">
+<img src="../images/zh-TW/web.webp" alt="能取代 nginx 的 Web 服務" width="100%">
 
 <p><b>站點統計</b> — 按分鐘統計請求數、錯誤、後端健康狀態，以及來源 IP 與國家排行。</p>
 
-<img src="docs/images/zh-TW/site-stats.webp" alt="站點統計" width="100%">
+<img src="../images/zh-TW/site-stats.webp" alt="站點統計" width="100%">
 
 ### 網路拓撲
 
 即時查看流量從訪客經監聽、站點到後端的走向。點選節點可看 QPS、流量與活躍 IP，依訪客 IP 篩選，七種版面任意切換，分享截圖前還能一鍵遮蔽。
 
-<img src="docs/images/zh-TW/topology.webp" alt="網路拓撲" width="100%">
+<img src="../images/zh-TW/topology.webp" alt="網路拓撲" width="100%">
 
 ### 一個 443 連接埠，所有服務共用
 
 協定分流依網域或協定把多個服務放在同一個連接埠上，TLS 原樣透傳，再用 PROXY 協定保留真實用戶端位址。
 
-<img src="docs/images/zh-TW/protoroute.webp" alt="一個 443 連接埠，所有服務共用" width="100%">
+<img src="../images/zh-TW/protoroute.webp" alt="一個 443 連接埠，所有服務共用" width="100%">
 
 ### 動態網域，主流服務商都支援
 
 Cloudflare、阿里雲、DNSPod、Route 53 等都能用。支援 IPv4 與 IPv6，IP 可以從 URL、網路卡或指令取得，位址一變就發通知。
 
-<img src="docs/images/zh-TW/ddns.webp" alt="動態網域，主流服務商都支援" width="100%">
+<img src="../images/zh-TW/ddns.webp" alt="動態網域，主流服務商都支援" width="100%">
 
 ### 入侵防護
 
 類 fail2ban 的規則讀取日誌檔案、journald 和容器日誌，誘餌連接埠與掃描偵測揪出探測行為。封鎖同步到 nftables，直接在核心裡丟棄封包。
 
-<img src="docs/images/zh-TW/guard.webp" alt="入侵防護" width="100%">
+<img src="../images/zh-TW/guard.webp" alt="入侵防護" width="100%">
 
 ### frp、Tailscale 與 Cloudflare 通道
 
 多個 frpc、frps 實例同時執行，和 Tailscale、cloudflared 通道放在一起管理。這些程式的安裝、更新與回滾都交給 Gately 處理。
 
-<img src="docs/images/zh-TW/frp.webp" alt="frp、Tailscale 與 Cloudflare 通道" width="100%">
+<img src="../images/zh-TW/frp.webp" alt="frp、Tailscale 與 Cloudflare 通道" width="100%">
 
 ### 還有這些
 
@@ -188,14 +188,14 @@ Cloudflare、阿里雲、DNSPod、Route 53 等都能用。支援 IPv4 與 IPv6�
 
 **Docker**<br>容器、Compose、日誌與終端機，映像檔一鍵升級，失敗自動回滾。
 
-<img src="docs/images/zh-TW/docker.webp" alt="Docker" width="100%">
+<img src="../images/zh-TW/docker.webp" alt="Docker" width="100%">
 
 </td>
 <td width="50%" valign="top">
 
 **Web 終端機**<br>在瀏覽器裡使用 SSH、Telnet 和本機 Shell，支援 SFTP 與分割視窗。
 
-<img src="docs/images/zh-TW/terminal.webp" alt="Web 終端機" width="100%">
+<img src="../images/zh-TW/terminal.webp" alt="Web 終端機" width="100%">
 
 </td>
 </tr>
@@ -207,14 +207,14 @@ Cloudflare、阿里雲、DNSPod、Route 53 等都能用。支援 IPv4 與 IPv6�
 
 **設定歷史**<br>每次修改都保留舊版本，可以比對差異、一鍵回滾。
 
-<img src="docs/images/zh-TW/config-history.webp" alt="設定歷史" width="100%">
+<img src="../images/zh-TW/config-history.webp" alt="設定歷史" width="100%">
 
 </td>
 <td width="50%" valign="top">
 
 **API、命令列與 MCP**<br>依模組授權的 API 權杖、內建 OpenAPI 文件、`gately ctl`，以及供 AI 助理接入的 MCP 服務。
 
-<img src="docs/images/zh-TW/api-docs.webp" alt="API、命令列與 MCP" width="100%">
+<img src="../images/zh-TW/api-docs.webp" alt="API、命令列與 MCP" width="100%">
 
 </td>
 </tr>
@@ -308,7 +308,7 @@ make lint     # gofmt、go vet、前端型別檢查
 
 前端開發時執行 `cd web && pnpm dev`，`/api` 會代理到本機 `127.0.0.1:16680`。
 
-可選模組與介面語言可以在編譯時去掉：`go build -tags no_waf,no_smb,lang_zh` 去掉模組（`no_<模組>`）與語言（`lang_zh` 只留簡體中文，`lang_cjken` 留簡繁英），`GATELY_LOCALES=zh-CN pnpm build` 只打包所選介面語言。[modules.json](modules.json) 列出全部可選模組，`go run ./tools/custombuild resolve -modules ddns,frp -lang zh` 把選擇換算為 tag、語言與 Docker 建置參數（`GATELY_TAGS`、`GATELY_LOCALES`、`WITH_DOCKER_CLI`、`WITH_NFTABLES`）。
+可選模組與介面語言可以在編譯時去掉：`go build -tags no_waf,no_smb,lang_zh` 去掉模組（`no_<模組>`）與語言（`lang_zh` 只留簡體中文，`lang_cjken` 留簡繁英），`GATELY_LOCALES=zh-CN pnpm build` 只打包所選介面語言。[modules.json](../../modules.json) 列出全部可選模組，`go run ./tools/custombuild resolve -modules ddns,frp -lang zh` 把選擇換算為 tag、語言與 Docker 建置參數（`GATELY_TAGS`、`GATELY_LOCALES`、`WITH_DOCKER_CLI`、`WITH_NFTABLES`）。
 
 部分測試預設跳過，需要額外條件：
 
@@ -317,7 +317,7 @@ make lint     # gofmt、go vet、前端型別檢查
 | ACME 端對端（Pebble） | 安裝 pebble 與 pebble-challtestsrv，設定 `GATELY_PEBBLE_BIN`、`GATELY_PEBBLE_SRC`（CI 中自動執行） |
 | 真實公共 STUN 伺服器 | `GATELY_NET_TEST=1` |
 
-目錄結構與技術選型見 [docs/zh-TW/ROADMAP.md](docs/zh-TW/ROADMAP.md)。
+目錄結構與技術選型見 [docs/zh-TW/ROADMAP.md](../zh-TW/ROADMAP.md)。
 
 官網（[gately.cn](https://gately.cn)）原始碼在 `website/`，基於 VitePress：`cd website && pnpm install && pnpm dev`；`pnpm deploy:site` 建置並同步到伺服器。
 
@@ -331,9 +331,9 @@ make lint     # gofmt、go vet、前端型別檢查
 
 歡迎加入 Telegram 群交流使用問題、回饋建議：[t.me/gately_chat](https://t.me/gately_chat)，也可以用手機掃描 QR Code 加入：
 
-<a href="https://t.me/gately_chat"><img src="docs/images/telegram-qr.svg" alt="掃描加入 Gately Telegram 群組" width="160"></a>
+<a href="https://t.me/gately_chat"><img src="../images/telegram-qr.svg" alt="掃描加入 Gately Telegram 群組" width="160"></a>
 
-Bug 請提交到 [GitHub Issues](https://github.com/wangwanjie/gately/issues)，並附上[診斷包](docs/zh-TW/DIAGNOSTICS.md)（設定 → 診斷）；診斷包在本機產生，不含密碼、權杖、網域名稱和真實 IP。
+Bug 請提交到 [GitHub Issues](https://github.com/wangwanjie/gately/issues)，並附上[診斷包](../zh-TW/DIAGNOSTICS.md)（設定 → 診斷）；診斷包在本機產生，不含密碼、權杖、網域名稱和真實 IP。
 
 ## 贊助
 
@@ -345,4 +345,4 @@ Gately 的全部功能免費開放。如果它幫到了你，歡迎透過 USDT�
 
 ## 授權條款
 
-[Apache License 2.0](LICENSE)
+[Apache License 2.0](../../LICENSE)

@@ -1,11 +1,11 @@
 <p align="center">
-  <a href="https://gately.cn/fr/"><img src="docs/images/banner.svg" alt="Gately — La passerelle réseau tout-en-un: Open source, prête à l'emploi" width="100%"></a>
+  <a href="https://gately.cn/fr/"><img src="../images/banner.svg" alt="Gately — La passerelle réseau tout-en-un: Open source, prête à l'emploi" width="100%"></a>
 </p>
 
 <p align="center">
   <a href="https://github.com/wangwanjie/gately/releases/latest"><img src="https://img.shields.io/github/v/release/wangwanjie/gately?style=flat-square&color=0e7c66&label=release" alt="Release"></a>
   <a href="https://github.com/wangwanjie/gately/pkgs/container/gately"><img src="https://img.shields.io/badge/docker-ghcr.io%2Fwangwanjie%2Fgately-0e7c66?style=flat-square&logo=docker&logoColor=white" alt="Docker"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/github/license/wangwanjie/gately?style=flat-square&color=0e7c66" alt="License"></a>
+  <a href="../../LICENSE"><img src="https://img.shields.io/github/license/wangwanjie/gately?style=flat-square&color=0e7c66" alt="License"></a>
   <a href="https://github.com/wangwanjie/gately/stargazers"><img src="https://img.shields.io/github/stars/wangwanjie/gately?style=flat-square&color=0e7c66" alt="Stars"></a>
   <a href="https://gately.cn/fr/"><img src="https://img.shields.io/badge/Site%20officiel-gately.cn-0e7c66?style=flat-square&logo=googlechrome&logoColor=white" alt="gately.cn"></a>
   <a href="https://t.me/gately_chat"><img src="https://img.shields.io/badge/Telegram-gately__chat-26A5E4?style=flat-square&logo=telegram&logoColor=white" alt="Telegram"></a>
@@ -20,7 +20,7 @@
 </p>
 
 <p align="center">
-  <a href="README.md">English</a> | <a href="README.zh-CN.md">简体中文</a> | <a href="README.zh-TW.md">繁體中文</a> | <a href="README.ja.md">日本語</a> | <a href="README.ko.md">한국어</a> | <a href="README.es.md">Español</a> | <b>Français</b> | <a href="README.de.md">Deutsch</a> | <a href="README.ru.md">Русский</a> | <a href="README.pt-BR.md">Português (Brasil)</a>
+  <a href="../../README.md">English</a> | <a href="../../README.zh-CN.md">简体中文</a> | <a href="README.zh-TW.md">繁體中文</a> | <a href="README.ja.md">日本語</a> | <a href="README.ko.md">한국어</a> | <a href="README.es.md">Español</a> | <b>Français</b> | <a href="README.de.md">Deutsch</a> | <a href="README.ru.md">Русский</a> | <a href="README.pt-BR.md">Português (Brasil)</a>
 </p>
 
 DNS et traversée de NAT, reverse proxy et certificats HTTPS, WAF et prévention des intrusions, authentification unique et partage de fichiers : tout ce dont votre réseau domestique et vos serveurs ont besoin en frontal, réuni dans une seule console. Installez-le sur un NAS, un routeur logiciel ou un serveur cloud, et configurez tout depuis votre navigateur. Open source sous licence Apache-2.0 ; votre configuration et vos données restent sur votre appareil, et rien n'est collecté ni transmis.
@@ -44,7 +44,7 @@ docker run -d --name gately --network host --cap-add NET_ADMIN \
   ghcr.io/wangwanjie/gately:latest
 ```
 
-Ouvrez `http://<IP de l'appareil>:16680`, connectez-vous avec le compte par défaut `admin` et le mot de passe par défaut `gately.cn`, puis changez le mot de passe et activez l'authentification à deux facteurs dans « Paramètres ». Un exemple Compose complet est disponible dans [deploy/docker-compose.yml](deploy/docker-compose.yml).
+Ouvrez `http://<IP de l'appareil>:16680`, connectez-vous avec le compte par défaut `admin` et le mot de passe par défaut `gately.cn`, puis changez le mot de passe et activez l'authentification à deux facteurs dans « Paramètres ». Un exemple Compose complet est disponible dans [deploy/docker-compose.yml](../../deploy/docker-compose.yml).
 
 En cas d'oubli du mot de passe ou de perte de l'application d'authentification, exécutez `gately reset-password` ou `gately reset-totp` sur le serveur (avec Docker : `docker exec -it gately gately reset-password`) ; la réinitialisation s'applique dès la confirmation. Consultez [Réinitialiser le mot de passe et l'authentification à deux facteurs](https://gately.cn/fr/docs/guide/install#reset).
 
@@ -67,7 +67,7 @@ Paramètres : `-c` répertoire de configuration (la variable d'environnement `GA
 
 Démarrage au boot : après extraction, exécutez `sudo ./gately service install` (Windows : `.\gately.exe service install` dans un terminal administrateur). Cela enregistre une unité systemd sous Linux, un démon launchd sous macOS (avec `-user`, un élément d'ouverture de session sans sudo) et un service sous Windows, démarre Gately et le relance après un plantage. Le répertoire de configuration vaut par défaut `/etc/gately`, `/usr/local/etc/gately` ou `%ProgramData%\Gately` ; `-c` et `-listen` le remplacent. Le service pointe vers le chemin de l'exécutable, placez-le donc d'abord à son emplacement définitif. Ensuite, gérez-le avec `gately service uninstall|start|stop|restart|status` ; la désinstallation conserve le répertoire de configuration.
 
-Modèles de service : [systemd](deploy/systemd/gately.service) et [OpenWrt procd](deploy/openwrt/gately.init). Pour vérifier les archives et images téléchargées (signatures cosign, provenance de build, SBOM), consultez [Vérifier les artefacts publiés](docs/fr/VERIFY.md).
+Modèles de service : [systemd](../../deploy/systemd/gately.service) et [OpenWrt procd](../../deploy/openwrt/gately.init). Pour vérifier les archives et images téléchargées (signatures cosign, provenance de build, SBOM), consultez [Vérifier les artefacts publiés](../fr/VERIFY.md).
 
 </details>
 
@@ -83,7 +83,7 @@ Chaque Release fournit des paquets `.fpk` hors ligne pour fnOS : `gately_<versio
 - La configuration se trouve dans le répertoire `var` de l'application et est conservée lors de la désinstallation, sauf si vous choisissez « tout supprimer » dans l'assistant de désinstallation. Pour mettre à niveau, installez manuellement le `.fpk` plus récent.
 - Le paquet ajoute aussi une commande `gately` (`/usr/local/bin/gately`) pour `gately ctl` et `gately mcp`.
 - Le port 16680 est partagé avec l'image Docker. Arrêtez le conteneur `gately` avant de démarrer l'application native.
-- Vérifiez le téléchargement selon [Vérifier les artefacts publiés](docs/fr/VERIFY.md) ; les fichiers `.fpk` figurent dans `checksums.txt`.
+- Vérifiez le téléchargement selon [Vérifier les artefacts publiés](../fr/VERIFY.md) ; les fichiers `.fpk` figurent dans `checksums.txt`.
 
 </details>
 
@@ -102,7 +102,7 @@ Chaque Release fournit des paquets OpenWrt : `gately_<version>_openwrt_<architec
 <details>
 <summary><b>Supervision</b></summary>
 
-Créez un jeton d'API disposant uniquement de l'autorisation `metrics:read` et pointez Prometheus vers `/api/metrics`. Les métriques, les exemples d'alertes et le tableau de bord Grafana sont décrits dans [Supervision](docs/fr/MONITORING.md).
+Créez un jeton d'API disposant uniquement de l'autorisation `metrics:read` et pointez Prometheus vers `/api/metrics`. Les métriques, les exemples d'alertes et le tableau de bord Grafana sont décrits dans [Supervision](../fr/MONITORING.md).
 
 </details>
 
@@ -115,7 +115,7 @@ Créez un jeton dans la page « Jetons d'API » de la console d'administration (
 curl -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns/tasks
 ```
 
-Les API de compte, d'authentification à deux facteurs, de gestion des jetons, ainsi que celles de sauvegarde, de restauration, de redémarrage et de paramètres système ne fonctionnent qu'avec une session connectée. L'ensemble des API, les autorisations requises et les structures de données sont décrits dans la page « Documentation de l'API » de la console d'administration ; vous pouvez aussi les exporter avec `make api-docs` vers [docs/api](docs/api/fr) (`openapi.json` et `API.md`), que le site https://gately.cn référence directement lors de sa publication.
+Les API de compte, d'authentification à deux facteurs, de gestion des jetons, ainsi que celles de sauvegarde, de restauration, de redémarrage et de paramètres système ne fonctionnent qu'avec une session connectée. L'ensemble des API, les autorisations requises et les structures de données sont décrits dans la page « Documentation de l'API » de la console d'administration ; vous pouvez aussi les exporter avec `make api-docs` vers [docs/api](../api/fr) (`openapi.json` et `API.md`), que le site https://gately.cn référence directement lors de sa publication.
 
 Lors d'une mise à niveau depuis une ancienne version, l'ancien jeton d'API global devient automatiquement un « jeton hérité » (valeur inchangée, avec toutes les autorisations de module). Il est recommandé de restreindre ses autorisations ou de le remplacer par un nouveau jeton dans la page des jetons d'API.
 
@@ -138,47 +138,47 @@ Un aperçu rapide de l'interface d'administration. La liste complète des module
 
 La vue d'ensemble affiche CPU, mémoire, disque et trafic, les interfaces réseau avec leurs IPv4 et IPv6 publiques, et l'état de chaque module : en quelques secondes, vous voyez si quelque chose demande votre attention.
 
-<img src="docs/images/fr/overview.webp" alt="Tout en un coup d'œil" width="100%">
+<img src="../images/fr/overview.webp" alt="Tout en un coup d'œil" width="100%">
 
 ### Des services web capables de remplacer nginx
 
 Reverse proxy, fichiers statiques et redirections par domaine, avec HTTPS et HTTP/3. Chaque site a son propre WAF, ses règles d'IP et sa connexion, et les modifications s'appliquent sans couper les connexions.
 
-<img src="docs/images/fr/web.webp" alt="Des services web capables de remplacer nginx" width="100%">
+<img src="../images/fr/web.webp" alt="Des services web capables de remplacer nginx" width="100%">
 
 <p><b>Statistiques par site</b> — requêtes, erreurs, santé des backends, principales IP et pays d'origine, minute par minute.</p>
 
-<img src="docs/images/fr/site-stats.webp" alt="Statistiques par site" width="100%">
+<img src="../images/fr/site-stats.webp" alt="Statistiques par site" width="100%">
 
 ### Topologie réseau
 
 Suivez en direct le trafic des visiteurs vers les backends, en passant par les écoutes et les sites. Sélectionnez un nœud pour voir le QPS, le trafic et les IP actives, filtrez par IP de visiteur, passez d'une disposition à l'autre parmi sept et masquez les adresses avant de partager une capture.
 
-<img src="docs/images/fr/topology.webp" alt="Topologie réseau" width="100%">
+<img src="../images/fr/topology.webp" alt="Topologie réseau" width="100%">
 
 ### Un seul port 443 pour tous vos services
 
 Le routage par protocole permet à plusieurs services de partager un même port selon le domaine ou le protocole : le TLS passe tel quel et le protocole PROXY conserve l'adresse réelle du client.
 
-<img src="docs/images/fr/protoroute.webp" alt="Un seul port 443 pour tous vos services" width="100%">
+<img src="../images/fr/protoroute.webp" alt="Un seul port 443 pour tous vos services" width="100%">
 
 ### DNS dynamique avec les principaux fournisseurs
 
 Cloudflare, Alibaba Cloud, DNSPod, Route 53 et d'autres. IPv4 et IPv6, adresse obtenue depuis une URL, une interface réseau ou une commande, et une notification à chaque changement.
 
-<img src="docs/images/fr/ddns.webp" alt="DNS dynamique avec les principaux fournisseurs" width="100%">
+<img src="../images/fr/ddns.webp" alt="DNS dynamique avec les principaux fournisseurs" width="100%">
 
 ### Prévention d'intrusion
 
 Des règles à la fail2ban lisent les journaux de fichiers, de journald et des conteneurs, tandis que les ports pièges et la détection de scans repèrent les sondages. Les bannissements sont synchronisés avec nftables et le trafic est rejeté dans le noyau.
 
-<img src="docs/images/fr/guard.webp" alt="Prévention d'intrusion" width="100%">
+<img src="../images/fr/guard.webp" alt="Prévention d'intrusion" width="100%">
 
 ### frp, Tailscale et tunnels Cloudflare
 
 Plusieurs instances frpc et frps côte à côte, à côté de Tailscale et des tunnels cloudflared. Gately installe, met à jour et restaure ces programmes pour vous.
 
-<img src="docs/images/fr/frp.webp" alt="frp, Tailscale et tunnels Cloudflare" width="100%">
+<img src="../images/fr/frp.webp" alt="frp, Tailscale et tunnels Cloudflare" width="100%">
 
 ### Et aussi
 
@@ -188,14 +188,14 @@ Plusieurs instances frpc et frps côte à côte, à côté de Tailscale et des t
 
 **Docker**<br>Conteneurs, Compose, journaux et terminaux, avec mise à niveau des images en un clic et retour arrière automatique en cas d'échec.
 
-<img src="docs/images/fr/docker.webp" alt="Docker" width="100%">
+<img src="../images/fr/docker.webp" alt="Docker" width="100%">
 
 </td>
 <td width="50%" valign="top">
 
 **Terminal web**<br>SSH, Telnet et shell local dans le navigateur, avec SFTP et écran partagé.
 
-<img src="docs/images/fr/terminal.webp" alt="Terminal web" width="100%">
+<img src="../images/fr/terminal.webp" alt="Terminal web" width="100%">
 
 </td>
 </tr>
@@ -207,14 +207,14 @@ Plusieurs instances frpc et frps côte à côte, à côté de Tailscale et des t
 
 **Historique de configuration**<br>Chaque modification conserve la version précédente, avec comparaison des différences et retour arrière en un clic.
 
-<img src="docs/images/fr/config-history.webp" alt="Historique de configuration" width="100%">
+<img src="../images/fr/config-history.webp" alt="Historique de configuration" width="100%">
 
 </td>
 <td width="50%" valign="top">
 
 **API, ligne de commande et MCP**<br>Jetons d'API par module, documentation OpenAPI intégrée, `gately ctl` et un serveur MCP pour les assistants IA.
 
-<img src="docs/images/fr/api-docs.webp" alt="API, ligne de commande et MCP" width="100%">
+<img src="../images/fr/api-docs.webp" alt="API, ligne de commande et MCP" width="100%">
 
 </td>
 </tr>
@@ -308,7 +308,7 @@ make lint     # gofmt, go vet, vérification des types du frontend
 
 Pour développer le frontend, lancez `cd web && pnpm dev` ; `/api` est relayé vers `127.0.0.1:16680` en local.
 
-Les modules optionnels et les langues de l'interface peuvent être retirés à la compilation : `go build -tags no_waf,no_smb,lang_zh` retire des modules (`no_<module>`) et des langues (`lang_zh` garde le chinois simplifié, `lang_cjken` garde le chinois simplifié, le chinois traditionnel et l'anglais), et `GATELY_LOCALES=zh-CN pnpm build` n'embarque que les langues d'interface choisies. [modules.json](modules.json) liste les modules optionnels, et `go run ./tools/custombuild resolve -modules ddns,frp -lang zh` convertit une sélection en tags, langues et arguments de build Docker (`GATELY_TAGS`, `GATELY_LOCALES`, `WITH_DOCKER_CLI`, `WITH_NFTABLES`).
+Les modules optionnels et les langues de l'interface peuvent être retirés à la compilation : `go build -tags no_waf,no_smb,lang_zh` retire des modules (`no_<module>`) et des langues (`lang_zh` garde le chinois simplifié, `lang_cjken` garde le chinois simplifié, le chinois traditionnel et l'anglais), et `GATELY_LOCALES=zh-CN pnpm build` n'embarque que les langues d'interface choisies. [modules.json](../../modules.json) liste les modules optionnels, et `go run ./tools/custombuild resolve -modules ddns,frp -lang zh` convertit une sélection en tags, langues et arguments de build Docker (`GATELY_TAGS`, `GATELY_LOCALES`, `WITH_DOCKER_CLI`, `WITH_NFTABLES`).
 
 Certains tests sont ignorés par défaut et nécessitent des conditions supplémentaires :
 
@@ -317,7 +317,7 @@ Certains tests sont ignorés par défaut et nécessitent des conditions supplém
 | ACME de bout en bout (Pebble) | Installer pebble et pebble-challtestsrv, définir `GATELY_PEBBLE_BIN` et `GATELY_PEBBLE_SRC` (exécuté automatiquement en CI) |
 | Serveurs STUN publics réels | `GATELY_NET_TEST=1` |
 
-La structure des répertoires et les choix techniques sont décrits dans [docs/fr/ROADMAP.md](docs/fr/ROADMAP.md).
+La structure des répertoires et les choix techniques sont décrits dans [docs/fr/ROADMAP.md](../fr/ROADMAP.md).
 
 Le code source du site web ([gately.cn](https://gately.cn)) se trouve dans `website/` et repose sur VitePress : `cd website && pnpm install && pnpm dev` ; `pnpm deploy:site` compile et synchronise vers le serveur.
 
@@ -331,9 +331,9 @@ Le code source du site web ([gately.cn](https://gately.cn)) se trouve dans `webs
 
 Questions, retours et astuces d’utilisation sont les bienvenus dans le groupe Telegram : [t.me/gately_chat](https://t.me/gately_chat), ou scannez le QR code avec votre téléphone :
 
-<a href="https://t.me/gately_chat"><img src="docs/images/telegram-qr.svg" alt="Scannez pour rejoindre le groupe Telegram de Gately" width="160"></a>
+<a href="https://t.me/gately_chat"><img src="../images/telegram-qr.svg" alt="Scannez pour rejoindre le groupe Telegram de Gately" width="160"></a>
 
-Les bugs se signalent dans [GitHub Issues](https://github.com/wangwanjie/gately/issues), avec un [paquet de diagnostic](docs/fr/DIAGNOSTICS.md) en pièce jointe (Paramètres → Diagnostic). Il est généré localement et ne contient ni mots de passe, ni jetons, ni domaines, ni IP réelles.
+Les bugs se signalent dans [GitHub Issues](https://github.com/wangwanjie/gately/issues), avec un [paquet de diagnostic](../fr/DIAGNOSTICS.md) en pièce jointe (Paramètres → Diagnostic). Il est généré localement et ne contient ni mots de passe, ni jetons, ni domaines, ni IP réelles.
 
 ## Soutenir
 
@@ -345,4 +345,4 @@ Toutes les fonctionnalités de Gately sont gratuites. S'il vous est utile, vous 
 
 ## Licence
 
-[Apache License 2.0](LICENSE)
+[Apache License 2.0](../../LICENSE)
