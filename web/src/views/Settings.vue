@@ -623,6 +623,15 @@ if (route.query.tab === 'about') {
 watch(tab, (t) => {
   router.replace({ query: { ...route.query, tab: t } })
 })
+// 已在设置页时再改地址栏的 ?tab=（如从用户菜单或其他页面的链接跳来），组件不会重新创建，需跟随切换
+watch(
+  () => route.query.tab,
+  (q) => {
+    if (typeof q === 'string' && tabs.includes(q) && q !== tab.value) {
+      tab.value = q
+    }
+  },
+)
 
 // 安全评分的“去处理”：切换到对应页签，滚动到相关设置并短暂高亮
 function goFix(id: string) {
