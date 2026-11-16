@@ -134,10 +134,11 @@ type App struct {
 	logger    *log.Logger
 	// pendingTOTP 是生成后尚未确认的两步验证密钥
 	loginUsed usedStates
-	// passkeyChallenges 保存已下发的 WebAuthn 挑战
-	passkeyChallenges challengeStore
-	pendingMu         sync.Mutex
-	pendingTOTP       string
+	// passkeyChallenges 保存已下发的 WebAuthn 登录挑战（未登录即可请求），passkeyRegChallenges 保存注册挑战（需要登录会话）
+	passkeyChallenges    challengeStore
+	passkeyRegChallenges challengeStore
+	pendingMu            sync.Mutex
+	pendingTOTP          string
 	// crash 为本次运行的崩溃记录，未开启时为 nil（方法均可在 nil 上调用）
 	crash *crashlog.Recorder
 	// gwOrigins 为经统一网关访问时已确认的管理界面页面来源，见 gatewayOriginHost
@@ -591,7 +592,8 @@ func (a *App) handleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	ip := httpx.ClientIP(r)
-	token, exp, err := a.auth.Login(ip, req.Username, req.Password, req.Code)
+	src, ipTrusted := a.loginSource(r, ip)
+	token, exp, err := a.auth.Login(src, req.Username, req.Password, req.Code)
 	if errors.Is(err, auth.ErrTOTPRequired) {
 		// 密码正确但缺少验证码，提示前端显示验证码输入框
 		httpx.WriteJSON(w, http.StatusUnauthorized, map[string]any{"error": err.Error(), "totpRequired": true})
@@ -601,7 +603,7 @@ func (a *App) handleLogin(w http.ResponseWriter, r *http.Request) {
 		a.sysLogs.Add(logbuf.LevelWarn, "auth", fmt.Sprintf("来自 %s 的登录失败: %v", ip, err))
 		a.audit.Record(audit.Entry{Actor: clipActor(req.Username), IP: ip, Via: audit.Via(r), Category: audit.CategoryLogin, Method: "POST", Path: "/api/login", Status: http.StatusUnauthorized, Detail: err.Error()})
 		events.Publish(events.Event{Type: events.AuthFailed, Source: "管理后台", Level: events.LevelWarn,
-			Title: "管理后台登录失败", Message: fmt.Sprintf("来自 %s 的登录失败：%v", ip, err), Fields: map[string]string{"ip": ip}})
+			Title: "管理后台登录失败", Message: fmt.Sprintf("来自 %s 的登录失败：%v", ip, err), Fields: authFailedFields(ip, ipTrusted)})
 		status := http.StatusUnauthorized
 		if errors.Is(err, auth.ErrLocked) || errors.Is(err, auth.ErrBusy) {
 			status = http.StatusTooManyRequests

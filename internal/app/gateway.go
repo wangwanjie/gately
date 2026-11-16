@@ -396,6 +396,42 @@ func injectBase(index []byte, prefix string) []byte {
 	return []byte(strings.Replace(string(index), "<head>", meta, 1))
 }
 
+// ---- 登录限流的来源 ----
+
+// gatewayLimitPrefix 是经统一网关登录时限流键的前缀，后接飞牛用户名。
+const gatewayLimitPrefix = "fnOS:"
+
+// loginSource 返回登录限流与 Passkey 挑战配额使用的来源键，以及客户端地址 ip 是否可信。
+//
+// 直接访问时来源就是客户端地址。经统一网关访问时客户端地址不可信：浏览器直连网关时它是空的，所有人会落进同一个限流桶，
+// 几次错误密码就能把管理员也挡在外面；前面有反向代理时它取自 X-Real-IP，而这个请求头在直连时可以由客户端随意填写，
+// 轮换它就能绕过按地址的锁定。网关转发的请求都已通过飞牛的登录校验，并带有飞牛用户名（X-Trim-Username，见 gatewaySSOUser），
+// 因此改按飞牛用户限流：一个飞牛用户只能耗尽自己的额度。
+// 地址不可信时，登录失败事件也不带地址（见 authFailedFields），入侵防护不会据此封禁一个可以伪造的地址。
+func (a *App) loginSource(r *http.Request, ip string) (key string, ipTrusted bool) {
+	if _, viaGateway := gatewayPrefix(r); !viaGateway {
+		return ip, true
+	}
+	if user := clipActor(strings.TrimSpace(r.Header.Get("X-Trim-Username"))); user != "" {
+		return gatewayLimitPrefix + user, false
+	}
+	return ip, false
+}
+
+// loginSourceKnown 判断登录来源是否不计入“陌生来源”的全局失败预算：曾成功登录过的地址，以及按飞牛用户限流的来源。
+// 全局预算防的是轮换大量地址的爆破；飞牛用户不能凭空增加，各自的失败次数上限已经足够。
+func (a *App) loginSourceKnown(src string) bool {
+	return strings.HasPrefix(src, gatewayLimitPrefix) || a.loginIPs.IsKnown(src)
+}
+
+// authFailedFields 返回登录失败事件的字段：客户端地址可信时带上 ip，供入侵防护按地址计数与封禁。
+func authFailedFields(ip string, ipTrusted bool) map[string]string {
+	if !ipTrusted {
+		return map[string]string{}
+	}
+	return map[string]string{"ip": ip}
+}
+
 // ---- 飞牛登录态自动登录 ----
 
 // gatewaySSOUser 返回可凭飞牛登录态登录的飞牛用户名：请求须经统一网关、已开启该功能，且网关标明是飞牛管理员。
