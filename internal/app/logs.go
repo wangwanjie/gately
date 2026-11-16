@@ -14,6 +14,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/wangwanjie/gately/internal/auth"
@@ -96,12 +97,33 @@ func (a *App) applyLogPersist(s Settings) {
 	}
 }
 
-// closeLogs 把尚未写盘的日志写入文件并停止落盘，在退出或重启前调用。
+// closeLogs 把尚未写盘的日志写入文件并停止落盘，同时等回显到标准错误输出的内容写完，在退出或重启前调用。
 func (a *App) closeLogs() {
 	a.sysLogs.ClosePersist()
 	for _, e := range a.modules {
 		e.logs.ClosePersist()
 	}
+	a.echo.Flush()
+}
+
+// stderrEcho 为进程共用的标准错误输出回显，首次使用时创建
+var stderrEcho = sync.OnceValue(func() *logbuf.Echo {
+	return logbuf.NewEcho(os.Stderr, echoTranslate)
+})
+
+// StderrEcho 返回进程共用的日志回显：运行日志经它异步写到标准错误输出并按服务端语言翻译。
+// 主程序把标准库 log 的输出也接到它上面，并在退出前调用它的 Flush。
+func StderrEcho() *logbuf.Echo {
+	return stderrEcho()
+}
+
+// echoTranslate 把回显的日志翻译为服务端语言。日志带着格式串时一次查表得到译文，见 i18n.TrFormat。
+func echoTranslate(source, msg, format string, args logbuf.ArgLens) (string, string) {
+	lang := i18n.ServerLang()
+	if lang == i18n.SourceLang {
+		return source, msg
+	}
+	return i18n.TrLogSource(lang, source), i18n.TrFormatLines(lang, format, msg, args.Slice())
 }
 
 // validateLogDir 校验日志目录的格式：必须是绝对路径，不能是根目录，不能含控制字符。
