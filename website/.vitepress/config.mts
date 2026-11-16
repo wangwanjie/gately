@@ -195,11 +195,8 @@ function buildThemeConfig(loc: SiteLocale, pack: any): DefaultTheme.Config & Rec
       message: ui.footerMessage,
       copyright: `© 2026 Gately Contributors · <a href="${REPO}" target="_blank" rel="noreferrer">GitHub</a> · <a href="${p}/feed.xml">RSS</a> · <span class="tg-foot"><a href="${TELEGRAM}" target="_blank" rel="noreferrer">Telegram</a><span class="tg-pop"><img src="/telegram-qr.svg" alt="Telegram QR" width="140" height="140" loading="lazy"></span></span>`
     },
-    // 首页与下载页组件使用的文案
-    aiNotice: ui.aiNotice,
-    home: pack.home,
-    download: pack.download,
-    sponsor: pack.sponsor
+    // 文档页顶部的 AI 翻译提示；首页、下载、赞助文案较大，改由 transformPageData 只注入到用到它们的页面
+    aiNotice: ui.aiNotice
   }
 }
 
@@ -287,6 +284,27 @@ export default defineConfig({
       { icon: 'telegram', link: TELEGRAM }
     ],
     search: { provider: 'local', options: { locales: searchLocales } }
+  },
+  // 首页、下载页、赞助页组件的文案只放进用到该组件的页面数据（frontmatter.siteText），
+  // 站点数据（内联在每个 HTML 里）不再携带全部 10 种语言的这三块文案
+  transformPageData(pageData) {
+    const file = resolve(here, '..', pageData.relativePath)
+    if (!existsSync(file)) {
+      return
+    }
+    const src = readFileSync(file, 'utf8')
+    const parts = ([['HomeLanding', 'home'], ['DownloadList', 'download'], ['SponsorPanel', 'sponsor']] as const).filter(([tag]) =>
+      src.includes(`<${tag}`)
+    )
+    if (!parts.length) {
+      return
+    }
+    const loc = siteLocales.find((l) => l.dir && pageData.relativePath.startsWith(`${l.dir}/`)) ?? siteLocales.find((l) => !l.dir)
+    const pack = packs.find((x) => x.loc.code === loc?.code)?.pack
+    if (!pack) {
+      return
+    }
+    pageData.frontmatter.siteText = Object.fromEntries(parts.map(([, key]) => [key, pack[key]]))
   },
   // 构建结束后为每个语言写出版本公告 RSS：简体中文在 /feed.xml，其余语言在 /<语言>/feed.xml
   buildEnd({ outDir }) {
