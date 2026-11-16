@@ -54,6 +54,8 @@
   "refreshFailed": "Aktualisierung fehlgeschlagen: {error}. Angezeigt werden die zuletzt geladenen Daten.",
   "retry": "Erneut versuchen",
   "networkError": "Gately ist nicht erreichbar. Prüfen Sie die Netzwerkverbindung oder ob der Dienst noch läuft",
+  "advancedSettings": "Erweiterte Einstellungen",
+  "advancedChanged": "({count} geändert)",
   "durationDaysHours": "{d} T {h} Std.",
   "durationHoursMinutes": "{h} Std. {m} Min.",
   "durationMinutes": "{m} Min.",

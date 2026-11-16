@@ -54,6 +54,8 @@
   "refreshFailed": "更新に失敗しました: {error}。前回読み込んだデータを表示しています。",
   "retry": "再試行",
   "networkError": "Gately に接続できません。ネットワークを確認するか、サービスが動作しているか確かめてください",
+  "advancedSettings": "詳細設定",
+  "advancedChanged": "（{count} 件変更済み）",
   "durationDaysHours": "{d} 日 {h} 時間",
   "durationHoursMinutes": "{h} 時間 {m} 分",
   "durationMinutes": "{m} 分",

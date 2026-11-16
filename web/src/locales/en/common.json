@@ -54,6 +54,8 @@
   "refreshFailed": "Refresh failed: {error}. Showing the data from the last successful load.",
   "retry": "Retry",
   "networkError": "Cannot reach Gately. Check your network connection or make sure the service is still running",
+  "advancedSettings": "Advanced settings",
+  "advancedChanged": "({count} changed)",
   "durationDaysHours": "{d}d {h}h",
   "durationHoursMinutes": "{h}h {m}m",
   "durationMinutes": "{m} min",

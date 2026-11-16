@@ -95,33 +95,37 @@
         <el-form-item :label="t('portForward.targetPorts')">
           <el-input v-model="editing.targetPorts" :placeholder="t('portForward.targetPortsPlaceholder')" />
         </el-form-item>
-        <el-form-item :label="t('common.autoFirewall')">
-          <el-switch v-model="editing.autoFirewall" />
-          <div class="form-help">{{ t('portForward.autoFirewallHelp') }}</div>
-        </el-form-item>
-        <el-form-item :label="t('portForward.maxConnections')">
-          <el-input-number v-model="editing.maxConnections" :min="0" :max="100000" />
-          <span class="help">{{ t('portForward.useGlobalDefault') }}</span>
-        </el-form-item>
-        <el-form-item :label="t('portForward.udpTimeout')">
-          <el-input-number v-model="editing.udpSessionTimeout" :min="0" :max="3600" />
-          <span class="help">{{ t('portForward.useGlobalDefault') }}</span>
-        </el-form-item>
-        <el-form-item :label="t('portForward.proxyProtocol')">
-          <el-select v-model="editing.proxyProtocol" style="width: 160px" :empty-values="[null, undefined]">
-            <el-option :label="t('portForward.proxyProtocolOff')" value="" />
-            <el-option label="PROXY v1" value="v1" />
-            <el-option label="PROXY v2" value="v2" />
-          </el-select>
-          <div class="help">{{ t('portForward.proxyProtocolHelp') }}</div>
-        </el-form-item>
-        <IPAccessEditor v-model:mode="editing.ipMode" v-model:list="editing.ipList" v-model:sets="editing.ipSets" v-model:deny-list="editing.ipDenyList" v-model:deny-sets="editing.ipDenySets" v-model:knock="editing.knock" :note="t('portForward.ipAccessNote')" />
-        <el-form-item :label="t('common.remark')">
-          <el-input v-model="editing.remark" />
-        </el-form-item>
         <el-form-item :label="t('common.enable')">
           <el-switch v-model="editing.enable" />
         </el-form-item>
+        <!-- 常用的是协议、监听与目标，其余收在「高级设置」里；打开已有规则时有改动的高级项会自动展开 -->
+        <AdvancedToggle v-model="advOpen" :count="advCount" />
+        <div v-show="advOpen">
+          <el-form-item :label="t('common.autoFirewall')">
+            <el-switch v-model="editing.autoFirewall" />
+            <div class="form-help">{{ t('portForward.autoFirewallHelp') }}</div>
+          </el-form-item>
+          <el-form-item :label="t('portForward.maxConnections')">
+            <el-input-number v-model="editing.maxConnections" :min="0" :max="100000" />
+            <span class="help">{{ t('portForward.useGlobalDefault') }}</span>
+          </el-form-item>
+          <el-form-item :label="t('portForward.udpTimeout')">
+            <el-input-number v-model="editing.udpSessionTimeout" :min="0" :max="3600" />
+            <span class="help">{{ t('portForward.useGlobalDefault') }}</span>
+          </el-form-item>
+          <el-form-item :label="t('portForward.proxyProtocol')">
+            <el-select v-model="editing.proxyProtocol" style="width: 160px" :empty-values="[null, undefined]">
+              <el-option :label="t('portForward.proxyProtocolOff')" value="" />
+              <el-option label="PROXY v1" value="v1" />
+              <el-option label="PROXY v2" value="v2" />
+            </el-select>
+            <div class="help">{{ t('portForward.proxyProtocolHelp') }}</div>
+          </el-form-item>
+          <IPAccessEditor v-model:mode="editing.ipMode" v-model:list="editing.ipList" v-model:sets="editing.ipSets" v-model:deny-list="editing.ipDenyList" v-model:deny-sets="editing.ipDenySets" v-model:knock="editing.knock" :note="t('portForward.ipAccessNote')" />
+          <el-form-item :label="t('common.remark')">
+            <el-input v-model="editing.remark" />
+          </el-form-item>
+        </div>
       </el-form>
       <template #footer>
         <el-button @click="editorVisible = false">{{ t('common.cancel') }}</el-button>
@@ -169,6 +173,7 @@ import StatusBadge, { type StatusType } from '../components/StatusBadge.vue'
 import LogCard from '../components/LogCard.vue'
 import CopyHint from '../components/CopyHint.vue'
 import TargetHint from '../components/TargetHint.vue'
+import AdvancedToggle from '../components/AdvancedToggle.vue'
 import { createItem, uniqueName, type CopySource } from '../copyDraft'
 import { useFormLayout } from '../composables/useIsMobile'
 import { usePolling } from '../composables/usePolling'
@@ -333,6 +338,20 @@ async function loadSettings() {
   settings.value = await api.get<Settings>('/api/portforward/settings')
 }
 
+// advOpen 为编辑框是否展开「高级设置」；advCount 为与默认值不同的高级字段数
+const advOpen = ref(false)
+const advCount = computed(() => {
+  const r = editing.value
+  return [
+    r.autoFirewall,
+    r.maxConnections > 0,
+    r.udpSessionTimeout > 0,
+    !!r.proxyProtocol,
+    !!r.ipMode || !!r.ipDenyList?.length || !!r.ipDenySets?.length || !!r.knock,
+    !!r.remark?.trim(),
+  ].filter(Boolean).length
+})
+
 // openEditor 打开编辑框：copy 为 true 时以 row 为模板新建副本
 function openEditor(row?: RuleView, copy = false) {
   copyFrom.value = null
@@ -355,6 +374,7 @@ function openEditor(row?: RuleView, copy = false) {
     editing.value = emptyRule()
   }
   targetsText.value = (editing.value.targetAddresses ?? []).join('\n')
+  advOpen.value = advCount.value > 0
   editorVisible.value = true
 }
 
