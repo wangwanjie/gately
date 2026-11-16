@@ -6,6 +6,7 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"path/filepath"
@@ -28,6 +29,16 @@ import (
 
 // ID 是模块标识。
 const ID = "webdav"
+
+// 连接超时。读写请求体与响应本身不设总时长（大文件上传下载可能持续很久），只限制停顿的时间。
+var (
+	// readHeaderTimeout 为读取请求头（含 TLS 握手）的最长时间
+	readHeaderTimeout = 30 * time.Second
+	// idleTimeout 为保持连接在两次请求之间空闲的最长时间，空闲连接到时关闭，客户端下次请求时重新连接
+	idleTimeout = 2 * time.Minute
+	// bodyIdleTimeout 为读取请求体时两次收到数据之间的最长间隔：上传停住超过这个时间即断开，持续传输的慢速上传不受影响
+	bodyIdleTimeout = 2 * time.Minute
+)
 
 // User 是一个 WebDAV 账号。
 type User struct {
@@ -228,7 +239,7 @@ func (m *Module) restartLocked() {
 	// 被封禁地址的连接在 Accept 时直接关闭
 	ln = banlist.Default.Listener(ln)
 	// ErrorLog 把 TLS 握手失败等错误写入模块运行日志
-	m.srv = &http.Server{Handler: http.HandlerFunc(m.serve), ReadHeaderTimeout: 30 * time.Second, ErrorLog: m.logs.Logger("").ServerErrorLog()}
+	m.srv = &http.Server{Handler: http.HandlerFunc(m.serve), ReadHeaderTimeout: readHeaderTimeout, IdleTimeout: idleTimeout, ErrorLog: m.logs.Logger("").ServerErrorLog()}
 	if m.settings.TLS {
 		if m.certs == nil {
 			ln.Close()
@@ -335,7 +346,25 @@ func (m *Module) serve(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "401 Unauthorized", http.StatusUnauthorized)
 		return
 	}
+	if r.Body != nil && r.Body != http.NoBody {
+		// 每次读取请求体前把读截止时间推后 bodyIdleTimeout：停住的上传会超时断开，不会一直占用连接
+		r.Body = &idleBody{ReadCloser: r.Body, rc: http.NewResponseController(w), idle: bodyIdleTimeout}
+	}
 	uh.handler.ServeHTTP(w, r)
+}
+
+// idleBody 在每次读取前刷新连接的读截止时间，使请求体读取只受停顿时长限制。
+// 请求结束后 http.Server 会为下一个请求重新设置截止时间。
+type idleBody struct {
+	io.ReadCloser
+	rc   *http.ResponseController
+	idle time.Duration
+}
+
+func (b *idleBody) Read(p []byte) (int, error) {
+	// 测试中的 ResponseRecorder 不支持截止时间，忽略错误
+	_ = b.rc.SetReadDeadline(time.Now().Add(b.idle))
+	return b.ReadCloser.Read(p)
 }
 
 // Routes 实现 module.Module。
