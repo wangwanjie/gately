@@ -180,7 +180,7 @@ Configure it on the "Security" page of the site editor:
 
 - Web authentication: the browser shows a login page;
 - Basic authentication: HTTP Basic;
-- Users: one `username:password` per line, and the password can be a bcrypt hash. Basic authentication needs at least one user when enabled; web authentication needs at least one user or third-party login identity when enabled;
+- Users: one `username:password` per line, and the password can be a bcrypt hash. Plaintext passwords are converted to bcrypt hashes when saved; the API and the UI only show `********` and the original password cannot be viewed again. When editing, keep `username:********` or write just `username:` to leave that user's password unchanged. Plaintext passwords saved by earlier versions keep working and are converted the next time their listener is saved, after which visitors signed in as those users sign in once more. Basic authentication needs at least one user when enabled; web authentication needs at least one user or third-party login identity when enabled;
 - Third-party login: GitHub, Google, QQ and OIDC are supported, using your own OAuth apps. Allowed identities go one per line in the form `provider:account`, for example `github:octocat` and `google:me@gmail.com`. A `#` at the end of a line adds a comment, and `github:*` means any account of that provider.
 
 Third-party login providers are configured in "Global settings": enter your own Client ID / Secret and enable the provider, and also set a callback address (it must be served by one of Gately's listeners, for example `https://auth.example.com`). The callback URL to register with GitHub / Google / QQ is:
