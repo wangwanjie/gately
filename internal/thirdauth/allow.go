@@ -3,6 +3,7 @@ package thirdauth
 import (
 	"fmt"
 	"strings"
+	"unicode"
 
 	"github.com/wangwanjie/gately/internal/config"
 )
@@ -86,13 +87,34 @@ type LuckyIdentity struct {
 
 // Entry 转换为 Gately 允许列表项。优先使用稳定 ID（GitHub 数字 ID、Google sub、QQ openid），
 // 用户名与邮箱写在备注里便于辨认。
-func (i LuckyIdentity) Entry() string {
-	remark := strings.TrimSpace(strings.Join(nonEmpty(i.Name, i.EMail), " "))
-	e := strings.ToLower(i.Type) + ":" + i.ID
+//
+// 身份表来自导入的文件，内容不可信：类型或 ID 为空、ID 为 *（允许列表里表示该提供方的所有用户）、
+// 类型或 ID 含空白、控制字符、冒号（类型）或 #（会被当作备注的开头）时 ok 为 false，这个身份不能迁移。
+// 否则一份身份表就能让“该登录方式的任何账号”进入允许列表，或在界面按行编辑时拆出新的列表项。
+func (i LuckyIdentity) Entry() (entry string, ok bool) {
+	typ, id := strings.ToLower(i.Type), i.ID
+	if typ == "" || id == "" || id == "*" || strings.Contains(typ, ":") || !plainToken(typ) || !plainToken(id) {
+		return "", false
+	}
+	e := typ + ":" + id
+	// 备注只用于辨认，去掉换行等控制字符，保证一个身份只占列表中的一项
+	remark := strings.Join(strings.Fields(strings.Map(func(r rune) rune {
+		if unicode.IsControl(r) {
+			return ' '
+		}
+		return r
+	}, strings.Join(nonEmpty(i.Name, i.EMail), " "))), " ")
 	if remark != "" {
 		e += " # " + remark
 	}
-	return e
+	return e, true
+}
+
+// plainToken 判断 s 是否不含空白、控制字符与 #。
+func plainToken(s string) bool {
+	return !strings.ContainsFunc(s, func(r rune) bool {
+		return unicode.IsSpace(r) || unicode.IsControl(r) || r == '#'
+	})
 }
 
 func nonEmpty(s ...string) []string {
@@ -126,19 +148,27 @@ func (ids LuckyIdentities) Save(store *config.Store) error {
 }
 
 // Resolve 把 Lucky 的身份 Key 列表（all 为真时为全部启用的身份）解析为允许列表项，
-// missing 返回在身份表里找不到的 Key 数量。
+// missing 返回在身份表里找不到、或不能迁移（见 Entry）的身份数量。
 func (ids LuckyIdentities) Resolve(keys []string, all bool) (entries []string, missing int) {
 	byKey := map[string]LuckyIdentity{}
 	for _, i := range ids.List {
 		byKey[i.Key] = i
 	}
+	add := func(i LuckyIdentity) {
+		if !i.Enable {
+			return
+		}
+		if e, ok := i.Entry(); ok {
+			entries = append(entries, e)
+		} else {
+			missing++
+		}
+	}
 	if all {
 		for _, i := range ids.List {
-			if i.Enable {
-				entries = append(entries, i.Entry())
-			}
+			add(i)
 		}
-		return entries, 0
+		return entries, missing
 	}
 	for _, k := range keys {
 		i, ok := byKey[k]
@@ -146,9 +176,7 @@ func (ids LuckyIdentities) Resolve(keys []string, all bool) (entries []string, m
 			missing++
 			continue
 		}
-		if i.Enable {
-			entries = append(entries, i.Entry())
-		}
+		add(i)
 	}
 	return entries, missing
 }
