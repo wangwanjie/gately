@@ -21,6 +21,30 @@ const (
 	LevelError = "error"
 )
 
+// 日志级别的顺序，用于按最低级别决定是否记录；lvOther 为未知级别，总是记录
+const (
+	lvDebug int32 = iota
+	lvInfo
+	lvWarn
+	lvError
+	lvOther
+)
+
+// levelNum 返回级别的顺序。
+func levelNum(level string) int32 {
+	switch level {
+	case LevelDebug:
+		return lvDebug
+	case LevelInfo:
+		return lvInfo
+	case LevelWarn:
+		return lvWarn
+	case LevelError:
+		return lvError
+	}
+	return lvOther
+}
+
 // Entry 是一条日志。Seq 单调递增，前端用它做增量拉取。
 type Entry struct {
 	Seq     uint64    `json:"seq"`
@@ -45,6 +69,8 @@ type Buffer struct {
 	start   int // 最旧一条在 entries 中的下标；未写满时为 0
 	count   int // 已有的日志条数，与 len(entries) 相同
 	nextSeq uint64
+	// minLevel 为记录的最低级别（lvDebug 等），低于它的日志直接丢弃：不进缓冲、不落盘、不回显
+	minLevel atomic.Int32
 	// echo 不为 nil 时同时输出到标准日志（同步写）；async 不为 nil 时异步回显到标准错误输出，便于 docker logs 查看
 	echo  *log.Logger
 	async *Echo
@@ -74,6 +100,21 @@ func (b *Buffer) SetEcho(e *Echo) {
 	b.mu.Lock()
 	b.async = e
 	b.mu.Unlock()
+}
+
+// SetMinLevel 设置记录的最低级别（debug、info、warn、error），低于它的日志直接丢弃。
+// 新建的缓冲记录全部级别；无法识别的值同样按记录全部处理。
+func (b *Buffer) SetMinLevel(level string) {
+	n := levelNum(level)
+	if n == lvOther {
+		n = lvDebug
+	}
+	b.minLevel.Store(n)
+}
+
+// Enabled 判断 level 级别的日志当前是否会被记录。拼装日志内容开销较大时，可以先用它判断。
+func (b *Buffer) Enabled(level string) bool {
+	return levelNum(level) >= b.minLevel.Load()
 }
 
 // Add 追加一条日志。
@@ -126,6 +167,9 @@ func encodeLine(e Entry) *lineEncoder {
 
 // add 追加一条日志，序号由缓冲分配（e.Seq 被忽略）。
 func (b *Buffer) add(e Entry) {
+	if levelNum(e.Level) < b.minLevel.Load() {
+		return
+	}
 	// 落盘的 JSON 在加锁之前序列化（序号先写 0，加锁后再填入真正的序号）：
 	// 序列化是写一条日志里最耗时的一步，放在锁内会让高并发下所有写日志的协程排队
 	var le *lineEncoder
@@ -284,23 +328,37 @@ func (l *Logger) Source() string {
 	return l.source
 }
 
+// Enabled 判断 level 级别的日志当前是否会被记录，见 Buffer.Enabled。
+func (l *Logger) Enabled(level string) bool {
+	return l.buf.Enabled(level)
+}
+
 // Log 以指定级别写入一条已格式化的日志，供托管外部进程的输出使用。
 func (l *Logger) Log(level, msg string) {
 	l.buf.AddFields(level, l.source, msg, l.fields)
 }
 
-// Debugf 写入调试日志。
+// Debugf 写入调试日志。调试级别未开启时（默认）在格式化之前直接返回。
 func (l *Logger) Debugf(format string, args ...any) {
+	if l.buf.minLevel.Load() > lvDebug {
+		return
+	}
 	l.logf(LevelDebug, format, args)
 }
 
 // Infof 写入普通日志。
 func (l *Logger) Infof(format string, args ...any) {
+	if l.buf.minLevel.Load() > lvInfo {
+		return
+	}
 	l.logf(LevelInfo, format, args)
 }
 
 // Warnf 写入警告日志。
 func (l *Logger) Warnf(format string, args ...any) {
+	if l.buf.minLevel.Load() > lvWarn {
+		return
+	}
 	l.logf(LevelWarn, format, args)
 }
 
