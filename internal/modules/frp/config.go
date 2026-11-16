@@ -44,8 +44,12 @@ type ServerSettings struct {
 	// 填 127.0.0.1 时可放在反向代理之后，让 frpc 用 websocket / wss 连接
 	BindAddr string `json:"bindAddr"`
 	// BindPort 是 frpc 连接的端口
-	BindPort int    `json:"bindPort"`
-	Token    string `json:"token"`
+	BindPort int `json:"bindPort"`
+	// KCPBindPort 为 frpc 用 kcp 协议连接的 UDP 端口，0 表示不启用；可与 BindPort 相同（TCP 与 UDP 互不占用）
+	KCPBindPort int `json:"kcpBindPort"`
+	// QUICBindPort 为 frpc 用 quic 协议连接的 UDP 端口，0 表示不启用；不能与 KCPBindPort 相同
+	QUICBindPort int    `json:"quicBindPort"`
+	Token        string `json:"token"`
 	// ProxyBindAddr 是 HTTP / HTTPS 端口与 tcp / udp 代理远程端口的监听地址，留空监听所有地址
 	ProxyBindAddr string `json:"proxyBindAddr"`
 	// VhostHTTPPort 与 VhostHTTPSPort 为 0 时不启用 http / https 代理
@@ -255,6 +259,16 @@ func (s *ServerSettings) Validate() error {
 			return errors.New("端口无效")
 		}
 	}
+	if s.KCPBindPort != 0 && !validPort(s.KCPBindPort) {
+		return errors.New("KCP 端口无效")
+	}
+	if s.QUICBindPort != 0 && !validPort(s.QUICBindPort) {
+		return errors.New("QUIC 端口无效")
+	}
+	// kcp 与 quic 都是 UDP 监听，同一地址上端口相同会导致后启动的一个绑定失败
+	if s.KCPBindPort != 0 && s.KCPBindPort == s.QUICBindPort {
+		return errors.New("KCP 与 QUIC 端口不能相同")
+	}
 	if _, err := ParseAllowPorts(s.AllowPorts); err != nil {
 		return err
 	}
@@ -456,6 +470,13 @@ func ServerTOML(s ServerSettings) string {
 		fmt.Fprintf(&b, "bindAddr = %s\n", quote(s.BindAddr))
 	}
 	fmt.Fprintf(&b, "bindPort = %d\n", s.BindPort)
+	// kcp 与 quic 监听 UDP 端口，监听地址沿用 bindAddr
+	if s.KCPBindPort != 0 {
+		fmt.Fprintf(&b, "kcpBindPort = %d\n", s.KCPBindPort)
+	}
+	if s.QUICBindPort != 0 {
+		fmt.Fprintf(&b, "quicBindPort = %d\n", s.QUICBindPort)
+	}
 	if s.ProxyBindAddr != "" {
 		fmt.Fprintf(&b, "proxyBindAddr = %s\n", quote(s.ProxyBindAddr))
 	} else if s.BindAddr != "" {

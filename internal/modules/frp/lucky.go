@@ -309,12 +309,27 @@ func importLuckyServer(cfg *fileConfig, li *luckyInstance, opts luckyimport.Opti
 		Enable: li.Enable && opts.KeepEnabled,
 		ServerSettings: ServerSettings{
 			BindPort:       p.BindPort,
+			KCPBindPort:    p.KCPBindPort,
+			QUICBindPort:   p.QUICBindPort,
 			Token:          p.Token,
 			VhostHTTPPort:  p.VhostHTTPPort,
 			VhostHTTPSPort: p.VhostHTTPSPort,
 			SubdomainHost:  p.SubDomainHost,
 			AllowPorts:     strings.ReplaceAll(strings.TrimSpace(p.AllowPorts), " ", ""),
 		},
+	}
+	// KCP / QUIC 端口无效或二者相同时只丢弃这两项，保留实例其余配置
+	if s.KCPBindPort < 0 || s.KCPBindPort > 65535 {
+		rep.Warnings = append(rep.Warnings, name+": KCP 监听端口无效，已忽略")
+		s.KCPBindPort = 0
+	}
+	if s.QUICBindPort < 0 || s.QUICBindPort > 65535 {
+		rep.Warnings = append(rep.Warnings, name+": QUIC 监听端口无效，已忽略")
+		s.QUICBindPort = 0
+	}
+	if s.KCPBindPort != 0 && s.KCPBindPort == s.QUICBindPort {
+		rep.Warnings = append(rep.Warnings, name+": KCP 与 QUIC 监听端口相同，已忽略 QUIC")
+		s.QUICBindPort = 0
 	}
 	if _, err := ParseAllowPorts(s.AllowPorts); err != nil {
 		rep.Warnings = append(rep.Warnings, fmt.Sprintf("%s: %v，已改为不限制", name, err))
@@ -328,9 +343,6 @@ func importLuckyServer(cfg *fileConfig, li *luckyInstance, opts luckyimport.Opti
 		rep.Warnings = append(rep.Warnings, fmt.Sprintf("%s: 监听地址 %s 不是 IP 地址，frps 将监听所有地址", name, p.BindAddr))
 	default:
 		s.BindAddr, s.ProxyBindAddr = addr, addr
-	}
-	if p.KCPBindPort != 0 || p.QUICBindPort != 0 {
-		rep.Warnings = append(rep.Warnings, name+": KCP / QUIC 监听端口暂不支持，已忽略")
 	}
 	if p.TLSOnly {
 		rep.Warnings = append(rep.Warnings, name+": 仅允许 TLS 连接暂不支持，已忽略")
