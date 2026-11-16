@@ -31,6 +31,11 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - TZ=Asia/Shanghai
+    # 限制容器日志（docker logs）的大小，Docker 默认不设上限
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
 ```
 
 `--cap-add NET_ADMIN` 与 `cap_add` 供[入侵防护](/docs/modules/guard)把封禁写入宿主机的 nftables 防火墙，不需要可以去掉，封禁仍对 Gately 自身的服务生效。

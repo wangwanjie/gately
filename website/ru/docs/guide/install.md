@@ -31,6 +31,11 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - TZ=Asia/Shanghai
+    # Ограничивает размер журнала контейнера (docker logs); по умолчанию Docker его не ограничивает
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
 ```
 
 `--cap-add NET_ADMIN` и `cap_add` нужны [защите от вторжений](/ru/docs/modules/guard), чтобы записывать блокировки в брандмауэр nftables хоста. Их можно убрать — тогда блокировки действуют только на службы Gately.
