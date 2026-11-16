@@ -17,6 +17,7 @@ Gately 的改动（改动过的文件开头有注明）：
 - `parent/gately.go`：新增 `DurableTable.CloseAll`，服务重启时关闭旧句柄表中为断线续用保留的句柄；导出 `IsTemporaryAcceptError` 供判断监听是否不可恢复地失败
 - `vfs/path.go`：共享根目录为 `/` 时前缀判断不再拼成 `//`，根目录为 `/` 的共享可以正常使用
 - 构建约束：`parent` 包的源文件（含测试）加上 `//go:build linux || darwin`，另有不带约束的 `parent/doc.go`，其他系统上 `go build/vet ./...` 可以通过
+- 报文边界（新增 `bounds` 包）：客户端给出的 uint32 偏移与长度（NEGOTIATE 上下文、NTLMSSP 字段、CREATE 上下文、WRITE、SET_INFO、IOCTL、QUERY_INFO、报文链 NextCommand、改名文件名长度、扩展属性链表等）一律在 uint64 中判断边界后再转换为 int，32 位平台上不会因转换为负数而越过检查。涉及 `smb2/`、`ntlm/`、`smb3/encrypt.go`、`parent/conn.go`、`parent/dispatch.go`、`parent/xattr.go`
 
 上游只支持 Linux 与 macOS 作为服务端，Gately 在其他系统上不编译这些包（见 `internal/modules/smb/server_other.go`）。
 
