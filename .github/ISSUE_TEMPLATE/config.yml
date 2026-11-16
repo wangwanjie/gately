@@ -1,11 +1,11 @@
 blank_issues_enabled: false
 contact_links:
   - name: Usage questions / 使用问题
-    url: https://github.com/wangwanjie/gately/discussions/categories/q-a
-    about: How to configure something, which option to use. Ask in GitHub Discussions Q&A so the answer stays searchable. / 怎么配置、该用哪个选项，请在 GitHub Discussions 的 Q&A 提问，回答可被搜索。
-  - name: Chat on Telegram / Telegram 群
     url: https://t.me/gately_chat
-    about: Quick questions and casual chat in the Telegram group. / 在 Telegram 群快速提问和日常交流。
+    about: How to configure something, which option to use. Ask in the Telegram group for a faster answer. / 怎么配置、该用哪个选项，请到 Telegram 群提问，回复更快。
+  - name: Discussions / 讨论区
+    url: https://github.com/wangwanjie/gately/discussions
+    about: Questions and setups you want to keep searchable, in any language. / 希望留存、可被搜索的提问与部署分享，任何语言均可。
   - name: Security vulnerability / 安全漏洞
     url: https://github.com/wangwanjie/gately/security/advisories/new
     about: Report privately; do not open a public issue. / 请私密报告，不要公开提 issue。
