@@ -102,9 +102,15 @@
             <template v-if="!editing.disableForward">
               <el-form-item :label="t('stun.targetAddr')" required>
                 <el-input v-model="targetsText" :placeholder="t('stun.targetAddrPlaceholder')" />
+                <TargetHint
+                  :lines="editing.targetAddresses ?? []"
+                  :ports="editing.targetPort ? String(editing.targetPort) : ''"
+                  @split="(v) => ((editing.targetAddresses = v.hosts), (editing.targetPort = v.port))"
+                />
               </el-form-item>
               <el-form-item :label="t('stun.targetPort')" required>
-                <el-input-number v-model="editing.targetPort" :min="1" :max="65535" />
+                <!-- 最小值为 0：新规则未填端口时显示 0，不被夹成 1（否则写了「地址:端口」会误报端口冲突） -->
+                <el-input-number v-model="editing.targetPort" :min="0" :max="65535" />
               </el-form-item>
               <IPAccessEditor v-model:mode="editing.ipMode" v-model:list="editing.ipList" v-model:sets="editing.ipSets" v-model:deny-list="editing.ipDenyList" v-model:deny-sets="editing.ipDenySets" v-model:knock="editing.knock" :note="t('stun.ipAccessNote')" />
             </template>
@@ -245,6 +251,7 @@ import { createItem, uniqueName, type CopySource } from '../copyDraft'
 import { useFormLayout } from '../composables/useIsMobile'
 import { useListText, splitLinesOrCommas } from '../composables/useListText'
 import WebhookEditor, { type WebhookConfig } from '../components/WebhookEditor.vue'
+import TargetHint from '../components/TargetHint.vue'
 import type { NetInterface } from '../components/IPSourceEditor.vue'
 import { usePolling } from '../composables/usePolling'
 import { copyText } from '../composables/useClipboard'
@@ -436,7 +443,12 @@ function ruleStatus(r: RuleView): { type: StatusType; text: string; title?: stri
     failed: { type: 'error', text: t('stun.stFailed') },
     stopped: { type: 'warn', text: t('stun.stStopped') },
   }
-  return { ...(map[r.state.status] ?? { type: 'info', text: r.state.status }), title: r.state.error }
+  const st = map[r.state.status] ?? { type: 'info', text: r.state.status }
+  // 穿透成功但有错误（如转发目标写法连不上）时用警告色，避免只显示正常
+  if (r.state.status === 'ok' && r.state.error) {
+    st.type = 'warn'
+  }
+  return { ...st, title: r.state.error }
 }
 
 function fmtTime(iso: string) {

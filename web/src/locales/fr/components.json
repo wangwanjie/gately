@@ -198,5 +198,12 @@
     "none": "Sans proxy",
     "update": "Utiliser le proxy global de mise à jour",
     "custom": "Proxy personnalisé"
+  },
+  "targetHint": {
+    "split": "« {addr} » contient le port {port}. L'adresse cible ne prend qu'un hôte ou une IP ; le port sera déplacé vers le port cible à l'enregistrement.",
+    "splitNow": "Séparer maintenant",
+    "conflict": "« {addr} » contient le port {port}, différent du port cible {ports} : l'enregistrement échouera. Indiquez le port à un seul endroit.",
+    "mixed": "Plusieurs adresses cibles contiennent des ports différents : l'enregistrement échouera. Retirez les ports des adresses et indiquez-le dans le port cible.",
+    "invalid": "« {addr} » n'est pas une adresse cible valide : saisissez uniquement un nom d'hôte ou une IP (IPv6 avec port sous la forme [adresse]:port), sans http:// ni chemin."
   }
 }

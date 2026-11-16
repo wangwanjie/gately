@@ -198,5 +198,12 @@
     "none": "Sem proxy",
     "update": "Usar o proxy global de atualização",
     "custom": "Proxy personalizado"
+  },
+  "targetHint": {
+    "split": "\"{addr}\" inclui a porta {port}. O endereço de destino leva apenas host ou IP; ao salvar, a porta será movida para a porta de destino.",
+    "splitNow": "Separar agora",
+    "conflict": "\"{addr}\" inclui a porta {port}, diferente da porta de destino {ports}, então não será possível salvar. Informe a porta em um só lugar.",
+    "mixed": "Vários endereços de destino incluem portas diferentes, então não será possível salvar. Remova as portas dos endereços e informe a porta no campo de porta de destino.",
+    "invalid": "\"{addr}\" não é um endereço de destino válido: informe apenas um nome de host ou IP (IPv6 com porta como [endereço]:porta), sem http:// nem caminho."
   }
 }
