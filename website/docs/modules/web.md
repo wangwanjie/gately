@@ -100,7 +100,7 @@
 | 向后端发送 PROXY v2 | 在 TCP 连接开头附加 PROXY 协议 v2 头，传递真实客户端 IP。开启后每个请求都新建连接，也不再用 HTTP/2 连接后端。后端是 Gately 时，需在其监听上开启接收 PROXY 协议，并把本机加入可信 PROXY 来源。 | 后端不读 HTTP 头但支持 PROXY 协议，如另一层 Gately、haproxy、开启 `proxy_protocol` 的 nginx。后端未配置接收时所有请求都会失败，不确定时保持关闭 |
 | 使用访问域名作为 SNI | 仅 HTTPS 后端：握手时发送访客使用的域名并按它校验证书，相当于 nginx 的 `proxy_ssl_server_name on; proxy_ssl_name $host` | 后端在同一端口按域名选择证书或分流，如 frp 的 `vhost_https`、托管多个 HTTPS 站点的 nginx。每个后端使用独立的连接池，不同域名的连接不会互相复用 |
 | http:// 后端使用明文 HTTP/2（h2c） | 仅 http:// 后端：以不加密的 HTTP/2（h2c）连接后端，gRPC 流式传输与尾部元数据原样透传；多个访客的请求共用一条后端连接。对站点全部 http:// 后端生效，包括按路径分流与按用户分流的后端；WebSocket 等协议升级请求自动改用 HTTP/1.1 连接。HTTPS 后端会自动协商 HTTP/2，无需此选项；健康检查同样使用 h2c | 后端是只讲 h2c 的 gRPC 服务，如 NetBird 管理/信令（同一端口上的 WebSocket 中继也可用）、只开 gRPC 的 xray。后端不支持 h2c 时请求返回 502 |
-| 转发 Gately 登录 Cookie | 把 Gately 自己的登录 Cookie（单点登录 `gately_sso`、站点会话、第三方登录随机数）原样转发给后端；关闭时（默认）这些 Cookie 不发给后端，避免泄露登录凭据 | 后端是另一台负责认证的 Gately，本站点不开认证。例如公网 Gately 只做 WAF 与访问控制、反代到内网 Gately，由内网 Gately 负责网页认证与单点登录。本站点启用认证时不能开启；只在后端是自己的 Gately 时使用 |
+| 转发 Gately 登录 Cookie | 把 Gately 自己的登录 Cookie（单点登录 `gately_sso`、站点会话、第三方登录随机数）原样转发给后端；关闭时（默认）这些 Cookie 不发给后端，避免泄露登录凭据。管理后台自己的登录 Cookie（`gately_token` 等）不受此选项影响：只转发给反向代理到本实例管理后台监听端口的站点，其他后端与转发认证服务一律收不到。 | 后端是另一台负责认证的 Gately，本站点不开认证。例如公网 Gately 只做 WAF 与访问控制、反代到内网 Gately，由内网 Gately 负责网页认证与单点登录。本站点启用认证时不能开启；只在后端是自己的 Gately 时使用 |
 
 常见组合：
 
