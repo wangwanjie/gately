@@ -1,18 +1,30 @@
 # Releases verifizieren
 
-Jedes offizielle Gately-Release wird mit Signaturen und Provenienz ausgeliefert. So können Sie prüfen, dass die heruntergeladenen Dateien von den GitHub Actions dieses Repositorys gebaut und nicht manipuliert wurden. Alle Signaturen verwenden schlüsselloses Signieren mit [Sigstore](https://www.sigstore.dev/), es gibt also keinen privaten Schlüssel, der geschützt werden müsste.
+Jede offizielle Gately-Version enthält Signaturen und Herkunftsnachweise, sodass Sie bestätigen können, dass die heruntergeladenen Dateien von den GitHub Actions dieses Repositorys gebaut und nicht verändert wurden. `checksums.txt` trägt eine minisign-Signatur, deren öffentlicher Schlüssel in Gately eingebaut ist; das Online-Upgrade prüft damit die Downloads. Die cosign-Signaturen und Build-Provenienz verwenden das schlüssellose Signieren von [Sigstore](https://www.sigstore.dev/).
 
 ## Binärarchive
 
-Die Release-Seite stellt `checksums.txt` (SHA-256 jedes Archivs), `checksums.txt.sigstore.json` (die Signatur der Prüfsummendatei) und eine SBOM bereit.
+Die Release-Seite enthält `checksums.txt` (SHA-256 jedes Archivs), `checksums.txt.minisig` (minisign-Signatur der Prüfsummendatei), `checksums.txt.sigstore.json` (cosign-Signatur der Prüfsummendatei) und eine SBOM. Versionen, die vor Einführung der Signatur erschienen sind, haben keine `checksums.txt.minisig`.
 
-1. Die SHA-256 des Archivs prüfen:
+1. Die Signatur von `checksums.txt` mit [minisign](https://jedisct1.github.io/minisign/) prüfen. Öffentlicher Release-Schlüssel von Gately (Schlüssel-ID `512082B4037581F0`):
+
+```text
+RWTwgXUDtIIgUVNxL3scLhMObpyS0vKQbkCepGauqNA0/u0nQA86M50/
+```
+
+```bash
+minisign -Vm checksums.txt -P RWTwgXUDtIIgUVNxL3scLhMObpyS0vKQbkCepGauqNA0/u0nQA86M50/
+```
+
+Die Ausgabe `Signature and comment signature verified` bedeutet, dass die Signatur gültig ist; die Zeile `Trusted comment` nennt Version und Signaturzeitpunkt.
+
+2. Die SHA-256 des Archivs prüfen:
 
 ```bash
 sha256sum -c checksums.txt --ignore-missing
 ```
 
-2. Die Signatur von `checksums.txt` mit [cosign](https://docs.sigstore.dev/cosign/installation/) prüfen. Die signierende Identität muss der Release-Workflow dieses Repositorys sein:
+3. Die Signatur von `checksums.txt` mit [cosign](https://docs.sigstore.dev/cosign/installation/) prüfen. Die signierende Identität muss der Release-Workflow dieses Repositorys sein:
 
 ```bash
 cosign verify-blob checksums.txt \
@@ -21,11 +33,20 @@ cosign verify-blob checksums.txt \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com
 ```
 
-3. Mit der GitHub CLI können Sie außerdem die Build-Provenienz eines einzelnen Archivs prüfen:
+4. Mit der GitHub CLI können Sie außerdem die Build-Provenienz eines einzelnen Archivs prüfen:
 
 ```bash
 gh attestation verify gately_v1.0.0_linux_amd64.tar.gz --repo wangwanjie/gately
 ```
+
+## Signaturprüfung beim Online-Upgrade
+
+Das Online-Upgrade von Linux-Binärinstallationen („Jetzt aktualisieren“) lädt zuerst `checksums.txt` und `checksums.txt.minisig` herunter, prüft die Signatur mit dem im Programm eingebauten öffentlichen Schlüssel und vergleicht erst danach den SHA-256 des Pakets:
+
+- Ungültige Signatur, unbekannter Schlüssel oder veränderte `checksums.txt`: Das Upgrade wird abgelehnt, Upgrade-Dialog und Systemprotokoll nennen den Grund, und das installierte Programm bleibt unverändert;
+- Keine `checksums.txt.minisig` in der Version (vor Einführung der Signatur veröffentlicht): Das Upgrade läuft weiter, Upgrade-Dialog und Systemprotokoll warnen, dass die Version unsigniert ist und nur ihr SHA-256 geprüft wurde.
+
+Für den Schlüsselwechsel hat das Programm einen zweiten Platz für einen öffentlichen Schlüssel: Ein neuer öffentlicher Schlüssel wird zuerst in eine Version eingebaut und auf dieser Seite veröffentlicht, erst spätere Versionen werden damit signiert, sodass bestehende Installationen weiter aktualisieren können. „Upgrade-Paket hochladen“ prüft keine Signaturen; prüfen Sie das Archiv vor dem Hochladen mit den Schritten oben. Upgrades des Docker-Images stützen sich auf die unten beschriebenen cosign-Signaturen des Images.
 
 ## macOS-Codesignatur
 

@@ -1,18 +1,30 @@
 # Vérifier les versions
 
-Chaque version officielle de Gately est fournie avec des signatures et une attestation de provenance, pour vous permettre de confirmer que les fichiers téléchargés ont été construits par les GitHub Actions de ce dépôt et n'ont pas été altérés. Toutes les signatures utilisent la signature sans clé de [Sigstore](https://www.sigstore.dev/) : il n'y a donc aucune clé privée à protéger.
+Chaque version officielle de Gately est livrée avec des signatures et une attestation de provenance, ce qui permet de confirmer que les fichiers téléchargés ont été construits par les GitHub Actions de ce dépôt et n'ont pas été modifiés. `checksums.txt` porte une signature minisign dont la clé publique est intégrée à Gately, et la mise à niveau en ligne s'en sert pour vérifier les téléchargements ; les signatures cosign et l'attestation de provenance utilisent la signature sans clé de [Sigstore](https://www.sigstore.dev/).
 
 ## Archives binaires
 
-La page de la version fournit `checksums.txt` (SHA-256 de chaque archive), `checksums.txt.sigstore.json` (la signature du fichier de sommes) et un SBOM.
+La page de version fournit `checksums.txt` (SHA-256 de chaque archive), `checksums.txt.minisig` (signature minisign du fichier de sommes), `checksums.txt.sigstore.json` (signature cosign du fichier de sommes) et un SBOM. Les versions publiées avant l'introduction de la signature n'ont pas de `checksums.txt.minisig`.
 
-1. Vérifiez le SHA-256 de l'archive :
+1. Vérifiez la signature de `checksums.txt` avec [minisign](https://jedisct1.github.io/minisign/). Clé publique des versions de Gately (ID de clé `512082B4037581F0`) :
+
+```text
+RWTwgXUDtIIgUVNxL3scLhMObpyS0vKQbkCepGauqNA0/u0nQA86M50/
+```
+
+```bash
+minisign -Vm checksums.txt -P RWTwgXUDtIIgUVNxL3scLhMObpyS0vKQbkCepGauqNA0/u0nQA86M50/
+```
+
+La sortie `Signature and comment signature verified` indique que la signature est valide ; la ligne `Trusted comment` indique la version et l'heure de signature.
+
+2. Vérifiez le SHA-256 de l'archive :
 
 ```bash
 sha256sum -c checksums.txt --ignore-missing
 ```
 
-2. Vérifiez la signature de `checksums.txt` avec [cosign](https://docs.sigstore.dev/cosign/installation/). L'identité de signature doit être le workflow de publication de ce dépôt :
+3. Vérifiez la signature de `checksums.txt` avec [cosign](https://docs.sigstore.dev/cosign/installation/). L'identité de signature doit être le workflow de publication de ce dépôt :
 
 ```bash
 cosign verify-blob checksums.txt \
@@ -21,11 +33,20 @@ cosign verify-blob checksums.txt \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com
 ```
 
-3. Vous pouvez aussi vérifier l'attestation de provenance de build d'une archive avec la CLI GitHub :
+4. Vous pouvez aussi vérifier l'attestation de provenance de build d'une archive avec la CLI GitHub :
 
 ```bash
 gh attestation verify gately_v1.0.0_linux_amd64.tar.gz --repo wangwanjie/gately
 ```
+
+## Vérification de la signature lors de la mise à niveau en ligne
+
+La mise à niveau en ligne des déploiements binaires sous Linux (« Mettre à niveau ») télécharge d'abord `checksums.txt` et `checksums.txt.minisig`, vérifie la signature avec la clé publique intégrée au programme, puis seulement compare le SHA-256 du paquet :
+
+- Signature invalide, clé inconnue ou `checksums.txt` modifié : la mise à niveau est refusée, la fenêtre de mise à niveau et le journal système en indiquent la raison, et le programme installé reste tel quel ;
+- Pas de `checksums.txt.minisig` dans la version (publiée avant l'introduction de la signature) : la mise à niveau se poursuit, et la fenêtre de mise à niveau et le journal système signalent que la version n'est pas signée et que seul son SHA-256 a été vérifié.
+
+Le programme prévoit un second emplacement de clé publique pour la rotation des clés : la nouvelle clé publique est d'abord intégrée à une version et publiée sur cette page, et seules les versions suivantes sont signées avec elle, si bien que les instances déployées continuent de se mettre à niveau. « Téléverser un paquet de mise à niveau » ne vérifie pas les signatures ; vérifiez l'archive avec les étapes ci-dessus avant de la téléverser. Les mises à niveau de l'image Docker s'appuient sur les signatures cosign de l'image décrites plus bas.
 
 ## Signature du code sur macOS
 
