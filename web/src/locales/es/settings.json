@@ -189,6 +189,13 @@
   },
   "runtime": {
     "title": "Parámetros de ejecución",
+    "logLevel": "Nivel de registro",
+    "logLevelDefault": "Predeterminado (info y superiores)",
+    "logLevelDebug": "Depuración y superiores (todo)",
+    "logLevelInfo": "Info y superiores",
+    "logLevelWarn": "Advertencia y superiores",
+    "logLevelError": "Solo errores",
+    "logLevelHelp": "Solo se registran los registros de ejecución del nivel seleccionado o superior; los niveles inferiores no llegan a las páginas de registros, a los archivos de registro ni a la salida de error estándar (docker logs). Se aplica en cuanto se guarda. El nivel de depuración incluye una línea por conexión del reenvío de puertos y del enrutamiento por protocolo, lo que añade una carga apreciable con muchas conexiones; los registros de acceso de los servicios web son de nivel info. \"Predeterminado\" usa la variable de entorno GATELY_LOG_LEVEL, o info y superiores si no está definida",
     "logLines": "Líneas de registro conservadas",
     "logLinesHelp": "Número de líneas de registro que cada módulo guarda en memoria; con la persistencia activada se restauran desde el disco tras un reinicio",
     "logPersist": "Guardar registros en disco",

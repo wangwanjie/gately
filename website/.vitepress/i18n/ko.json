@@ -15,6 +15,7 @@
   "sidebar": {
     "groups": {
       "start": "시작하기",
+      "tutorials": "튜토리얼",
       "modules": "기능 모듈",
       "security": "보안",
       "reference": "레퍼런스"
@@ -28,6 +29,12 @@
       "guide/cli-mcp": "명령줄 및 MCP",
       "guide/migration": "마이그레이션 가이드",
       "guide/faq": "자주 묻는 질문",
+      "tutorials/remote-access-without-public-ip": "공인 IPv4 없이 NAS에 접속하기",
+      "tutorials/one-port-443": "443 포트 하나로 모든 서비스 운영",
+      "tutorials/https-and-login-for-apps": "인기 앱에 HTTPS와 로그인 추가",
+      "tutorials/wildcard-cert-ddns": "와일드카드 인증서와 동적 DNS",
+      "tutorials/migrate-from-nginx": "nginx 또는 NPM에서 이전하기",
+      "tutorials/replace-haproxy-nginx-fail2ban": "haproxy + nginx + fail2ban 대체하기",
       "modules/index": "모듈 개요",
       "modules/ddns": "동적 DNS (DDNS)",
       "modules/stun": "STUN 통과",

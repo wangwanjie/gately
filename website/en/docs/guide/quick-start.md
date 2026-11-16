@@ -43,3 +43,14 @@ Pick a module that fits your need:
 | Forward one port to another device on your LAN | [Port Forwarding](/en/docs/modules/portforward) |
 | Reach multiple LAN services through one domain with HTTPS | [SSL Certificates](/en/docs/modules/ssl) + [Web Services](/en/docs/modules/web) |
 | Connect networks across locations | [Tailscale / frp](/en/docs/modules/tunnels) |
+
+## 5. Next steps
+
+Step-by-step tutorials for specific goals:
+
+- [Reach a NAS without a public IPv4 address](/en/docs/tutorials/remote-access-without-public-ip): IPv6 + DDNS, STUN, frp or Cloudflare Tunnel, and how to choose;
+- [Run everything on one port 443](/en/docs/tutorials/one-port-443): HTTPS, SSH and RDP sharing one port;
+- [HTTPS and sign-in for Jellyfin, Immich, Home Assistant and Vaultwarden](/en/docs/tutorials/https-and-login-for-apps);
+- [Wildcard certificate and DDNS in 10 minutes](/en/docs/tutorials/wildcard-cert-ddns);
+- [Migrate from nginx or Nginx Proxy Manager](/en/docs/tutorials/migrate-from-nginx);
+- [Replace haproxy, nginx, fail2ban and acme.sh on a cloud server](/en/docs/tutorials/replace-haproxy-nginx-fail2ban).

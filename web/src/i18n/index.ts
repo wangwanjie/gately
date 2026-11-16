@@ -2,8 +2,7 @@
 import { createI18n } from 'vue-i18n'
 import { messageLoaders } from 'virtual:gately-locales'
 import { FALLBACK_LOCALE, detectLocale, isSupported } from './locales'
-
-const STORAGE_KEY = 'gately.locale'
+import { LOCALE_STORAGE_KEY as STORAGE_KEY } from './localeMeta'
 
 // 只含本次构建包含的语言，见 vite.config.ts 的 gately-locales 插件
 const loaders = messageLoaders
@@ -12,7 +11,8 @@ export const i18n = createI18n({
   legacy: false,
   locale: FALLBACK_LOCALE,
   fallbackLocale: FALLBACK_LOCALE,
-  // 缺失键回退到回退语言时不刷控制台
+  // 回退语言包不随首屏加载：构建时已把目标语言缺少的键用回退语言的文案补齐（见 vite.config.ts 的 gately-locale-fill），
+  // 运行时不再需要加载回退语言；这里的设置只在补齐之外仍缺键（键名拼写错误）时不刷控制台
   missingWarn: false,
   fallbackWarn: false,
   messages: {},
@@ -51,10 +51,9 @@ export function initialLocale(): string {
   return savedLocale() ?? detectLocale(navigator.languages?.length ? navigator.languages : [navigator.language])
 }
 
-// 切换界面语言：先加载文案，再生效并记住选择。
+// 切换界面语言：加载目标语言的文案后生效并记住选择。
 export async function setLocale(code: string, persist = true) {
   const target = isSupported(code) ? code : FALLBACK_LOCALE
-  await loadMessages(FALLBACK_LOCALE)
   await loadMessages(target)
   i18n.global.locale.value = target as any
   document.documentElement.lang = target

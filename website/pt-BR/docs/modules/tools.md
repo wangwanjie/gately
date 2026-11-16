@@ -18,7 +18,11 @@ Cada usuário pode ser mapeado para um diretório ou montar vários diretórios:
 - **Diretório único**: defina `root` e `readOnly`. Após o login, a raiz é esse diretório.
 - **Vários diretórios**: clique em "Montar vários diretórios" na interface ou preencha várias entradas em `mounts`. Cada entrada tem `name` (nome de exibição, não pode conter `/` e é único para cada usuário), `path` (um caminho absoluto) e `readOnly`. Após o login, a raiz lista os diretórios pelo nome. A própria raiz não é gravável, e arquivos não podem ser movidos entre diretórios diferentes.
 
-**Limitação de logins**: WebDAV, FTP e SMB limitam senhas incorretas por endereço de origem. Após 10 falhas em 15 minutos, todo login dessa origem é recusado até o fim da janela (o WebDAV retorna `429` e o FTP e o SMB retornam falha de login, e o SMB também registra "muitas falhas de login, recusado" no log), mesmo com a senha correta. Um login bem-sucedido não zera a contagem, e origens IPv6 são contadas por /64. Quando o WebDAV está atrás de um proxy reverso local, como o serviço web do Gately, usa-se o endereço do visitante repassado pelo proxy.
+**Limitação de logins**: WebDAV, FTP e SMB limitam senhas incorretas por endereço de origem. Após 10 falhas em 15 minutos, todo login dessa origem é recusado até o fim da janela (o WebDAV retorna `429` e o FTP e o SMB retornam falha de login, e o SMB também registra "muitas falhas de login, recusado" no log), mesmo com a senha correta. Um login bem-sucedido não zera a contagem, e origens IPv6 são contadas por /64. Quando o WebDAV está atrás de um proxy reverso local, como o serviço web do Gately, usa-se o endereço do visitante repassado pelo proxy. A contagem de falhas é mantida pelo módulo, então reiniciar um serviço após mudar suas configurações ou os usuários compartilhados não a zera. Cada falha de login (inclusive as recusadas) também publica um evento `fileauth.failed`; em [Prevenção de intrusão](/pt-BR/docs/modules/guard) o modelo "Falhas de login nos serviços de arquivos" pode banir origens pelo número de falhas, e o evento está descrito na [Central de notificações](/pt-BR/docs/modules/notify).
+
+**Tempos limite de conexão**: uma conexão keep-alive ociosa é fechada após 2 minutos e o cliente reconecta na próxima requisição; um upload é cortado quando nenhum dado do corpo da requisição chega por 2 minutos. Uploads lentos porém contínuos e transferências longas não são afetados.
+
+**Links simbólicos**: o diretório compartilhado é acessado por os.Root. Um link simbólico dentro do diretório que aponte para fora dele não é seguido: leitura, escrita, listagem, renomeação, cópia e movimentação nunca saem do diretório compartilhado e o acesso é recusado; links que apontam para dentro do compartilhamento funcionam como antes.
 
 ## FTP
 
@@ -37,6 +41,8 @@ Configure em "Serviço FTP", no grupo "Serviços de arquivos". FTP e FTPS são c
 | `disableActiveMode` | Desativado | Usa apenas o modo passivo, mais adequado a ambientes com NAT |
 | `users` | Nenhum | Vários usuários, com os mesmos campos do WebDAV: `name`, `password`, `root`, `readOnly` ou `mounts`; os nomes de usuário devem ser únicos |
 | `sharedUsers` | Desativado | Permite que os [usuários compartilhados](#shared-users) entrem neste serviço |
+
+**Links simbólicos e proprietário**: o diretório do usuário também é acessado por os.Root, então um link simbólico que aponte para fora dele não é seguido (links dentro do diretório funcionam como antes); `SITE CHOWN` é sempre recusado.
 
 ## SMB
 
@@ -59,6 +65,8 @@ Os compartilhamentos pertencem aos usuários, e um usuário conectado só vê e 
 
 Nomes de usuário e de compartilhamento não podem conter `" / \ [ ] : ; | = , + * ? < >` nem começar ou terminar com `.`. A autenticação NTLM precisa da senha em texto puro, então usuários cuja senha está salva como hash bcrypt precisam defini-la novamente. Os arquivos são lidos e gravados com a identidade do processo do Gately.
 
+**Limites antes do login**: conexões que ainda não fizeram login são limitadas para que conexões vazias e requisições maliciosas não ocupem recursos. A conexão é encerrada se a próxima requisição não chegar em 30 segundos (inclusive uma conexão que nunca envia a negociação) ou se ainda não tiver feito login 60 segundos após conectar. Uma requisição antes do login não pode passar de 128 KiB; se passar, a conexão é encerrada. No máximo 256 conexões sem login no total e 32 por origem (IPv6 contado por /64) podem existir ao mesmo tempo; as novas conexões acima disso são fechadas na hora, e as recusas aparecem no log de execução no máximo uma vez a cada 30 segundos. Os limites deixam de valer depois do login, então transferências grandes não são afetadas.
+
 "Endereços de conexão", no fim da página, lista o endereço de cada compartilhamento a partir das configurações salvas:
 
 - Windows: digite `\\host\compartilhamento` na barra de endereços do Explorador ou execute `net use Z: \\host\compartilhamento /user:usuário`
@@ -74,7 +82,7 @@ WebDAV, FTP e SMB compartilham uma lista de "usuários compartilhados" com os me
 - Cada serviço decide sozinho se aceita usuários compartilhados: ative "Permitir usuários compartilhados" no cartão "Usuários compartilhados" da página do serviço (campo `sharedUsers`) e salve, e os usuários compartilhados poderão entrar nesse serviço; o cartão também lista os usuários compartilhados salvos, e "Gerenciar usuários compartilhados" abre a página "Usuários compartilhados de arquivos";
 - Se um usuário local tiver o mesmo nome, só o usuário local é verificado (sem diferenciar maiúsculas no SMB);
 - Nomes de usuários compartilhados não podem se repetir, mesmo com maiúsculas diferentes, e não podem conter dois-pontos;
-- As alterações valem na hora: o WebDAV usa as novas configurações na próxima requisição, FTP e SMB reiniciam e os clientes conectados precisam se reconectar;
+- As alterações nos usuários compartilhados valem na hora: o WebDAV usa as novas configurações na próxima requisição; se só senhas mudaram, FTP e SMB continuam em execução e encerram apenas as conexões dos usuários cuja senha mudou (esses clientes reconectam com a nova senha e os demais usuários não são afetados); adicionar ou remover usuários ou mudar diretórios ou o modo somente leitura reinicia FTP e SMB, e os clientes conectados precisam se reconectar;
 - Com a chave ligada e pelo menos um usuário compartilhado, o serviço pode ser ativado sem usuários locais;
 - Um serviço ativado só com usuários compartilhados precisa manter após a alteração um usuário compartilhado que consiga entrar (no SMB, um que o SMB possa usar); caso contrário, a alteração é recusada;
 - Se o `fileusers.json` for corrompido à mão (senha vazia, diretório que não é caminho absoluto etc.), nenhum usuário compartilhado consegue entrar e a página mostra um aviso; corrija e salve para restaurá-los;
@@ -82,7 +90,7 @@ WebDAV, FTP e SMB compartilham uma lista de "usuários compartilhados" com os me
 
 A API é `GET` / `PUT /api/fileusers`, que exige a permissão `fileusers:read` / `fileusers:write` para tokens de API; `services` na resposta mostra como cada serviço os usa. Os antigos `GET` / `PUT /api/<serviço>/shared-users` de cada serviço estão obsoletos, mas continuam funcionando e leem e gravam a mesma lista: a leitura usa a permissão de leitura do serviço, e uma alteração exige `webdav:write`, `ftp:write` e `smb:write` ao mesmo tempo.
 
-**Troca de senha pelo próprio usuário**: ative Troca de senha pelo próprio usuário na página Usuários compartilhados de arquivos e salve; os usuários compartilhados poderão trocar a própria senha em `https://dominio-do-site/__gately_auth/password` em qualquer site do serviço web com autenticação web, informando o nome de usuário, a senha atual e a nova (de 8 a 128 caracteres). WebDAV, FTP e SMB passam a usar a nova senha na hora (FTP e SMB reiniciam, então os clientes conectados precisam reconectar). Senhas em texto puro continuam em texto puro e hashes bcrypt continuam como hash; senha atual incorreta conta para o mesmo limite de tentativas e bloqueio automático do login web. O botão fica salvo em `selfService` no `fileusers.json`, com o mesmo nome de campo na API. Para os usuários compartilhados de login web, veja [troca de senha no serviço web](/pt-BR/docs/modules/web#self-service-password).
+**Troca de senha pelo próprio usuário**: ative Troca de senha pelo próprio usuário na página Usuários compartilhados de arquivos e salve; os usuários compartilhados poderão trocar a própria senha em `https://dominio-do-site/__gately_auth/password` em qualquer site do serviço web com autenticação web, informando o nome de usuário, a senha atual e a nova (de 8 a 128 caracteres). WebDAV, FTP e SMB passam a usar a nova senha na hora (FTP e SMB não reiniciam, apenas encerram as conexões abertas desse usuário, e o cliente reconecta com a nova senha). Senhas em texto puro continuam em texto puro e hashes bcrypt continuam como hash; senha atual incorreta conta para o mesmo limite de tentativas e bloqueio automático do login web. O botão fica salvo em `selfService` no `fileusers.json`, com o mesmo nome de campo na API. Para os usuários compartilhados de login web, veja [troca de senha no serviço web](/pt-BR/docs/modules/web#self-service-password).
 
 ## File Browser {#filebrowser}
 
