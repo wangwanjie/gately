@@ -159,13 +159,20 @@ function prefixOf(loc: SiteLocale) {
 
 // 侧边栏：各语言共用同一骨架，标题取自语言包
 function buildSidebar(loc: SiteLocale, pack: any): DefaultTheme.SidebarItem[] {
-  return sidebarGroups.map((g) => ({
-    text: pack.sidebar.groups[g.id],
-    items: g.slugs.map((slug) => {
-      const link = slug === 'modules/index' ? '/docs/modules/' : `/docs/${slug}`
-      return { text: pack.sidebar.items[slug], link: `${prefixOf(loc)}${link}` }
-    })
-  }))
+  return sidebarGroups
+    .map((g) => ({
+      text: pack.sidebar.groups[g.id],
+      items: g.slugs
+        // onlyExisting 的分组只列出该语言实际存在的页面
+        .filter((slug) => !g.onlyExisting || existsSync(resolve(here, '..', loc.dir, 'docs', `${slug}.md`)))
+        .map((slug) => {
+          const link = slug === 'modules/index' ? '/docs/modules/' : `/docs/${slug}`
+          return { text: pack.sidebar.items[slug], link: `${prefixOf(loc)}${link}` }
+        }),
+      onlyExisting: g.onlyExisting
+    }))
+    .filter((g) => !g.onlyExisting || g.items.length > 0)
+    .map(({ onlyExisting, ...group }) => group)
 }
 
 function buildThemeConfig(loc: SiteLocale, pack: any): DefaultTheme.Config & Record<string, unknown> {
