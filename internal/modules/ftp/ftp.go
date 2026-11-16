@@ -379,7 +379,7 @@ func (m *Module) restartLocked() {
 	}
 	d := &driver{s: m.settings, users: map[string]User{}, certs: m.certs, logs: m.logs}
 	for _, u := range m.settings.Users {
-		d.users[u.Name] = u
+		d.users[u.Name] = usable(u, m.logs)
 	}
 	srv := ftpserver.NewFtpServer(d)
 	if err := srv.Listen(); err != nil {
@@ -461,6 +461,10 @@ func (m *Module) Routes(r module.Router) {
 		// 用户没有固定 ID，改名后仍按位置保留原密码，见 crud.KeepSecrets
 		crud.KeepSecrets(m.settings.Users, s.Users, func(u *User) string { return u.Name }, func(u *User) *string { return &u.Password })
 		if err := s.Validate(); err != nil {
+			httpx.Error(w, http.StatusBadRequest, "%v", err)
+			return
+		}
+		if err := s.checkDirs(); err != nil {
 			httpx.Error(w, http.StatusBadRequest, "%v", err)
 			return
 		}

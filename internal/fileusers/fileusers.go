@@ -220,7 +220,12 @@ func (r *Registry) List() []User {
 	if r.loadErr != nil {
 		return nil
 	}
-	return clone(r.users)
+	out := clone(r.users)
+	for i := range out {
+		// 与配置目录重叠的目录不提供，见 Usable
+		out[i], _ = Usable(out[i])
+	}
+	return out
 }
 
 // Lookup 按用户名（区分大小写）查找可以登录的共享用户。
@@ -233,6 +238,8 @@ func (r *Registry) Lookup(name string) (User, bool) {
 	for _, u := range r.users {
 		if u.Name == name {
 			u.Mounts = slices.Clone(u.Mounts)
+			// 与配置目录重叠的目录不提供，见 Usable
+			u, _ = Usable(u)
 			return u, true
 		}
 	}
@@ -248,11 +255,12 @@ func (r *Registry) Save(users []User) error {
 func (r *Registry) save(users []User, selfService *bool) error {
 	r.saveMu.Lock()
 	defer r.saveMu.Unlock()
-	return r.saveLocked(users, selfService)
+	return r.saveLocked(users, selfService, true)
 }
 
-// saveLocked 执行保存；调用方持有 saveMu。
-func (r *Registry) saveLocked(users []User, selfService *bool) error {
+// saveLocked 执行保存；调用方持有 saveMu。checkDirs 为 true 时拒绝与 Gately 配置目录重叠的目录（管理员保存时）；
+// 共享用户自助修改密码只改密码不改目录，不做这项检查，升级前保存的列表里即使有这样的目录也不妨碍其他用户改密码。
+func (r *Registry) saveLocked(users []User, selfService *bool, checkDirs bool) error {
 	r.mu.RLock()
 	store, old, self := r.store, clone(r.users), r.selfService
 	r.mu.RUnlock()
@@ -267,6 +275,11 @@ func (r *Registry) saveLocked(users []User, selfService *bool) error {
 	crud.KeepSecrets(old, users, func(u *User) string { return u.Name }, func(u *User) *string { return &u.Password })
 	if err := Validate(users); err != nil {
 		return err
+	}
+	if checkDirs {
+		if err := checkUsersDirs(users); err != nil {
+			return err
+		}
 	}
 	if err := r.check(users); err != nil {
 		return err
@@ -345,7 +358,7 @@ func (r *Registry) ChangePassword(name, current, next string) error {
 	if !found {
 		return ErrBadCredentials
 	}
-	return r.saveLocked(users, nil)
+	return r.saveLocked(users, nil, false)
 }
 
 // ValidateNewPassword 校验自助修改的新密码：长度 8～128 个字符，且与当前密码不同。
