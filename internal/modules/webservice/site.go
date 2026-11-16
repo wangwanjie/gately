@@ -1196,9 +1196,10 @@ func (h *siteHandler) serveInner(rec http.ResponseWriter, r *http.Request) {
 }
 
 // corsAllowed 判断是否向该来源开放带凭据的跨域访问。
-// 站点开启认证时只允许站点自身域名作为来源，否则任意网页都能借用户的登录态读取内容。
+// 站点限制了访问者（见 restrictsVisitors）时只允许站点自身域名作为来源，否则任意网页都能借访客的登录态
+// 或网络位置（白名单内的地址）读取内容。
 func (h *siteHandler) corsAllowed(origin string) bool {
-	if !h.site.BasicAuth && !h.site.WebAuth {
+	if !h.site.restrictsVisitors() {
 		return true
 	}
 	u, err := url.Parse(origin)
@@ -1208,6 +1209,23 @@ func (h *siteHandler) corsAllowed(origin string) bool {
 	host := hostOnly(u.Host)
 	for _, d := range h.site.Domains {
 		if d != "*" && matchDomain(d, host) > 0 {
+			return true
+		}
+	}
+	return false
+}
+
+// restrictsVisitors 判断站点是否只对特定访客开放内容：Gately 自己的认证（基本认证、网页认证）、转发认证、
+// 交给后端 Gately 认证（转发登录 Cookie、信任后端认证标记）、IP 白名单（站点或路径规则）与敲门准入。
+func (s Site) restrictsVisitors() bool {
+	if s.BasicAuth || s.WebAuth || s.ForwardAuth.URL != "" || s.PassAuthCookies || s.TrustBackendAuth {
+		return true
+	}
+	if s.IPMode == IPModeWhitelist || s.Knock != "" {
+		return true
+	}
+	for _, r := range s.Rules {
+		if r.IPMode == IPModeWhitelist {
 			return true
 		}
 	}
