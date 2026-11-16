@@ -189,6 +189,8 @@ Die Anbieter für die Anmeldung über Drittanbieter werden in den „Globalen Ei
 https://auth.example.com/__gately_auth/oauth/callback
 ```
 
+Nach der Anmeldung kehrt der Browser mit einem Einmal-Ticket zur Site-Adresse zurück, an der die Anmeldung begonnen wurde. Die Drittanbieter-Anmeldung kann daher nur von Adressen aus starten, die auf diese Instanz zeigen: Die Domain muss zu einer in der Site eingetragenen Domain passen (exakt oder Platzhalter). Die Standard-Site und Sites mit der Domain `*` empfangen jede Domain und akzeptieren nur Domains, die in Sites eines beliebigen Listeners eingetragen sind, die Domain der Callback-Adresse, Domains mit einem Zertifikat im Zertifikatsmodul oder die lokale IP, auf der die Verbindung ankam. Enthält die Adresse einen Port, muss es der Listener-Port, der HTTP-Port oder der unter „Zugriffsadresse“ eingetragene Port sein; erreichen Besucher den Listener über Portweiterleitung des Routers, Protokollweiche oder Portweiterleitung auf einem anderen Port, tragen Sie den externen Port in der Zugriffsadresse des Listeners ein. Andernfalls wird die Anmeldung abgelehnt und der Grund im Laufzeitprotokoll des Listeners vermerkt.
+
 Die Anmeldung über Drittanbieter für die Verwaltungsoberfläche selbst wird separat unter „Einstellungen → Konto & Sicherheit“ konfiguriert.
 
 ### Forward-Auth (Authelia und Ähnliches)

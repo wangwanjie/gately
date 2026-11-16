@@ -189,6 +189,8 @@ Les fournisseurs de connexion tierce se configurent dans « Paramètres globaux 
 https://auth.example.com/__gately_auth/oauth/callback
 ```
 
+Une fois connecté, le navigateur revient à l'adresse du site depuis laquelle la connexion a été lancée, avec un ticket à usage unique ; la connexion tierce ne peut donc être lancée que depuis des adresses qui pointent vers cette instance : le domaine doit correspondre à un domaine saisi dans le site (exact ou générique). Le site par défaut et les sites dont le domaine est `*` reçoivent n'importe quel domaine et n'acceptent que les domaines saisis dans les sites de n'importe quelle écoute, le domaine de l'adresse de rappel, les domaines disposant d'un certificat dans le module Certificats ou l'IP locale sur laquelle la connexion est arrivée. Si l'adresse comporte un port, ce doit être le port de l'écoute, le port HTTP ou le port saisi dans « Adresse d'accès » ; si les visiteurs arrivent par un autre port via une redirection de port du routeur, l'aiguillage de protocoles ou le transfert de port, saisissez le port externe dans l'adresse d'accès de l'écoute. Sinon la connexion est refusée et la raison est écrite dans le journal d'exécution de l'écoute.
+
 La connexion tierce pour l'interface d'administration elle-même se configure séparément dans « Paramètres → Compte et sécurité ».
 
 ### Authentification déléguée (Authelia et similaires)

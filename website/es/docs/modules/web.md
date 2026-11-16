@@ -189,6 +189,8 @@ Los proveedores de inicio de sesión de terceros se configuran en «Ajustes glob
 https://auth.example.com/__gately_auth/oauth/callback
 ```
 
+Al terminar el inicio de sesión, el navegador vuelve a la dirección del sitio desde la que se inició, con un ticket de un solo uso, por lo que el inicio de sesión de terceros solo puede iniciarse desde direcciones que apunten a esta instancia: el dominio debe coincidir con un dominio indicado en el sitio (exacto o comodín). El sitio predeterminado y los sitios con el dominio `*` reciben cualquier dominio y solo aceptan dominios indicados en los sitios de cualquier escucha, el dominio de la dirección de retorno, dominios con certificado en el módulo de certificados o la IP local a la que llegó la conexión. Si la dirección incluye un puerto, debe ser el puerto de la escucha, el puerto HTTP o el indicado en «Dirección de acceso»; si los visitantes llegan por otro puerto mediante asignación de puertos del router, separación por protocolo o reenvío de puertos, indica el puerto externo en la dirección de acceso de la escucha. En otro caso se rechaza el inicio y el motivo se escribe en el registro de ejecución de la escucha.
+
 El inicio de sesión de terceros de la propia interfaz de administración se configura por separado en «Ajustes → Cuenta y seguridad».
 
 ### Autenticación delegada (Authelia y similares)
