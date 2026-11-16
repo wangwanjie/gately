@@ -141,8 +141,8 @@ func (f *forwardAuther) check(w http.ResponseWriter, r *http.Request, h *siteHan
 		}
 		req.Header[k] = vs
 	}
-	// 后台登录免认证的凭据等同于管理员身份，不交给外部认证服务（stripCookie 删除后重新写入，不改动访客请求的头）
-	stripCookie(req, adminBridgeCookie, adminHSCookie)
+	// 后台登录免认证的凭据与管理后台自己的 Cookie 等同于管理员身份，不交给外部认证服务（stripCookie 删除后重新写入，不改动访客请求的头）
+	stripCookie(req, append([]string{adminBridgeCookie, adminHSCookie}, adminCookies...)...)
 	// 访客自带的来源类与原始请求类头（含下划线写法的变体）不可信，下面由 Gately 重新写入
 	stripForwardedHeaders(req.Header)
 	// X-Original-URI 是 nginx auth_request 的常见写法（$request_uri），认证服务常据此按路径放行；X-Original-Host、
