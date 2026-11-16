@@ -2,9 +2,11 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { existsSync, readdirSync, readFileSync, statSync, unlinkSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
+import { createHash } from 'node:crypto'
 import { constants, gzipSync } from 'node:zlib'
 import type { Plugin } from 'vite'
-import { fallbackOf } from './src/i18n/localeMeta.ts'
+import { LOCALE_STORAGE_KEY, allLocales, fallbackOf } from './src/i18n/localeMeta.ts'
+import { localeHintScript } from './src/i18n/localeHint.ts'
 import { fillMissing } from './src/i18n/localeFill.ts'
 
 // 全部界面语言及对应的 Element Plus 语言包，顺序同语言切换菜单
@@ -108,6 +110,47 @@ const localeFill = (): Plugin => {
   }
 }
 
+// 首屏语言包预加载：构建时生成一个极小的外部脚本并插到 <head> 最前面，页面打开后它按已保存的语言偏好
+// 或浏览器语言给对应语言包插入 modulepreload，使语言包与主包并行下载。
+// 语言包文件名带内容哈希，所以脚本在构建末尾按实际产物生成；用外部脚本而非内联脚本是为了兼容严格的 CSP。
+const localeHint = (): Plugin => {
+  let scriptFile = ''
+  return {
+    name: 'gately-locale-hint',
+    apply: 'build',
+    generateBundle: {
+      // 先于 vite 的 html 处理，保证 transformIndexHtml 触发时脚本文件名已确定
+      order: 'pre',
+      handler(_options, bundle) {
+        const codes = builtLocales()
+        const files: Record<string, string> = {}
+        for (const code of codes) {
+          // 文件名形如 assets/locale-zh-CN-<8 位哈希>.js；哈希里可能含 - 与 _，所以按语言代码取前缀而不是整体拆分
+          const prefix = `assets/locale-${code}-`
+          const hit = Object.entries(bundle).find(([name, item]) => item.type === 'chunk' && name.startsWith(prefix) && /^[\w-]{8}\.js$/.test(name.slice(prefix.length)))
+          if (!hit) {
+            throw new Error(`没有找到语言 ${code} 的语言包产物，无法生成预加载脚本`)
+          }
+          files[code] = hit[0].slice('assets/'.length)
+        }
+        const source = localeHintScript(files, allLocales.filter((l) => codes.includes(l.code)), fallbackOf(codes), LOCALE_STORAGE_KEY)
+        const hash = createHash('sha256').update(source).digest('base64url').slice(0, 8)
+        scriptFile = `assets/locale-hint-${hash}.js`
+        this.emitFile({ type: 'asset', fileName: scriptFile, source })
+      },
+    },
+    transformIndexHtml: {
+      order: 'post',
+      handler() {
+        if (!scriptFile) {
+          return []
+        }
+        return [{ tag: 'script', attrs: { src: `./${scriptFile}` }, injectTo: 'head-prepend' }]
+      },
+    },
+  }
+}
+
 // 构建后保留 dist/.gitkeep，保证未构建前端时 Go 的 go:embed 仍可编译
 const keepGitkeep = {
   name: 'keep-gitkeep',
@@ -136,7 +179,7 @@ const precompress = {
 }
 
 export default defineConfig({
-  plugins: [vue(), localesModule(), localeFill(), keepGitkeep, precompress],
+  plugins: [vue(), localesModule(), localeFill(), localeHint(), keepGitkeep, precompress],
   // 资源使用相对路径，页面位于子路径（如飞牛 fnOS 统一网关的 /app/gately/）时也能加载
   base: './',
   build: {
