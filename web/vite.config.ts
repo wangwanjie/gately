@@ -197,6 +197,19 @@ export default defineConfig({
                 return m ? `locale-${m[1]}` : null
               },
             },
+            {
+              // Vue 运行时单独成块：图标分组要用到它，若与路由等共享代码混在一个块里，两个块会互相引用而在加载时出错
+              name: 'vue',
+              test: /node_modules[\\/](?:\.pnpm[\\/][^\\/]*[\\/]node_modules[\\/])?(?:vue|@vue[\\/][^\\/]+)[\\/]/,
+              priority: 10,
+            },
+            {
+              // 被两个及以上页面块共用的图标合并成一个文件（原先每个共用图标各占一个约 0.5 KB 的请求，首屏二十多个）；
+              // 只被一个页面用到的图标仍留在该页面块里，不增加首屏体积
+              name: 'lucide',
+              test: /node_modules[\\/](?:\.pnpm[\\/][^\\/]*[\\/]node_modules[\\/])?lucide-vue-next[\\/]/,
+              minShareCount: 2,
+            },
           ],
         },
       },
