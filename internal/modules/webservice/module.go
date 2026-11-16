@@ -421,11 +421,13 @@ type ListenerView struct {
 	Firewall string `json:"firewall,omitempty"`
 	// FirewallFailed 表示自动放行有端口放行失败（例如没有权限），界面据此提示
 	FirewallFailed bool `json:"firewallFailed,omitempty"`
+	// SiteCerts 为 HTTPS 监听中各站点域名匹配到的证书，键为站点 key；界面据此显示证书剩余天数与缺证书提示
+	SiteCerts map[string][]SiteCert `json:"siteCerts,omitempty"`
 }
 
 func (m *Module) viewLocked(l *Listener) any {
 	// 站点用户的密码（bcrypt 哈希或尚未转换的明文）不经接口输出，只显示掩码
-	v := ListenerView{Listener: maskListenerUsers(*l), Error: m.errors[l.Key], Stats: map[string]map[string]int64{}}
+	v := ListenerView{Listener: maskListenerUsers(*l), Error: m.errors[l.Key], Stats: map[string]map[string]int64{}, SiteCerts: m.siteCertsLocked(l)}
 	if r, ok := m.runners[l.Key]; ok {
 		v.Running = true
 		t := r.current()
