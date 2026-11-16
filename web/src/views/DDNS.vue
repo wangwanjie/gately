@@ -127,7 +127,7 @@
     <el-dialog v-model="editorVisible" :title="editing.key ? t('ddns.editTask') : t('ddns.addTask')" width="900px" top="5vh" :fullscreen="isMobile">
       <CopyHint :from="copyFrom" secrets />
       <!-- 标签宽 150px：服务商凭据的标签（如 AccessKey Secret）在 120px 下会换行压到下一行 -->
-      <el-form :model="editing" label-width="150px" :label-position="labelPosition">
+      <el-form ref="formRef" :model="editing" :rules="rules" label-width="150px" :label-position="labelPosition">
         <el-tabs v-model="tab">
           <el-tab-pane :label="t('ddns.tabBasic')" name="basic">
             <el-form-item :label="t('ddns.taskName')"><el-input v-model="editing.name" /></el-form-item>
@@ -141,7 +141,7 @@
             <el-form-item v-if="currentProvider?.idLabel" :label="currentProvider.idLabel">
               <el-input v-model="editing.credentials.id" />
             </el-form-item>
-            <el-form-item v-if="currentProvider?.secretLabel" :label="currentProvider.secretLabel">
+            <el-form-item v-if="currentProvider?.secretLabel" :label="currentProvider.secretLabel" prop="credentials.secret" required>
               <SecretInput v-model="editing.credentials.secret" :placeholder="t('ddns.secretPlaceholder')" :reveal="secretOf(secretKey && `/api/ddns/tasks/${secretKey}/secrets`, 'secret')" />
             </el-form-item>
             <el-form-item v-for="f in currentProvider?.extra ?? []" :key="f.key" :label="f.label" :required="f.required">
@@ -172,7 +172,10 @@
             <div v-for="(row, i) in editing.records" :key="i" class="rec-edit">
               <div class="re-cell re-enable"><label class="re-label">{{ t('common.enable') }}</label><el-switch v-model="row.enable" size="small" /></div>
               <div class="re-cell"><label class="re-label">{{ t('ddns.host') }}</label><el-input v-model="row.sub" size="small" placeholder="@" /></div>
-              <div class="re-cell"><label class="re-label">{{ t('ddns.zone') }}</label><el-input v-model="row.zone" size="small" placeholder="example.com" /></div>
+              <div class="re-cell" :class="{ 'is-error-cell': zoneErrors.has(i) }">
+                <label class="re-label">{{ t('ddns.zone') }}</label>
+                <el-input v-model="row.zone" size="small" placeholder="example.com" :aria-invalid="zoneErrors.has(i) || undefined" @input="zoneErrors.delete(i)" />
+              </div>
               <div class="re-cell">
                 <label class="re-label">{{ t('ddns.type') }}</label>
                 <el-select v-model="row.type" size="small" @change="onTypeChange(row)">
@@ -193,7 +196,7 @@
               </div>
               <div class="re-cell re-del">
                 <el-button text size="small" :icon="CopyPlus" :aria-label="t('ddns.copyRecord')" :title="t('ddns.copyRecord')" @click="copyRecord(i)" />
-                <el-button text type="danger" size="small" :icon="Trash2" :aria-label="t('ddns.deleteRecord')" @click="editing.records.splice(i, 1)" />
+                <el-button text type="danger" size="small" :icon="Trash2" :aria-label="t('ddns.deleteRecord')" @click="(editing.records.splice(i, 1), zoneErrors.clear())" />
               </div>
             </div>
             <el-empty v-if="!editing.records.length" :description="t('ddns.noRecordsYet')" :image-size="60" />
@@ -274,9 +277,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, nextTick, onMounted, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ElMessage } from 'element-plus'
+import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { ArrowUpDown, ChevronsDownUp, ChevronsUpDown, CopyPlus, Globe, ListPlus, Pencil, Plus, RefreshCw, SlidersHorizontal, Trash2, Zap } from 'lucide-vue-next'
 import { api, errorText } from '../api'
 import GroupHeader from '../components/GroupHeader.vue'
@@ -306,6 +309,7 @@ import WebhookEditor, { type WebhookConfig } from '../components/WebhookEditor.v
 import IPSourceEditor, { type IPSource, type NetInterface } from '../components/IPSourceEditor.vue'
 import { useFormLayout } from '../composables/useIsMobile'
 import { usePolling } from '../composables/usePolling'
+import { validateForm } from '../composables/useFormValidate'
 
 interface ProviderMeta {
   name: string
@@ -397,6 +401,33 @@ const editorVisible = ref(false)
 const saving = ref(false)
 const enabling = ref(false)
 const tab = ref('basic')
+// 编辑框的前端校验：服务商凭据的密钥必填（已保存的任务显示为掩码，不会为空）；每条记录的主域名必填
+const formRef = ref<FormInstance>()
+const rules = computed<FormRules>(() => ({
+  'credentials.secret': [{ required: true, whitespace: true, message: t('ddns.secretRequired'), trigger: 'blur' }],
+}))
+// zoneErrors 为主域名未填的记录序号，对应单元格标红
+const zoneErrors = reactive(new Set<number>())
+
+// validateRecords 检查每条记录都填了主域名；没有时切到「解析记录」页、标红并聚焦第一条
+async function validateRecords(): Promise<boolean> {
+  zoneErrors.clear()
+  editing.value.records.forEach((r, i) => {
+    if (!(r.zone ?? '').trim()) {
+      zoneErrors.add(i)
+    }
+  })
+  if (!zoneErrors.size) {
+    return true
+  }
+  tab.value = 'records'
+  const first = Math.min(...zoneErrors)
+  ElMessage.error(t('ddns.recordZoneRequired', { n: first + 1 }))
+  await nextTick()
+  const root = formRef.value?.$el as HTMLElement | undefined
+  root?.querySelectorAll('.rec-edit')[first]?.querySelector<HTMLInputElement>('.is-error-cell input')?.focus()
+  return false
+}
 const editing = ref<Task>(emptyTask())
 // 复制条目时的模板，普通新增与编辑时为 null
 const copyFrom = ref<CopySource | null>(null)
@@ -662,7 +693,9 @@ function openEditor(tk?: TaskView, copy = false) {
     editing.value.key = ''
     editing.value.name = uniqueName(tk.name, tasks.value.map((x) => x.name))
   }
+  zoneErrors.clear()
   editorVisible.value = true
+  void nextTick(() => formRef.value?.clearValidate())
 }
 
 function onProviderChange() {
@@ -725,6 +758,10 @@ function onTypeChange(r: DNSRecord) {
 }
 
 async function save() {
+  // 必填项先在前端检查：凭据在「基本」页，主域名在「解析记录」页，切到出错的页面后标红并聚焦
+  if (!(await validateRecords()) || !(await validateForm(formRef.value, () => void (tab.value = 'basic')))) {
+    return
+  }
   // 编辑已保存的任务时删掉了已有记录：先确认是否同时从服务商删除，再保存
   const stored = editing.value.key ? tasks.value.find((tk) => tk.key === editing.value.key) : undefined
   const kept = new Set(editing.value.records.map((r) => r.key).filter(Boolean))
@@ -942,6 +979,10 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+/* 主域名未填的记录：输入框标红 */
+.is-error-cell :deep(.el-input__wrapper) {
+  box-shadow: 0 0 0 1px var(--el-color-danger) inset;
+}
 .del-msg {
   margin: 0 0 8px;
 }

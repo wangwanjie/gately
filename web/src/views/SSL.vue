@@ -79,7 +79,7 @@
       <CopyHint :from="copyFrom" secrets />
       <el-alert v-if="copyFrom && editing.source !== 'upload'" type="warning" :closable="false" show-icon :title="t('ssl.copyReissue')" class="copy-reissue" />
       <el-alert v-if="copyFrom && editing.deploys.length" type="warning" :closable="false" show-icon :title="t('ssl.copyDeploysOff')" class="copy-reissue" />
-      <el-form :model="editing" label-width="130px" :label-position="labelPosition">
+      <el-form ref="formRef" :model="editing" :rules="rules" label-width="130px" :label-position="labelPosition">
         <el-form-item :label="t('ssl.source')">
           <el-radio-group v-model="editing.source" :disabled="!!editing.key">
             <el-radio-button value="acme">{{ t('ssl.sourceAcme') }}</el-radio-button>
@@ -89,7 +89,7 @@
         </el-form-item>
 
         <template v-if="editing.source === 'acme'">
-          <el-form-item :label="t('ssl.domain')" required>
+          <el-form-item :label="t('ssl.domain')" prop="acme.domains" required>
             <el-input v-model="domainsText" type="textarea" :rows="2" :placeholder="t('ssl.domainsPlaceholder')" class="mono" />
           </el-form-item>
           <el-alert v-if="ipNeedsSetup" type="warning" :closable="false" show-icon class="http-tip" :title="t(editing.acme.ca === 'custom' ? 'ssl.ipCertTipCustom' : 'ssl.ipCertTip')">
@@ -189,19 +189,19 @@
         </template>
 
         <template v-if="editing.source === 'upload'">
-          <el-form-item :label="t('ssl.certPem')" required>
+          <el-form-item :label="t('ssl.certPem')" prop="certPem" required>
             <el-input v-model="editing.certPem" type="textarea" :rows="5" class="mono" :placeholder="t('ssl.certPemPlaceholder')" />
             <label class="file-pick"><Upload :size="14" />{{ t('ssl.readFromFile') }}<input type="file" accept=".pem,.crt,.cer" @change="(e) => readFile(e, 'certPem')" /></label>
           </el-form-item>
-          <el-form-item :label="t('ssl.keyPem')" required>
+          <el-form-item :label="t('ssl.keyPem')" prop="keyPem" required>
             <el-input v-model="editing.keyPem" type="textarea" :rows="4" class="mono" :placeholder="t('ssl.keyPemPlaceholder')" />
             <label class="file-pick"><Upload :size="14" />{{ t('ssl.readFromFile') }}<input type="file" accept=".pem,.key" @change="(e) => readFile(e, 'keyPem')" /></label>
           </el-form-item>
         </template>
 
         <template v-if="editing.source === 'file'">
-          <el-form-item :label="t('ssl.certPath')" required><el-input v-model="editing.certFile" placeholder="/etc/ssl/example/fullchain.pem" /></el-form-item>
-          <el-form-item :label="t('ssl.keyPath')" required><el-input v-model="editing.keyFile" placeholder="/etc/ssl/example/privkey.pem" /></el-form-item>
+          <el-form-item :label="t('ssl.certPath')" prop="certFile" required><el-input v-model="editing.certFile" placeholder="/etc/ssl/example/fullchain.pem" /></el-form-item>
+          <el-form-item :label="t('ssl.keyPath')" prop="keyFile" required><el-input v-model="editing.keyFile" placeholder="/etc/ssl/example/privkey.pem" /></el-form-item>
           <el-form-item label=" "><div class="form-help">{{ t('ssl.fileHelp') }}</div></el-form-item>
         </template>
 
@@ -291,10 +291,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
+import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { CopyPlus, Download, Pencil, Plus, RotateCw, Send, ShieldCheck, SlidersHorizontal, Trash2, Upload } from 'lucide-vue-next'
 import { api, errorText } from '../api'
 import { moduleBuilt } from '../nav'
@@ -320,6 +320,7 @@ import LogCard from '../components/LogCard.vue'
 import { useFormLayout } from '../composables/useIsMobile'
 import { useListText, splitLinesOrCommas } from '../composables/useListText'
 import { usePolling } from '../composables/usePolling'
+import { validateForm } from '../composables/useFormValidate'
 
 interface ProviderMeta {
   name: string
@@ -528,6 +529,16 @@ function emptyCert(): Cert {
   }
 }
 
+// 编辑框的前端校验：按证书来源检查必填项
+const formRef = ref<FormInstance>()
+const rules = computed<FormRules>(() => ({
+  'acme.domains': [{ trigger: 'blur', validator: (_r: unknown, v: string[] | undefined, cb: (e?: Error) => void) => cb((v ?? []).some((x) => x.trim()) ? undefined : new Error(t('ssl.domainsRequired'))) }],
+  certPem: [{ required: true, whitespace: true, message: t('ssl.certPemRequired'), trigger: 'blur' }],
+  keyPem: [{ required: true, whitespace: true, message: t('ssl.keyPemRequired'), trigger: 'blur' }],
+  certFile: [{ required: true, whitespace: true, message: t('ssl.pathRequired'), trigger: 'blur' }],
+  keyFile: [{ required: true, whitespace: true, message: t('ssl.pathRequired'), trigger: 'blur' }],
+}))
+
 // advOpen 为编辑框是否展开 ACME 的「高级设置」；advCount 为与默认值不同的高级字段数
 const advOpen = ref(false)
 const advCount = computed(() => {
@@ -726,6 +737,7 @@ function openEditor(row?: CertView, copy = false) {
   extra.value = { ...(editing.value.acme.credentials.extra ?? {}) }
   advOpen.value = advCount.value > 0
   editorVisible.value = true
+  void nextTick(() => formRef.value?.clearValidate())
 }
 
 function readFile(e: Event, field: 'certPem' | 'keyPem') {
@@ -736,6 +748,10 @@ function readFile(e: Event, field: 'certPem' | 'keyPem') {
 }
 
 async function save() {
+  // 必填项先在前端检查，未填时标红并聚焦
+  if (!(await validateForm(formRef.value))) {
+    return
+  }
   editing.value.acme.credentials.extra = { ...extra.value }
   saving.value = true
   try {
