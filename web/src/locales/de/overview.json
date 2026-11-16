@@ -31,6 +31,8 @@
   "loading": "Wird geladen",
   "abnormal": "{count} auffällig",
   "attention": "{count} benötigen Aufmerksamkeit",
+  "showAttention": "Dienste anzeigen, die Aufmerksamkeit brauchen",
+  "idle": "Noch nicht eingerichtet oder nicht aktiviert",
   "allOk": "Alles in Ordnung",
   "proc": {
     "version": "Version",

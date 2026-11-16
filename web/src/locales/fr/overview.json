@@ -31,6 +31,8 @@
   "loading": "Chargement",
   "abnormal": "{count} en anomalie",
   "attention": "{count} à vérifier",
+  "showAttention": "Voir les services à surveiller",
+  "idle": "Pas encore configuré ou activé",
   "allOk": "Tout est normal",
   "proc": {
     "version": "Version",
