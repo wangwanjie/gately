@@ -20,7 +20,7 @@
           <EntityCard v-bind="bind" :off="!c.enable" :compact="compactChannels || sorting">
             <template #lead>
               <SortCheck v-if="sorting" :gl="glChannels" :id="it.id" />
-              <el-switch v-else :model-value="c.enable" @change="(v: string | number | boolean) => toggleChannel(c, Boolean(v))" />
+              <el-switch v-else :model-value="c.enable" :aria-label="t('common.toggleItem', { name: c.name || '-' })" @change="(v: string | number | boolean) => toggleChannel(c, Boolean(v))" />
             </template>
             <template #title>{{ c.name }}</template>
             <template #sub>{{ kindLabel(c.kind) }}</template>
@@ -58,7 +58,7 @@
           <EntityCard v-bind="bind" :off="!r.enable" :compact="compactRules || sorting">
             <template #lead>
               <SortCheck v-if="sorting" :gl="glRules" :id="it.id" />
-              <el-switch v-else :model-value="r.enable" @change="(v: string | number | boolean) => toggleRule(r, Boolean(v))" />
+              <el-switch v-else :model-value="r.enable" :aria-label="t('common.toggleItem', { name: r.name || '-' })" @change="(v: string | number | boolean) => toggleRule(r, Boolean(v))" />
             </template>
             <template #title>{{ r.name }}</template>
             <template #sub>{{ t('notify.levelAtLeast', { level: levelLabel(r.minLevel) }) }}<span v-if="r.silence">{{ t('notify.silenceSuffix', { seconds: r.silence }) }}</span></template>

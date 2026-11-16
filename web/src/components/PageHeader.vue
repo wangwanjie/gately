@@ -11,7 +11,7 @@
       </div>
       <div class="page-head-text">
         <div class="page-head-title">
-          <h2>{{ title }}</h2>
+          <h1>{{ title }}</h1>
           <!-- 本页对应的官网文档，按界面语言打开 -->
           <a v-if="doc" class="page-head-doc" :href="docHref" target="_blank" rel="noopener noreferrer" :title="t('common.docsTitle')">
             <BookOpen :size="14" aria-hidden="true" />{{ t('common.docs') }}
@@ -210,7 +210,8 @@ onBeforeUnmount(() => {
   outline-offset: 2px;
   border-radius: 4px;
 }
-h2 {
+/* 页面标题是每页唯一的 h1（读屏按标题层级导航），字号保持原来的 18px */
+h1 {
   margin: 0;
   font-size: 18px;
   font-weight: 600;

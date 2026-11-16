@@ -11,7 +11,7 @@
         <EntityCard v-bind="bind" :off="!tk.enable" :compact="compact || sorting">
           <template #lead>
             <SortCheck v-if="sorting" :gl="gl" :id="it.id" />
-            <el-switch v-else :model-value="tk.enable" @change="(v: string | number | boolean) => toggle(tk, Boolean(v))" />
+            <el-switch v-else :model-value="tk.enable" :aria-label="t('common.toggleItem', { name: tk.name || '-' })" @change="(v: string | number | boolean) => toggle(tk, Boolean(v))" />
           </template>
           <template #title>
             <span>{{ tk.name }}</span>

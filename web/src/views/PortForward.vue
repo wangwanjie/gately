@@ -18,7 +18,7 @@
       >
         <template #lead>
           <SortCheck v-if="sorting" :gl="gl" :id="it.id" />
-          <el-switch v-else :model-value="it.item.enable" @change="(v: string | number | boolean) => toggle(it.item, Boolean(v))" />
+          <el-switch v-else :model-value="it.item.enable" :aria-label="t('common.toggleItem', { name: it.item.name || '-' })" @change="(v: string | number | boolean) => toggle(it.item, Boolean(v))" />
         </template>
         <template #title>
           <span>{{ it.item.name || t('portForward.unnamed') }}</span>

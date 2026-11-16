@@ -7,7 +7,7 @@
         <el-empty v-if="!lists.length" :image-size="36" :description="t('ipLists.empty')" />
         <div v-for="l in lists" :key="l.key" class="item" :class="{ off: !l.enable }">
           <div class="item-head">
-            <el-switch :model-value="l.enable" size="small" @change="(v: string | number | boolean) => toggle(l, Boolean(v))" />
+            <el-switch :model-value="l.enable" :aria-label="t('common.toggleItem', { name: l.name || '-' })" size="small" @change="(v: string | number | boolean) => toggle(l, Boolean(v))" />
             <span class="name">{{ l.name }}</span>
             <el-tag size="small" :type="statusOf(l).type">{{ statusOf(l).text }}</el-tag>
             <span class="actions">

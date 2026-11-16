@@ -60,7 +60,7 @@
         @update:collapsed="(v: boolean) => setCollapsed(l.key, v)"
       >
         <template #lead>
-          <el-switch :model-value="l.enable" @change="(v: string | number | boolean) => toggleListener(l, Boolean(v))" />
+          <el-switch :model-value="l.enable" :aria-label="t('common.toggleItem', { name: l.name || '-' })" @change="(v: string | number | boolean) => toggleListener(l, Boolean(v))" />
         </template>
         <template #title>
           <span>{{ l.name || t('web.unnamedListener') }}</span>
@@ -121,7 +121,7 @@
                   :model-value="sel.isSelected(item.id)"
                   @change="(v: string | number | boolean) => sel.setSelected([item.id], Boolean(v))"
                 />
-                <el-switch v-else :model-value="item.item.site.enable" size="small" @change="(v: string | number | boolean) => toggleSite(l, item.item, Boolean(v))" />
+                <el-switch v-else :model-value="item.item.site.enable" :aria-label="t('common.toggleItem', { name: item.item.site.name || item.item.site.domains?.[0] || '-' })" size="small" @change="(v: string | number | boolean) => toggleSite(l, item.item, Boolean(v))" />
               </div>
               <div class="site-main">
                 <div v-if="item.item.isDefault" class="site-domains"><el-tag size="small" type="warning">{{ t('web.defaultSite') }}</el-tag> <span class="meta">{{ t('web.unmatchedDomains') }}</span></div>

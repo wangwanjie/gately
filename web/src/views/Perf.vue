@@ -103,7 +103,7 @@
           <EntityCard v-bind="bind" :off="!r.enable" :compact="compactRules || sorting">
             <template #lead>
               <SortCheck v-if="sorting" :gl="glRules" :id="it.id" />
-              <el-switch v-else :model-value="r.enable" @change="(v: string | number | boolean) => toggleRule(r, Boolean(v))" />
+              <el-switch v-else :model-value="r.enable" :aria-label="t('common.toggleItem', { name: r.name || '-' })" @change="(v: string | number | boolean) => toggleRule(r, Boolean(v))" />
             </template>
             <template #title>{{ r.name }}</template>
             <template #sub>

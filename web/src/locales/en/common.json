@@ -58,6 +58,7 @@
   "advancedChanged": "({count} changed)",
   "docs": "Docs",
   "docsTitle": "Open the docs for this page in a new window",
+  "toggleItem": "Enable or disable \"{name}\"",
   "durationDaysHours": "{d}d {h}h",
   "durationHoursMinutes": "{h}h {m}m",
   "durationMinutes": "{m} min",

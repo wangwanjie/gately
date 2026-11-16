@@ -32,7 +32,7 @@
             <SortMoves :gl="gl" :it="it" />
           </template>
           <template v-else #actions>
-            <el-switch :model-value="tn.enable" size="small" @change="(v: boolean | string | number) => toggle(tn, Boolean(v))" />
+            <el-switch :model-value="tn.enable" :aria-label="t('common.toggleItem', { name: tn.name || '-' })" size="small" @change="(v: boolean | string | number) => toggle(tn, Boolean(v))" />
             <el-button text size="small" :icon="RefreshCw" :disabled="!tn.enable" @click="restart(tn)">{{ t('common.restart') }}</el-button>
             <el-button v-if="tn.mode === 'token'" text size="small" :icon="Route" :title="tn.apiToken ? '' : t('cloudflared.ingressNeedsApi')" @click="ingress?.open(tn.key!, tn.name)">{{ t('cloudflared.ingressButton') }}</el-button>
             <el-button text size="small" :icon="Pencil" @click="openEditor(tn)">{{ t('common.edit') }}</el-button>
