@@ -2760,6 +2760,7 @@
   "管理后台登录失败": "Anmeldung an der Verwaltungsoberfläche fehlgeschlagen",
   "管理后台登录成功": "Anmeldung an der Verwaltungsoberfläche erfolgreich",
   "管理后台登录成功的地址 %s 在 %d 小时内免于自动封禁": "Die Adresse %s hat sich erfolgreich an der Verwaltungsoberfläche angemeldet und ist %d Stunden von automatischen Sperren ausgenommen",
+  "管理后台登录成功的地址 %s 在 %d 小时内免于诱饵端口与扫描检测的封禁": "Die Adresse %s hat sich erfolgreich an der Verwaltungsoberfläche angemeldet und ist %d Stunden von Sperren durch Köderports und Portscan-Erkennung ausgenommen",
   "管理后台第三方登录：已迁移 %d 个允许的身份，需在「系统设置 → 第三方登录」填写你自己的 OAuth 应用与回调基础地址后启用": "Drittanbieter-Anmeldung der Verwaltungsoberfläche: %d zugelassene Identitäten migriert, aktivieren Sie sie, nachdem Sie unter „Systemeinstellungen → Drittanbieter-Anmeldung“ Ihre eigene OAuth-Anwendung und die Basis-Callback-Adresse eingetragen haben",
   "管理后台访问敏感内容": "Zugriff auf sensible Inhalte in der Verwaltungsoberfläche",
   "管理后台配置变更": "Konfigurationsänderung in der Verwaltungsoberfläche",

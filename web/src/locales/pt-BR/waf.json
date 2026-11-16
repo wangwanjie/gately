@@ -22,6 +22,8 @@
   "modeDetect": "Somente detectar (apenas registrar)",
   "paranoia": "Nível de paranoia",
   "paranoiaHelp": "Quanto maior, mais rigoroso e com mais falsos positivos. Comece em 1",
+  "regexPrefilter": "Pré-filtro de expressões regulares",
+  "regexPrefilterHelp": "Descarta primeiro, por palavras-chave literais, as expressões que não podem corresponder e reduz em cerca de 16% a CPU da detecção. Sabe-se que no nível de proteção padrão uma amostra do teste de regressão CRS 942220 #2 não é detectada; desative para restaurar a detecção completa",
   "inbound": "Limite de entrada",
   "outbound": "Limite de saída",
   "bodyCheck": "Inspeção do corpo da requisição",

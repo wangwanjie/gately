@@ -22,6 +22,8 @@
   "modeDetect": "僅偵測（只記錄日誌）",
   "paranoia": "偏執等級",
   "paranoiaHelp": "越高越嚴格，誤判也越多，建議從 1 開始",
+  "regexPrefilter": "正規表示式預過濾",
+  "regexPrefilterHelp": "開啟後先用關鍵字快速排除不可能命中的正規表示式，可降低約 16% 的檢測 CPU。已知在預設防護等級下，CRS 回歸用例 942220 #2 的一條樣例會漏判；需要完整檢測時可關閉",
   "inbound": "入站閾值",
   "outbound": "出站閾值",
   "bodyCheck": "請求內容檢查",

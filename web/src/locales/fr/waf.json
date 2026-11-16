@@ -22,6 +22,8 @@
   "modeDetect": "Détection seule (journalisation uniquement)",
   "paranoia": "Niveau de paranoïa",
   "paranoiaHelp": "Plus il est élevé, plus le filtrage est strict, avec davantage de faux positifs. Commencez à 1",
+  "regexPrefilter": "Préfiltre des expressions régulières",
+  "regexPrefilterHelp": "Écarte d'abord, grâce à des mots-clés littéraux, les expressions qui ne peuvent pas correspondre et réduit d'environ 16 % le CPU de détection. Au niveau de protection par défaut, un échantillon du test de régression CRS 942220 #2 n'est pas détecté ; désactivez l'option pour retrouver la détection complète",
   "inbound": "Seuil entrant",
   "outbound": "Seuil sortant",
   "bodyCheck": "Inspection du corps de requête",

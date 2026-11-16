@@ -2760,6 +2760,7 @@
   "管理后台登录失败": "Falha no login da administração",
   "管理后台登录成功": "Login na administração bem-sucedido",
   "管理后台登录成功的地址 %s 在 %d 小时内免于自动封禁": "O endereço %s entrou no painel de administração e fica isento de bloqueios automáticos por %d horas",
+  "管理后台登录成功的地址 %s 在 %d 小时内免于诱饵端口与扫描检测的封禁": "O endereço %s entrou no painel de administração e fica isento, por %d horas, dos bloqueios por portas isca e detecção de varredura de portas",
   "管理后台第三方登录：已迁移 %d 个允许的身份，需在「系统设置 → 第三方登录」填写你自己的 OAuth 应用与回调基础地址后启用": "Login de terceiros na administração: %d identidades permitidas migradas; para ativar, informe seu próprio aplicativo OAuth e o endereço base de callback em \"Configurações do sistema → Login de terceiros\"",
   "管理后台访问敏感内容": "Conteúdo sensível acessado na administração",
   "管理后台配置变更": "Configuração alterada na administração",

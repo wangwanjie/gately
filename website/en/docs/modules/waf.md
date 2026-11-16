@@ -19,6 +19,10 @@ A web application firewall based on [Coraza](https://coraza.io/) and OWASP CRS v
 2. Adjust rule files or add custom exceptions for any false positives;
 3. Then switch to "Block".
 
+## Regex pre-filter
+
+Each instance has a "Regex pre-filter" switch, on by default (instances that existed before the upgrade count as on). When on, the WAF first uses literal keywords from the rules to skip regular expressions that cannot match, cutting detection CPU by about 16%. Known: at the default protection level (paranoia level 1) one sample of CRS regression test 942220 #2 is missed. Turn the switch off to restore full detection.
+
 ## Admin UI requests
 
 When the admin UI is reverse proxied through a site with WAF, requests carrying a valid administrator session of this instance skip the WAF (SafeLine included). Saved configurations often contain file paths (such as the remarks written by the nginx import), HTML (custom error pages) and scripts (certificate deployment), which CRS path traversal, XSS and command injection rules would block with 403. The session is signed by the server and only the administrator role counts; requests from read-only accounts, visitors and other instances' admin UIs are still checked.

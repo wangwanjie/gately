@@ -283,7 +283,7 @@ type Module struct {
 	fw       *firewall
 	trap     *userTrap
 	unsub    []func()
-	// logins 为最近登录管理后台成功的地址，免于自动封禁（见 login.go）
+	// logins 为最近登录管理后台成功的地址，免于诱饵端口与扫描检测的封禁（见 login.go）
 	logins loginTrust
 
 	// saveTimer 延迟保存封禁表，合并短时间内的多次变化；fileMu 保证同一时间只有一次写文件
@@ -400,7 +400,7 @@ func (m *Module) Start(ctx context.Context) error {
 	m.started = true
 	s := m.cfg.Settings
 	m.local = localPrefixes()
-	banlist.Default.SetIgnore(m.ignoreFunc(s, m.local))
+	banlist.Default.SetIgnore(s.ignoreSet(m.local).overlaps)
 	m.loadBans()
 	m.unsub = append(m.unsub, banlist.Default.Subscribe(m.onBanChange))
 	m.unsub = append(m.unsub, events.Subscribe(m.onEvent))
@@ -486,7 +486,7 @@ func (m *Module) refreshLocal() {
 	}
 	m.local = local
 	s := m.cfg.Settings
-	banlist.Default.SetIgnore(m.ignoreFunc(s, local))
+	banlist.Default.SetIgnore(s.ignoreSet(local).overlaps)
 	m.mu.Unlock()
 	m.fw.setLocal(m.ctx, local)
 }
@@ -603,6 +603,10 @@ func (m *Module) importPortBans(source string, addrs []netip.Addr, ports portHit
 	base, detail := portBanReason(source, nil), ""
 	for _, a := range addrs {
 		reason := portBanReason(source, ports[banlist.KeyFor(a)])
+		if m.skipPortBan(a) {
+			// 管理后台登录成功的地址免于这两类封禁（防火墙已不重定向它们，这里兜住登录发生在握手确认之间的情形）
+			continue
+		}
 		e, added, err := banlist.Default.Ban(banlist.KeyFor(a), s.banOptions(sec, reason, source))
 		if err != nil || !added {
 			continue
@@ -639,7 +643,7 @@ func (m *Module) importPortBans(source string, addrs []netip.Addr, ports portHit
 }
 
 // onEvent 把 Gately 内部事件（管理后台登录失败、WAF 拦截）交给来源为“内部事件”的规则计数；
-// 管理后台登录成功的地址记为免封（见 noteLogin）。
+// 管理后台登录成功的地址记为免于诱饵端口与扫描检测的封禁（见 noteLogin）。
 func (m *Module) onEvent(e events.Event) {
 	ip := e.Fields["ip"]
 	if ip == "" {

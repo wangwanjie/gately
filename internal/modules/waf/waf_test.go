@@ -1,6 +1,7 @@
 package waf
 
 import (
+	"encoding/json"
 	"io"
 	"log"
 	"net/http"
@@ -360,5 +361,34 @@ func TestOAuthScopeExclusionByCustomRule(t *testing.T) {
 	}
 	if c := status(t, h, "/oauth_google_callback.php?code="+url.QueryEscape("../../etc/passwd")); c != 403 {
 		t.Fatalf("回调路径的其他参数仍应拦截: %d", c)
+	}
+}
+
+// 正则预过滤：默认（含存量配置，字段缺失）开启，指令写在全部规则之前；显式关闭时不生成；两种状态都能编译。
+func TestRegexPrefilterDirective(t *testing.T) {
+	rs := []RuleSet{{Enable: true, Type: RuleCRS}}
+	legacy := Instance{Name: "a", RuleSets: rs}
+	d, err := legacy.directives()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.HasPrefix(d, "SecRxPreFilter On\n") {
+		t.Fatalf("存量配置（未设置）应默认开启且位于指令最前: %q", d[:60])
+	}
+	if err := legacy.Validate(); err != nil || legacy.RegexPrefilter == nil || !*legacy.RegexPrefilter {
+		t.Fatalf("校验后应补全为开启: %v", err)
+	}
+	off := false
+	in := Instance{Name: "b", RuleSets: rs, RegexPrefilter: &off}
+	if d, _ = in.directives(); strings.Contains(d, "SecRxPreFilter") {
+		t.Fatal("关闭时不应生成 SecRxPreFilter")
+	}
+	if err := in.Validate(); err != nil || *in.RegexPrefilter {
+		t.Fatalf("显式关闭应保留: %v", err)
+	}
+	// JSON 中缺少字段的存量配置反序列化后为开启
+	var old Instance
+	if err := json.Unmarshal([]byte(`{"name":"c","ruleSets":[{"enable":true,"type":"crs"}]}`), &old); err != nil || !old.prefilterOn() {
+		t.Fatalf("存量 JSON 应视为开启: %v", err)
 	}
 }
