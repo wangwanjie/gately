@@ -187,6 +187,8 @@ type Site struct {
 	authBase string
 	// loginClient 为登录后将前往的应用名称，显示在登录页副标题中（仅 OIDC 登录页）
 	loginClient string
+	// oauth 为发起第三方登录时校验访问地址所需的监听信息，构建站点表时设置，见 oauthOrigin
+	oauth *oauthOrigins
 }
 
 // authPrefix 返回站点认证保留路径的前缀。
