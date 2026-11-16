@@ -399,6 +399,10 @@ func (l *Listener) Validate() error {
 			if label == "" && len(s.Domains) > 0 {
 				label = s.Domains[0]
 			}
+			// 没有名称也没有域名（如漏填域名）时按序号称呼，避免出现“站点 : …”这样的空名前缀
+			if label == "" {
+				return fmt.Errorf("第 %d 个站点: %w", i+1, err)
+			}
 			return fmt.Errorf("站点 %s: %w", label, err)
 		}
 	}

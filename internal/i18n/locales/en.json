@@ -2643,6 +2643,7 @@
   "符号链接层级过深": "Symbolic link nesting too deep",
   "第 %d 个任务": "Task #%d",
   "第 %d 个监听规则": "Listener rule #%d",
+  "第 %d 个站点: %w": "Site #%d: %w",
   "第 %d 张证书": "Certificate #%d",
   "第 %d 条(%s)": "Item #%d (%s)",
   "第 %d 条按用户分流规则需要填写后端": "User route %d needs at least one backend",
