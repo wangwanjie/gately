@@ -80,10 +80,6 @@
       <el-alert v-if="copyFrom && editing.source !== 'upload'" type="warning" :closable="false" show-icon :title="t('ssl.copyReissue')" class="copy-reissue" />
       <el-alert v-if="copyFrom && editing.deploys.length" type="warning" :closable="false" show-icon :title="t('ssl.copyDeploysOff')" class="copy-reissue" />
       <el-form :model="editing" label-width="130px" :label-position="labelPosition">
-        <el-form-item :label="t('common.remark')">
-          <el-input v-model="editing.remark" :placeholder="t('ssl.remarkPlaceholder')" />
-        </el-form-item>
-        <GroupInput v-model="editing.group" :groups="gl.groupNames.value" />
         <el-form-item :label="t('ssl.source')">
           <el-radio-group v-model="editing.source" :disabled="!!editing.key">
             <el-radio-button value="acme">{{ t('ssl.sourceAcme') }}</el-radio-button>
@@ -99,48 +95,6 @@
           <el-alert v-if="ipNeedsSetup" type="warning" :closable="false" show-icon class="http-tip" :title="t(editing.acme.ca === 'custom' ? 'ssl.ipCertTipCustom' : 'ssl.ipCertTip')">
             <el-button size="small" type="primary" link @click="applyIPCert">{{ t('ssl.ipCertApply') }}</el-button>
           </el-alert>
-          <el-form-item :label="t('ssl.email')"><el-input v-model="editing.acme.email" :placeholder="t('ssl.emailPlaceholder')" /></el-form-item>
-          <el-form-item :label="t('ssl.ca')">
-            <el-select v-model="editing.acme.ca" class="w-260">
-              <el-option label="Let's Encrypt" value="letsencrypt" />
-              <el-option :label="t('ssl.caStaging')" value="letsencrypt-staging" />
-              <el-option label="ZeroSSL" value="zerossl" />
-              <el-option label="Google Trust Services" value="google" />
-              <el-option :label="t('ssl.caCustom')" value="custom" />
-            </el-select>
-          </el-form-item>
-          <el-form-item v-if="editing.acme.ca === 'custom'" :label="t('ssl.directoryUrl')">
-            <el-input v-model="editing.acme.directoryUrl" placeholder="https://.../directory" />
-          </el-form-item>
-          <template v-if="['zerossl', 'google', 'custom'].includes(editing.acme.ca)">
-            <el-form-item label="EAB Key ID"><el-input v-model="editing.acme.eabKid" /></el-form-item>
-            <el-form-item label="EAB HMAC Key"><SecretInput v-model="editing.acme.eabHmac" :reveal="secretOf(secretKey && `/api/ssl/certs/${secretKey}/secrets`, 'eabHmac')" /></el-form-item>
-          </template>
-          <el-form-item :label="t('ssl.keyType')">
-            <el-select v-model="editing.acme.keyType" class="w-160">
-              <el-option label="ECC P-256" value="P256" />
-              <el-option label="ECC P-384" value="P384" />
-              <el-option label="RSA 2048" value="2048" />
-              <el-option label="RSA 4096" value="4096" />
-            </el-select>
-          </el-form-item>
-          <el-form-item :label="t('ssl.profile')">
-            <!-- 空字符串表示 CA 默认配置，需作为有效值显示对应选项；也可输入 CA 支持的其他配置名 -->
-            <el-select v-model="editing.acme.profile" class="w-260" filterable allow-create default-first-option :empty-values="[null, undefined]">
-              <el-option :label="t('ssl.profileDefault')" value="" />
-              <el-option :label="t('ssl.profileShortLived')" value="shortlived" />
-            </el-select>
-            <span class="help">{{ editing.acme.profile === 'shortlived' ? t('ssl.profileShortLivedHelp', { hours: renewHours }) : t('ssl.profileHelp') }}</span>
-          </el-form-item>
-          <el-form-item :label="t('ssl.network')">
-            <!-- 限定签发时的出站网络：有 IPv6 地址但 IPv6 不通的主机选择仅 IPv4 -->
-            <el-select v-model="editing.acme.network" class="w-160" :empty-values="[null, undefined]">
-              <el-option :label="t('ssl.networkAuto')" value="" />
-              <el-option :label="t('ssl.networkIpv4')" value="tcp4" />
-              <el-option :label="t('ssl.networkIpv6')" value="tcp6" />
-            </el-select>
-            <span class="help">{{ t('ssl.networkHelp') }}</span>
-          </el-form-item>
           <el-divider content-position="left">{{ t('ssl.verifyMethod') }}</el-divider>
           <el-form-item :label="t('ssl.challenge')">
             <el-radio-group v-model="editing.acme.challenge">
@@ -156,33 +110,82 @@
             </el-form-item>
           </template>
           <template v-else>
-          <el-divider content-position="left">{{ t('ssl.dnsVerify') }}</el-divider>
-          <el-form-item :label="t('ssl.dnsProvider')">
-            <el-select v-model="editing.acme.provider" class="w-260" @change="extra = {}">
-              <el-option v-for="p in providers" :key="p.name" :label="p.title" :value="p.name" />
-            </el-select>
-          </el-form-item>
-          <el-form-item v-if="currentProvider?.idLabel" :label="currentProvider.idLabel">
-            <el-input v-model="editing.acme.credentials.id" />
-          </el-form-item>
-          <el-form-item v-if="currentProvider?.secretLabel" :label="currentProvider.secretLabel">
-            <SecretInput v-model="editing.acme.credentials.secret" :placeholder="t('ssl.secretPlaceholder')" :reveal="secretOf(secretKey && `/api/ssl/certs/${secretKey}/secrets`, 'secret')" />
-          </el-form-item>
-          <el-form-item v-for="f in currentProvider?.extra ?? []" :key="f.key" :label="f.label">
-            <el-input v-model="extra[f.key]" :placeholder="f.placeholder" />
-          </el-form-item>
-          <el-form-item :label="t('ssl.zone')"><el-input v-model="editing.acme.zone" :placeholder="t('ssl.zonePlaceholder')" /></el-form-item>
-          <el-form-item :label="t('ssl.cname')">
-            <el-checkbox v-model="editing.acme.disableCname">{{ t('ssl.disableCname') }}</el-checkbox>
-            <span class="help">{{ t('ssl.cnameHelp') }}</span>
-          </el-form-item>
-          <el-form-item :label="t('ssl.resolvers')"><el-input v-model="resolversText" :placeholder="t('ssl.resolversPlaceholder')" /></el-form-item>
-          <el-form-item :label="t('ssl.propagationTimeout')"><el-input-number v-model="editing.acme.propagationTimeout" :min="30" :max="3600" /></el-form-item>
-          <el-form-item :label="t('ssl.propagationCheck')">
-            <el-checkbox v-model="editing.acme.disableAuthoritativeCheck">{{ t('ssl.disableAuthCheck') }}</el-checkbox>
-            <el-checkbox v-model="editing.acme.skipPropagationCheck">{{ t('ssl.skipCheck') }}</el-checkbox>
-          </el-form-item>
+            <el-divider content-position="left">{{ t('ssl.dnsVerify') }}</el-divider>
+            <el-form-item :label="t('ssl.dnsProvider')">
+              <el-select v-model="editing.acme.provider" class="w-260" @change="extra = {}">
+                <el-option v-for="p in providers" :key="p.name" :label="p.title" :value="p.name" />
+              </el-select>
+              <el-link v-if="currentProvider?.docUrl" :href="currentProvider.docUrl" target="_blank" type="primary" class="cred-link">{{ t('ssl.getCredentials') }}</el-link>
+            </el-form-item>
+            <el-form-item v-if="currentProvider?.idLabel" :label="currentProvider.idLabel">
+              <el-input v-model="editing.acme.credentials.id" />
+            </el-form-item>
+            <el-form-item v-if="currentProvider?.secretLabel" :label="currentProvider.secretLabel">
+              <SecretInput v-model="editing.acme.credentials.secret" :placeholder="t('ssl.secretPlaceholder')" :reveal="secretOf(secretKey && `/api/ssl/certs/${secretKey}/secrets`, 'secret')" />
+            </el-form-item>
+            <el-form-item v-for="f in currentProvider?.extra ?? []" :key="f.key" :label="f.label">
+              <el-input v-model="extra[f.key]" :placeholder="f.placeholder" />
+            </el-form-item>
           </template>
+          <!-- 邮箱、CA、密钥类型与 DNS 检查参数多数情况用默认值，收在「高级设置」里；有改动时打开编辑框会自动展开 -->
+          <AdvancedToggle v-model="advOpen" :count="advCount" />
+          <div v-show="advOpen">
+            <el-form-item :label="t('ssl.email')"><el-input v-model="editing.acme.email" :placeholder="t('ssl.emailPlaceholder')" /></el-form-item>
+            <el-form-item :label="t('ssl.ca')">
+              <el-select v-model="editing.acme.ca" class="w-260">
+                <el-option label="Let's Encrypt" value="letsencrypt" />
+                <el-option :label="t('ssl.caStaging')" value="letsencrypt-staging" />
+                <el-option label="ZeroSSL" value="zerossl" />
+                <el-option label="Google Trust Services" value="google" />
+                <el-option :label="t('ssl.caCustom')" value="custom" />
+              </el-select>
+            </el-form-item>
+            <el-form-item v-if="editing.acme.ca === 'custom'" :label="t('ssl.directoryUrl')">
+              <el-input v-model="editing.acme.directoryUrl" placeholder="https://.../directory" />
+            </el-form-item>
+            <template v-if="['zerossl', 'google', 'custom'].includes(editing.acme.ca)">
+              <el-form-item label="EAB Key ID"><el-input v-model="editing.acme.eabKid" /></el-form-item>
+              <el-form-item label="EAB HMAC Key"><SecretInput v-model="editing.acme.eabHmac" :reveal="secretOf(secretKey && `/api/ssl/certs/${secretKey}/secrets`, 'eabHmac')" /></el-form-item>
+            </template>
+            <el-form-item :label="t('ssl.keyType')">
+              <el-select v-model="editing.acme.keyType" class="w-160">
+                <el-option label="ECC P-256" value="P256" />
+                <el-option label="ECC P-384" value="P384" />
+                <el-option label="RSA 2048" value="2048" />
+                <el-option label="RSA 4096" value="4096" />
+              </el-select>
+            </el-form-item>
+            <el-form-item :label="t('ssl.profile')">
+              <!-- 空字符串表示 CA 默认配置，需作为有效值显示对应选项；也可输入 CA 支持的其他配置名 -->
+              <el-select v-model="editing.acme.profile" class="w-260" filterable allow-create default-first-option :empty-values="[null, undefined]">
+                <el-option :label="t('ssl.profileDefault')" value="" />
+                <el-option :label="t('ssl.profileShortLived')" value="shortlived" />
+              </el-select>
+              <span class="help">{{ editing.acme.profile === 'shortlived' ? t('ssl.profileShortLivedHelp', { hours: renewHours }) : t('ssl.profileHelp') }}</span>
+            </el-form-item>
+            <el-form-item :label="t('ssl.network')">
+              <!-- 限定签发时的出站网络：有 IPv6 地址但 IPv6 不通的主机选择仅 IPv4 -->
+              <el-select v-model="editing.acme.network" class="w-160" :empty-values="[null, undefined]">
+                <el-option :label="t('ssl.networkAuto')" value="" />
+                <el-option :label="t('ssl.networkIpv4')" value="tcp4" />
+                <el-option :label="t('ssl.networkIpv6')" value="tcp6" />
+              </el-select>
+              <span class="help">{{ t('ssl.networkHelp') }}</span>
+            </el-form-item>
+            <template v-if="editing.acme.challenge !== 'http'">
+              <el-form-item :label="t('ssl.zone')"><el-input v-model="editing.acme.zone" :placeholder="t('ssl.zonePlaceholder')" /></el-form-item>
+              <el-form-item :label="t('ssl.cname')">
+                <el-checkbox v-model="editing.acme.disableCname">{{ t('ssl.disableCname') }}</el-checkbox>
+                <span class="help">{{ t('ssl.cnameHelp') }}</span>
+              </el-form-item>
+              <el-form-item :label="t('ssl.resolvers')"><el-input v-model="resolversText" :placeholder="t('ssl.resolversPlaceholder')" /></el-form-item>
+              <el-form-item :label="t('ssl.propagationTimeout')"><el-input-number v-model="editing.acme.propagationTimeout" :min="30" :max="3600" /></el-form-item>
+              <el-form-item :label="t('ssl.propagationCheck')">
+                <el-checkbox v-model="editing.acme.disableAuthoritativeCheck">{{ t('ssl.disableAuthCheck') }}</el-checkbox>
+                <el-checkbox v-model="editing.acme.skipPropagationCheck">{{ t('ssl.skipCheck') }}</el-checkbox>
+              </el-form-item>
+            </template>
+          </div>
         </template>
 
         <template v-if="editing.source === 'upload'">
@@ -202,6 +205,11 @@
           <el-form-item label=" "><div class="form-help">{{ t('ssl.fileHelp') }}</div></el-form-item>
         </template>
 
+        <el-form-item :label="t('ssl.fileName')">
+          <el-input v-model="editing.remark" :placeholder="t('ssl.remarkPlaceholder')" />
+          <div class="form-help">{{ t('ssl.fileNameHelp') }}</div>
+        </el-form-item>
+        <GroupInput v-model="editing.group" :groups="gl.groupNames.value" />
         <el-divider content-position="left">{{ t('ssl.mapping') }}</el-divider>
         <el-form-item :label="t('ssl.writeDir')"><el-switch v-model="editing.mapping.enable" /></el-form-item>
         <template v-if="editing.mapping.enable">
@@ -293,6 +301,7 @@ import { moduleBuilt } from '../nav'
 import SecretInput from '../components/SecretInput.vue'
 import { secretOf } from '../secrets'
 import CopyHint from '../components/CopyHint.vue'
+import AdvancedToggle from '../components/AdvancedToggle.vue'
 import { asciiCopyName, createItem, uniqueName, type CopySource } from '../copyDraft'
 import PageHeader from '../components/PageHeader.vue'
 import ModuleBanner from '../components/ModuleBanner.vue'
@@ -318,6 +327,8 @@ interface ProviderMeta {
   idLabel?: string
   secretLabel?: string
   extra?: { key: string; label: string; placeholder?: string }[]
+  // docUrl 为服务商获取 API 凭据的页面
+  docUrl?: string
 }
 
 interface Cert {
@@ -517,6 +528,25 @@ function emptyCert(): Cert {
   }
 }
 
+// advOpen 为编辑框是否展开 ACME 的「高级设置」；advCount 为与默认值不同的高级字段数
+const advOpen = ref(false)
+const advCount = computed(() => {
+  const a = editing.value.acme
+  const dns = a.challenge !== 'http'
+  return [
+    !!a.email?.trim(),
+    a.ca && a.ca !== 'letsencrypt',
+    a.keyType && a.keyType !== 'P256',
+    !!a.profile,
+    !!a.network,
+    dns && !!a.zone?.trim(),
+    dns && a.disableCname,
+    dns && !!a.resolvers?.length,
+    dns && a.propagationTimeout && a.propagationTimeout !== 300,
+    dns && (a.skipPropagationCheck || a.disableAuthoritativeCheck),
+  ].filter(Boolean).length
+})
+
 function addDeploy() {
   editing.value.deploys.push({ enable: true, type: 'local', remark: '', connection: '', dir: '', certName: '', keyName: '', command: '', containers: [] })
 }
@@ -694,6 +724,7 @@ function openEditor(row?: CertView, copy = false) {
   }
   loadTargets()
   extra.value = { ...(editing.value.acme.credentials.extra ?? {}) }
+  advOpen.value = advCount.value > 0
   editorVisible.value = true
 }
 
@@ -835,6 +866,9 @@ watch(
 </script>
 
 <style scoped>
+.cred-link {
+  margin-left: 12px;
+}
 .http-tip {
   margin-bottom: 14px;
 }
