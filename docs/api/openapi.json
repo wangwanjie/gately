@@ -1247,6 +1247,9 @@
           "reason": {
             "type": "string"
           },
+          "redirect": {
+            "type": "boolean"
+          },
           "trapPorts": {
             "type": "string"
           },
@@ -2492,6 +2495,9 @@
           "maxConnections": {
             "type": "integer"
           },
+          "maxConnsPerSource": {
+            "type": "integer"
+          },
           "mode": {
             "type": "string"
           },
@@ -2641,6 +2647,9 @@
             "type": "string"
           },
           "maxConnections": {
+            "type": "integer"
+          },
+          "maxConnsPerSource": {
             "type": "integer"
           },
           "name": {
@@ -3347,6 +3356,9 @@
           },
           "paranoia": {
             "type": "integer"
+          },
+          "regexPrefilter": {
+            "type": "boolean"
           },
           "remark": {
             "type": "string"
@@ -44081,7 +44093,7 @@
     },
     "/api/system/upgrade": {
       "post": {
-        "description": "仅登录会话（管理员）可用，只支持 Linux 二进制部署。在后台下载与本机平台对应的发布包，核对 checksums.txt 中的 SHA-256 并试运行新程序，替换可执行文件后重启；旧版本保留为同目录下的 `\u003c文件名\u003e.old`。立即返回 202，进度见 `GET /api/system/upgrade/status`。定制构建返回 409：在线升级下载的是完整版本，请到 https://build.gately.cn 用相同选项生成新版本后用上传接口升级。\n\n**仅登录会话可用，API 令牌无法访问此接口。**",
+        "description": "仅登录会话（管理员）可用，只支持 Linux 二进制部署。在后台下载与本机平台对应的发布包，用编进程序的公钥验证 checksums.txt 的 minisign 签名（checksums.txt.minisig，签名无效时拒绝升级，签名上线前的版本没有该文件时照常升级），再核对其中的 SHA-256 并试运行新程序，替换可执行文件后重启；旧版本保留为同目录下的 `\u003c文件名\u003e.old`。立即返回 202，进度见 `GET /api/system/upgrade/status`。定制构建返回 409：在线升级下载的是完整版本，请到 https://build.gately.cn 用相同选项生成新版本后用上传接口升级。\n\n**仅登录会话可用，API 令牌无法访问此接口。**",
         "responses": {
           "200": {
             "description": "成功"
@@ -44173,7 +44185,7 @@
     },
     "/api/system/upgrade/status": {
       "get": {
-        "description": "仅登录会话可用。`state` 依次为 `checking`、`downloading`、`verifying`、`installing`、`restarting`；失败时为 `failed` 并在 `error` 中说明原因，被取消时为 `canceled`。`downloaded` / `total` 为升级包已下载与总字节数。\n\n**仅登录会话可用，API 令牌无法访问此接口。**",
+        "description": "仅登录会话可用。`state` 依次为 `checking`、`downloading`、`verifying`、`installing`、`restarting`；失败时为 `failed` 并在 `error` 中说明原因，被取消时为 `canceled`。`downloaded` / `total` 为升级包已下载与总字节数。`unsigned` 为 true 表示该版本没有发布签名，只核对了 SHA-256。\n\n**仅登录会话可用，API 令牌无法访问此接口。**",
         "responses": {
           "200": {
             "description": "成功"

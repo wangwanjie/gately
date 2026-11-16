@@ -1540,6 +1540,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `hits` | Mapa de integer |
 | `openPorts` | integer |
 | `reason` | string |
+| `redirect` | boolean |
 | `trapPorts` | string |
 | `trapSkipped` | Lista de integer |
 | `version` | string |
@@ -2068,6 +2069,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `listenAddress` | string |
 | `listenPorts` | string |
 | `maxConnections` | integer |
+| `maxConnsPerSource` | integer |
 | `mode` | string |
 | `name` | string |
 | `protocols` | Lista de string |
@@ -2119,6 +2121,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `listenAddress` | string |
 | `listenPorts` | string |
 | `maxConnections` | integer |
+| `maxConnsPerSource` | integer |
 | `name` | string |
 | `protocols` | Lista de string |
 | `proxyProtocol` | string |
@@ -2384,6 +2387,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `name` | string |
 | `outboundThreshold` | integer |
 | `paranoia` | integer |
+| `regexPrefilter` | boolean |
 | `remark` | string |
 | `ruleSets` | Lista de `waf.RuleSet` |
 | `safeline` | `waf.SafeLine` |
