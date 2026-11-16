@@ -1016,6 +1016,9 @@ func parseSeq(s string) (uint64, bool) {
 	return v, err == nil
 }
 
+// iconCacheControl 是根目录图标文件（favicon、应用图标）的缓存头。
+const iconCacheControl = "private, max-age=86400"
+
 // staticHandler 提供前端单页应用，未知路径回退到 index.html。
 func (a *App) staticHandler() http.Handler {
 	if a.opts.Web == nil {
@@ -1037,6 +1040,10 @@ func (a *App) staticHandler() http.Handler {
 				// 带哈希的构建产物可长期缓存
 				if strings.HasPrefix(name, "assets/") {
 					w.Header().Set("Cache-Control", "public, max-age=31536000, immutable")
+				} else if homeIconFiles[name] && name != "manifest.webmanifest" {
+					// 根目录的图标文件名不带哈希，不能长期缓存，但给一天缓存即可避免每次打开页面都重新取；
+					// 用 private 防止共享缓存把开启安全入口后才返回的图标发给未通过入口的访客
+					w.Header().Set("Cache-Control", iconCacheControl)
 				}
 				if a.servePrecompressed(w, r, name) {
 					return
