@@ -18,7 +18,8 @@ type aferoFS struct {
 func Afero(mounts []Mount) afero.Fs {
 	a := &aferoFS{mounts: mounts, fss: map[string]afero.Fs{}}
 	for _, mt := range mounts {
-		var f afero.Fs = afero.NewBasePathFs(afero.NewOsFs(), mt.Path)
+		// 经 os.Root 访问，指向挂载目录之外的符号链接无法被跟随
+		var f afero.Fs = RootAfero(mt.Path)
 		if mt.ReadOnly {
 			f = afero.NewReadOnlyFs(f)
 		}

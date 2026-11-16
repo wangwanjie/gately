@@ -469,6 +469,9 @@ func (a *App) run(parent context.Context) error {
 		a.closeLogs()
 		return err
 	}
+	// 登记后台实际监听的地址（-listen 覆盖时为覆盖后的地址）：Web 服务只把后台登录 Cookie 转给反向代理到这些地址的站点后端
+	adminAddrs := []string{httpLn.Addr().String()}
+	defer httpx.SetAdminListen(nil)
 	go func() {
 		a.sysLogs.Add(logbuf.LevelInfo, "", "管理界面监听 "+s.Listen)
 		errCh <- servers[0].Serve(&denyListener{Listener: httpLn, a: a})
@@ -485,6 +488,7 @@ func (a *App) run(parent context.Context) error {
 			a.sysLogs.Add(logbuf.LevelError, "", "HTTPS 管理界面监听失败: "+err.Error())
 		} else {
 			a.httpsReady.Store(true)
+			adminAddrs = append(adminAddrs, ln.Addr().String())
 			a.sysLogs.Add(logbuf.LevelInfo, "", "HTTPS 管理界面监听 "+s.HTTPSListen)
 			go func() {
 				if err := tlsSrv.ServeTLS(&denyListener{Listener: ln, a: a}, "", ""); err != nil && !errors.Is(err, http.ErrServerClosed) {
@@ -493,6 +497,7 @@ func (a *App) run(parent context.Context) error {
 			}()
 		}
 	}
+	httpx.SetAdminListen(adminAddrs)
 	if a.opts.GatewaySocket != "" {
 		// 统一网关监听失败只记录日志，不影响 TCP 管理界面
 		gwSrv := &http.Server{Handler: a.gatewayHandler(a.opts.GatewayPrefix, handler), ReadHeaderTimeout: 10 * time.Second}
@@ -1026,6 +1031,9 @@ func parseSeq(s string) (uint64, bool) {
 	return v, err == nil
 }
 
+// iconCacheControl 是根目录图标文件（favicon、应用图标）的缓存头。
+const iconCacheControl = "private, max-age=86400"
+
 // staticHandler 提供前端单页应用，未知路径回退到 index.html。
 func (a *App) staticHandler() http.Handler {
 	if a.opts.Web == nil {
@@ -1047,6 +1055,10 @@ func (a *App) staticHandler() http.Handler {
 				// 带哈希的构建产物可长期缓存
 				if strings.HasPrefix(name, "assets/") {
 					w.Header().Set("Cache-Control", "public, max-age=31536000, immutable")
+				} else if homeIconFiles[name] && name != "manifest.webmanifest" {
+					// 根目录的图标文件名不带哈希，不能长期缓存，但给一天缓存即可避免每次打开页面都重新取；
+					// 用 private 防止共享缓存把开启安全入口后才返回的图标发给未通过入口的访客
+					w.Header().Set("Cache-Control", iconCacheControl)
 				}
 				if a.servePrecompressed(w, r, name) {
 					return

@@ -90,7 +90,8 @@
   "event": {
     "authFailed": "관리 콘솔 로그인 실패",
     "wafBlocked": "WAF 요청 차단",
-    "knockFailed": "포트 노크 거부됨"
+    "knockFailed": "포트 노크 거부됨",
+    "fileAuthFailed": "파일 서비스 로그인 실패"
   },
   "sourceHelp": {
     "file": "파일에 추가되는 내용을 계속 읽고, 로테이션 후에는 새 파일로 자동 전환합니다. 한 줄에 경로 하나.",
@@ -241,6 +242,10 @@
     "gately-knock": {
       "name": "포트 노크 실패",
       "desc": "인증 실패, 재전송, 허용되지 않은 포트 요청 등의 노크 패킷을 반복해서 보낸 출처(같은 출처는 5초에 최대 한 번 집계)"
+    },
+    "gately-files": {
+      "name": "파일 서비스 로그인 실패",
+      "desc": "WebDAV, FTP, SMB 로그인에 실패했거나 실패가 너무 많아 거부된 출처(같은 출처는 5초에 최대 한 번 집계)"
     },
     "web-decoy": {
       "name": "웹 미끼 경로",

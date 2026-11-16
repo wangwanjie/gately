@@ -87,44 +87,68 @@
       "text": "v0.6.6.6: Suche und nur nach Anmeldung sichtbare Links im Navigationspanel, 16 neue DNS-Anbieter, vertrauenswürdige Quellen für frpc →",
       "link": "/de/news/v0.6.6.6"
     },
-    "titleLine1": "Das All-in-one-Netzwerk-Gateway",
-    "titleLine2": "Open Source, sofort einsatzbereit",
-    "lead": "DNS und NAT-Traversal, Reverse Proxy und HTTPS-Zertifikate, WAF und Einbruchschutz, Single Sign-on und Dateifreigabe: alles, was Ihr Heimnetz und Ihre Server am Eingang brauchen, in einer Oberfläche. Installieren Sie Gately auf einem NAS, einem Soft-Router oder einem Cloud-Server und richten Sie alles im Browser ein.",
+    "titleLine1": "Ein Eingang für Ihre selbst gehosteten Dienste",
+    "titleLine2": "Reverse Proxy, HTTPS, DDNS, NAT-Traversal, WAF und Sperren in einer Binärdatei",
+    "lead": "Gately sitzt am Eingang eines Heimnetzes oder Servers und übernimmt den Weg vom Internet zu Ihren Diensten: Es hält Ihre Domain auf eine wechselnde IP gerichtet, holt und erneuert Zertifikate, leitet alle Dienste über einen Port 443, stellt Anmeldung und WAF vor sie und sperrt Adressen, die scannen. Installieren Sie es auf einem NAS, einem Router oder einem Cloud-Server und richten Sie alles im Browser ein.",
     "ctaStart": "Schnellstart",
     "ctaDownload": "Download",
-    "mockTitle": "gately · Übersicht",
-    "mockRows": [
-      [
-        "Dynamisches DNS",
-        "75 Einträge synchron",
-        "ok"
-      ],
-      [
-        "STUN-Traversal",
-        "18 Regeln aktiv",
-        "ok"
-      ],
-      [
-        "Portweiterleitung",
-        "25 Regeln aktiv",
-        "ok"
-      ],
-      [
-        "Web-Dienste",
-        "27 Sites · HTTPS",
-        "ok"
-      ],
-      [
-        "SSL-Zertifikate",
-        "5 Zertifikate · automatische Erneuerung",
-        "ok"
-      ],
-      [
-        "WAF-Firewall",
-        "CRS v4 · Blockiermodus",
-        "warn"
+    "product": {
+      "overview": "Übersicht",
+      "tour": "2-minütige Tour ansehen",
+      "close": "Schließen"
+    },
+    "replaces": {
+      "title": "Was Gately ersetzt",
+      "desc": "Die Werkzeuge, die Sie heute einsetzen, und das Gately-Modul, das sie übernimmt.",
+      "note": "Nicht benötigte Module lassen sich abschalten, oder Sie erzeugen auf <a href=\"https://build.gately.cn\" target=\"_blank\" rel=\"noreferrer\">build.gately.cn</a> eine Binärdatei nur mit den gewählten Modulen.",
+      "items": [
+        {
+          "from": "nginx, Nginx Proxy Manager",
+          "module": "Web-Dienste",
+          "text": "Reverse Proxy, statische Sites, Weiterleitungen, HTTP/3, Zugriffsregeln pro Site; importiert nginx-Konfigurationen"
+        },
+        {
+          "from": "certbot, acme.sh",
+          "module": "SSL-Zertifikate",
+          "text": "DNS-01 und HTTP-01, Wildcard, automatische Erneuerung und Verteilung"
+        },
+        {
+          "from": "ddns-go, DDNS-Skripte",
+          "module": "Dynamisches DNS",
+          "text": "Über 35 Anbieter, IPv4 und IPv6"
+        },
+        {
+          "from": "haproxy-SNI-Routing, sslh",
+          "module": "Protokoll-Routing",
+          "text": "HTTPS, SSH, RDP und mehr teilen sich einen Port"
+        },
+        {
+          "from": "fail2ban",
+          "module": "Einbruchschutz",
+          "text": "Log-Regeln, Köderports und Scan-Erkennung; Sperren landen in nftables oder iptables"
+        },
+        {
+          "from": "Eine separate WAF",
+          "module": "WAF-Firewall",
+          "text": "Coraza mit OWASP CRS v4, pro Site"
+        },
+        {
+          "from": "Ein Login-Gateway vor den Anwendungen",
+          "module": "Web-Anmeldung",
+          "text": "Eingebaute Anmeldung, TOTP, Passkeys und ein OIDC-Anbieter; Forward Auth wird ebenfalls unterstützt"
+        },
+        {
+          "from": "Von Hand betriebene frpc, cloudflared, tailscaled",
+          "module": "Netzwerk & Tunnel",
+          "text": "Verwaltete frp, Cloudflare Tunnel, Tailscale, NetBird und EasyTier mit Installation, Update und Rollback"
+        },
+        {
+          "from": "Hole-Punching-Lösungen ohne öffentliche IPv4",
+          "module": "STUN-Traversal",
+          "text": "TCP- und UDP-Hole-Punching; Adressänderungen gehen automatisch an DNS und Benachrichtigungen"
+        }
       ]
-    ],
+    },
     "featuresTitle": "Netzwerkwerkzeuge für jeden Tag, sofort einsatzbereit",
     "featuresDesc": "Von der eigenen Domain fürs Zuhause bis zum Schutz einer ganzen Reihe von Websites: alles in derselben Oberfläche.",
     "features": [
@@ -237,7 +261,8 @@
     "installTitle": "In einer Minute startklar",
     "installDesc": "Images gibt es für amd64, arm64 und arm/v7. Nach dem Start <code>http://GERÄTE-IP:16680</code> öffnen und mit dem Standardkonto <code>admin</code> und dem Standardpasswort <code>gately.cn</code> anmelden; das Passwort danach sofort ändern.",
     "installTabBinary": "Binärdatei",
-    "installDocker": "docker run -d --name gately --network host \\\n  -v ./gately-data:/etc/gately \\\n  -v /var/run/docker.sock:/var/run/docker.sock \\\n  ghcr.io/wangwanjie/gately:latest",
+    "installDocker": "docker run -d --name gately --network host --cap-add NET_ADMIN \\\n  -v ./gately-data:/etc/gately \\\n  ghcr.io/wangwanjie/gately:latest\n\n# Um Docker aus Gately zu verwalten, zusätzlich angeben:\n#   -v /var/run/docker.sock:/var/run/docker.sock",
+    "composeDockerHint": "Für die Docker-Verwaltung die nächste Zeile einkommentieren",
     "installBinary": "# Das Archiv für Ihre Plattform von Releases herunterladen und entpacken\n./gately -c /etc/gately\n\n# Die Verwaltungsoberfläche lauscht standardmäßig auf :16680\n# Standardkonto admin, Standardpasswort gately.cn",
     "installTabFnos": "fnOS",
     "installFnos": "# 1. gately_<version>_fnos_x86.fpk von Releases herunterladen (_arm.fpk für ARM-Geräte)\n# 2. In fnOS App Center → Manuelle Installation öffnen, Datei wählen und den Assistenten abschließen\n# 3. Auf das Gately-Symbol auf dem fnOS-Desktop klicken, um es über das einheitliche Gateway zu öffnen\n\n# Standardkonto admin, Standardpasswort gately.cn",
@@ -261,7 +286,7 @@
       },
       {
         "q": "Warum wird für Portweiterleitung und STUN das Host-Netzwerk empfohlen?",
-        "a": "Diese Module lauschen direkt auf Ports des Hosts. Wenn Sie keine Docker-Verwaltung brauchen, können Sie die docker.sock-Einbindung weglassen."
+        "a": "Diese Module lauschen direkt auf Ports des Hosts. --cap-add NET_ADMIN erlaubt dem Einbruchschutz, Sperren in die Host-Firewall zu schreiben; /var/run/docker.sock nur einbinden, wenn Sie die Docker-Verwaltung nutzen möchten."
       }
     ],
     "moreFaq": "Weitere Fragen →",

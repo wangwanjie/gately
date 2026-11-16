@@ -32,6 +32,13 @@ jobs:
         run: go vet ./...
       - name: 单元测试
         run: go test -race ./...
+      # SMB 解析代码面向未认证的网络输入，32 位平台上 int 只有 32 位，偏移与长度的边界检查需单独验证；
+      # x86-64 的 Linux 能直接运行 386 程序
+      - name: SMB 32 位检查（GOARCH=386）
+        run: |
+          GOARCH=386 go vet ./internal/gosamba/...
+          GOARCH=386 CGO_ENABLED=0 go test ./internal/gosamba/bounds/ ./internal/gosamba/smb2/ ./internal/gosamba/ntlm/ ./internal/gosamba/transport/
+          GOARCH=386 CGO_ENABLED=0 go test -run 'Huge|Recover' ./internal/gosamba/parent/
       - name: 交叉编译
         run: |
           for target in linux/amd64 linux/arm64 linux/arm linux/mipsle linux/mips linux/riscv64 windows/amd64 darwin/arm64 freebsd/amd64; do

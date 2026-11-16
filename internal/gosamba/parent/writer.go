@@ -1,4 +1,4 @@
-// Gately 修改：仅在 Linux 与 macOS 编译（构建约束）。
+// Gately 修改：仅在 Linux 与 macOS 编译（构建约束）；写协程中的 panic 只断开本连接。
 
 //go:build linux || darwin
 
@@ -153,6 +153,8 @@ func (cw *connWriter) Write(p []byte) (int, error) {
 // run is the single goroutine that writes to the socket.
 func (cw *connWriter) run() {
 	defer close(cw.done)
+	// Gately 新增：写协程 panic 时关闭连接，读循环随之结束，不让 panic 结束整个进程
+	defer recoverConnPanic(cw.log, "writer", cw.kill)
 	for {
 		select {
 		case buf := <-cw.q:

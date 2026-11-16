@@ -87,44 +87,68 @@
       "text": "v0.6.6.6 发布：导航面板搜索与登录可见链接、16 家新 DNS 服务商、frpc 可信来源 →",
       "link": "/news/v0.6.6.6"
     },
-    "titleLine1": "一站式网络网关",
-    "titleLine2": "开源透明，开箱即用",
-    "lead": "从域名解析、内网穿透，到反向代理、HTTPS 证书；从 WAF、入侵防护，到统一登录与文件共享，家庭网络和服务器入口要用的能力，Gately 都整合在一个后台里。装在 NAS、软路由或云服务器上，打开浏览器就能配置和运维。",
+    "titleLine1": "自托管服务的统一入口",
+    "titleLine2": "反向代理、证书、动态域名、穿透、WAF 与封禁，一个程序",
+    "lead": "从公网到你家里或服务器上的服务，这一路要做的事 Gately 网关都接管：域名跟着变化的 IP 走，证书自动签发续期，所有服务共用一个 443 端口，每个站点前面可以加登录和 WAF，探测和爆破的地址自动封禁。装在 NAS、软路由或云服务器上，全部在浏览器里配置。",
     "ctaStart": "快速开始",
     "ctaDownload": "下载",
-    "mockTitle": "gately · 总览",
-    "mockRows": [
-      [
-        "动态域名",
-        "75 条记录已同步",
-        "ok"
-      ],
-      [
-        "STUN 穿透",
-        "18 条规则运行中",
-        "ok"
-      ],
-      [
-        "端口转发",
-        "25 条规则运行中",
-        "ok"
-      ],
-      [
-        "Web 服务",
-        "27 个站点 · HTTPS",
-        "ok"
-      ],
-      [
-        "SSL 证书",
-        "5 张证书 · 自动续期",
-        "ok"
-      ],
-      [
-        "WAF 防火墙",
-        "CRS v4 · 拦截模式",
-        "warn"
+    "product": {
+      "overview": "概览",
+      "tour": "看 2 分钟巡览视频",
+      "close": "关闭"
+    },
+    "replaces": {
+      "title": "能替代哪些工具",
+      "desc": "你现在在用的工具，在 Gately 里对应的模块。",
+      "note": "用不到的模块可以关闭，也可以在 <a href=\"https://build.gately.cn\" target=\"_blank\" rel=\"noreferrer\">build.gately.cn</a> 只选需要的模块生成更小的安装包。",
+      "items": [
+        {
+          "from": "nginx、Nginx Proxy Manager",
+          "module": "Web 服务",
+          "text": "反向代理、静态站点、重定向、HTTP/3、按站点的访问控制；可导入 nginx 配置"
+        },
+        {
+          "from": "acme.sh、certbot",
+          "module": "SSL 证书",
+          "text": "DNS-01 / HTTP-01、泛域名、自动续期与分发"
+        },
+        {
+          "from": "ddns-go、DDNS 脚本",
+          "module": "动态域名",
+          "text": "35+ 服务商，IPv4 / IPv6"
+        },
+        {
+          "from": "haproxy 按 SNI 分流、sslh",
+          "module": "协议分流",
+          "text": "HTTPS、SSH、RDP 等共用一个端口"
+        },
+        {
+          "from": "fail2ban",
+          "module": "入侵防护",
+          "text": "日志规则、诱饵端口、扫描检测，封禁写入 nftables / iptables"
+        },
+        {
+          "from": "单独部署的 WAF",
+          "module": "WAF 防火墙",
+          "text": "Coraza + OWASP CRS v4，按站点开关"
+        },
+        {
+          "from": "应用前面另加的登录网关",
+          "module": "网页认证",
+          "text": "内置登录、两步验证、Passkey 和 OIDC 身份提供方"
+        },
+        {
+          "from": "手动维护的 frpc、cloudflared、tailscaled",
+          "module": "组网与穿透",
+          "text": "托管 frp、Cloudflare Tunnel、Tailscale、NetBird、EasyTier，带安装、更新、回滚"
+        },
+        {
+          "from": "没有公网 IPv4 时的各种打洞方案",
+          "module": "STUN 穿透",
+          "text": "TCP / UDP 打洞，地址变化自动同步到域名和通知"
+        }
       ]
-    ],
+    },
     "featuresTitle": "常用的网络功能，都已备好",
     "featuresDesc": "从给家里配一个域名，到守好一整排网站，都在同一个界面里完成。",
     "features": [
@@ -237,7 +261,8 @@
     "installTitle": "一分钟装好",
     "installDesc": "镜像支持 amd64、arm64、arm/v7。启动后访问 <code>http://设备IP:16680</code>，用默认账号 <code>admin</code> 与默认密码 <code>gately.cn</code> 登录，登录后请立即修改密码。",
     "installTabBinary": "二进制",
-    "installDocker": "docker run -d --name gately --network host \\\n  -v ./gately-data:/etc/gately \\\n  -v /var/run/docker.sock:/var/run/docker.sock \\\n  ghcr.io/wangwanjie/gately:latest",
+    "installDocker": "docker run -d --name gately --network host --cap-add NET_ADMIN \\\n  -v ./gately-data:/etc/gately \\\n  ghcr.io/wangwanjie/gately:latest\n\n# 需要 Docker 管理时再加上：\n#   -v /var/run/docker.sock:/var/run/docker.sock",
+    "composeDockerHint": "需要 Docker 管理时取消下一行的注释",
     "installBinary": "# 从 Releases 下载对应平台的压缩包并解压\n./gately -c /etc/gately\n\n# 管理界面默认监听 :16680\n# 默认账号 admin，默认密码 gately.cn",
     "installTabFnos": "飞牛 fnOS",
     "installFnos": "# 1. 从 Releases 下载 gately_<版本>_fnos_x86.fpk（ARM 设备选 _arm.fpk）\n# 2. 飞牛「应用中心 → 手动安装」，选择文件并完成向导\n# 3. 点击飞牛桌面上的 Gately 图标，经统一网关打开管理界面\n\n# 默认账号 admin，默认密码 gately.cn",
@@ -261,7 +286,7 @@
       },
       {
         "q": "端口转发、STUN 为什么推荐 host 网络？",
-        "a": "这些模块需要直接监听宿主机端口。不需要 Docker 管理时，可去掉 docker.sock 挂载。"
+        "a": "这些模块需要直接监听宿主机端口。--cap-add NET_ADMIN 让入侵防护把封禁写入宿主机防火墙；需要 Docker 管理时再挂载 /var/run/docker.sock。"
       }
     ],
     "moreFaq": "更多问题 →",

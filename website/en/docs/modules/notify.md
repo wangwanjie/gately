@@ -57,7 +57,7 @@ The following variables can be used in the request URL and body, written as the 
 | `level` | Level: `info`, `warn` or `error` |
 | `time` | Time in RFC 3339 format |
 
-Extra fields carried by an event (such as `ip` and `container`) can also be used as variables. If a name collides with the table above, the table above takes precedence. Variable values in the URL are URL-escaped.
+Extra fields carried by an event (such as `ip` and `container`) can also be used as variables. If a name collides with the table above, the table above takes precedence. Variable values in the URL are URL-escaped. When the body is a JSON object or array (no Content-Type, or a JSON one), variable values inside JSON strings are JSON-escaped (quotes, backslashes, line breaks and so on), while variables outside strings and bodies in other formats are substituted as they are; variable values in request headers have line breaks removed.
 
 ### Email
 

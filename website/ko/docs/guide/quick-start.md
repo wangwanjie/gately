@@ -5,13 +5,12 @@
 ## 1. 실행
 
 ```bash
-docker run -d --name gately --network host \
+docker run -d --name gately --network host --cap-add NET_ADMIN \
   -v ./gately-data:/etc/gately \
-  -v /var/run/docker.sock:/var/run/docker.sock \
   ghcr.io/wangwanjie/gately:latest
 ```
 
-Docker 관리 기능이 필요 없다면 `docker.sock` 마운트를 생략해도 됩니다. 포트 포워딩, STUN, 웹 서비스는 호스트 포트를 직접 수신해야 하므로 `--network host`를 권장합니다.
+Gately에서 Docker를 관리하려면 명령에 `-v /var/run/docker.sock:/var/run/docker.sock`을 추가하세요. `--cap-add NET_ADMIN`은 침입 방지가 차단을 호스트 방화벽에 기록하는 데 쓰입니다. 포트 포워딩, STUN, 웹 서비스는 호스트 포트를 직접 수신해야 하므로 `--network host`를 권장합니다.
 
 GHCR 접속이 느리면 Docker Hub의 `vanjayak/gately:latest`를 대신 사용하세요. 같은 이미지입니다.
 

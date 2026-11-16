@@ -5,13 +5,12 @@
 ## 1. 启动
 
 ```bash
-docker run -d --name gately --network host \
+docker run -d --name gately --network host --cap-add NET_ADMIN \
   -v ./gately-data:/etc/gately \
-  -v /var/run/docker.sock:/var/run/docker.sock \
   ghcr.io/wangwanjie/gately:latest
 ```
 
-不需要 Docker 管理功能时，可以去掉 `docker.sock` 挂载。端口转发、STUN、Web 服务需要监听宿主机端口，推荐使用 `--network host`。
+需要 Docker 管理时，在命令里加上 `-v /var/run/docker.sock:/var/run/docker.sock`。`--cap-add NET_ADMIN` 供入侵防护把封禁写入宿主机防火墙。端口转发、STUN、Web 服务需要监听宿主机端口，推荐使用 `--network host`。
 
 访问 GHCR 较慢时，可以把镜像换成 Docker Hub 上的 `vanjayak/gately:latest`，两者是同一份镜像。
 

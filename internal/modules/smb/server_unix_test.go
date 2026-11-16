@@ -23,6 +23,7 @@ import (
 
 	"github.com/wangwanjie/gately/internal/banlist"
 	"github.com/wangwanjie/gately/internal/config"
+	"github.com/wangwanjie/gately/internal/events"
 	"github.com/wangwanjie/gately/internal/fileusers"
 	"github.com/wangwanjie/gately/internal/gosamba/parent"
 	"github.com/wangwanjie/gately/internal/logbuf"
@@ -331,8 +332,8 @@ func TestLogHandlerFilters(t *testing.T) {
 	}
 }
 
-// TestAuthThrottle 验证同一来源认证失败 10 次后被拒绝（即使密码正确）并写入日志，
-// 重启服务后清空计数。
+// TestAuthThrottle 验证同一来源认证失败 10 次后被拒绝（即使密码正确）并写入日志；
+// 限流器由模块持有，重启服务后计数仍然保留，不能借修改设置或共享用户触发重启来清零。
 func TestAuthThrottle(t *testing.T) {
 	root := t.TempDir()
 	m, port := startTestModule(t, Settings{Users: []User{{Name: "alice", Password: "p1", Root: root}}})
@@ -351,8 +352,8 @@ func TestAuthThrottle(t *testing.T) {
 	m.mu.Lock()
 	m.restartLocked()
 	m.mu.Unlock()
-	if _, err := dial(t, port, "alice", "p1"); err != nil {
-		t.Fatalf("重启后限流应清空: %v", err)
+	if _, err := dial(t, port, "alice", "p1"); err == nil {
+		t.Fatal("重启服务后失败计数应保留")
 	}
 }
 
@@ -463,5 +464,97 @@ func TestInitInvalidConfig(t *testing.T) {
 	}
 	if m2.loadErr != nil || m2.settings.Users[0].Name != "u" || m2.settings.Port != DefaultPort {
 		t.Fatalf("加载时应规范化配置: %+v %v", m2.settings, m2.loadErr)
+	}
+}
+
+// TestPreAuthConnectionLimit：同一来源未登录的连接达到上限后，新连接立即被关闭并写入运行日志；
+// 已登录的连接不占用名额，达到上限时仍能登录。
+func TestPreAuthConnectionLimit(t *testing.T) {
+	m, port := startTestModule(t, Settings{Users: []User{{Name: "alice", Password: "p1", Root: t.TempDir()}}})
+	addr := "127.0.0.1:" + strconv.Itoa(port)
+	// 先登录一条，确认已登录的连接不计入上限
+	if _, err := dial(t, port, "alice", "p1"); err != nil {
+		t.Fatal(err)
+	}
+	var idle []net.Conn
+	t.Cleanup(func() {
+		for _, c := range idle {
+			c.Close()
+		}
+	})
+	for i := 0; i < preAuthMaxConnsPerIP; i++ {
+		c, err := net.Dial("tcp", addr)
+		if err != nil {
+			t.Fatal(err)
+		}
+		idle = append(idle, c)
+	}
+	// 服务端处理到全部空连接需要一点时间：持续尝试，直到新连接被立即关闭
+	deadline := time.Now().Add(5 * time.Second)
+	for {
+		c, err := net.Dial("tcp", addr)
+		if err != nil {
+			t.Fatal(err)
+		}
+		_ = c.SetReadDeadline(time.Now().Add(300 * time.Millisecond))
+		_, rerr := c.Read(make([]byte, 1))
+		c.Close()
+		if rerr != nil && !errors.Is(rerr, os.ErrDeadlineExceeded) {
+			break
+		}
+		if time.Now().After(deadline) {
+			t.Fatal("超过单个来源的上限后新连接应被立即关闭")
+		}
+	}
+	if !hasLog(m, "未登录的连接过多") {
+		t.Fatal("拒绝连接应写入运行日志")
+	}
+	// 释放空连接后可以照常登录
+	for _, c := range idle {
+		c.Close()
+	}
+	idle = nil
+	deadline = time.Now().Add(5 * time.Second)
+	for {
+		if _, err := dial(t, port, "alice", "p1"); err == nil {
+			break
+		}
+		if time.Now().After(deadline) {
+			t.Fatal("空连接关闭后应能登录")
+		}
+		time.Sleep(50 * time.Millisecond)
+	}
+}
+
+// TestAuthFailureEvent：SMB 密码错误发布文件服务登录失败事件供入侵防护计数，登录成功不发布。
+func TestAuthFailureEvent(t *testing.T) {
+	fileusers.ResetFailureReports()
+	t.Cleanup(fileusers.ResetFailureReports)
+	_, port := startTestModule(t, Settings{Users: []User{{Name: "alice", Password: "p1", Root: t.TempDir()}}})
+	ch := make(chan events.Event, 8)
+	cancel := events.Subscribe(func(e events.Event) {
+		if e.Type == events.FileAuthFailed {
+			ch <- e
+		}
+	})
+	defer cancel()
+	if _, err := dial(t, port, "alice", "p1"); err != nil {
+		t.Fatal(err)
+	}
+	select {
+	case e := <-ch:
+		t.Fatalf("登录成功不应发布事件: %+v", e)
+	case <-time.After(200 * time.Millisecond):
+	}
+	if _, err := dial(t, port, "alice", "wrong"); err == nil {
+		t.Fatal("错误密码应登录失败")
+	}
+	select {
+	case e := <-ch:
+		if e.Fields["ip"] != "127.0.0.1" || e.Fields["service"] != "SMB" {
+			t.Fatalf("事件字段不正确: %+v", e)
+		}
+	case <-time.After(2 * time.Second):
+		t.Fatal("错误密码应发布登录失败事件")
 	}
 }

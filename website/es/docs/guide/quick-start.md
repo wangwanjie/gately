@@ -5,13 +5,12 @@ Despliega, inicia sesión y crea tu primera regla en cinco minutos.
 ## 1. Arrancar
 
 ```bash
-docker run -d --name gately --network host \
+docker run -d --name gately --network host --cap-add NET_ADMIN \
   -v ./gately-data:/etc/gately \
-  -v /var/run/docker.sock:/var/run/docker.sock \
   ghcr.io/wangwanjie/gately:latest
 ```
 
-Si no necesitas la gestión de Docker, quita el montaje de `docker.sock`. El reenvío de puertos, STUN y los servicios web escuchan en puertos del host, por lo que se recomienda `--network host`.
+Para gestionar Docker desde Gately, añade `-v /var/run/docker.sock:/var/run/docker.sock` al comando. `--cap-add NET_ADMIN` permite que Prevención de intrusiones escriba los bloqueos en el cortafuegos del anfitrión. El reenvío de puertos, STUN y los servicios web escuchan en puertos del host, por lo que se recomienda `--network host`.
 
 Si GHCR te resulta lento, usa en su lugar `vanjayak/gately:latest` de Docker Hub; es la misma imagen.
 

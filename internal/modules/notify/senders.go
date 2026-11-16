@@ -11,6 +11,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/wangwanjie/gately/internal/i18n"
+	"html"
 	"io"
 	"mime"
 	"net"
@@ -508,10 +509,11 @@ func sendPushPlus(ctx context.Context, ch Channel, msg Message) error {
 	if target == "" {
 		target = "https://www.pushplus.plus/send"
 	}
+	// 正文按 HTML 模板展示：先转义事件中的文本（可能含访客的请求路径等），再把换行换成 <br/>
 	return postJSON(ctx, target, map[string]any{
 		"token":    ch.Secret,
 		"title":    msg.Title,
-		"content":  strings.ReplaceAll(msg.Text, "\n", "<br/>"),
+		"content":  strings.ReplaceAll(html.EscapeString(msg.Text), "\n", "<br/>"),
 		"template": "html",
 	}, "code", 200)
 }

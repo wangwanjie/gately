@@ -7,9 +7,10 @@
 ```bash
 docker run -d --name gately --network host --cap-add NET_ADMIN \
   -v ./gately-data:/etc/gately \
-  -v /var/run/docker.sock:/var/run/docker.sock \
   ghcr.io/wangwanjie/gately:latest
 ```
+
+Gately에서 Docker를 관리하려면 명령에 `-v /var/run/docker.sock:/var/run/docker.sock`을 추가하세요.
 
 ### Docker Compose
 
@@ -27,10 +28,10 @@ services:
     volumes:
       # 설정 디렉터리 (일반 JSON, git 백업 가능. ssl.json에는 인증서 개인 키가 들어 있습니다)
       - ./data:/etc/gately
-      # Docker 관리 (필요 없으면 삭제)
-      - /var/run/docker.sock:/var/run/docker.sock
+      # Docker 관리: 필요하면 다음 줄의 주석을 해제
+      # - /var/run/docker.sock:/var/run/docker.sock
     environment:
-      - TZ=Asia/Shanghai
+      - TZ=Asia/Seoul
 ```
 
 `--cap-add NET_ADMIN`과 `cap_add`는 [침입 방지](/ko/docs/modules/guard)가 차단을 호스트의 nftables 방화벽에 기록하는 데 쓰입니다. 필요 없으면 빼도 되며, 이 경우에도 차단은 Gately 자체 서비스에 적용됩니다.

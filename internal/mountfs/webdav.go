@@ -32,7 +32,8 @@ type davFS struct {
 func WebDAV(mounts []Mount) xwebdav.FileSystem {
 	d := &davFS{mounts: mounts, fss: map[string]xwebdav.FileSystem{}}
 	for _, mt := range mounts {
-		var f xwebdav.FileSystem = xwebdav.Dir(mt.Path)
+		// 经 os.Root 访问，指向挂载目录之外的符号链接无法被跟随
+		var f xwebdav.FileSystem = RootDAV(mt.Path)
 		if mt.ReadOnly {
 			f = ReadOnlyDAV{f}
 		}

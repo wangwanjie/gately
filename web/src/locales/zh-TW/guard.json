@@ -90,7 +90,8 @@
   "event": {
     "authFailed": "管理後台登入失敗",
     "wafBlocked": "WAF 攔截請求",
-    "knockFailed": "連接埠敲門被拒絕"
+    "knockFailed": "連接埠敲門被拒絕",
+    "fileAuthFailed": "檔案服務登入失敗"
   },
   "sourceHelp": {
     "file": "持續讀取檔案新增的內容，輪替後自動切換到新檔案。每行一個路徑。",
@@ -241,6 +242,10 @@
     "gately-knock": {
       "name": "連接埠敲門失敗",
       "desc": "多次傳送認證失敗、重放或請求未授權連接埠的敲門封包的來源（同一來源每 5 秒最多計一次）"
+    },
+    "gately-files": {
+      "name": "檔案服務登入失敗",
+      "desc": "WebDAV、FTP、SMB 登入失敗或因失敗過多被拒絕的來源（同一來源每 5 秒最多計一次）"
     },
     "web-decoy": {
       "name": "Web 誘餌路徑",
