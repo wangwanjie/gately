@@ -10,7 +10,13 @@
         <component :is="icon" :size="20" :stroke-width="2" />
       </div>
       <div class="page-head-text">
-        <h2>{{ title }}</h2>
+        <div class="page-head-title">
+          <h1>{{ title }}</h1>
+          <!-- 本页对应的官网文档，按界面语言打开 -->
+          <a v-if="doc" class="page-head-doc" :href="docHref" target="_blank" rel="noopener noreferrer" :title="t('common.docsTitle')">
+            <BookOpen :size="14" aria-hidden="true" />{{ t('common.docs') }}
+          </a>
+        </div>
         <p v-if="desc">{{ desc }}</p>
       </div>
     </div>
@@ -23,10 +29,16 @@
 <script setup lang="ts">
 import type { Component } from 'vue'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, useSlots, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { BookOpen } from 'lucide-vue-next'
 import { useIsMobile } from '../composables/useIsMobile'
+import { docsUrl } from '../docsUrl'
 import { headLayout, headOwner, isStuck, type HeadLayout } from '../stickyHead'
 
-defineProps<{ title: string; desc?: string; icon?: Component }>()
+// doc 为官网文档路径（/docs/ 之后的部分，可带锚点，如 modules/web#proxy-options），为空时不显示文档链接
+const props = defineProps<{ title: string; desc?: string; icon?: Component; doc?: string }>()
+const { t, locale } = useI18n()
+const docHref = computed(() => (props.doc ? docsUrl(locale.value, '/docs/' + props.doc) : ''))
 
 // 页面头部吸顶（issue #64）：有操作栏的头部吸在顶栏下方，长列表滚动时操作栏始终可用。
 // 只改 sticky 的 top，不改变头部在文档流里的高度，滚动时内容不会跳动。
@@ -175,7 +187,31 @@ onBeforeUnmount(() => {
 .page-head-text {
   min-width: 0;
 }
-h2 {
+.page-head-title {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 2px 10px;
+}
+.page-head-doc {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 13px;
+  color: var(--el-color-primary);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.page-head-doc:hover {
+  text-decoration: underline;
+}
+.page-head-doc:focus-visible {
+  outline: 2px solid var(--el-color-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+/* 页面标题是每页唯一的 h1（读屏按标题层级导航），字号保持原来的 18px */
+h1 {
   margin: 0;
   font-size: 18px;
   font-weight: 600;

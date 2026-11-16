@@ -1,6 +1,6 @@
 <template>
   <div>
-    <PageHeader :title="t('audit.title')" :desc="t('audit.desc')" :icon="ClipboardList">
+    <PageHeader :title="t('audit.title')" doc="guide/audit" :desc="t('audit.desc')" :icon="ClipboardList">
       <el-button :icon="RefreshCw" :loading="loading" @click="load">{{ t('common.refresh') }}</el-button>
     </PageHeader>
 
@@ -14,6 +14,9 @@
       </div>
       <div class="g-card-body table-body">
         <el-table v-loading="loading" :data="entries" :empty-text="t('audit.empty')">
+          <template v-if="loadError" #empty>
+            <LoadError compact :error="loadError" @retry="load" />
+          </template>
           <el-table-column :label="t('audit.time')" width="180">
             <template #default="{ row }">{{ new Date(row.time).toLocaleString() }}</template>
           </el-table-column>
@@ -35,7 +38,8 @@
               <div v-if="row.detail" class="meta">{{ row.detail }}</div>
             </template>
           </el-table-column>
-          <el-table-column :label="t('audit.status')" width="90" align="center">
+          <!-- 结果列固定在右侧，手机上横向滑动查看操作内容时成功与失败始终可见 -->
+          <el-table-column :label="t('audit.status')" width="90" align="center" fixed="right">
             <template #default="{ row }">
               <el-tag size="small" effect="plain" :type="row.status >= 400 ? 'danger' : 'success'">{{ row.status || '-' }}</el-tag>
             </template>
@@ -53,9 +57,9 @@
 import { onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ClipboardList, RefreshCw, Search } from 'lucide-vue-next'
-import { ElMessage } from 'element-plus'
 import PageHeader from '../components/PageHeader.vue'
-import { api } from '../api'
+import LoadError from '../components/LoadError.vue'
+import { api, errorText } from '../api'
 
 interface AuditEntry {
   time: string
@@ -71,6 +75,8 @@ interface AuditEntry {
 }
 
 const { t } = useI18n()
+// 列表最近一次加载失败的原因，空为成功；接口出错时显示错误而不是空状态
+const loadError = ref('')
 const categories = ['login', 'change', 'access']
 const category = ref('')
 const keyword = ref('')
@@ -108,8 +114,9 @@ async function load() {
     const res = await api.get<{ entries: AuditEntry[]; total: number }>('/api/audit?' + qs.toString())
     entries.value = res.entries
     total.value = res.total
+    loadError.value = ''
   } catch (e) {
-    ElMessage.error((e as Error).message)
+    loadError.value = errorText(e)
   } finally {
     loading.value = false
   }

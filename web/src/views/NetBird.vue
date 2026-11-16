@@ -1,6 +1,6 @@
 <template>
   <div>
-    <PageHeader title="NetBird" :desc="t('netbird.desc')" :icon="Bird">
+    <PageHeader title="NetBird" doc="modules/tunnels#netbird" :desc="t('netbird.desc')" :icon="Bird">
       <ResetConfigButton v-if="!isReadonly" base="/api/netbird" :desc="t('components.resetConfig.netbird')" @done="onReset" />
     </PageHeader>
 
@@ -25,7 +25,7 @@
         </div>
       </div>
       <div class="g-card-body">
-        <GroupedList :gl="gl" :compact="compact" grid :empty-text="t('netbird.noInstances')" :empty-image-size="60">
+        <GroupedList :gl="gl" :error="loadError" @retry="load" :compact="compact" grid :empty-text="t('netbird.noInstances')" :empty-image-size="60">
           <template #item="{ it, item: v, sorting, bind }">
             <EntityCard v-bind="bind" :off="!v.enable" :compact="compact || sorting">
               <template v-if="sorting" #lead>
@@ -47,7 +47,7 @@
                 <SortMoves :gl="gl" :it="it" />
               </template>
               <template v-else-if="!isReadonly" #actions>
-                <el-switch :model-value="v.enable" size="small" @change="(x: boolean | string | number) => toggle(v.key, Boolean(x))" />
+                <el-switch :model-value="v.enable" :aria-label="t('common.toggleItem', { name: v.name || '-' })" size="small" @change="(x: boolean | string | number) => toggle(v.key, Boolean(x))" />
                 <el-button text size="small" :icon="RefreshCw" :disabled="!v.enable" @click="restart(v.key)">{{ t('common.restart') }}</el-button>
                 <el-button text size="small" :icon="Pencil" @click="openEditor(v)">{{ t('common.edit') }}</el-button>
                 <el-button text size="small" :icon="CopyPlus" @click="openEditor(v, true)">{{ t('common.duplicate') }}</el-button>
@@ -217,7 +217,7 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import { Bird, CopyPlus, LogOut, Pencil, Plus, RefreshCw, Save, Terminal, Trash2, Waypoints } from 'lucide-vue-next'
-import { api } from '../api'
+import { api, errorText } from '../api'
 import { isReadonly } from '../nav'
 import SecretInput from '../components/SecretInput.vue'
 import { secretOf } from '../secrets'
@@ -325,6 +325,8 @@ const defaultWgPort = 51820
 const defaultSocks5 = '127.0.0.1:1080'
 
 const { t } = useI18n()
+// 列表最近一次加载失败的原因，空为成功；接口出错时列表显示错误而不是空状态
+const loadError = ref('')
 const { isMobile, labelPosition } = useFormLayout()
 
 const instances = ref<InstanceView[]>([])
@@ -403,16 +405,21 @@ function connErrors(st: Status): string[] {
 }
 
 async function load() {
-  const [list, st, settings] = await Promise.all([
-    api.get<InstanceView[]>('/api/netbird/instances'),
-    api.get<Status[]>('/api/netbird/status'),
-    api.get<SettingsView>('/api/netbird/settings'),
-  ])
-  instances.value = list
-  statuses.value = st
-  program.netbirdPath = settings.settings.netbirdPath
-  cliPath.value = settings.cli
-  defaultManagementUrl.value = settings.defaultManagementUrl
+  try {
+    const [list, st, settings] = await Promise.all([
+      api.get<InstanceView[]>('/api/netbird/instances'),
+      api.get<Status[]>('/api/netbird/status'),
+      api.get<SettingsView>('/api/netbird/settings'),
+    ])
+    instances.value = list
+    statuses.value = st
+    program.netbirdPath = settings.settings.netbirdPath
+    cliPath.value = settings.cli
+    defaultManagementUrl.value = settings.defaultManagementUrl
+    loadError.value = ''
+  } catch (e) {
+    loadError.value = errorText(e)
+  }
 }
 
 // refresh 只刷新实例运行状态与连接状态，不影响正在编辑的表单
@@ -421,7 +428,9 @@ async function refresh() {
     const [list, st] = await Promise.all([api.get<InstanceView[]>('/api/netbird/instances'), api.get<Status[]>('/api/netbird/status')])
     instances.value = list
     statuses.value = st
-  } catch {
+    loadError.value = ''
+  } catch (e) {
+    loadError.value = errorText(e)
     // 轮询失败时保留上一次的状态
   }
 }

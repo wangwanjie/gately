@@ -72,4 +72,11 @@ async function onCommand(code: string) {
 .active {
   color: var(--el-color-primary);
 }
+/* 手机上点击目标至少 40px */
+@media (max-width: 767.98px) {
+  .picker-btn {
+    width: 40px;
+    height: 40px;
+  }
+}
 </style>

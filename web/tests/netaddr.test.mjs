@@ -1,7 +1,7 @@
 // 监听地址判断的单元测试：node --test tests/
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { forwardsBeyondLocal, listensBeyondLocal, maskProxyPassword } from '../src/netaddr.ts'
+import { checkTargets, forwardsBeyondLocal, listenErrorKind, listensBeyondLocal, maskProxyPassword, splitTarget } from '../src/netaddr.ts'
 
 test('listensBeyondLocal 本机地址与留空不提醒', () => {
   for (const v of ['', '  ', '127.0.0.1:1080', '127.1.2.3:1080', 'localhost:1055', 'LOCALHOST:1', '[::1]:1080']) {
@@ -38,4 +38,35 @@ test('forwardsBeyondLocal 只在绑定到本机以外时提醒', () => {
   assert.equal(forwardsBeyondLocal('tcp://0.0.0.0:2222/10.126.126.1:22'), true)
   assert.equal(forwardsBeyondLocal('tcp://127.0.0.1:1/10.0.0.1:1\ntcp://192.168.1.2:2222/10.126.126.1:22'), true)
   assert.equal(forwardsBeyondLocal('udp://[::]:53/10.126.126.1:53'), true)
+})
+
+test('splitTarget 识别主机:端口与 IPv6', () => {
+  assert.deepEqual(splitTarget('127.0.0.1:19210'), { host: '127.0.0.1', port: 19210 })
+  assert.deepEqual(splitTarget('[::1]:22'), { host: '::1', port: 22 })
+  assert.deepEqual(splitTarget('[::1]'), { host: '::1', port: 0 })
+  assert.deepEqual(splitTarget('fe80::1%eth0'), { host: 'fe80::1%eth0', port: 0 })
+  assert.deepEqual(splitTarget('2001:db8::10.0.0.1'), { host: '2001:db8::10.0.0.1', port: 0 })
+  assert.deepEqual(splitTarget('nas.lan'), { host: 'nas.lan', port: 0 })
+  for (const bad of ['127.0.0.1:19210:19221', 'http://a:80', 'a/b', 'a:0', 'a:70000', ':80', 'a:x', '[::1]:y']) {
+    assert.equal(splitTarget(bad), null, bad)
+  }
+})
+
+test('checkTargets 目标端口为空时拆分，冲突时提示', () => {
+  assert.equal(checkTargets(['10.0.0.1', ''], '').kind, '')
+  const s = checkTargets(['127.0.0.1:19210'], '')
+  assert.equal(s.kind, 'split')
+  assert.equal(s.port, 19210)
+  assert.deepEqual(s.hosts, ['127.0.0.1'])
+  assert.equal(checkTargets(['127.0.0.1:19210'], '19210').kind, '')
+  assert.equal(checkTargets(['127.0.0.1:19210'], '19221').kind, 'conflict')
+  assert.equal(checkTargets(['a:1', 'b:2'], '').kind, 'mixed')
+  assert.equal(checkTargets(['127.0.0.1:19210:19221'], '').kind, 'invalid')
+})
+
+test('listenErrorKind 识别常见的监听失败原因', () => {
+  assert.equal(listenErrorKind('listen tcp 127.0.0.1:19210: bind: address already in use'), 'inUse')
+  assert.equal(listenErrorKind('listen tcp :80: bind: permission denied'), 'permission')
+  assert.equal(listenErrorKind("listen tcp 10.9.9.9:80: bind: can't assign requested address"), 'addr')
+  assert.equal(listenErrorKind('没有匹配的证书'), '')
 })

@@ -1,5 +1,7 @@
 <template>
   <div class="layout" :class="{ collapsed }">
+    <!-- 键盘与读屏用户跳过约 40 个导航项，直接进入正文；平时隐藏，获得焦点时显示 -->
+    <a href="#main-content" class="skip-link" @click.prevent="skipToContent">{{ t('layout.skipToContent') }}</a>
     <aside v-if="!isMobile" class="aside">
       <SideNav :collapsed="collapsed" />
       <button class="collapse-btn" :title="collapsed ? t('layout.expandSidebar') : t('layout.collapseSidebar')" @click="toggleCollapse">
@@ -17,9 +19,10 @@
           <button v-if="isMobile" class="icon-btn" :aria-label="t('layout.openMenu')" @click="drawer = true">
             <Menu :size="20" />
           </button>
+          <!-- 手机上页头滚走后也要知道在哪一页：顶栏显示当前页面名 -->
           <template v-if="isMobile">
             <AppLogo :size="26" />
-            <span class="header-title">Gately</span>
+            <span class="header-title">{{ route.meta.titleKey ? t(route.meta.titleKey as string) : 'Gately' }}</span>
           </template>
           <template v-else>
             <span v-if="group" class="crumb">{{ group }}</span>
@@ -42,13 +45,14 @@
                 <!-- 修改密码与系统设置只对管理员开放 -->
                 <el-dropdown-item v-if="role === 'admin'" command="password" :icon="KeyRound">{{ t('layout.changePassword') }}</el-dropdown-item>
                 <el-dropdown-item v-if="role === 'admin'" command="settings" :icon="Settings">{{ t('layout.systemSettings') }}</el-dropdown-item>
-                <el-dropdown-item command="logout" :icon="LogOut" :divided="role === 'admin'">{{ t('layout.logout') }}</el-dropdown-item>
+                <el-dropdown-item command="docs" :icon="BookOpen">{{ t('common.docs') }}</el-dropdown-item>
+                <el-dropdown-item command="logout" :icon="LogOut" divided>{{ t('layout.logout') }}</el-dropdown-item>
               </el-dropdown-menu>
             </template>
           </el-dropdown>
         </div>
       </header>
-      <main class="content">
+      <main id="main-content" ref="mainEl" class="content" tabindex="-1">
         <!-- 顶部提醒区：高度写入 --g-banners-h，供一屏布局的页面（如系统日志）扣除 -->
         <div ref="bannersEl" class="top-banners">
           <!-- 管理端安全评分不理想时提醒加固：高风险一直显示，建议加固级别可暂缓 7 天。默认密码与弱密码由强制修改对话框处理，不再重复提示 -->
@@ -75,7 +79,8 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { ElMessageBox } from 'element-plus'
-import { ChevronDown, ChevronRight, KeyRound, LogOut, Menu, PanelLeftClose, PanelLeftOpen, Settings } from 'lucide-vue-next'
+import { BookOpen, ChevronDown, ChevronRight, KeyRound, LogOut, Menu, PanelLeftClose, PanelLeftOpen, Settings } from 'lucide-vue-next'
+import { docsUrl } from '../docsUrl'
 import { api } from '../api'
 import { bannerLevel, fixTarget, SEC_SNOOZE_KEY, SEC_SNOOZE_MS, snoozeKey } from '../security'
 import { loadSecurity, securityStatus as secStatus } from '../composables/useSecurity'
@@ -155,7 +160,24 @@ async function onCommand(cmd: string) {
     router.push({ path: '/settings', query: { tab: 'account' } })
   } else if (cmd === 'settings') {
     router.push('/settings')
+  } else if (cmd === 'docs') {
+    // 官网文档：当前页面有对应的模块文档时打开它，否则打开文档首页
+    window.open(docsUrl(locale.value, '/docs/' + (pageDoc() || 'guide/quick-start')), '_blank', 'noopener')
   }
+}
+
+// skipToContent 把焦点移到正文（hash 路由下不能用锚点跳转）
+const mainEl = ref<HTMLElement>()
+function skipToContent() {
+  mainEl.value?.focus()
+  mainEl.value?.scrollIntoView()
+}
+
+// pageDoc 返回当前页面对应的文档路径（读取页头上的文档链接），没有时为空
+function pageDoc(): string {
+  const a = document.querySelector<HTMLAnchorElement>('.page-head-doc')
+  const m = a?.href.match(/\/docs\/(.+)$/)
+  return m ? m[1] : ''
 }
 
 // 顶部提醒区（默认密码、版本更新）高度变化时写入 CSS 变量；margin 由 flow-root 包含在内
@@ -292,8 +314,8 @@ onMounted(async () => {
   text-overflow: ellipsis;
 }
 .icon-btn {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   border-radius: 8px;
   border: none;
   background: transparent;
@@ -311,7 +333,7 @@ onMounted(async () => {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  height: 36px;
+  height: 40px;
   padding: 0 8px 0 4px;
   border-radius: 18px;
   border: 1px solid var(--g-border);
@@ -340,6 +362,27 @@ onMounted(async () => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.skip-link {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 3000;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #fff;
+  background: var(--el-color-primary);
+  text-decoration: none;
+  transform: translateY(-200%);
+}
+.skip-link:focus {
+  transform: none;
+  outline: 2px solid var(--el-color-primary-dark-2);
+  outline-offset: 2px;
+}
+.content:focus {
+  outline: none;
 }
 .content {
   flex: 1;

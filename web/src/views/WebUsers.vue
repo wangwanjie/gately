@@ -1,6 +1,6 @@
 <template>
   <div>
-    <PageHeader :title="t('webUsers.title')" :desc="t('webUsers.desc')" :icon="UserCog" />
+    <PageHeader :title="t('webUsers.title')" doc="modules/web#shared-users" :desc="t('webUsers.desc')" :icon="UserCog" />
 
     <el-alert v-if="loadError" type="error" :title="loadError" :closable="false" show-icon class="block-gap" />
 

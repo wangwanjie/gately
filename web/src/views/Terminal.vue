@@ -1,6 +1,6 @@
 <template>
   <div class="terminal-root" :class="{ mobile: isMobile }">
-    <PageHeader v-if="!inWorkspace" :title="t('terminal.page.title')" :desc="t('terminal.page.desc')" :icon="SquareTerminal">
+    <PageHeader v-if="!inWorkspace" :title="t('terminal.page.title')" doc="modules/terminal" :desc="t('terminal.page.desc')" :icon="SquareTerminal">
       <el-button :icon="ListTree" @click="sessionsVisible = true">{{ t('terminal.page.sessions') }}</el-button>
       <el-button :icon="Zap" @click="shortcutVisible = true">{{ t('terminal.page.shortcuts') }}</el-button>
       <el-button :icon="SlidersHorizontal" @click="settingsVisible = true">{{ t('terminal.page.settings') }}</el-button>

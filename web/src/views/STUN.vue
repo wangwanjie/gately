@@ -1,6 +1,6 @@
 <template>
   <div>
-    <PageHeader :title="t('stun.title')" :desc="t('stun.desc')" :icon="Radar">
+    <PageHeader :title="t('stun.title')" doc="modules/stun" :desc="t('stun.desc')" :icon="Radar">
       <CompactToggle v-model="compact" />
       <ListTools :gl="gl" :placeholder="t('groupSort.search')" />
       <el-button :icon="SlidersHorizontal" @click="openSettings">{{ t('stun.globalSettings') }}</el-button>
@@ -13,12 +13,12 @@
       {{ t('stun.intro') }}
     </el-alert>
 
-    <GroupedList :gl="gl" :loading="loading" :compact="compact" :empty-text="t('stun.empty')">
+    <GroupedList :gl="gl" :error="loadError" @retry="load" :loading="loading" :compact="compact" :empty-text="t('stun.empty')">
       <template #item="{ it, item: r, sorting, bind }">
         <EntityCard v-bind="bind" :off="!r.enable || moduleOff" :compact="compact || sorting">
           <template #lead>
             <SortCheck v-if="sorting" :gl="gl" :id="it.id" />
-            <el-switch v-else :model-value="r.enable" @change="(v: string | number | boolean) => toggle(r, Boolean(v))" />
+            <el-switch v-else :model-value="r.enable" :aria-label="t('common.toggleItem', { name: r.name || '-' })" @change="(v: string | number | boolean) => toggle(r, Boolean(v))" />
           </template>
           <template #title>
             <span>{{ r.name }}</span>
@@ -102,9 +102,15 @@
             <template v-if="!editing.disableForward">
               <el-form-item :label="t('stun.targetAddr')" required>
                 <el-input v-model="targetsText" :placeholder="t('stun.targetAddrPlaceholder')" />
+                <TargetHint
+                  :lines="editing.targetAddresses ?? []"
+                  :ports="editing.targetPort ? String(editing.targetPort) : ''"
+                  @split="(v) => ((editing.targetAddresses = v.hosts), (editing.targetPort = v.port))"
+                />
               </el-form-item>
               <el-form-item :label="t('stun.targetPort')" required>
-                <el-input-number v-model="editing.targetPort" :min="1" :max="65535" />
+                <!-- 最小值为 0：新规则未填端口时显示 0，不被夹成 1（否则写了「地址:端口」会误报端口冲突） -->
+                <el-input-number v-model="editing.targetPort" :min="0" :max="65535" />
               </el-form-item>
               <IPAccessEditor v-model:mode="editing.ipMode" v-model:list="editing.ipList" v-model:sets="editing.ipSets" v-model:deny-list="editing.ipDenyList" v-model:deny-sets="editing.ipDenySets" v-model:knock="editing.knock" :note="t('stun.ipAccessNote')" />
             </template>
@@ -223,7 +229,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
 import { CopyPlus, Pencil, Plus, Radar, RotateCw, SlidersHorizontal, Trash2 } from 'lucide-vue-next'
-import { api, formatBytes } from '../api'
+import { api, errorText, formatBytes } from '../api'
 import PageHeader from '../components/PageHeader.vue'
 import ModuleBanner from '../components/ModuleBanner.vue'
 import CompactToggle from '../components/CompactToggle.vue'
@@ -245,6 +251,7 @@ import { createItem, uniqueName, type CopySource } from '../copyDraft'
 import { useFormLayout } from '../composables/useIsMobile'
 import { useListText, splitLinesOrCommas } from '../composables/useListText'
 import WebhookEditor, { type WebhookConfig } from '../components/WebhookEditor.vue'
+import TargetHint from '../components/TargetHint.vue'
 import type { NetInterface } from '../components/IPSourceEditor.vue'
 import { usePolling } from '../composables/usePolling'
 import { copyText } from '../composables/useClipboard'
@@ -323,6 +330,8 @@ interface Settings {
 
 const vars = ['ruleName', 'time', 'ip', 'port', 'ipAddr']
 const { t } = useI18n()
+// 列表最近一次加载失败的原因，空为成功；接口出错时列表显示错误而不是空状态
+const loadError = ref('')
 // 读取端口敲门规则目录，卡片上显示“需要敲门”的规则名称
 useKnockRules()
 const { isMobile, labelPosition } = useFormLayout()
@@ -436,7 +445,12 @@ function ruleStatus(r: RuleView): { type: StatusType; text: string; title?: stri
     failed: { type: 'error', text: t('stun.stFailed') },
     stopped: { type: 'warn', text: t('stun.stStopped') },
   }
-  return { ...(map[r.state.status] ?? { type: 'info', text: r.state.status }), title: r.state.error }
+  const st = map[r.state.status] ?? { type: 'info', text: r.state.status }
+  // 穿透成功但有错误（如转发目标写法连不上）时用警告色，避免只显示正常
+  if (r.state.status === 'ok' && r.state.error) {
+    st.type = 'warn'
+  }
+  return { ...st, title: r.state.error }
 }
 
 function fmtTime(iso: string) {
@@ -451,6 +465,9 @@ function copy(s: string, e: MouseEvent) {
 async function load() {
   try {
     rules.value = await api.get<RuleView[]>('/api/stun/rules')
+    loadError.value = ''
+  } catch (e) {
+    loadError.value = errorText(e)
   } finally {
     loading.value = false
   }
@@ -567,7 +584,11 @@ async function saveSettings() {
 
 onMounted(async () => {
   loadModule()
-  interfaces.value = await api.get<NetInterface[]>('/api/stun/netinterfaces')
+  try {
+    interfaces.value = await api.get<NetInterface[]>('/api/stun/netinterfaces')
+  } catch {
+    // 网卡列表读取失败不阻止规则列表加载；列表本身失败时显示错误
+  }
   await load()
   polling.start()
 })

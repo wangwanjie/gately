@@ -1,7 +1,7 @@
 <template>
   <!-- Web 网络拓扑独立页面：拓扑图本身见 components/WebTopology.vue -->
   <div>
-    <PageHeader :title="t('webTopology.title')" :desc="t('webTopology.pageDesc')" :icon="Workflow">
+    <PageHeader :title="t('webTopology.title')" doc="modules/web#topology" :desc="t('webTopology.pageDesc')" :icon="Workflow">
       <el-input v-model="filterText" class="site-filter" clearable :prefix-icon="Search" :placeholder="t('web.filterPlaceholder')" />
       <el-button :icon="Server" @click="router.push({ name: 'web' })">{{ t('webTopology.openWeb') }}</el-button>
     </PageHeader>

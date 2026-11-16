@@ -1,6 +1,6 @@
 <template>
   <!-- 分组侧边导航：桌面侧栏与移动端抽屉共用 -->
-  <nav class="side-nav" :class="{ collapsed }">
+  <nav class="side-nav" :class="{ collapsed }" :aria-label="t('sideNav.ariaLabel')">
     <div class="brand">
       <AppLogo :size="30" />
       <div v-if="!collapsed" class="brand-text">
@@ -77,7 +77,8 @@ function isActive(path: string) {
 .group-title {
   font-size: 11px;
   font-weight: 600;
-  color: var(--el-text-color-placeholder);
+  /* 11px 的分组标题用次要文字色，占位符色在侧栏底色上只有约 2.3:1 */
+  color: var(--el-text-color-secondary);
   letter-spacing: 0.5px;
   padding: 14px 10px 6px;
 }

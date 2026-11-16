@@ -200,7 +200,7 @@ func (c *Cert) Validate(settings Settings) error {
 	c.Remark = strings.TrimSpace(c.Remark)
 	if c.Mapping.Enable {
 		if c.Remark == "" {
-			return errors.New("启用证书映射时备注不能为空（用作文件名）")
+			return errors.New("启用证书映射时名称不能为空（用作文件名）")
 		}
 		c.Mapping.Dir = strings.TrimSpace(c.Mapping.Dir)
 		if c.Mapping.Dir == "" || !filepath.IsAbs(c.Mapping.Dir) {
@@ -208,7 +208,7 @@ func (c *Cert) Validate(settings Settings) error {
 		}
 	}
 	if c.Remark != "" && !reRemark.MatchString(c.Remark) {
-		return errors.New("备注只能包含字母、数字以及 . _ - * @")
+		return errors.New("名称只能包含字母、数字以及 . _ - * @（用作文件名）")
 	}
 	for i := range c.Deploys {
 		if err := c.Deploys[i].validate(c.Remark); err != nil {

@@ -1,13 +1,18 @@
 <template>
   <!-- 导航面板：面板库的管理页面。Web 服务中类型为“导航面板”的站点引用这里的面板，在站点根路径输出汇总页面 -->
   <div class="panels-page">
-    <PageHeader :title="t('panels.title')" :desc="t('panels.desc')" :icon="LayoutGrid">
+    <PageHeader :title="t('panels.title')" doc="modules/web#nav-panel" :desc="t('panels.desc')" :icon="LayoutGrid">
       <el-button :icon="RefreshCw" :loading="loading" @click="load">{{ t('common.refresh') }}</el-button>
       <el-button v-if="!isReadonly && !notFound" type="primary" :icon="Plus" data-test="panel-add" @click="openEditor()">{{ t('panels.add') }}</el-button>
     </PageHeader>
 
+    <!-- 轮询或刷新失败但已有数据时保留数据，只显示一行提示 -->
+    <LoadError v-if="!moduleOff && !unsupported && loadError && panels.length" bar :error="loadError" class="panels-load-error" @retry="load" />
     <el-alert v-if="moduleOff" type="warning" :closable="false" show-icon :title="t('panels.moduleDisabled')" class="unsupported" data-test="panels-module-off" />
     <el-alert v-else-if="unsupported" type="error" :closable="false" show-icon :title="t('panels.unsupported')" class="unsupported" data-test="panels-unsupported" />
+    <div v-else-if="!loading && loadError && !panels.length" class="g-card empty-card">
+      <LoadError :error="loadError" @retry="load" />
+    </div>
     <div v-else-if="!loading && !panels.length" class="g-card empty-card">
       <el-empty :description="t('panels.empty')">
         <div class="form-help empty-help">{{ t('panels.emptyHelp') }}</div>
@@ -24,7 +29,7 @@
         <template #title>{{ p.name }}</template>
         <template v-if="p.title || p.subtitle" #sub>{{ [p.title, p.subtitle].filter(Boolean).join(' · ') }}</template>
         <template #status>
-          <el-switch v-if="!isReadonly" :model-value="p.enable" size="small" :loading="toggling[p.key ?? '']" @change="(v: string | number | boolean) => toggle(p, !!v)" />
+          <el-switch v-if="!isReadonly" :model-value="p.enable" :aria-label="t('common.toggleItem', { name: p.name || '-' })" size="small" :loading="toggling[p.key ?? '']" @change="(v: string | number | boolean) => toggle(p, !!v)" />
           <StatusBadge v-else :type="p.enable ? 'running' : 'off'" :text="p.enable ? t('common.enabled') : t('common.disabled')" />
         </template>
         <Field :label="t('panels.links')">
@@ -335,6 +340,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import { ArrowDown, ArrowUp, CopyPlus, RotateCcw, Eye, FolderClosed, Import, LayoutGrid, Lock, Pencil, Plus, RefreshCw, Search, Trash2 } from 'lucide-vue-next'
 import PageHeader from '../components/PageHeader.vue'
+import LoadError from '../components/LoadError.vue'
 import EntityCard from '../components/EntityCard.vue'
 import Field from '../components/Field.vue'
 import StatusBadge from '../components/StatusBadge.vue'
@@ -344,7 +350,7 @@ import GroupInput from '../components/GroupInput.vue'
 import PanelIcon from '../components/PanelIcon.vue'
 import PanelIconInput from '../components/PanelIconInput.vue'
 import PanelBackgroundInput from '../components/PanelBackgroundInput.vue'
-import { ApiError, api } from '../api'
+import { api, ApiError, errorText } from '../api'
 import { isReadonly, moduleEnabled } from '../nav'
 import { useFormLayout } from '../composables/useIsMobile'
 import { splitLinesOrCommas, useListText } from '../composables/useListText'
@@ -390,6 +396,8 @@ interface ListenerLite extends ImportListener {
 }
 
 const { t } = useI18n()
+// 列表最近一次加载失败的原因，空为成功；接口出错时显示错误而不是空状态
+const loadError = ref('')
 
 // 皮肤选择：空串表示默认色系，选中默认色系时仍保存为空串，保持旧配置不变
 const skinValue = computed<string>({
@@ -433,12 +441,13 @@ async function load() {
     } catch {
       listeners.value = []
     }
+    loadError.value = ''
   } catch (e) {
     if (e instanceof ApiError && e.status === 404) {
       notFound.value = true
       return
     }
-    ElMessage.error((e as Error).message)
+    loadError.value = errorText(e)
   } finally {
     loading.value = false
   }
@@ -979,6 +988,9 @@ onMounted(async () => {
   border: 1px solid var(--g-border);
   border-radius: var(--g-radius);
   background: #fff;
+}
+.panels-load-error {
+  margin-bottom: 12px;
 }
 .unsupported {
   margin-bottom: 14px;

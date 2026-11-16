@@ -1,12 +1,12 @@
 <template>
   <div>
-    <PageHeader :title="t('storage.title')" :desc="t('storage.desc')" :icon="HardDrive">
+    <PageHeader :title="t('storage.title')" doc="modules/tools" :desc="t('storage.desc')" :icon="HardDrive">
       <CompactToggle v-model="compact" />
       <ListTools :gl="gl" :placeholder="t('groupSort.search')" />
       <el-button type="primary" :icon="Plus" @click="openEditor()">{{ t('storage.addMount') }}</el-button>
     </PageHeader>
 
-    <GroupedList :gl="gl" :compact="compact" grid :empty-text="t('storage.empty')">
+    <GroupedList :gl="gl" :error="loadError" @retry="load" :compact="compact" grid :empty-text="t('storage.empty')">
       <template #item="{ it, item: m, sorting, bind }">
         <EntityCard v-bind="bind" :class="{ active: m.key === current?.key }" :compact="compact || sorting">
           <template #lead>
@@ -25,7 +25,7 @@
             <SortMoves :gl="gl" :it="it" />
           </template>
           <template v-else #actions>
-            <el-switch :model-value="m.enable" size="small" @change="(v: boolean) => toggle(m, v)" />
+            <el-switch :model-value="m.enable" :aria-label="t('common.toggleItem', { name: m.name || '-' })" size="small" @change="(v: boolean) => toggle(m, v)" />
             <el-button text size="small" :icon="Pencil" @click="openEditor(m)">{{ t('common.edit') }}</el-button>
             <el-button text size="small" :icon="CopyPlus" @click="openEditor(m, true)">{{ t('common.duplicate') }}</el-button>
             <el-popconfirm :title="t('storage.confirmRemove')" @confirm="remove(m)">
@@ -140,7 +140,7 @@ import { computed, onMounted, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import { Cloud, CopyPlus, Download, File, Folder, FolderOpen, FolderPlus, HardDrive, Pencil, Plus, RefreshCw, Server, Trash2, Upload } from 'lucide-vue-next'
-import { api } from '../api'
+import { api, errorText } from '../api'
 import SecretInput from '../components/SecretInput.vue'
 import ConfigDirHint from '../components/ConfigDirHint.vue'
 import { secretOf } from '../secrets'
@@ -187,6 +187,8 @@ interface Entry {
 }
 
 const { t } = useI18n()
+// 列表最近一次加载失败的原因，空为成功；接口出错时列表显示错误而不是空状态
+const loadError = ref('')
 const { isMobile, labelPosition } = useFormLayout()
 const mounts = ref<Mount[]>([])
 const compact = useCompactView('storage')
@@ -254,9 +256,14 @@ function fmtTime(s: string): string {
 }
 
 async function load() {
-  mounts.value = await api.get('/api/storage/mounts')
-  if (current.value) {
-    current.value = mounts.value.find((m) => m.key === current.value?.key)
+  try {
+    mounts.value = await api.get('/api/storage/mounts')
+    if (current.value) {
+      current.value = mounts.value.find((m) => m.key === current.value?.key)
+    }
+    loadError.value = ''
+  } catch (e) {
+    loadError.value = errorText(e)
   }
 }
 
