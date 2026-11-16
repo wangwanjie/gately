@@ -208,7 +208,7 @@ Le résultat est enregistré dans `update-check.json` du répertoire de configur
 Les installations binaires Linux (systemd, conteneurs LXC de PVE, OpenWrt déployé manuellement, etc.) peuvent être mises à niveau en ligne depuis la page À propos de l'interface d'administration : cliquez sur « Rechercher des mises à jour », puis sur « Mettre à niveau » si une nouvelle version est disponible. Cela fonctionne aussi pour les conteneurs LXC créés dans PVE à partir de l'image OCI, sans les supprimer ni les recréer. Gately va :
 
 1. Télécharger depuis GitHub le `gately_<version>_linux_<architecture>.tar.gz` de cette plateforme ;
-2. Vérifier son SHA-256 avec le `checksums.txt` de la même version ;
+2. Télécharger `checksums.txt` et `checksums.txt.minisig` de la même version, vérifier la signature avec la clé publique intégrée au programme, puis vérifier le SHA-256. Une signature invalide ou provenant d'une clé inconnue fait refuser la mise à niveau ; les versions publiées avant l'introduction de la signature n'ont pas de fichier de signature et se mettent à niveau avec un avertissement indiquant qu'elles ne sont pas signées (voir [Vérifier les versions](/fr/docs/guide/verify)) ;
 3. Tester le nouveau binaire avec `-version` pour s'assurer qu'il s'exécute sur cette machine ;
 4. Remplacer l'exécutable et redémarrer avec les mêmes arguments, en conservant la version précédente sous `gately.old` dans le même répertoire.
 
