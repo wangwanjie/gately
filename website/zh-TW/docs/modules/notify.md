@@ -136,6 +136,7 @@ WAF 攔截和上游狀態變動可能頻繁發生，建議為這類規則設定 
 | `backup.done` | 備份：完成 | 資訊 | 排程或手動備份全部目的地成功，見 [設定備份](/zh-TW/docs/modules/backup) |
 | `backup.failed` | 備份：失敗 | 錯誤 | 備份打包失敗，或任一目的地寫入失敗 |
 | `auth.failed` | 驗證：連續失敗 | 警告 | 管理後台登入失敗，附帶 `ip` 欄位 |
+| `fileauth.failed` | 檔案服務：登入失敗 | 警告 | WebDAV、FTP、SMB 登入失敗，或因失敗次數過多被拒絕，來源為服務名稱，附帶 `ip`、`service`（`WebDAV`、`FTP` 或 `SMB`）欄位，提交了使用者名稱時還有 `user` 欄位。同一來源每 5 秒最多發布一次，入侵防護可依此計數封鎖，見[入侵防護](/zh-TW/docs/modules/guard) |
 | `auth.banned` | 驗證：IP 已被封鎖 | 警告 | Web 服務驗證連續失敗觸發自動封鎖 |
 | `guard.banned` | 入侵防護：IP 已被封鎖 | 警告 | 日誌規則、誘餌連接埠或連接埠掃描偵測封鎖了 IP 或網段，附帶 `ip` 與 `reason` 欄位（一次封鎖多個位址時還有 `count`） |
 | `knock.opened` | 連接埠敲門：敲門成功 | 資訊 | 連接埠敲門認證通過並放行來源位址，附帶 `ip`、`rule`、`ports` 欄位，見[連接埠敲門](/zh-TW/docs/modules/knock) |

@@ -136,6 +136,7 @@ WAF 차단과 업스트림 상태 변화는 자주 발생할 수 있으므로 �
 | `backup.done` | 백업: 완료 | 정보 | 예약 또는 수동 백업이 모든 대상에 성공함. [설정 백업](/ko/docs/modules/backup) 참고 |
 | `backup.failed` | 백업: 실패 | 오류 | 백업 압축에 실패하거나 어느 대상에 쓰지 못함 |
 | `auth.failed` | 인증: 연속 실패 | 경고 | 관리 콘솔 로그인에 실패함. `ip` 필드 포함 |
+| `fileauth.failed` | 파일 서비스: 로그인 실패 | 경고 | WebDAV, FTP, SMB 로그인에 실패했거나 실패가 너무 많아 거부됨. 출처는 서비스 이름이며 `ip`, `service`(`WebDAV`, `FTP`, `SMB`) 필드가 붙고, 사용자 이름이 제출된 경우 `user` 필드도 붙음. 같은 출처는 5초에 최대 한 번 발행되며 침입 방지가 이를 세어 차단할 수 있음. [침입 방지](/ko/docs/modules/guard) 참고 |
 | `auth.banned` | 인증: IP 차단됨 | 경고 | 웹 서비스 인증이 연속으로 실패하여 자동 차단이 발동함 |
 | `guard.banned` | 침입 방지: IP 차단됨 | 경고 | 로그 규칙, 미끼 포트 또는 포트 스캔 탐지가 IP 주소나 네트워크를 차단함. `ip`와 `reason` 필드를 포함하며, 여러 주소를 한꺼번에 차단하면 `count`도 포함함 |
 | `knock.opened` | 포트 노킹: 노크 성공 | 정보 | 노크가 인증되어 출발지 주소를 허용함. `ip`, `rule`, `ports` 필드 포함. [포트 노킹](/ko/docs/modules/knock) 참고 |

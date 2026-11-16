@@ -74,6 +74,9 @@ type Filter struct {
 	// Translate 不为 nil 时，关键词与来源也和译文比较：接口按请求语言翻译日志后返回，
 	// 用户输入的是界面上看到的译文，日志里保存的则是服务端语言的原文
 	Translate func(string) string
+	// TranslateMessage 不为 nil 时用它翻译日志内容（取代 Translate）：内存里的日志带有格式串，
+	// 调用方可以据此直接查到译文模板，不必整句匹配
+	TranslateMessage func(e *Entry) string
 }
 
 // Empty 判断是否没有任何过滤条件。
@@ -161,7 +164,13 @@ func (f *Filter) searchText(e *Entry) string {
 			b.WriteByte('\n')
 			b.WriteString(tr)
 		}
-		if tr := f.Translate(e.Message); tr != e.Message {
+		tr := ""
+		if f.TranslateMessage != nil {
+			tr = f.TranslateMessage(e)
+		} else {
+			tr = f.Translate(e.Message)
+		}
+		if tr != e.Message {
 			b.WriteByte('\n')
 			b.WriteString(tr)
 		}
