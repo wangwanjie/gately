@@ -57,7 +57,7 @@ In Anfrage-URL und Body lassen sich die folgenden Variablen verwenden, geschrieb
 | `level` | Stufe: `info`, `warn` oder `error` |
 | `time` | Zeit im Format RFC 3339 |
 
-Zusätzliche Felder, die ein Ereignis mitführt (etwa `ip` und `container`), lassen sich ebenfalls als Variablen nutzen. Kollidiert ein Name mit der Tabelle oben, hat die Tabelle Vorrang. Variablenwerte in der URL werden URL-escaped.
+Zusätzliche Felder, die ein Ereignis mitführt (etwa `ip` und `container`), lassen sich ebenfalls als Variablen nutzen. Kollidiert ein Name mit der Tabelle oben, hat die Tabelle Vorrang. Variablenwerte in der URL werden URL-escaped. Ist der Body ein JSON-Objekt oder -Array (kein Content-Type oder ein JSON-Typ), werden Variablenwerte innerhalb von JSON-Strings JSON-maskiert (Anführungszeichen, Backslashes, Zeilenumbrüche usw.); Variablen außerhalb von Strings und Bodies in anderen Formaten werden unverändert eingesetzt. In Request-Headern werden Zeilenumbrüche aus den Werten entfernt.
 
 ### E-Mail
 
