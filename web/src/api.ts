@@ -55,6 +55,36 @@ export function errorText(e: unknown): string {
   return e instanceof Error ? e.message : String(e)
 }
 
+// ConditionalResult 是条件请求的结果：status 为 304 时内容没有变化，data 为 null
+export interface ConditionalResult<T> {
+  status: number
+  etag: string
+  data: T | null
+}
+
+// getIfChanged 带 If-None-Match 发起 GET（etag 为空时不带），用于轮询支持 ETag 的接口：
+// 304 时返回 data 为 null，调用方跳过解析与赋值；其他错误与 api.get 相同（抛出 ApiError，401 跳转登录页）
+export async function getIfChanged<T>(url: string, etag: string): Promise<ConditionalResult<T>> {
+  const headers: Record<string, string> = { 'Accept-Language': i18n.global.locale.value }
+  if (etag) {
+    headers['If-None-Match'] = etag
+  }
+  const resp = await fetch(url, { method: 'GET', credentials: 'same-origin', headers })
+  if (resp.status === 304) {
+    return { status: 304, etag: resp.headers.get('ETag') ?? etag, data: null }
+  }
+  if (!resp.ok) {
+    // 错误响应交给通用请求函数处理（解析错误说明、401 跳转登录页）
+    return { status: resp.status, etag: '', data: await request<T>('GET', url) }
+  }
+  const text = await resp.text()
+  const contentType = resp.headers.get('Content-Type') ?? ''
+  if (!contentType.includes('json')) {
+    throw new ApiError(t('common.unexpectedResponse'), resp.status)
+  }
+  return { status: resp.status, etag: resp.headers.get('ETag') ?? '', data: JSON.parse(text) as T }
+}
+
 export const api = {
   get: <T>(url: string) => request<T>('GET', url),
   post: <T>(url: string, body?: unknown) => request<T>('POST', url, body),

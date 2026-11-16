@@ -83,7 +83,7 @@
           <!-- 自动放行防火墙的结果：放行失败（如没有权限）时用警告色 -->
           <div v-if="l.enable && l.autoFirewall && l.firewall" class="meta fw-status" :class="{ 'is-failed': l.firewallFailed }">{{ l.firewall }}</div>
           <div class="sites" :class="{ 'is-compact': compact, 'is-sorting': sortMode }">
-            <template v-for="item in displayItems(l)" :key="item.id">
+            <template v-for="item in visibleItems(l)" :key="item.id">
             <GroupHeader
               v-if="item.kind === 'group'"
               :name="item.name"
@@ -218,6 +218,7 @@
             >
               {{ t('web.dropHere') }}
             </div>
+            <ListPager v-if="!sortMode && displayItems(l).length > SITE_PAGE" :pager="sitePager(l.key)" class="site-pager" />
             <div v-if="!siteRows(l).length" class="meta empty-sites">{{ t('web.noSites') }}</div>
             <div v-else-if="!displayItems(l).length" class="meta empty-sites">{{ t('web.noMatchedSites') }}</div>
           </div>
@@ -708,7 +709,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref, watch } from 'vue'
+import { computed, effectScope, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
@@ -740,7 +741,10 @@ import {
   Workflow,
   ArrowRightLeft,
 } from 'lucide-vue-next'
-import { api, errorText, type OAuthProvider } from '../api'
+import { api, errorText, getIfChanged, type OAuthProvider } from '../api'
+import ListPager from '../components/ListPager.vue'
+import type { Pager } from '../composables/usePager'
+import { PAGE_SIZES, pageSlice } from '../paging'
 import { moduleEnabled as navModuleEnabled } from '../nav'
 import GroupHeader from '../components/GroupHeader.vue'
 import SortToolbar from '../components/SortToolbar.vue'
@@ -951,7 +955,7 @@ interface SiteRow {
   isDefault: boolean
 }
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 // 列表最近一次加载失败的原因，空为成功；接口出错时列表显示错误而不是空状态
 const loadError = ref('')
 const router = useRouter()
@@ -1083,8 +1087,11 @@ interface WebSettings {
 const settings = ref<WebSettings>()
 // adminPassReady 表示全局设置中已配置单点登录域或后台入口地址，站点的「后台登录免认证」依赖其一；打开站点编辑时刷新（读取失败时不提示）
 const adminPassReady = ref(true)
-// 定时刷新，标签页在后台时暂停
-const polling = usePolling(load, 5000)
+// 定时刷新，标签页在后台时暂停；编辑对话框打开时也暂停，避免列表重新渲染打断编辑。
+// 轮询带上次的 ETag，列表没变化时服务端返回 304，跳过解析与重新渲染
+const polling = usePolling(() => (listenerVisible.value || siteVisible.value || settingsVisible.value ? undefined : poll()), 5000)
+let listEtag = ''
+let listEtagLocale = ''
 
 // 按逗号（含中文逗号）或空白拆分
 // 分路径后端没有自己的 ID：按对象分配稳定的 key，删除前面的路径时，后面路径的输入框状态（如文本模式）不会串位
@@ -1754,13 +1761,67 @@ async function putListener(l: Listener) {
 
 async function load() {
   try {
-    listeners.value = await api.get<ListenerView[]>('/api/webservice/listeners')
+    // 首次进入、保存后与手动刷新取完整列表，不带条件头；同时记下 ETag 供轮询使用
+    const r = await getIfChanged<ListenerView[]>('/api/webservice/listeners', '')
+    listeners.value = r.data ?? []
+    listEtag = r.etag
+    listEtagLocale = locale.value
     loadError.value = ''
   } catch (e) {
     loadError.value = errorText(e)
   } finally {
     loading.value = false
   }
+}
+
+// poll 为定时刷新：界面语言没变时带上次的 ETag，304 表示没有变化
+async function poll() {
+  try {
+    const r = await getIfChanged<ListenerView[]>('/api/webservice/listeners', listEtagLocale === locale.value ? listEtag : '')
+    if (r.status !== 304 && r.data) {
+      listeners.value = r.data
+    }
+    listEtag = r.etag
+    listEtagLocale = locale.value
+    loadError.value = ''
+  } catch (e) {
+    loadError.value = errorText(e)
+  }
+}
+
+// 站点很多（单个监听超过 SITE_PAGE 个）时分页显示，只渲染当前页；排序模式需要拖动全部站点，不分页
+const SITE_PAGE = 50
+const pagerScope = effectScope(true)
+const sitePagers = new Map<string, Pager<GroupItem<SiteRow>>>()
+onBeforeUnmount(() => pagerScope.stop())
+
+// sitePager 返回监听的站点分页器；监听对象每次刷新都会替换，按 key 读取最新的
+function sitePager(key: string): Pager<GroupItem<SiteRow>> {
+  let p = sitePagers.get(key)
+  if (!p) {
+    p = pagerScope.run(() => {
+      const page = ref(1)
+      const size = ref(SITE_PAGE)
+      const items = computed(() => {
+        const l = listeners.value.find((x) => x.key === key)
+        return l ? displayItems(l) : []
+      })
+      const total = computed(() => items.value.length)
+      const rows = computed(() => pageSlice(items.value, page.value, size.value))
+      return { page, size, sizes: PAGE_SIZES, total, rows }
+    })!
+    sitePagers.set(key, p)
+  }
+  return p
+}
+
+// visibleItems 为监听卡片里实际渲染的分组标题与站点
+function visibleItems(l: ListenerView): GroupItem<SiteRow>[] {
+  const all = displayItems(l)
+  if (sortMode.value || all.length <= SITE_PAGE) {
+    return all
+  }
+  return sitePager(l.key).rows.value
 }
 
 // ---- 从拓扑页跳转编辑站点 ----
@@ -2610,6 +2671,10 @@ onMounted(async () => {
 /* 删除与其他操作隔开一点，避免误点 */
 .site-actions .site-del {
   margin-left: 6px;
+}
+.site-pager {
+  padding: 8px 12px;
+  border-top: 1px solid var(--g-border);
 }
 .empty-sites {
   padding: 10px 12px;
