@@ -1,7 +1,7 @@
 // 监听地址判断的单元测试：node --test tests/
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { checkTargets, forwardsBeyondLocal, listensBeyondLocal, maskProxyPassword, splitTarget } from '../src/netaddr.ts'
+import { checkTargets, forwardsBeyondLocal, listenErrorKind, listensBeyondLocal, maskProxyPassword, splitTarget } from '../src/netaddr.ts'
 
 test('listensBeyondLocal 本机地址与留空不提醒', () => {
   for (const v of ['', '  ', '127.0.0.1:1080', '127.1.2.3:1080', 'localhost:1055', 'LOCALHOST:1', '[::1]:1080']) {
@@ -62,4 +62,11 @@ test('checkTargets 目标端口为空时拆分，冲突时提示', () => {
   assert.equal(checkTargets(['127.0.0.1:19210'], '19221').kind, 'conflict')
   assert.equal(checkTargets(['a:1', 'b:2'], '').kind, 'mixed')
   assert.equal(checkTargets(['127.0.0.1:19210:19221'], '').kind, 'invalid')
+})
+
+test('listenErrorKind 识别常见的监听失败原因', () => {
+  assert.equal(listenErrorKind('listen tcp 127.0.0.1:19210: bind: address already in use'), 'inUse')
+  assert.equal(listenErrorKind('listen tcp :80: bind: permission denied'), 'permission')
+  assert.equal(listenErrorKind("listen tcp 10.9.9.9:80: bind: can't assign requested address"), 'addr')
+  assert.equal(listenErrorKind('没有匹配的证书'), '')
 })

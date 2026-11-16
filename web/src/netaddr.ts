@@ -154,3 +154,19 @@ export function checkTargets(lines: string[], targetPorts: string): TargetCheck 
   }
   return { kind: 'conflict', addr, port, hosts }
 }
+
+// listenErrorKind 识别监听失败的常见原因（系统错误为英文原文）：inUse 为端口已被占用，permission 为没有权限（如普通用户监听 1024 以下端口），
+// addr 为本机没有这个地址；其他原因返回空，界面直接显示原文
+export function listenErrorKind(err: string): '' | 'inUse' | 'permission' | 'addr' {
+  const e = err.toLowerCase()
+  if (e.includes('address already in use') || e.includes('only one usage of each socket address')) {
+    return 'inUse'
+  }
+  if (e.includes('permission denied') || e.includes('access permissions')) {
+    return 'permission'
+  }
+  if (e.includes("can't assign requested address") || e.includes('cannot assign requested address') || e.includes('requested address is not valid')) {
+    return 'addr'
+  }
+  return ''
+}

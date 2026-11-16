@@ -774,6 +774,7 @@ import CopyHint from '../components/CopyHint.vue'
 import { createItem, uniqueName, type CopySource } from '../copyDraft'
 import UrlLink from '../components/UrlLink.vue'
 import { accessPort, accessScheme, forwardedEntry, siteLink, type ForwardEntry, type ForwardSource, type SiteLink } from '../siteUrl'
+import { listenErrorKind } from '../netaddr'
 import { certRequestDomains, siteCertState, type SiteCert, type SiteCertState } from '../siteCert'
 import { loadForwardSources } from '../forwardSources'
 import { useFormLayout } from '../composables/useIsMobile'
@@ -1384,12 +1385,26 @@ function listenerStatus(l: ListenerView): { type: StatusType; text: string; titl
     return { type: 'off', text: t('web.statusOff') }
   }
   if (l.error) {
-    return { type: 'error', text: l.error, title: l.error }
+    return { type: 'error', text: listenErrorText(l), title: l.error }
   }
   if (l.running) {
     return { type: 'running', text: t('common.running') }
   }
   return { type: 'warn', text: t('web.statusNotRunning') }
+}
+
+// listenErrorText 把监听失败的常见系统错误换成本地化说明（端口被占用、没有权限、本机没有该地址），其他错误显示原文
+function listenErrorText(l: Pick<ListenerView, 'error' | 'port'>): string {
+  const err = l.error ?? ''
+  switch (listenErrorKind(err)) {
+    case 'inUse':
+      return t('web.errPortInUse', { port: l.port })
+    case 'permission':
+      return t('web.errPortPermission', { port: l.port })
+    case 'addr':
+      return t('web.errListenAddr')
+  }
+  return err
 }
 
 function typeText(ty: string) {
@@ -1780,20 +1795,26 @@ async function saveListener() {
   try {
     const { key, ...body } = editingListener.value
     const from = copyListenerFrom.value
+    let saved: ListenerView
     if (key) {
-      await api.put(`/api/webservice/listeners/${key}`, body)
+      saved = await api.put<ListenerView>(`/api/webservice/listeners/${key}`, body)
     } else if (from) {
       // 副本的站点不带分享链接；不复制站点时只保留监听本身与默认站点
       body.sites = copyListenerSites.value ? (body.sites ?? []).map(stripShareLinks) : []
       if (body.default) {
         body.default = stripShareLinks(body.default)
       }
-      await createItem('/api/webservice/listeners', body, from)
+      saved = await createItem<ListenerView>('/api/webservice/listeners', body, from)
     } else {
-      await api.post('/api/webservice/listeners', body)
+      saved = await api.post<ListenerView>('/api/webservice/listeners', body)
     }
     listenerVisible.value = false
-    ElMessage.success(t('common.saved'))
+    // 配置已保存但监听没能启动（端口被占用、没有权限等）：用警告提示原因，不能只说“已保存”
+    if (saved?.enable && saved.error) {
+      ElMessage({ type: 'warning', message: t('web.savedNotRunning', { reason: listenErrorText(saved) }), duration: 8000, showClose: true })
+    } else {
+      ElMessage.success(t('common.saved'))
+    }
     emit('saved')
     await load()
   } catch (e) {
