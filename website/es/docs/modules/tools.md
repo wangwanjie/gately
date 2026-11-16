@@ -17,6 +17,7 @@ Cada usuario puede apuntar a un directorio o montar varios directorios:
 
 - **Un solo directorio**: define `root` y `readOnly`. Tras iniciar sesión, la raíz es ese directorio.
 - **Varios directorios**: pulsa «Montar varios directorios» en la interfaz, o rellena varias entradas en `mounts`. Cada entrada tiene `name` (nombre visible, no puede contener `/` y es único dentro de un mismo usuario), `path` (una ruta absoluta) y `readOnly`. Tras iniciar sesión, la raíz lista los directorios por nombre. La propia raíz no admite escritura y los archivos no se pueden mover entre directorios distintos.
+- Los directorios (`root` y el `path` de `mounts`) no pueden ser el directorio de configuración de Gately, un directorio dentro de él ni uno que lo contenga: ese directorio guarda las claves de inicio de sesión, y un usuario del servicio de archivos que pueda leerlo puede convertirse en administrador. Los directorios de este tipo guardados antes de la actualización dejan de servir contenido, el resto de directorios y usuarios sigue funcionando y el registro de ejecución pide que los cambies. Lo mismo se aplica a los [usuarios compartidos](#shared-users), a los directorios locales de los montajes de almacenamiento y a los directorios de los sitios estáticos de los servicios web.
 
 **Limitación de inicios de sesión**: WebDAV, FTP y SMB limitan las contraseñas erróneas por dirección de origen. Tras 10 fallos en 15 minutos, todos los inicios de sesión de ese origen se rechazan hasta que termine la ventana (WebDAV devuelve `429`, FTP y SMB devuelven un fallo de inicio de sesión y SMB además registra "demasiados inicios de sesión fallidos, rechazado" en el registro), incluso con la contraseña correcta. Un inicio de sesión correcto no reinicia el contador y los orígenes IPv6 se cuentan por /64. Si WebDAV está detrás de un proxy inverso local como el servicio web de Gately, se usa la dirección del visitante que transmite el proxy.
 
@@ -122,7 +123,7 @@ Añade montajes en «Montajes de almacenamiento», dentro del grupo «Servicios 
 | --- | --- |
 | `name`, `remark`, `enable` | Nombre, nota e interruptor de activación |
 | `type` | `local` (directorio local), `webdav` (WebDAV remoto) o `smb` (recurso compartido SMB) |
-| `path` | Directorio local, debe ser una ruta absoluta existente (lo usa `local`) |
+| `path` | Directorio local, debe ser una ruta absoluta existente (lo usa `local`); no puede ser el directorio de configuración de Gately, un directorio dentro de él ni uno que lo contenga |
 | `url`, `username`, `password` | Dirección remota y cuenta; la contraseña se enmascara en la interfaz (lo usan `webdav` y `smb`). La dirección WebDAV empieza por `http://` o `https://`; la dirección SMB tiene la forma `smb://host[:puerto]/recurso[/subdirectorio]`, admite SMB2/3 y con el usuario vacío se conecta como invitado |
 | `skipVerify` | Omite la verificación del certificado HTTPS (lo usa `webdav`) |
 | `domain` | Dominio o grupo de trabajo para la autenticación SMB, normalmente vacío (lo usa `smb`) |

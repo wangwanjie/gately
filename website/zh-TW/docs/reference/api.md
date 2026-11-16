@@ -60,6 +60,9 @@ curl -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/status
 - 舊介面 `PUT /api/webdav/shared-users`、`PUT /api/ftp/shared-users`、`PUT /api/smb/shared-users` 修改的是三個服務共用的同一份共用使用者，需要同時具備 `webdav:write`、`ftp:write`、`smb:write`；新介面 `/api/fileusers` 使用 `fileusers` 域的權限。
 - `GET /api/session` 與 `GET /api/openapi.json` 接受任意有效權杖。
 - 以下模組的寫入權限可以在伺服器上執行命令，等同於 Gately 程序使用者的命令執行權限：`ddns`（命令取 IP）、`cron`（排程任務）、`guard`（命令日誌來源）、`stun`（規則指令碼）、`ssl`（對應指令碼與本機部署命令）、`webterminal`、`docker`（容器內執行與 Compose）、`frp`、`filebrowser`、`cloudflared`（可指定程式路徑）。新增令牌時這些模組帶有「可執行命令」標記，只授予完全信任的指令碼。令牌呼叫 Lucky 匯入（`import:write`）時項目一律匯入為停用狀態，`enable=1` 只對登入工作階段生效。
+- `tailscale` 與 `netbird` 的寫入權限可以替常駐程式追加啟動參數與環境變數（例如開啟它們內建的 SSH 服務），同樣帶有「可執行命令」標記。
+- 以下模組的寫入權限可以讀取或修改伺服器上的檔案：`storage`（掛載任意目錄後在檔案管理中讀寫）、`webservice`（把任意目錄設為靜態站台）、`webdav`、`ftp`、`smb`、`fileusers`（把任意目錄分享給自己建立的使用者）、`backup`（把含全部金鑰的設定備份寫到儲存掛載點）。建立權杖時這些模組帶有「可讀寫檔案」標記。這些功能都拒絕 Gately 自己的設定目錄，其餘檔案不受限制；Gately 以 root 執行時，能改寫系統檔案就等同於完全控制伺服器，只授予完全信任的指令碼。
+- 權杖呼叫 Lucky 匯入時不匯入全域設定與第三方登入身分表（`lucky_base`、`lucky_thirdPartyAuthManager`），這兩項需要登入管理介面後匯入。
 
 ### 權杖禁止的操作
 
@@ -73,6 +76,8 @@ curl -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/status
 - 設定備份下載與還原：`/api/system/backup`、`/api/system/restore`
 - 本機備份檔案下載：`/api/backup/local`
 - Web 終端機安全設定：`/api/webterminal/security`
+- 託管程式的路徑：`PUT /api/easytier/settings`、`PUT /api/tailscale/settings`、`PUT /api/netbird/settings`
+- 備份加密密碼：`GET /api/backup/secrets`；權杖呼叫 `PUT /api/backup/settings` 時密碼須保持不變（傳 `********`），修改或清空密碼回傳 403
 - 登入與登出：`/api/login`、`/api/logout`
 
 權限不足的請求會回傳 `權杖缺少權限 <權限>`，並在系統日誌中記錄一則警告，包含權杖名稱、來源 IP 與被拒絕的介面。

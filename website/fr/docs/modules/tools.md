@@ -17,6 +17,7 @@ Chaque utilisateur peut être associé à un seul répertoire, ou monter plusieu
 
 - **Répertoire unique** : définissez `root` et `readOnly`. Après la connexion, la racine est ce répertoire.
 - **Plusieurs répertoires** : cliquez sur « Monter plusieurs répertoires » dans l'interface, ou renseignez plusieurs entrées dans `mounts`. Chaque entrée comporte `name` (nom affiché, ne peut pas contenir `/`, unique pour un même utilisateur), `path` (un chemin absolu) et `readOnly`. Après la connexion, la racine liste les répertoires par nom. La racine elle-même n'est pas modifiable, et les fichiers ne peuvent pas être déplacés d'un répertoire à un autre.
+- Les répertoires (`root` et le `path` de `mounts`) ne peuvent pas être le répertoire de configuration de Gately, un répertoire qu'il contient ni un répertoire qui le contient : ce répertoire conserve les clés de connexion, et un utilisateur du service de fichiers capable de le lire peut devenir administrateur. Les répertoires de ce type enregistrés avant la mise à jour ne servent plus aucun contenu, les autres répertoires et utilisateurs continuent de fonctionner et le journal d'exécution demande de les modifier. Il en va de même pour les [utilisateurs partagés](#shared-users), les répertoires locaux des montages de stockage et les répertoires des sites statiques des services web.
 
 **Limitation des connexions** : WebDAV, FTP et SMB limitent les mots de passe erronés par adresse source. Après 10 échecs en 15 minutes, toute connexion de cette source est refusée jusqu'à la fin de la fenêtre (WebDAV renvoie `429`, FTP et SMB renvoient un échec de connexion, et SMB écrit aussi « trop d'échecs de connexion, refusé » dans le journal), même avec le bon mot de passe. Une connexion réussie ne remet pas le compteur à zéro et les sources IPv6 sont comptées par /64. Lorsque WebDAV se trouve derrière un reverse proxy local comme le service web de Gately, l'adresse du visiteur transmise par le proxy est utilisée.
 
@@ -122,7 +123,7 @@ Ajoutez des montages dans « Montages de stockage » du groupe « Services de fi
 | --- | --- |
 | `name`, `remark`, `enable` | Nom, remarque et interrupteur d'activation |
 | `type` | `local` (répertoire local), `webdav` (WebDAV distant) ou `smb` (partage SMB) |
-| `path` | Répertoire local, doit être un chemin absolu existant (utilisé par `local`) |
+| `path` | Répertoire local, doit être un chemin absolu existant (utilisé par `local`) ; il ne peut pas être le répertoire de configuration de Gately, un répertoire qu'il contient ni un répertoire qui le contient |
 | `url`, `username`, `password` | Adresse distante et compte ; le mot de passe est masqué dans l'interface (utilisés par `webdav` et `smb`). Une adresse WebDAV commence par `http://` ou `https://` ; une adresse SMB a la forme `smb://hôte[:port]/partage[/sous-dossier]`, SMB2/3 est pris en charge et un utilisateur vide se connecte en invité |
 | `skipVerify` | Ignore la vérification du certificat HTTPS (utilisé par `webdav`) |
 | `domain` | Domaine ou groupe de travail pour l'authentification SMB, généralement vide (utilisé par `smb`) |

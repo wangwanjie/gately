@@ -17,6 +17,7 @@ Jeder Benutzer kann auf ein Verzeichnis abgebildet werden oder mehrere Verzeichn
 
 - **Einzelnes Verzeichnis**: `root` und `readOnly` setzen. Nach der Anmeldung ist das Wurzelverzeichnis dieses Verzeichnis.
 - **Mehrere Verzeichnisse**: Klicken Sie in der Oberfläche auf „Mehrere Verzeichnisse einbinden“ oder tragen Sie mehrere Einträge in `mounts` ein. Jeder Eintrag hat `name` (Anzeigename, darf kein `/` enthalten und muss pro Benutzer eindeutig sein), `path` (einen absoluten Pfad) und `readOnly`. Nach der Anmeldung listet das Wurzelverzeichnis die Verzeichnisse nach Namen auf. Das Wurzelverzeichnis selbst ist nicht beschreibbar, und Dateien lassen sich nicht zwischen verschiedenen Verzeichnissen verschieben.
+- Verzeichnisse (`root` und der `path` in `mounts`) dürfen weder das Konfigurationsverzeichnis von Gately sein noch darin liegen oder es enthalten: Dort liegen die Anmeldeschlüssel, und ein Benutzer des Dateidienstes, der es lesen kann, kann Administrator werden. Solche vor dem Upgrade gespeicherten Verzeichnisse liefern keine Inhalte mehr aus, die übrigen Verzeichnisse und Benutzer funktionieren weiter, und das Laufzeitprotokoll fordert zur Änderung auf. Dasselbe gilt für [gemeinsame Benutzer](#shared-users), lokale Verzeichnisse von Speicher-Mounts und Verzeichnisse statischer Websites der Webdienste.
 
 **Anmeldebegrenzung**: WebDAV, FTP und SMB begrenzen falsche Passwörter pro Quelladresse. Nach 10 Fehlversuchen innerhalb von 15 Minuten wird jede Anmeldung von dieser Quelle bis zum Ende des Zeitfensters abgelehnt (WebDAV antwortet mit `429`, FTP und SMB mit einem Anmeldefehler, SMB schreibt zusätzlich "zu viele fehlgeschlagene Anmeldungen, abgelehnt" ins Protokoll), auch mit dem richtigen Passwort. Eine erfolgreiche Anmeldung setzt den Zähler nicht zurück; IPv6-Quellen werden pro /64 gezählt. Läuft WebDAV hinter einem lokalen Reverse-Proxy wie dem Gately-Webdienst, gilt die vom Proxy übergebene Besucheradresse.
 
@@ -122,7 +123,7 @@ Fügen Sie Einbindungen unter „Speicher-Einbindungen“ in der Gruppe „Datei
 | --- | --- |
 | `name`, `remark`, `enable` | Name, Bemerkung und Aktivierungsschalter |
 | `type` | `local` (lokales Verzeichnis), `webdav` (entferntes WebDAV) oder `smb` (SMB-Freigabe) |
-| `path` | Lokales Verzeichnis, muss ein vorhandener absoluter Pfad sein (für `local`) |
+| `path` | Lokales Verzeichnis, muss ein vorhandener absoluter Pfad sein (für `local`); es darf weder das Konfigurationsverzeichnis von Gately sein noch darin liegen oder es enthalten |
 | `url`, `username`, `password` | Entfernte Adresse und Konto; das Passwort wird in der Oberfläche maskiert (für `webdav` und `smb`). Eine WebDAV-Adresse beginnt mit `http://` oder `https://`; eine SMB-Adresse hat die Form `smb://host[:port]/freigabe[/unterverzeichnis]`, unterstützt wird SMB2/3, ohne Benutzername wird als Gast verbunden |
 | `skipVerify` | Prüfung des HTTPS-Zertifikats überspringen (für `webdav`) |
 | `domain` | Domäne oder Arbeitsgruppe für die SMB-Anmeldung, meist leer (für `smb`) |
