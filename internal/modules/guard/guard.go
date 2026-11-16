@@ -504,6 +504,9 @@ func (m *Module) onFirewallActive() {
 
 // onBanChange 在封禁表变化时同步防火墙、保存文件。
 func (m *Module) onBanChange(c banlist.Change) {
+	for _, e := range c.Evicted {
+		m.logs.Logger("").Warnf("封禁表已满（上限 %d 条），已移除最早的临时封禁 %s（%s）", banlist.DefaultLimit, e.Key, e.Reason)
+	}
 	m.fw.change(c)
 	if c.Expired && len(c.Added) == 0 {
 		// 只是到期清除：文件里留着到期记录无害（加载时会跳过），不为此单独重写文件，

@@ -37,6 +37,13 @@ const (
 // ErrIgnored 表示地址在白名单中，自动封禁被跳过。
 var ErrIgnored = errors.New("该地址在白名单中，不会被封禁")
 
+// ErrFull 表示封禁表已满且没有可淘汰的记录（全部是永久或手动封禁），新的自动封禁被拒绝。
+var ErrFull = errors.New("封禁表已满（全部为永久或手动封禁），未加入新的自动封禁")
+
+// DefaultLimit 为封禁表的默认总条数上限。封禁表持久化时整份重写、同步到防火墙时逐条写入集合，
+// 条数不加限制时，大量来源（例如分布式扫描）会让内存、文件与内核集合无限增长
+const DefaultLimit = 32768
+
 // Entry 是一条封禁记录。
 type Entry struct {
 	// Key 为 IPv4 地址、IPv6 /64 网段，或手动填写的 CIDR 网段
@@ -81,6 +88,8 @@ type Options struct {
 type Change struct {
 	Added   []Entry
 	Removed []Entry
+	// Evicted 为因封禁表已满被淘汰的记录（同时包含在 Removed 中）
+	Evicted []Entry
 	// Expired 为 true 表示这次变化只是到期记录被清除（Prune）。持久化方可以不为此立即写文件：
 	// 加载时本来就会跳过到期的记录，等下一次真正的变化或停止时再一并写入即可。
 	Expired bool
@@ -96,6 +105,8 @@ type Store struct {
 	netKeys  map[string]netip.Prefix
 	offenses map[string]Offense
 	ignore   func(netip.Prefix) bool
+	// limit 为总条数上限，见 SetLimit
+	limit int
 
 	hookMu sync.Mutex
 	hooks  map[int]func(Change)
@@ -104,7 +115,39 @@ type Store struct {
 
 // New 创建空的封禁表。
 func New() *Store {
-	return &Store{entries: map[string]Entry{}, netKeys: map[string]netip.Prefix{}, offenses: map[string]Offense{}, hooks: map[int]func(Change){}}
+	return &Store{entries: map[string]Entry{}, netKeys: map[string]netip.Prefix{}, offenses: map[string]Offense{}, hooks: map[int]func(Change){}, limit: DefaultLimit}
+}
+
+// SetLimit 设置总条数上限（小于 1 时按 1）。表已满时新增自动封禁会先淘汰最早创建的临时自动封禁；
+// 永久封禁与手动封禁不会被淘汰，表中全部是这两类时新的自动封禁返回 ErrFull。手动封禁（Force）不受上限约束，
+// 从文件恢复（Import）也不受约束，超出的部分随之后的新封禁逐步淘汰。
+func (s *Store) SetLimit(n int) {
+	s.mu.Lock()
+	s.limit = max(n, 1)
+	s.mu.Unlock()
+}
+
+// evictable 判断记录能否在封禁表已满时被淘汰：只淘汰有期限的自动封禁。
+func evictable(e Entry) bool {
+	return !e.Permanent() && e.Source != SourceManual
+}
+
+// victimLocked 返回表满时要淘汰的记录：优先已到期（尚未清理）的记录，其次是最早创建的临时自动封禁。调用方持有写锁。
+func (s *Store) victimLocked(now time.Time) (Entry, bool) {
+	var victim Entry
+	found := false
+	for _, e := range s.entries {
+		if e.Expired(now) {
+			return e, true
+		}
+		if !evictable(e) {
+			continue
+		}
+		if !found || e.Created.Before(victim.Created) || e.Created.Equal(victim.Created) && e.Key < victim.Key {
+			victim, found = e, true
+		}
+	}
+	return victim, found
 }
 
 // Default 是进程级封禁表。
@@ -285,6 +328,17 @@ func (s *Store) Ban(key string, o Options) (e Entry, added bool, err error) {
 	if !exists {
 		count++
 	}
+	var evicted []Entry
+	if _, present := s.entries[key]; !present && len(s.entries) >= s.limit {
+		if v, ok := s.victimLocked(now); ok {
+			delete(s.entries, v.Key)
+			s.untrackNetLocked(v.Key)
+			evicted = append(evicted, v)
+		} else if !o.Force {
+			s.mu.Unlock()
+			return Entry{}, false, ErrFull
+		}
+	}
 	e = Entry{Key: key, Created: now, Reason: o.Reason, Source: o.Source, Count: count}
 	if !o.Permanent {
 		d := o.Duration
@@ -312,7 +366,7 @@ func (s *Store) Ban(key string, o Options) (e Entry, added bool, err error) {
 	s.offenses[key] = Offense{Count: count, Last: now}
 	s.trackNetLocked(key)
 	s.mu.Unlock()
-	s.notify(Change{Added: []Entry{e}})
+	s.notify(Change{Added: []Entry{e}, Removed: evicted, Evicted: evicted})
 	return e, true, nil
 }
 
