@@ -136,6 +136,7 @@ When creating a rule, click a template to prefill the events, level and silence 
 | `backup.done` | Backup: completed | Info | A scheduled or manual backup succeeded for all destinations; see [Configuration Backup](/en/docs/modules/backup) |
 | `backup.failed` | Backup: failed | Error | Backup packaging failed, or writing to any destination failed |
 | `auth.failed` | Authentication: repeated failures | Warning | A management UI login failed, with the `ip` field |
+| `fileauth.failed` | File services: sign-in failed | Warning | A WebDAV, FTP or SMB sign-in failed or was refused after too many failures. The source is the service name; the event carries the `ip` and `service` (`WebDAV`, `FTP` or `SMB`) fields, plus `user` when a username was submitted. At most one event per source every 5 seconds; Intrusion Prevention can count it to ban the source, see [Intrusion Prevention](/en/docs/modules/guard) |
 | `auth.banned` | Authentication: IP banned | Warning | Repeated Web service authentication failures triggered an automatic ban |
 | `guard.banned` | Intrusion prevention: IP banned | Warning | A log rule, trap port or port-scan detection banned an IP address or network, with the `ip` and `reason` fields (and `count` when several addresses were banned together) |
 | `knock.opened` | Port knocking: knock succeeded | Info | A knock passed authentication and the source address was let through, with the fields `ip`, `rule` and `ports`; see [Port Knocking](/en/docs/modules/knock) |
