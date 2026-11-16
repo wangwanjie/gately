@@ -101,7 +101,7 @@ func (m *Module) applyTrapLocked() {
 	}
 	log := m.logs.Logger("诱饵端口")
 	m.trap = startUserTrap(m.ctx, ports, log, func(a netip.Addr, port int) {
-		if banlist.Default.Ignored(a) {
+		if banlist.Default.Ignored(a) || m.skipPortBan(a) {
 			return
 		}
 		m.ban(a, s.Trap.BanSeconds, fmt.Sprintf("连接诱饵端口 %d", port), banlist.SourceTrap, "诱饵端口")
