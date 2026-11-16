@@ -1,11 +1,11 @@
 <p align="center">
-  <a href="https://gately.cn/ko/"><img src="docs/images/banner.svg" alt="Gately — 올인원 네트워크 게이트웨이: 오픈소스, 설치 즉시 사용" width="100%"></a>
+  <a href="https://gately.cn/ko/"><img src="../images/banner.svg" alt="Gately — 올인원 네트워크 게이트웨이: 오픈소스, 설치 즉시 사용" width="100%"></a>
 </p>
 
 <p align="center">
   <a href="https://github.com/wangwanjie/gately/releases/latest"><img src="https://img.shields.io/github/v/release/wangwanjie/gately?style=flat-square&color=0e7c66&label=release" alt="Release"></a>
   <a href="https://github.com/wangwanjie/gately/pkgs/container/gately"><img src="https://img.shields.io/badge/docker-ghcr.io%2Fwangwanjie%2Fgately-0e7c66?style=flat-square&logo=docker&logoColor=white" alt="Docker"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/github/license/wangwanjie/gately?style=flat-square&color=0e7c66" alt="License"></a>
+  <a href="../../LICENSE"><img src="https://img.shields.io/github/license/wangwanjie/gately?style=flat-square&color=0e7c66" alt="License"></a>
   <a href="https://github.com/wangwanjie/gately/stargazers"><img src="https://img.shields.io/github/stars/wangwanjie/gately?style=flat-square&color=0e7c66" alt="Stars"></a>
   <a href="https://gately.cn/ko/"><img src="https://img.shields.io/badge/%EA%B3%B5%EC%8B%9D%20%EC%82%AC%EC%9D%B4%ED%8A%B8-gately.cn-0e7c66?style=flat-square&logo=googlechrome&logoColor=white" alt="gately.cn"></a>
   <a href="https://t.me/gately_chat"><img src="https://img.shields.io/badge/Telegram-gately__chat-26A5E4?style=flat-square&logo=telegram&logoColor=white" alt="Telegram"></a>
@@ -20,7 +20,7 @@
 </p>
 
 <p align="center">
-  <a href="README.md">English</a> | <a href="README.zh-CN.md">简体中文</a> | <a href="README.zh-TW.md">繁體中文</a> | <a href="README.ja.md">日本語</a> | <b>한국어</b> | <a href="README.es.md">Español</a> | <a href="README.fr.md">Français</a> | <a href="README.de.md">Deutsch</a> | <a href="README.ru.md">Русский</a> | <a href="README.pt-BR.md">Português (Brasil)</a>
+  <a href="../../README.md">English</a> | <a href="../../README.zh-CN.md">简体中文</a> | <a href="README.zh-TW.md">繁體中文</a> | <a href="README.ja.md">日本語</a> | <b>한국어</b> | <a href="README.es.md">Español</a> | <a href="README.fr.md">Français</a> | <a href="README.de.md">Deutsch</a> | <a href="README.ru.md">Русский</a> | <a href="README.pt-BR.md">Português (Brasil)</a>
 </p>
 
 도메인 DNS와 NAT 통과부터 리버스 프록시, HTTPS 인증서, WAF, 침입 방지, 통합 로그인, 파일 공유까지. 홈 네트워크와 서버 입구에 필요한 기능을 Gately가 관리 화면 하나에 모았습니다. NAS, 소프트 라우터, 클라우드 서버에 설치하면 설정과 운영을 브라우저에서 모두 처리할 수 있습니다. 소스 코드는 Apache-2.0으로 공개되어 있으며, 설정과 데이터는 내 기기에만 남고 수집하거나 전송하지 않습니다.
@@ -44,7 +44,7 @@ docker run -d --name gately --network host --cap-add NET_ADMIN \
   ghcr.io/wangwanjie/gately:latest
 ```
 
-`http://<기기 IP>:16680`을 열고 기본 계정 `admin`과 기본 비밀번호 `gately.cn`으로 로그인한 뒤, "설정"에서 비밀번호를 변경하고 2단계 인증을 켜세요. 전체 Compose 예시는 [deploy/docker-compose.yml](deploy/docker-compose.yml)을 참고하세요.
+`http://<기기 IP>:16680`을 열고 기본 계정 `admin`과 기본 비밀번호 `gately.cn`으로 로그인한 뒤, "설정"에서 비밀번호를 변경하고 2단계 인증을 켜세요. 전체 Compose 예시는 [deploy/docker-compose.yml](../../deploy/docker-compose.yml)을 참고하세요.
 
 비밀번호를 잊었거나 2단계 인증기를 잃어버렸다면 서버에서 `gately reset-password` 또는 `gately reset-totp`를 실행하세요(Docker는 `docker exec -it gately gately reset-password`). 확인하면 바로 적용됩니다. 자세한 내용은 [비밀번호와 2단계 인증 재설정](https://gately.cn/ko/docs/guide/install#reset)을 참고하세요.
 
@@ -67,7 +67,7 @@ docker run -d --name gately --network host --cap-add NET_ADMIN \
 
 부팅 시 자동 실행: 압축을 푼 뒤 `sudo ./gately service install`을 실행합니다(Windows는 관리자 권한 터미널에서 `.\gately.exe service install`). Linux는 systemd 서비스, macOS는 launchd 데몬(`-user`를 붙이면 sudo 없이 로그인 항목으로 등록), Windows는 서비스로 등록하고 즉시 시작하며 비정상 종료 후 자동으로 다시 시작합니다. 설정 디렉터리 기본값은 `/etc/gately`, `/usr/local/etc/gately`, `%ProgramData%\Gately`이며 `-c`, `-listen`으로 바꿀 수 있습니다. 서비스는 실행 파일 경로를 참조하므로 먼저 최종 위치에 두세요. 이후 `gately service uninstall|start|stop|restart|status`로 관리하며, 제거해도 설정 디렉터리는 남습니다.
 
-서비스 템플릿: [systemd](deploy/systemd/gately.service), [OpenWrt procd](deploy/openwrt/gately.init). 다운로드한 압축 파일과 이미지 검증(cosign 서명, 빌드 출처 증명, SBOM)은 [릴리스 산출물 검증](docs/ko/VERIFY.md)을 참고하세요.
+서비스 템플릿: [systemd](../../deploy/systemd/gately.service), [OpenWrt procd](../../deploy/openwrt/gately.init). 다운로드한 압축 파일과 이미지 검증(cosign 서명, 빌드 출처 증명, SBOM)은 [릴리스 산출물 검증](../ko/VERIFY.md)을 참고하세요.
 
 </details>
 
@@ -83,7 +83,7 @@ docker run -d --name gately --network host --cap-add NET_ADMIN \
 - 설정은 앱의 `var` 디렉터리에 저장되며, 제거 마법사에서 "모두 삭제"를 선택하지 않는 한 제거해도 유지됩니다. 업그레이드는 새 버전의 `.fpk`를 다시 수동 설치하면 됩니다.
 - 패키지는 `gately ctl`과 `gately mcp`용 `gately` 명령(`/usr/local/bin/gately`)도 추가합니다.
 - 16680 포트는 Docker 이미지와 같습니다. 네이티브 앱을 시작하기 전에 `gately` 컨테이너를 중지하세요.
-- 내려받은 파일은 [릴리스 산출물 검증](docs/ko/VERIFY.md)에 따라 검증하세요. `.fpk` 파일도 `checksums.txt`에 포함되어 있습니다.
+- 내려받은 파일은 [릴리스 산출물 검증](../ko/VERIFY.md)에 따라 검증하세요. `.fpk` 파일도 `checksums.txt`에 포함되어 있습니다.
 
 </details>
 
@@ -102,7 +102,7 @@ docker run -d --name gately --network host --cap-add NET_ADMIN \
 <details>
 <summary><b>모니터링</b></summary>
 
-`metrics:read` 권한만 있는 API 토큰을 만들고 Prometheus가 `/api/metrics`를 수집하도록 설정하세요. 메트릭, 알림 예시, Grafana 대시보드는 [모니터링](docs/ko/MONITORING.md)에서 설명합니다.
+`metrics:read` 권한만 있는 API 토큰을 만들고 Prometheus가 `/api/metrics`를 수집하도록 설정하세요. 메트릭, 알림 예시, Grafana 대시보드는 [모니터링](../ko/MONITORING.md)에서 설명합니다.
 
 </details>
 
@@ -115,7 +115,7 @@ docker run -d --name gately --network host --cap-add NET_ADMIN \
 curl -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns/tasks
 ```
 
-계정, 2단계 인증, 토큰 관리, 그리고 백업, 복원, 재시작, 시스템 설정 API는 로그인 세션으로만 사용할 수 있습니다. 전체 API, 필요한 권한, 데이터 구조는 관리 콘솔의 "API 문서" 페이지에서 확인할 수 있으며, `make api-docs`로 [docs/api](docs/api/ko)(`openapi.json`과 `API.md`)에 내보낼 수도 있습니다. 공식 사이트 https://gately.cn 에서도 이 파일을 그대로 참조합니다.
+계정, 2단계 인증, 토큰 관리, 그리고 백업, 복원, 재시작, 시스템 설정 API는 로그인 세션으로만 사용할 수 있습니다. 전체 API, 필요한 권한, 데이터 구조는 관리 콘솔의 "API 문서" 페이지에서 확인할 수 있으며, `make api-docs`로 [docs/api](../api/ko)(`openapi.json`과 `API.md`)에 내보낼 수도 있습니다. 공식 사이트 https://gately.cn 에서도 이 파일을 그대로 참조합니다.
 
 이전 버전에서 업그레이드하면 기존 전역 API 토큰은 자동으로 "레거시 토큰"이 됩니다(값은 그대로이며 모든 모듈 권한을 가짐). API 토큰 페이지에서 권한을 줄이거나 새 토큰으로 교체하는 것을 권장합니다.
 
@@ -138,47 +138,47 @@ File Browser 모듈은 [FileBrowser Quantum](https://github.com/gtsteffaniak/fil
 
 개요 화면에서 CPU, 메모리, 디스크, 트래픽과 네트워크 인터페이스별 공인 IPv4 / IPv6, 모든 모듈의 상태를 한 번에 보여 주므로 손봐야 할 곳을 바로 알 수 있습니다.
 
-<img src="docs/images/ko/overview.webp" alt="한눈에 보는 전체 상황" width="100%">
+<img src="../images/ko/overview.webp" alt="한눈에 보는 전체 상황" width="100%">
 
 ### nginx를 대신하는 웹 서비스
 
 도메인별 리버스 프록시, 정적 파일, 리디렉션을 HTTPS와 HTTP/3로 제공합니다. 사이트마다 WAF, IP 규칙, 로그인 인증을 따로 켤 수 있고, 설정을 바꿔도 기존 연결이 끊기지 않습니다.
 
-<img src="docs/images/ko/web.webp" alt="nginx를 대신하는 웹 서비스" width="100%">
+<img src="../images/ko/web.webp" alt="nginx를 대신하는 웹 서비스" width="100%">
 
 <p><b>사이트 통계</b> — 요청 수, 오류, 백엔드 상태, 접속 IP와 국가 순위를 분 단위로 집계합니다.</p>
 
-<img src="docs/images/ko/site-stats.webp" alt="사이트 통계" width="100%">
+<img src="../images/ko/site-stats.webp" alt="사이트 통계" width="100%">
 
 ### 네트워크 토폴로지
 
 방문자에서 리스너, 사이트, 백엔드로 이어지는 트래픽 흐름을 실시간으로 확인합니다. 노드를 선택하면 QPS, 트래픽, 활성 IP를 볼 수 있고, 방문자 IP로 필터링하고 7가지 레이아웃을 전환하며, 스크린샷을 공유하기 전에 주소를 가릴 수 있습니다.
 
-<img src="docs/images/ko/topology.webp" alt="네트워크 토폴로지" width="100%">
+<img src="../images/ko/topology.webp" alt="네트워크 토폴로지" width="100%">
 
 ### 443 포트 하나로 모든 서비스를
 
 프로토콜 라우팅으로 여러 서비스를 도메인이나 프로토콜별로 같은 포트에 둡니다. TLS는 그대로 통과시키고 PROXY 프로토콜로 실제 클라이언트 주소를 전달합니다.
 
-<img src="docs/images/ko/protoroute.webp" alt="443 포트 하나로 모든 서비스를" width="100%">
+<img src="../images/ko/protoroute.webp" alt="443 포트 하나로 모든 서비스를" width="100%">
 
 ### 주요 제공업체를 모두 지원하는 동적 도메인
 
 Cloudflare, Alibaba Cloud, DNSPod, Route 53 등을 지원합니다. IPv4와 IPv6 모두 다루고, IP는 URL, 네트워크 인터페이스, 명령으로 가져오며, 주소가 바뀌면 바로 알림을 보냅니다.
 
-<img src="docs/images/ko/ddns.webp" alt="주요 제공업체를 모두 지원하는 동적 도메인" width="100%">
+<img src="../images/ko/ddns.webp" alt="주요 제공업체를 모두 지원하는 동적 도메인" width="100%">
 
 ### 침입 방지
 
 fail2ban 방식 규칙이 로그 파일, journald, 컨테이너 로그를 읽고, 미끼 포트와 스캔 탐지가 탐색 행위를 잡아냅니다. 차단 목록은 nftables에 동기화되어 커널에서 바로 패킷을 버립니다.
 
-<img src="docs/images/ko/guard.webp" alt="침입 방지" width="100%">
+<img src="../images/ko/guard.webp" alt="침입 방지" width="100%">
 
 ### frp, Tailscale, Cloudflare 터널
 
 여러 frpc·frps 인스턴스를 나란히 실행하고 Tailscale, cloudflared 터널과 함께 관리합니다. 이 프로그램들의 설치, 업데이트, 롤백은 Gately가 맡습니다.
 
-<img src="docs/images/ko/frp.webp" alt="frp, Tailscale, Cloudflare 터널" width="100%">
+<img src="../images/ko/frp.webp" alt="frp, Tailscale, Cloudflare 터널" width="100%">
 
 ### 그 밖에도
 
@@ -188,14 +188,14 @@ fail2ban 방식 규칙이 로그 파일, journald, 컨테이너 로그를 읽고
 
 **Docker**<br>컨테이너, Compose, 로그, 터미널. 이미지는 클릭 한 번으로 업그레이드하고, 실패하면 자동으로 롤백합니다.
 
-<img src="docs/images/ko/docker.webp" alt="Docker" width="100%">
+<img src="../images/ko/docker.webp" alt="Docker" width="100%">
 
 </td>
 <td width="50%" valign="top">
 
 **웹 터미널**<br>브라우저에서 SSH, Telnet, 로컬 셸을 쓰고 SFTP와 화면 분할도 지원합니다.
 
-<img src="docs/images/ko/terminal.webp" alt="웹 터미널" width="100%">
+<img src="../images/ko/terminal.webp" alt="웹 터미널" width="100%">
 
 </td>
 </tr>
@@ -207,14 +207,14 @@ fail2ban 방식 규칙이 로그 파일, journald, 컨테이너 로그를 읽고
 
 **설정 이력**<br>변경할 때마다 이전 버전을 남겨 두어 차이를 비교하고 클릭 한 번으로 되돌릴 수 있습니다.
 
-<img src="docs/images/ko/config-history.webp" alt="설정 이력" width="100%">
+<img src="../images/ko/config-history.webp" alt="설정 이력" width="100%">
 
 </td>
 <td width="50%" valign="top">
 
 **API, CLI, MCP**<br>모듈별 권한을 주는 API 토큰, 내장 OpenAPI 문서, `gately ctl`, AI 어시스턴트가 연결하는 MCP 서버.
 
-<img src="docs/images/ko/api-docs.webp" alt="API, CLI, MCP" width="100%">
+<img src="../images/ko/api-docs.webp" alt="API, CLI, MCP" width="100%">
 
 </td>
 </tr>
@@ -308,7 +308,7 @@ make lint     # gofmt, go vet, 프런트엔드 타입 검사
 
 프런트엔드 개발 시에는 `cd web && pnpm dev`를 실행하세요. `/api`는 로컬 `127.0.0.1:16680`으로 프록시됩니다.
 
-선택 모듈과 UI 언어는 빌드할 때 뺄 수 있습니다. `go build -tags no_waf,no_smb,lang_zh`는 모듈(`no_<모듈>`)과 언어(`lang_zh`는 간체 중국어만, `lang_cjken`은 간체 중국어·번체 중국어·영어를 남김)를 빼고, `GATELY_LOCALES=zh-CN pnpm build`는 선택한 UI 언어만 묶습니다. [modules.json](modules.json)에 선택 모듈이 나열되어 있으며, `go run ./tools/custombuild resolve -modules ddns,frp -lang zh`는 선택을 tag, 언어, Docker 빌드 인수(`GATELY_TAGS`, `GATELY_LOCALES`, `WITH_DOCKER_CLI`, `WITH_NFTABLES`)로 변환합니다.
+선택 모듈과 UI 언어는 빌드할 때 뺄 수 있습니다. `go build -tags no_waf,no_smb,lang_zh`는 모듈(`no_<모듈>`)과 언어(`lang_zh`는 간체 중국어만, `lang_cjken`은 간체 중국어·번체 중국어·영어를 남김)를 빼고, `GATELY_LOCALES=zh-CN pnpm build`는 선택한 UI 언어만 묶습니다. [modules.json](../../modules.json)에 선택 모듈이 나열되어 있으며, `go run ./tools/custombuild resolve -modules ddns,frp -lang zh`는 선택을 tag, 언어, Docker 빌드 인수(`GATELY_TAGS`, `GATELY_LOCALES`, `WITH_DOCKER_CLI`, `WITH_NFTABLES`)로 변환합니다.
 
 일부 테스트는 기본적으로 건너뛰며 추가 조건이 필요합니다.
 
@@ -317,7 +317,7 @@ make lint     # gofmt, go vet, 프런트엔드 타입 검사
 | ACME 엔드투엔드(Pebble) | pebble과 pebble-challtestsrv를 설치하고 `GATELY_PEBBLE_BIN`, `GATELY_PEBBLE_SRC`를 설정(CI에서는 자동 실행) |
 | 실제 공용 STUN 서버 | `GATELY_NET_TEST=1` |
 
-디렉터리 구조와 기술 선정은 [docs/ko/ROADMAP.md](docs/ko/ROADMAP.md)를 참고하세요.
+디렉터리 구조와 기술 선정은 [docs/ko/ROADMAP.md](../ko/ROADMAP.md)를 참고하세요.
 
 공식 사이트([gately.cn](https://gately.cn))의 소스는 `website/`에 있으며 VitePress 기반입니다. `cd website && pnpm install && pnpm dev`; `pnpm deploy:site`는 빌드 후 서버에 동기화합니다.
 
@@ -331,9 +331,9 @@ make lint     # gofmt, go vet, 프런트엔드 타입 검사
 
 사용 문의와 의견은 Telegram 그룹에서 나눠 주세요: [t.me/gately_chat](https://t.me/gately_chat). 휴대폰으로 QR 코드를 스캔해 참여할 수도 있습니다.
 
-<a href="https://t.me/gately_chat"><img src="docs/images/telegram-qr.svg" alt="QR 코드를 스캔해 Gately Telegram 그룹에 참여" width="160"></a>
+<a href="https://t.me/gately_chat"><img src="../images/telegram-qr.svg" alt="QR 코드를 스캔해 Gately Telegram 그룹에 참여" width="160"></a>
 
-버그는 [GitHub Issues](https://github.com/wangwanjie/gately/issues)에 등록하고 [진단 패키지](docs/ko/DIAGNOSTICS.md)(설정 → 진단)를 첨부해 주세요. 진단 패키지는 로컬에서 생성되며 비밀번호, 토큰, 도메인, 실제 IP를 포함하지 않습니다.
+버그는 [GitHub Issues](https://github.com/wangwanjie/gately/issues)에 등록하고 [진단 패키지](../ko/DIAGNOSTICS.md)(설정 → 진단)를 첨부해 주세요. 진단 패키지는 로컬에서 생성되며 비밀번호, 토큰, 도메인, 실제 IP를 포함하지 않습니다.
 
 ## 후원
 
@@ -345,4 +345,4 @@ Gately의 모든 기능은 무료입니다. 도움이 되었다면 USDT, [아이
 
 ## 라이선스
 
-[Apache License 2.0](LICENSE)
+[Apache License 2.0](../../LICENSE)

@@ -1,11 +1,11 @@
 <p align="center">
-  <a href="https://gately.cn/de/"><img src="docs/images/banner.svg" alt="Gately — Das All-in-one-Netzwerk-Gateway: Open Source, sofort einsatzbereit" width="100%"></a>
+  <a href="https://gately.cn/de/"><img src="../images/banner.svg" alt="Gately — Das All-in-one-Netzwerk-Gateway: Open Source, sofort einsatzbereit" width="100%"></a>
 </p>
 
 <p align="center">
   <a href="https://github.com/wangwanjie/gately/releases/latest"><img src="https://img.shields.io/github/v/release/wangwanjie/gately?style=flat-square&color=0e7c66&label=release" alt="Release"></a>
   <a href="https://github.com/wangwanjie/gately/pkgs/container/gately"><img src="https://img.shields.io/badge/docker-ghcr.io%2Fwangwanjie%2Fgately-0e7c66?style=flat-square&logo=docker&logoColor=white" alt="Docker"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/github/license/wangwanjie/gately?style=flat-square&color=0e7c66" alt="License"></a>
+  <a href="../../LICENSE"><img src="https://img.shields.io/github/license/wangwanjie/gately?style=flat-square&color=0e7c66" alt="License"></a>
   <a href="https://github.com/wangwanjie/gately/stargazers"><img src="https://img.shields.io/github/stars/wangwanjie/gately?style=flat-square&color=0e7c66" alt="Stars"></a>
   <a href="https://gately.cn/de/"><img src="https://img.shields.io/badge/Website-gately.cn-0e7c66?style=flat-square&logo=googlechrome&logoColor=white" alt="gately.cn"></a>
   <a href="https://t.me/gately_chat"><img src="https://img.shields.io/badge/Telegram-gately__chat-26A5E4?style=flat-square&logo=telegram&logoColor=white" alt="Telegram"></a>
@@ -20,7 +20,7 @@
 </p>
 
 <p align="center">
-  <a href="README.md">English</a> | <a href="README.zh-CN.md">简体中文</a> | <a href="README.zh-TW.md">繁體中文</a> | <a href="README.ja.md">日本語</a> | <a href="README.ko.md">한국어</a> | <a href="README.es.md">Español</a> | <a href="README.fr.md">Français</a> | <b>Deutsch</b> | <a href="README.ru.md">Русский</a> | <a href="README.pt-BR.md">Português (Brasil)</a>
+  <a href="../../README.md">English</a> | <a href="../../README.zh-CN.md">简体中文</a> | <a href="README.zh-TW.md">繁體中文</a> | <a href="README.ja.md">日本語</a> | <a href="README.ko.md">한국어</a> | <a href="README.es.md">Español</a> | <a href="README.fr.md">Français</a> | <b>Deutsch</b> | <a href="README.ru.md">Русский</a> | <a href="README.pt-BR.md">Português (Brasil)</a>
 </p>
 
 DNS und NAT-Traversal, Reverse Proxy und HTTPS-Zertifikate, WAF und Einbruchschutz, Single Sign-on und Dateifreigabe: alles, was Ihr Heimnetz und Ihre Server am Eingang brauchen, in einer Oberfläche. Installieren Sie Gately auf einem NAS, einem Soft-Router oder einem Cloud-Server und richten Sie alles im Browser ein. Open Source unter Apache-2.0; Konfiguration und Daten bleiben auf Ihrem Gerät, nichts wird erfasst oder übermittelt.
@@ -44,7 +44,7 @@ docker run -d --name gately --network host --cap-add NET_ADMIN \
   ghcr.io/wangwanjie/gately:latest
 ```
 
-Öffnen Sie `http://<Geräte-IP>:16680`, melden Sie sich mit dem Standardkonto `admin` und dem Standardpasswort `gately.cn` an und ändern Sie anschließend unter „Einstellungen“ das Passwort und aktivieren Sie die Zwei-Faktor-Authentifizierung. Ein vollständiges Compose-Beispiel finden Sie in [deploy/docker-compose.yml](deploy/docker-compose.yml).
+Öffnen Sie `http://<Geräte-IP>:16680`, melden Sie sich mit dem Standardkonto `admin` und dem Standardpasswort `gately.cn` an und ändern Sie anschließend unter „Einstellungen“ das Passwort und aktivieren Sie die Zwei-Faktor-Authentifizierung. Ein vollständiges Compose-Beispiel finden Sie in [deploy/docker-compose.yml](../../deploy/docker-compose.yml).
 
 Haben Sie das Passwort vergessen oder den Zwei-Faktor-Authenticator verloren, führen Sie auf dem Server `gately reset-password` bzw. `gately reset-totp` aus (bei Docker `docker exec -it gately gately reset-password`); nach der Bestätigung gilt die Änderung sofort. Siehe [Passwort und Zwei-Faktor-Authentifizierung zurücksetzen](https://gately.cn/de/docs/guide/install#reset).
 
@@ -67,7 +67,7 @@ Parameter: `-c` Konfigurationsverzeichnis (alternativ die Umgebungsvariable `GAT
 
 Start beim Hochfahren: Nach dem Entpacken `sudo ./gately service install` ausführen (Windows: `.\gately.exe service install` in einem Terminal mit Administratorrechten). Das registriert unter Linux eine systemd-Unit, unter macOS einen launchd-Daemon (mit `-user` als Anmeldeobjekt ohne sudo) und unter Windows einen Dienst, startet Gately sofort und startet es nach einem Absturz neu. Das Konfigurationsverzeichnis ist standardmäßig `/etc/gately`, `/usr/local/etc/gately` oder `%ProgramData%\Gately`; `-c` und `-listen` überschreiben es. Der Dienst verweist auf den Pfad der Programmdatei, legen Sie sie daher vorher am endgültigen Ort ab. Danach verwalten Sie ihn mit `gately service uninstall|start|stop|restart|status`; beim Deinstallieren bleibt das Konfigurationsverzeichnis erhalten.
 
-Dienstvorlagen: [systemd](deploy/systemd/gately.service) und [OpenWrt procd](deploy/openwrt/gately.init). Wie Sie heruntergeladene Archive und Images prüfen (cosign-Signaturen, Build-Provenienz, SBOM), beschreibt [Release-Artefakte verifizieren](docs/de/VERIFY.md).
+Dienstvorlagen: [systemd](../../deploy/systemd/gately.service) und [OpenWrt procd](../../deploy/openwrt/gately.init). Wie Sie heruntergeladene Archive und Images prüfen (cosign-Signaturen, Build-Provenienz, SBOM), beschreibt [Release-Artefakte verifizieren](../de/VERIFY.md).
 
 </details>
 
@@ -83,7 +83,7 @@ Jedes Release enthält Offline-`.fpk`-Pakete für fnOS: `gately_<version>_fnos_x
 - Die Konfiguration liegt im `var`-Verzeichnis der App und bleibt bei der Deinstallation erhalten, sofern Sie im Deinstallationsassistenten nicht „Alles löschen“ wählen. Ein Upgrade ist eine erneute manuelle Installation der neueren `.fpk`.
 - Das Paket installiert außerdem einen Befehl `gately` (`/usr/local/bin/gately`) für `gately ctl` und `gately mcp`.
 - Port 16680 wird mit dem Docker-Image geteilt. Stoppen Sie den `gately`-Container, bevor Sie die native App starten.
-- Prüfen Sie den Download wie in [Release-Artefakte verifizieren](docs/de/VERIFY.md) beschrieben; `.fpk`-Dateien sind in `checksums.txt` aufgeführt.
+- Prüfen Sie den Download wie in [Release-Artefakte verifizieren](../de/VERIFY.md) beschrieben; `.fpk`-Dateien sind in `checksums.txt` aufgeführt.
 
 </details>
 
@@ -102,7 +102,7 @@ Jedes Release enthält OpenWrt-Pakete: `gately_<version>_openwrt_<Architektur>.i
 <details>
 <summary><b>Monitoring</b></summary>
 
-Erstellen Sie ein API-Token nur mit der Berechtigung `metrics:read` und lassen Sie Prometheus `/api/metrics` abfragen. Metriken, Alarmbeispiele und das Grafana-Dashboard beschreibt [Monitoring](docs/de/MONITORING.md).
+Erstellen Sie ein API-Token nur mit der Berechtigung `metrics:read` und lassen Sie Prometheus `/api/metrics` abfragen. Metriken, Alarmbeispiele und das Grafana-Dashboard beschreibt [Monitoring](../de/MONITORING.md).
 
 </details>
 
@@ -115,7 +115,7 @@ Erstellen Sie auf der Seite „API-Tokens“ der Verwaltungsoberfläche ein Toke
 curl -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns/tasks
 ```
 
-Konto, Zwei-Faktor-Authentifizierung, Token-Verwaltung sowie die Schnittstellen für Backup, Wiederherstellung, Neustart und Systemeinstellungen sind nur mit einer Anmeldesitzung zugänglich. Alle Schnittstellen, erforderlichen Berechtigungen und Datenstrukturen finden Sie auf der Seite „API-Dokumentation“ der Verwaltungsoberfläche; mit `make api-docs` lassen sie sich nach [docs/api](docs/api/de) exportieren (`openapi.json` und `API.md`), auf die die Website https://gately.cn bei der Veröffentlichung direkt verweist.
+Konto, Zwei-Faktor-Authentifizierung, Token-Verwaltung sowie die Schnittstellen für Backup, Wiederherstellung, Neustart und Systemeinstellungen sind nur mit einer Anmeldesitzung zugänglich. Alle Schnittstellen, erforderlichen Berechtigungen und Datenstrukturen finden Sie auf der Seite „API-Dokumentation“ der Verwaltungsoberfläche; mit `make api-docs` lassen sie sich nach [docs/api](../api/de) exportieren (`openapi.json` und `API.md`), auf die die Website https://gately.cn bei der Veröffentlichung direkt verweist.
 
 Beim Upgrade von einer älteren Version wird das bisherige globale API-Token automatisch zu einem „Altbestand“-Token (der Wert bleibt gleich, mit Rechten für alle Module). Es empfiehlt sich, auf der Seite „API-Tokens“ die Rechte einzuschränken oder es durch ein neues Token zu ersetzen.
 
@@ -138,47 +138,47 @@ Ein kurzer Rundgang durch die Verwaltungsoberfläche. Die vollständige Modullis
 
 Die Übersicht zeigt CPU, Arbeitsspeicher, Festplatte und Traffic, die Netzwerkschnittstellen mit ihrer öffentlichen IPv4 und IPv6 sowie den Status jedes Moduls. So sehen Sie in Sekunden, ob etwas Aufmerksamkeit braucht.
 
-<img src="docs/images/de/overview.webp" alt="Alles auf einen Blick" width="100%">
+<img src="../images/de/overview.webp" alt="Alles auf einen Blick" width="100%">
 
 ### Web-Dienste, die nginx ersetzen können
 
 Reverse-Proxy, statische Dateien und Weiterleitungen je Domain, mit HTTPS und HTTP/3. Jede Site bekommt eigene WAF, IP-Regeln und Anmeldung, und Änderungen greifen, ohne Verbindungen zu trennen.
 
-<img src="docs/images/de/web.webp" alt="Web-Dienste, die nginx ersetzen können" width="100%">
+<img src="../images/de/web.webp" alt="Web-Dienste, die nginx ersetzen können" width="100%">
 
 <p><b>Statistik je Site</b> — Anfragen, Fehler, Backend-Zustand, häufigste Client-IPs und Länder, minutengenau.</p>
 
-<img src="docs/images/de/site-stats.webp" alt="Statistik je Site" width="100%">
+<img src="../images/de/site-stats.webp" alt="Statistik je Site" width="100%">
 
 ### Netzwerktopologie
 
 Verfolgen Sie live, wie der Datenverkehr von den Besuchern über Listener und Sites zu den Backends fließt. Ein Klick auf einen Knoten zeigt QPS, Traffic und aktive IPs; Sie können nach Besucher-IP filtern, zwischen sieben Layouts wechseln und Adressen vor dem Teilen eines Screenshots maskieren.
 
-<img src="docs/images/de/topology.webp" alt="Netzwerktopologie" width="100%">
+<img src="../images/de/topology.webp" alt="Netzwerktopologie" width="100%">
 
 ### Ein Port 443 für alle Dienste
 
 Mit dem Protokoll-Routing teilen sich mehrere Dienste einen Port nach Domain oder Protokoll. TLS wird unverändert durchgereicht, das PROXY-Protokoll bewahrt die echte Client-Adresse.
 
-<img src="docs/images/de/protoroute.webp" alt="Ein Port 443 für alle Dienste" width="100%">
+<img src="../images/de/protoroute.webp" alt="Ein Port 443 für alle Dienste" width="100%">
 
 ### Dynamisches DNS für alle großen Anbieter
 
 Cloudflare, Alibaba Cloud, DNSPod, Route 53 und weitere. IPv4 und IPv6, Adressen per URL, Netzwerkschnittstelle oder Befehl, und eine Benachrichtigung bei jeder Änderung.
 
-<img src="docs/images/de/ddns.webp" alt="Dynamisches DNS für alle großen Anbieter" width="100%">
+<img src="../images/de/ddns.webp" alt="Dynamisches DNS für alle großen Anbieter" width="100%">
 
 ### Einbruchschutz
 
 Regeln wie bei fail2ban lesen Protokolle aus Dateien, journald und Containern, Köderports und Portscan-Erkennung fangen Sondierungen ab. Sperren werden mit nftables synchronisiert und direkt im Kernel verworfen.
 
-<img src="docs/images/de/guard.webp" alt="Einbruchschutz" width="100%">
+<img src="../images/de/guard.webp" alt="Einbruchschutz" width="100%">
 
 ### frp, Tailscale und Cloudflare Tunnel
 
 Mehrere frpc- und frps-Instanzen laufen parallel, neben Tailscale und cloudflared-Tunneln. Installation, Updates und Rollbacks dieser Programme übernimmt Gately.
 
-<img src="docs/images/de/frp.webp" alt="frp, Tailscale und Cloudflare Tunnel" width="100%">
+<img src="../images/de/frp.webp" alt="frp, Tailscale und Cloudflare Tunnel" width="100%">
 
 ### Außerdem
 
@@ -188,14 +188,14 @@ Mehrere frpc- und frps-Instanzen laufen parallel, neben Tailscale und cloudflare
 
 **Docker**<br>Container, Compose, Logs und Terminals, Image-Upgrades per Klick mit automatischem Rollback bei Fehlern.
 
-<img src="docs/images/de/docker.webp" alt="Docker" width="100%">
+<img src="../images/de/docker.webp" alt="Docker" width="100%">
 
 </td>
 <td width="50%" valign="top">
 
 **Web-Terminal**<br>SSH, Telnet und die lokale Shell im Browser, mit SFTP und geteilter Ansicht.
 
-<img src="docs/images/de/terminal.webp" alt="Web-Terminal" width="100%">
+<img src="../images/de/terminal.webp" alt="Web-Terminal" width="100%">
 
 </td>
 </tr>
@@ -207,14 +207,14 @@ Mehrere frpc- und frps-Instanzen laufen parallel, neben Tailscale und cloudflare
 
 **Konfigurationsverlauf**<br>Jede Änderung bewahrt die vorherige Version, mit Diff-Ansicht und Rollback per Klick.
 
-<img src="docs/images/de/config-history.webp" alt="Konfigurationsverlauf" width="100%">
+<img src="../images/de/config-history.webp" alt="Konfigurationsverlauf" width="100%">
 
 </td>
 <td width="50%" valign="top">
 
 **API, Kommandozeile und MCP**<br>API-Tokens pro Modul, integrierte OpenAPI-Doku, `gately ctl` und ein MCP-Server für KI-Assistenten.
 
-<img src="docs/images/de/api-docs.webp" alt="API, Kommandozeile und MCP" width="100%">
+<img src="../images/de/api-docs.webp" alt="API, Kommandozeile und MCP" width="100%">
 
 </td>
 </tr>
@@ -308,7 +308,7 @@ make lint     # gofmt, go vet, Typprüfung des Frontends
 
 Für die Frontend-Entwicklung führen Sie `cd web && pnpm dev` aus; `/api` wird an das lokale `127.0.0.1:16680` weitergeleitet.
 
-Optionale Module und Oberflächensprachen lassen sich beim Build weglassen: `go build -tags no_waf,no_smb,lang_zh` entfernt Module (`no_<Modul>`) und Sprachen (`lang_zh` behält Vereinfachtes Chinesisch, `lang_cjken` behält Vereinfachtes Chinesisch, Traditionelles Chinesisch und Englisch), und `GATELY_LOCALES=zh-CN pnpm build` bündelt nur die gewählten Oberflächensprachen. [modules.json](modules.json) listet die optionalen Module, und `go run ./tools/custombuild resolve -modules ddns,frp -lang zh` rechnet eine Auswahl in Tags, Sprachen und Docker-Build-Argumente um (`GATELY_TAGS`, `GATELY_LOCALES`, `WITH_DOCKER_CLI`, `WITH_NFTABLES`).
+Optionale Module und Oberflächensprachen lassen sich beim Build weglassen: `go build -tags no_waf,no_smb,lang_zh` entfernt Module (`no_<Modul>`) und Sprachen (`lang_zh` behält Vereinfachtes Chinesisch, `lang_cjken` behält Vereinfachtes Chinesisch, Traditionelles Chinesisch und Englisch), und `GATELY_LOCALES=zh-CN pnpm build` bündelt nur die gewählten Oberflächensprachen. [modules.json](../../modules.json) listet die optionalen Module, und `go run ./tools/custombuild resolve -modules ddns,frp -lang zh` rechnet eine Auswahl in Tags, Sprachen und Docker-Build-Argumente um (`GATELY_TAGS`, `GATELY_LOCALES`, `WITH_DOCKER_CLI`, `WITH_NFTABLES`).
 
 Einige Tests werden standardmäßig übersprungen und brauchen zusätzliche Voraussetzungen:
 
@@ -317,7 +317,7 @@ Einige Tests werden standardmäßig übersprungen und brauchen zusätzliche Vora
 | ACME-End-to-End (Pebble) | pebble und pebble-challtestsrv installieren, `GATELY_PEBBLE_BIN` und `GATELY_PEBBLE_SRC` setzen (läuft in der CI automatisch) |
 | Echte öffentliche STUN-Server | `GATELY_NET_TEST=1` |
 
-Verzeichnisstruktur und Technologieauswahl siehe [docs/de/ROADMAP.md](docs/de/ROADMAP.md).
+Verzeichnisstruktur und Technologieauswahl siehe [docs/de/ROADMAP.md](../de/ROADMAP.md).
 
 Der Quellcode der Website ([gately.cn](https://gately.cn)) liegt in `website/` und basiert auf VitePress: `cd website && pnpm install && pnpm dev`; `pnpm deploy:site` baut und synchronisiert auf den Server.
 
@@ -331,9 +331,9 @@ Der Quellcode der Website ([gately.cn](https://gately.cn)) liegt in `website/` u
 
 Fragen, Feedback und Nutzungstipps sind in der Telegram-Gruppe willkommen: [t.me/gately_chat](https://t.me/gately_chat), oder scannen Sie den QR-Code mit Ihrem Smartphone:
 
-<a href="https://t.me/gately_chat"><img src="docs/images/telegram-qr.svg" alt="Scannen, um der Telegram-Gruppe von Gately beizutreten" width="160"></a>
+<a href="https://t.me/gately_chat"><img src="../images/telegram-qr.svg" alt="Scannen, um der Telegram-Gruppe von Gately beizutreten" width="160"></a>
 
-Fehler bitte in den [GitHub Issues](https://github.com/wangwanjie/gately/issues) melden und ein [Diagnosepaket](docs/de/DIAGNOSTICS.md) (Einstellungen → Diagnose) anhängen. Es wird lokal erzeugt und enthält keine Passwörter, Tokens, Domains oder echten IP-Adressen.
+Fehler bitte in den [GitHub Issues](https://github.com/wangwanjie/gately/issues) melden und ein [Diagnosepaket](../de/DIAGNOSTICS.md) (Einstellungen → Diagnose) anhängen. Es wird lokal erzeugt und enthält keine Passwörter, Tokens, Domains oder echten IP-Adressen.
 
 ## Unterstützen
 
@@ -345,4 +345,4 @@ Alle Funktionen von Gately sind kostenlos. Wenn es Ihnen hilft, können Sie die 
 
 ## Lizenz
 
-[Apache License 2.0](LICENSE)
+[Apache License 2.0](../../LICENSE)

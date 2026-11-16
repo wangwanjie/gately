@@ -1,11 +1,11 @@
 <p align="center">
-  <a href="https://gately.cn/ja/"><img src="docs/images/banner.svg" alt="Gately — オールインワンのネットワークゲートウェイ: オープンソースで、すぐに使える" width="100%"></a>
+  <a href="https://gately.cn/ja/"><img src="../images/banner.svg" alt="Gately — オールインワンのネットワークゲートウェイ: オープンソースで、すぐに使える" width="100%"></a>
 </p>
 
 <p align="center">
   <a href="https://github.com/wangwanjie/gately/releases/latest"><img src="https://img.shields.io/github/v/release/wangwanjie/gately?style=flat-square&color=0e7c66&label=release" alt="Release"></a>
   <a href="https://github.com/wangwanjie/gately/pkgs/container/gately"><img src="https://img.shields.io/badge/docker-ghcr.io%2Fwangwanjie%2Fgately-0e7c66?style=flat-square&logo=docker&logoColor=white" alt="Docker"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/github/license/wangwanjie/gately?style=flat-square&color=0e7c66" alt="License"></a>
+  <a href="../../LICENSE"><img src="https://img.shields.io/github/license/wangwanjie/gately?style=flat-square&color=0e7c66" alt="License"></a>
   <a href="https://github.com/wangwanjie/gately/stargazers"><img src="https://img.shields.io/github/stars/wangwanjie/gately?style=flat-square&color=0e7c66" alt="Stars"></a>
   <a href="https://gately.cn/ja/"><img src="https://img.shields.io/badge/%E5%85%AC%E5%BC%8F%E3%82%B5%E3%82%A4%E3%83%88-gately.cn-0e7c66?style=flat-square&logo=googlechrome&logoColor=white" alt="gately.cn"></a>
   <a href="https://t.me/gately_chat"><img src="https://img.shields.io/badge/Telegram-gately__chat-26A5E4?style=flat-square&logo=telegram&logoColor=white" alt="Telegram"></a>
@@ -20,7 +20,7 @@
 </p>
 
 <p align="center">
-  <a href="README.md">English</a> | <a href="README.zh-CN.md">简体中文</a> | <a href="README.zh-TW.md">繁體中文</a> | <b>日本語</b> | <a href="README.ko.md">한국어</a> | <a href="README.es.md">Español</a> | <a href="README.fr.md">Français</a> | <a href="README.de.md">Deutsch</a> | <a href="README.ru.md">Русский</a> | <a href="README.pt-BR.md">Português (Brasil)</a>
+  <a href="../../README.md">English</a> | <a href="../../README.zh-CN.md">简体中文</a> | <a href="README.zh-TW.md">繁體中文</a> | <b>日本語</b> | <a href="README.ko.md">한국어</a> | <a href="README.es.md">Español</a> | <a href="README.fr.md">Français</a> | <a href="README.de.md">Deutsch</a> | <a href="README.ru.md">Русский</a> | <a href="README.pt-BR.md">Português (Brasil)</a>
 </p>
 
 ドメイン解決や NAT 越えから、リバースプロキシ、HTTPS 証明書、WAF、侵入防御、シングルサインオン、ファイル共有まで。自宅ネットワークとサーバーの入口に必要な機能を、Gately はひとつの管理画面にまとめました。NAS、ソフトルーター、クラウドサーバーに入れれば、設定も運用もブラウザーで完結します。ソースコードは Apache-2.0 で公開しており、設定とデータはあなたのデバイスにだけ残り、収集も送信もしません。
@@ -44,7 +44,7 @@ docker run -d --name gately --network host --cap-add NET_ADMIN \
   ghcr.io/wangwanjie/gately:latest
 ```
 
-`http://<デバイスのIP>:16680` を開き、デフォルトのアカウント `admin` とデフォルトのパスワード `gately.cn` でログインします。その後「設定」でパスワードを変更し、2 段階認証を有効にしてください。完全な Compose の例は [deploy/docker-compose.yml](deploy/docker-compose.yml) を参照してください。
+`http://<デバイスのIP>:16680` を開き、デフォルトのアカウント `admin` とデフォルトのパスワード `gately.cn` でログインします。その後「設定」でパスワードを変更し、2 段階認証を有効にしてください。完全な Compose の例は [deploy/docker-compose.yml](../../deploy/docker-compose.yml) を参照してください。
 
 パスワードを忘れたときや 2 段階認証アプリを紛失したときは、サーバー上で `gately reset-password` または `gately reset-totp` を実行します（Docker では `docker exec -it gately gately reset-password`）。確認するとすぐに反映されます。詳しくは[パスワードと 2 段階認証のリセット](https://gately.cn/ja/docs/guide/install#reset)を参照してください。
 
@@ -67,7 +67,7 @@ docker run -d --name gately --network host --cap-add NET_ADMIN \
 
 起動時の自動実行: 展開後に `sudo ./gately service install` を実行します（Windows では管理者権限のターミナルで `.\gately.exe service install`）。Linux では systemd サービス、macOS では launchd デーモン（`-user` を付けると sudo なしでログイン項目として登録）、Windows ではサービスとして登録し、すぐに起動してクラッシュ後は自動で再起動します。設定ディレクトリの既定値は `/etc/gately`、`/usr/local/etc/gately`、`%ProgramData%\Gately` で、`-c` と `-listen` で変更できます。サービスは実行ファイルのパスを参照するため、先に最終的な場所へ配置してください。以降は `gately service uninstall|start|stop|restart|status` で管理でき、アンインストールしても設定ディレクトリは残ります。
 
-サービステンプレート: [systemd](deploy/systemd/gately.service)、[OpenWrt procd](deploy/openwrt/gately.init)。ダウンロードしたアーカイブやイメージの検証（cosign 署名、ビルド来歴、SBOM）は[リリース成果物の検証](docs/ja/VERIFY.md)を参照してください。
+サービステンプレート: [systemd](../../deploy/systemd/gately.service)、[OpenWrt procd](../../deploy/openwrt/gately.init)。ダウンロードしたアーカイブやイメージの検証（cosign 署名、ビルド来歴、SBOM）は[リリース成果物の検証](../ja/VERIFY.md)を参照してください。
 
 </details>
 
@@ -83,7 +83,7 @@ docker run -d --name gately --network host --cap-add NET_ADMIN \
 - 設定はアプリの `var` ディレクトリに保存され、アンインストール時も保持されます。アンインストールウィザードで「すべて削除」を選んだ場合のみ消去されます。アップグレードは新しい `.fpk` を再度手動インストールするだけです。
 - パッケージには `gately` コマンド（`/usr/local/bin/gately`）も含まれ、`gately ctl` と `gately mcp` を使えます。
 - 16680 ポートは Docker イメージと共通です。ネイティブアプリを起動する前に `gately` コンテナを停止してください。
-- ダウンロードしたファイルは [リリース成果物の検証](docs/ja/VERIFY.md) の手順で検証できます。`.fpk` ファイルも `checksums.txt` に記載されています。
+- ダウンロードしたファイルは [リリース成果物の検証](../ja/VERIFY.md) の手順で検証できます。`.fpk` ファイルも `checksums.txt` に記載されています。
 
 </details>
 
@@ -102,7 +102,7 @@ docker run -d --name gately --network host --cap-add NET_ADMIN \
 <details>
 <summary><b>監視</b></summary>
 
-`metrics:read` 権限だけを持つ API トークンを作成し、Prometheus から `/api/metrics` をスクレイプします。メトリクス、アラート例、Grafana ダッシュボードは[監視](docs/ja/MONITORING.md)で説明しています。
+`metrics:read` 権限だけを持つ API トークンを作成し、Prometheus から `/api/metrics` をスクレイプします。メトリクス、アラート例、Grafana ダッシュボードは[監視](../ja/MONITORING.md)で説明しています。
 
 </details>
 
@@ -115,7 +115,7 @@ docker run -d --name gately --network host --cap-add NET_ADMIN \
 curl -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns/tasks
 ```
 
-アカウント、2 段階認証、トークン管理、およびバックアップ、復元、再起動、システム設定の API はログインセッションでのみ利用できます。すべての API、必要な権限、データ構造は管理コンソールの「API ドキュメント」ページで確認できます。`make api-docs` で [docs/api](docs/api/ja)（`openapi.json` と `API.md`）にエクスポートすることもでき、公式サイト https://gately.cn の公開時にそのまま参照されます。
+アカウント、2 段階認証、トークン管理、およびバックアップ、復元、再起動、システム設定の API はログインセッションでのみ利用できます。すべての API、必要な権限、データ構造は管理コンソールの「API ドキュメント」ページで確認できます。`make api-docs` で [docs/api](../api/ja)（`openapi.json` と `API.md`）にエクスポートすることもでき、公式サイト https://gately.cn の公開時にそのまま参照されます。
 
 旧バージョンからアップグレードすると、従来のグローバル API トークンは自動的に「レガシートークン」になります（値は同じで、全モジュールの権限を持ちます）。API トークンページで権限を絞るか、新しいトークンに切り替えることを推奨します。
 
@@ -138,47 +138,47 @@ File Browser モジュールは [FileBrowser Quantum](https://github.com/gtsteff
 
 概要ページには CPU、メモリー、ディスク、トラフィック、各ネットワークインターフェースとそのパブリック IPv4 / IPv6、全モジュールの稼働状態が並びます。対応が必要な箇所はすぐにわかります。
 
-<img src="docs/images/ja/overview.webp" alt="全体をひと目で" width="100%">
+<img src="../images/ja/overview.webp" alt="全体をひと目で" width="100%">
 
 ### nginx の代わりになる Web サービス
 
 ドメインごとにリバースプロキシ、静的ファイル、リダイレクトを設定でき、HTTPS と HTTP/3 に対応。サイトごとに WAF、IP ルール、ログイン認証を有効にでき、設定を変えても既存の接続は切れません。
 
-<img src="docs/images/ja/web.webp" alt="nginx の代わりになる Web サービス" width="100%">
+<img src="../images/ja/web.webp" alt="nginx の代わりになる Web サービス" width="100%">
 
 <p><b>サイト統計</b> — リクエスト数、エラー、バックエンドの状態、アクセス元 IP と国のランキングを分単位で集計します。</p>
 
-<img src="docs/images/ja/site-stats.webp" alt="サイト統計" width="100%">
+<img src="../images/ja/site-stats.webp" alt="サイト統計" width="100%">
 
 ### ネットワークトポロジー
 
 訪問者からリスナー、サイト、バックエンドへ流れるトラフィックをリアルタイムで確認できます。ノードを選ぶと QPS、通信量、アクティブ IP が表示され、訪問者 IP での絞り込み、7 種類のレイアウトの切り替え、スクリーンショットを共有する前のアドレスのマスキングにも対応します。
 
-<img src="docs/images/ja/topology.webp" alt="ネットワークトポロジー" width="100%">
+<img src="../images/ja/topology.webp" alt="ネットワークトポロジー" width="100%">
 
 ### 443 番ポートひとつを全サービスで共有
 
 プロトコル振り分けで、複数のサービスをドメインやプロトコルごとに同じポートへ振り分けます。TLS はそのままパススルーし、PROXY プロトコルで実際のクライアントアドレスを渡します。
 
-<img src="docs/images/ja/protoroute.webp" alt="443 番ポートひとつを全サービスで共有" width="100%">
+<img src="../images/ja/protoroute.webp" alt="443 番ポートひとつを全サービスで共有" width="100%">
 
 ### 主要プロバイダーに対応したダイナミック DNS
 
 Cloudflare、Alibaba Cloud、DNSPod、Route 53 などに対応。IPv4 と IPv6 の両方を扱い、IP は URL、ネットワークインターフェース、コマンドから取得できます。アドレスが変わればすぐに通知します。
 
-<img src="docs/images/ja/ddns.webp" alt="主要プロバイダーに対応したダイナミック DNS" width="100%">
+<img src="../images/ja/ddns.webp" alt="主要プロバイダーに対応したダイナミック DNS" width="100%">
 
 ### 侵入防御
 
 fail2ban 風のルールがログファイル、journald、コンテナのログを読み取り、トラップポートとスキャン検知で探索行為を捕まえます。ブロックは nftables に同期され、カーネルでパケットを破棄します。
 
-<img src="docs/images/ja/guard.webp" alt="侵入防御" width="100%">
+<img src="../images/ja/guard.webp" alt="侵入防御" width="100%">
 
 ### frp、Tailscale、Cloudflare トンネル
 
 複数の frpc・frps インスタンスを並行して動かし、Tailscale や cloudflared のトンネルと同じ画面で管理できます。これらのプログラムのインストール、更新、ロールバックは Gately が引き受けます。
 
-<img src="docs/images/ja/frp.webp" alt="frp、Tailscale、Cloudflare トンネル" width="100%">
+<img src="../images/ja/frp.webp" alt="frp、Tailscale、Cloudflare トンネル" width="100%">
 
 ### ほかにも
 
@@ -188,14 +188,14 @@ fail2ban 風のルールがログファイル、journald、コンテナのログ
 
 **Docker**<br>コンテナ、Compose、ログ、ターミナル。イメージはワンクリックで更新でき、失敗すれば自動でロールバックします。
 
-<img src="docs/images/ja/docker.webp" alt="Docker" width="100%">
+<img src="../images/ja/docker.webp" alt="Docker" width="100%">
 
 </td>
 <td width="50%" valign="top">
 
 **Web ターミナル**<br>ブラウザーで SSH、Telnet、ローカルシェルを使えます。SFTP と画面分割にも対応。
 
-<img src="docs/images/ja/terminal.webp" alt="Web ターミナル" width="100%">
+<img src="../images/ja/terminal.webp" alt="Web ターミナル" width="100%">
 
 </td>
 </tr>
@@ -207,14 +207,14 @@ fail2ban 風のルールがログファイル、journald、コンテナのログ
 
 **設定履歴**<br>変更のたびに以前のバージョンを保存。差分を確認して、ワンクリックで戻せます。
 
-<img src="docs/images/ja/config-history.webp" alt="設定履歴" width="100%">
+<img src="../images/ja/config-history.webp" alt="設定履歴" width="100%">
 
 </td>
 <td width="50%" valign="top">
 
 **API、CLI、MCP**<br>モジュール単位で権限を付けられる API トークン、組み込みの OpenAPI ドキュメント、`gately ctl`、AI アシスタントから使える MCP サーバー。
 
-<img src="docs/images/ja/api-docs.webp" alt="API、CLI、MCP" width="100%">
+<img src="../images/ja/api-docs.webp" alt="API、CLI、MCP" width="100%">
 
 </td>
 </tr>
@@ -308,7 +308,7 @@ make lint     # gofmt、go vet、フロントエンドの型チェック
 
 フロントエンド開発時は `cd web && pnpm dev` を実行します。`/api` はローカルの `127.0.0.1:16680` にプロキシされます。
 
-オプションのモジュールと画面の言語はコンパイル時に取り除けます：`go build -tags no_waf,no_smb,lang_zh` でモジュール（`no_<モジュール>`）と言語（`lang_zh` は簡体字中国語のみ、`lang_cjken` は簡体字中国語・繁体字中国語・英語を残す）を取り除き、`GATELY_LOCALES=zh-CN pnpm build` は選んだ画面の言語だけを同梱します。[modules.json](modules.json) にオプションのモジュールがすべて載っており、`go run ./tools/custombuild resolve -modules ddns,frp -lang zh` は選択内容をタグ、言語、Docker のビルド引数（`GATELY_TAGS`、`GATELY_LOCALES`、`WITH_DOCKER_CLI`、`WITH_NFTABLES`）に換算します。
+オプションのモジュールと画面の言語はコンパイル時に取り除けます：`go build -tags no_waf,no_smb,lang_zh` でモジュール（`no_<モジュール>`）と言語（`lang_zh` は簡体字中国語のみ、`lang_cjken` は簡体字中国語・繁体字中国語・英語を残す）を取り除き、`GATELY_LOCALES=zh-CN pnpm build` は選んだ画面の言語だけを同梱します。[modules.json](../../modules.json) にオプションのモジュールがすべて載っており、`go run ./tools/custombuild resolve -modules ddns,frp -lang zh` は選択内容をタグ、言語、Docker のビルド引数（`GATELY_TAGS`、`GATELY_LOCALES`、`WITH_DOCKER_CLI`、`WITH_NFTABLES`）に換算します。
 
 一部のテストは既定でスキップされ、追加の条件が必要です。
 
@@ -317,7 +317,7 @@ make lint     # gofmt、go vet、フロントエンドの型チェック
 | ACME エンドツーエンド（Pebble） | pebble と pebble-challtestsrv をインストールし、`GATELY_PEBBLE_BIN`、`GATELY_PEBBLE_SRC` を設定（CI では自動実行） |
 | 実際のパブリック STUN サーバー | `GATELY_NET_TEST=1` |
 
-ディレクトリ構成と技術選定は [docs/ja/ROADMAP.md](docs/ja/ROADMAP.md) を参照してください。
+ディレクトリ構成と技術選定は [docs/ja/ROADMAP.md](../ja/ROADMAP.md) を参照してください。
 
 公式サイト（[gately.cn](https://gately.cn)）のソースは `website/` にあり、VitePress で構築されています: `cd website && pnpm install && pnpm dev`。`pnpm deploy:site` でビルドしてサーバーに同期します。
 
@@ -331,9 +331,9 @@ make lint     # gofmt、go vet、フロントエンドの型チェック
 
 使い方の質問やフィードバックは Telegram グループへどうぞ：[t.me/gately_chat](https://t.me/gately_chat)。スマートフォンで QR コードを読み取って参加することもできます。
 
-<a href="https://t.me/gately_chat"><img src="docs/images/telegram-qr.svg" alt="QR コードを読み取って Gately の Telegram グループに参加" width="160"></a>
+<a href="https://t.me/gately_chat"><img src="../images/telegram-qr.svg" alt="QR コードを読み取って Gately の Telegram グループに参加" width="160"></a>
 
-不具合は [GitHub Issues](https://github.com/wangwanjie/gately/issues) に報告し、[診断パッケージ](docs/ja/DIAGNOSTICS.md)（設定 → 診断）を添付してください。診断パッケージはローカルで生成され、パスワード、トークン、ドメイン、実際の IP は含まれません。
+不具合は [GitHub Issues](https://github.com/wangwanjie/gately/issues) に報告し、[診断パッケージ](../ja/DIAGNOSTICS.md)（設定 → 診断）を添付してください。診断パッケージはローカルで生成され、パスワード、トークン、ドメイン、実際の IP は含まれません。
 
 ## スポンサー
 
@@ -345,4 +345,4 @@ Gately のすべての機能は無料です。役に立ったと感じたら、U
 
 ## ライセンス
 
-[Apache License 2.0](LICENSE)
+[Apache License 2.0](../../LICENSE)

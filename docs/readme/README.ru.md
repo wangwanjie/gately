@@ -1,11 +1,11 @@
 <p align="center">
-  <a href="https://gately.cn/ru/"><img src="docs/images/banner.svg" alt="Gately — Универсальный сетевой шлюз: Открытый код, готов к работе сразу" width="100%"></a>
+  <a href="https://gately.cn/ru/"><img src="../images/banner.svg" alt="Gately — Универсальный сетевой шлюз: Открытый код, готов к работе сразу" width="100%"></a>
 </p>
 
 <p align="center">
   <a href="https://github.com/wangwanjie/gately/releases/latest"><img src="https://img.shields.io/github/v/release/wangwanjie/gately?style=flat-square&color=0e7c66&label=release" alt="Release"></a>
   <a href="https://github.com/wangwanjie/gately/pkgs/container/gately"><img src="https://img.shields.io/badge/docker-ghcr.io%2Fwangwanjie%2Fgately-0e7c66?style=flat-square&logo=docker&logoColor=white" alt="Docker"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/github/license/wangwanjie/gately?style=flat-square&color=0e7c66" alt="License"></a>
+  <a href="../../LICENSE"><img src="https://img.shields.io/github/license/wangwanjie/gately?style=flat-square&color=0e7c66" alt="License"></a>
   <a href="https://github.com/wangwanjie/gately/stargazers"><img src="https://img.shields.io/github/stars/wangwanjie/gately?style=flat-square&color=0e7c66" alt="Stars"></a>
   <a href="https://gately.cn/ru/"><img src="https://img.shields.io/badge/%D0%A1%D0%B0%D0%B9%D1%82-gately.cn-0e7c66?style=flat-square&logo=googlechrome&logoColor=white" alt="gately.cn"></a>
   <a href="https://t.me/gately_chat"><img src="https://img.shields.io/badge/Telegram-gately__chat-26A5E4?style=flat-square&logo=telegram&logoColor=white" alt="Telegram"></a>
@@ -20,7 +20,7 @@
 </p>
 
 <p align="center">
-  <a href="README.md">English</a> | <a href="README.zh-CN.md">简体中文</a> | <a href="README.zh-TW.md">繁體中文</a> | <a href="README.ja.md">日本語</a> | <a href="README.ko.md">한국어</a> | <a href="README.es.md">Español</a> | <a href="README.fr.md">Français</a> | <a href="README.de.md">Deutsch</a> | <b>Русский</b> | <a href="README.pt-BR.md">Português (Brasil)</a>
+  <a href="../../README.md">English</a> | <a href="../../README.zh-CN.md">简体中文</a> | <a href="README.zh-TW.md">繁體中文</a> | <a href="README.ja.md">日本語</a> | <a href="README.ko.md">한국어</a> | <a href="README.es.md">Español</a> | <a href="README.fr.md">Français</a> | <a href="README.de.md">Deutsch</a> | <b>Русский</b> | <a href="README.pt-BR.md">Português (Brasil)</a>
 </p>
 
 DNS и обход NAT, обратный прокси и HTTPS-сертификаты, WAF и защита от вторжений, единый вход и общий доступ к файлам: всё, что нужно на входе в домашнюю сеть и на серверы, собрано в одной панели. Установите Gately на NAS, программный роутер или облачный сервер и настраивайте всё из браузера. Исходный код открыт под лицензией Apache-2.0; настройки и данные остаются на вашем устройстве, ничего не собирается и не отправляется.
@@ -44,7 +44,7 @@ docker run -d --name gately --network host --cap-add NET_ADMIN \
   ghcr.io/wangwanjie/gately:latest
 ```
 
-Откройте `http://<IP устройства>:16680`, войдите с учётной записью по умолчанию `admin` и паролем по умолчанию `gately.cn`, затем в разделе «Настройки» смените пароль и включите двухфакторную аутентификацию. Полный пример Compose см. в [deploy/docker-compose.yml](deploy/docker-compose.yml).
+Откройте `http://<IP устройства>:16680`, войдите с учётной записью по умолчанию `admin` и паролем по умолчанию `gately.cn`, затем в разделе «Настройки» смените пароль и включите двухфакторную аутентификацию. Полный пример Compose см. в [deploy/docker-compose.yml](../../deploy/docker-compose.yml).
 
 Если вы забыли пароль или потеряли аутентификатор двухфакторной аутентификации, выполните на сервере `gately reset-password` или `gately reset-totp` (в Docker — `docker exec -it gately gately reset-password`); после подтверждения изменение сразу вступает в силу. Подробнее — в разделе [Сброс пароля и двухфакторной аутентификации](https://gately.cn/ru/docs/guide/install#reset).
 
@@ -67,7 +67,7 @@ docker run -d --name gately --network host --cap-add NET_ADMIN \
 
 Автозапуск при загрузке: после распаковки выполните `sudo ./gately service install` (в Windows — `.\gately.exe service install` в терминале администратора). Команда регистрирует unit systemd в Linux, демон launchd в macOS (с `-user` — элемент входа без sudo) и службу в Windows, сразу запускает Gately и перезапускает его после сбоя. Каталог конфигурации по умолчанию — `/etc/gately`, `/usr/local/etc/gately` или `%ProgramData%\Gately`, изменить его можно через `-c` и `-listen`. Служба ссылается на путь к исполняемому файлу, поэтому сначала поместите его на постоянное место. Дальше управляйте через `gately service uninstall|start|stop|restart|status`; при удалении каталог конфигурации сохраняется.
 
-Шаблоны служб: [systemd](deploy/systemd/gately.service) и [OpenWrt procd](deploy/openwrt/gately.init). Проверка загруженных архивов и образов (подписи cosign, происхождение сборки, SBOM) описана в разделе [Проверка артефактов релиза](docs/ru/VERIFY.md).
+Шаблоны служб: [systemd](../../deploy/systemd/gately.service) и [OpenWrt procd](../../deploy/openwrt/gately.init). Проверка загруженных архивов и образов (подписи cosign, происхождение сборки, SBOM) описана в разделе [Проверка артефактов релиза](../ru/VERIFY.md).
 
 </details>
 
@@ -83,7 +83,7 @@ docker run -d --name gately --network host --cap-add NET_ADMIN \
 - Конфигурация хранится в каталоге `var` приложения и сохраняется при удалении, если в мастере удаления не выбрать «удалить всё». Обновление — это повторная ручная установка более нового `.fpk`.
 - Пакет также добавляет команду `gately` (`/usr/local/bin/gately`) для `gately ctl` и `gately mcp`.
 - Порт 16680 общий с образом Docker. Перед запуском нативного приложения остановите контейнер `gately`.
-- Проверьте загруженный файл по инструкции [Проверка артефактов релиза](docs/ru/VERIFY.md); файлы `.fpk` перечислены в `checksums.txt`.
+- Проверьте загруженный файл по инструкции [Проверка артефактов релиза](../ru/VERIFY.md); файлы `.fpk` перечислены в `checksums.txt`.
 
 </details>
 
@@ -102,7 +102,7 @@ docker run -d --name gately --network host --cap-add NET_ADMIN \
 <details>
 <summary><b>Мониторинг</b></summary>
 
-Создайте API-токен только с правом `metrics:read` и настройте Prometheus на сбор `/api/metrics`. Метрики, примеры оповещений и панель Grafana описаны в разделе [Мониторинг](docs/ru/MONITORING.md).
+Создайте API-токен только с правом `metrics:read` и настройте Prometheus на сбор `/api/metrics`. Метрики, примеры оповещений и панель Grafana описаны в разделе [Мониторинг](../ru/MONITORING.md).
 
 </details>
 
@@ -115,7 +115,7 @@ docker run -d --name gately --network host --cap-add NET_ADMIN \
 curl -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns/tasks
 ```
 
-Учётная запись, двухфакторная аутентификация, управление токенами, а также интерфейсы резервного копирования, восстановления, перезапуска и системных настроек доступны только из сеанса входа. Все интерфейсы, необходимые права и структуры данных описаны на странице «Документация API» панели управления; их также можно экспортировать командой `make api-docs` в [docs/api](docs/api/ru) (`openapi.json` и `API.md`), на которые сайт https://gately.cn ссылается напрямую при публикации.
+Учётная запись, двухфакторная аутентификация, управление токенами, а также интерфейсы резервного копирования, восстановления, перезапуска и системных настроек доступны только из сеанса входа. Все интерфейсы, необходимые права и структуры данных описаны на странице «Документация API» панели управления; их также можно экспортировать командой `make api-docs` в [docs/api](../api/ru) (`openapi.json` и `API.md`), на которые сайт https://gately.cn ссылается напрямую при публикации.
 
 При обновлении со старой версии прежний глобальный API-токен автоматически становится «старым» токеном (значение сохраняется, права на все модули). Рекомендуется сузить его права на странице «API-токены» или заменить новым токеном.
 
@@ -138,47 +138,47 @@ curl -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns/tasks
 
 Обзор показывает загрузку CPU, памяти, дисков и трафик, сетевые интерфейсы с их публичными IPv4 и IPv6 и состояние каждого модуля — сразу видно, где нужно вмешаться.
 
-<img src="docs/images/ru/overview.webp" alt="Всё на одном экране" width="100%">
+<img src="../images/ru/overview.webp" alt="Всё на одном экране" width="100%">
 
 ### Веб-службы вместо nginx
 
 Обратный прокси, статические файлы и перенаправления по доменам, с HTTPS и HTTP/3. Для каждого сайта — свой WAF, IP-правила и вход, а изменения применяются без разрыва соединений.
 
-<img src="docs/images/ru/web.webp" alt="Веб-службы вместо nginx" width="100%">
+<img src="../images/ru/web.webp" alt="Веб-службы вместо nginx" width="100%">
 
 <p><b>Статистика по сайтам</b> — запросы, ошибки, состояние бэкендов, основные IP-адреса и страны клиентов — поминутно.</p>
 
-<img src="docs/images/ru/site-stats.webp" alt="Статистика по сайтам" width="100%">
+<img src="../images/ru/site-stats.webp" alt="Статистика по сайтам" width="100%">
 
 ### Топология сети
 
 Смотрите в реальном времени, как трафик идёт от посетителей через слушатели и сайты к бэкендам. Выберите узел, чтобы увидеть QPS, трафик и активные IP, отфильтруйте по IP посетителя, переключайтесь между семью раскладками и скрывайте адреса перед публикацией скриншота.
 
-<img src="docs/images/ru/topology.webp" alt="Топология сети" width="100%">
+<img src="../images/ru/topology.webp" alt="Топология сети" width="100%">
 
 ### Один порт 443 для всех служб
 
 Маршрутизация по протоколу размещает несколько служб на одном порту по домену или протоколу: TLS проходит насквозь без расшифровки, а реальный адрес клиента передаётся по протоколу PROXY.
 
-<img src="docs/images/ru/protoroute.webp" alt="Один порт 443 для всех служб" width="100%">
+<img src="../images/ru/protoroute.webp" alt="Один порт 443 для всех служб" width="100%">
 
 ### Динамический DNS с ведущими провайдерами
 
 Cloudflare, Alibaba Cloud, DNSPod, Route 53 и другие. IPv4 и IPv6, адрес берётся из URL, с сетевого интерфейса или из вывода команды, а при каждом изменении приходит уведомление.
 
-<img src="docs/images/ru/ddns.webp" alt="Динамический DNS с ведущими провайдерами" width="100%">
+<img src="../images/ru/ddns.webp" alt="Динамический DNS с ведущими провайдерами" width="100%">
 
 ### Защита от вторжений
 
 Правила в духе fail2ban читают журналы из файлов, journald и контейнеров, а порты-ловушки и обнаружение сканирования ловят разведку. Блокировки синхронизируются в nftables, и пакеты отбрасываются прямо в ядре.
 
-<img src="docs/images/ru/guard.webp" alt="Защита от вторжений" width="100%">
+<img src="../images/ru/guard.webp" alt="Защита от вторжений" width="100%">
 
 ### frp, Tailscale и Cloudflare Tunnel
 
 Несколько экземпляров frpc и frps работают одновременно рядом с туннелями Tailscale и cloudflared. Установку, обновление и откат этих программ Gately берёт на себя.
 
-<img src="docs/images/ru/frp.webp" alt="frp, Tailscale и Cloudflare Tunnel" width="100%">
+<img src="../images/ru/frp.webp" alt="frp, Tailscale и Cloudflare Tunnel" width="100%">
 
 ### И ещё
 
@@ -188,14 +188,14 @@ Cloudflare, Alibaba Cloud, DNSPod, Route 53 и другие. IPv4 и IPv6, ад�
 
 **Docker**<br>Контейнеры, Compose, журналы и терминал; обновление образа в один клик с автоматическим откатом при сбое.
 
-<img src="docs/images/ru/docker.webp" alt="Docker" width="100%">
+<img src="../images/ru/docker.webp" alt="Docker" width="100%">
 
 </td>
 <td width="50%" valign="top">
 
 **Веб-терминал**<br>SSH, Telnet и локальная оболочка в браузере, с SFTP и разделением экрана.
 
-<img src="docs/images/ru/terminal.webp" alt="Веб-терминал" width="100%">
+<img src="../images/ru/terminal.webp" alt="Веб-терминал" width="100%">
 
 </td>
 </tr>
@@ -207,14 +207,14 @@ Cloudflare, Alibaba Cloud, DNSPod, Route 53 и другие. IPv4 и IPv6, ад�
 
 **История конфигурации**<br>Каждое изменение сохраняет предыдущую версию: можно сравнить различия и откатиться в один клик.
 
-<img src="docs/images/ru/config-history.webp" alt="История конфигурации" width="100%">
+<img src="../images/ru/config-history.webp" alt="История конфигурации" width="100%">
 
 </td>
 <td width="50%" valign="top">
 
 **API, CLI и MCP**<br>API-токены с правами по модулям, встроенная документация OpenAPI, `gately ctl` и MCP-сервер для ИИ-ассистентов.
 
-<img src="docs/images/ru/api-docs.webp" alt="API, CLI и MCP" width="100%">
+<img src="../images/ru/api-docs.webp" alt="API, CLI и MCP" width="100%">
 
 </td>
 </tr>
@@ -308,7 +308,7 @@ make lint     # gofmt, go vet, проверка типов фронтенда
 
 Для разработки фронтенда запустите `cd web && pnpm dev`; `/api` проксируется на локальный `127.0.0.1:16680`.
 
-Необязательные модули и языки интерфейса можно исключить при сборке: `go build -tags no_waf,no_smb,lang_zh` убирает модули (`no_<модуль>`) и языки (`lang_zh` оставляет упрощённый китайский, `lang_cjken` — упрощённый и традиционный китайский и английский), а `GATELY_LOCALES=zh-CN pnpm build` включает в сборку только выбранные языки интерфейса. [modules.json](modules.json) перечисляет необязательные модули, а `go run ./tools/custombuild resolve -modules ddns,frp -lang zh` переводит выбор в теги, языки и аргументы сборки Docker (`GATELY_TAGS`, `GATELY_LOCALES`, `WITH_DOCKER_CLI`, `WITH_NFTABLES`).
+Необязательные модули и языки интерфейса можно исключить при сборке: `go build -tags no_waf,no_smb,lang_zh` убирает модули (`no_<модуль>`) и языки (`lang_zh` оставляет упрощённый китайский, `lang_cjken` — упрощённый и традиционный китайский и английский), а `GATELY_LOCALES=zh-CN pnpm build` включает в сборку только выбранные языки интерфейса. [modules.json](../../modules.json) перечисляет необязательные модули, а `go run ./tools/custombuild resolve -modules ddns,frp -lang zh` переводит выбор в теги, языки и аргументы сборки Docker (`GATELY_TAGS`, `GATELY_LOCALES`, `WITH_DOCKER_CLI`, `WITH_NFTABLES`).
 
 Некоторые тесты по умолчанию пропускаются и требуют дополнительных условий:
 
@@ -317,7 +317,7 @@ make lint     # gofmt, go vet, проверка типов фронтенда
 | Сквозной тест ACME (Pebble) | Установите pebble и pebble-challtestsrv, задайте `GATELY_PEBBLE_BIN` и `GATELY_PEBBLE_SRC` (в CI запускается автоматически) |
 | Реальные публичные STUN-серверы | `GATELY_NET_TEST=1` |
 
-Структура каталогов и выбор технологий описаны в [docs/ru/ROADMAP.md](docs/ru/ROADMAP.md).
+Структура каталогов и выбор технологий описаны в [docs/ru/ROADMAP.md](../ru/ROADMAP.md).
 
 Исходный код сайта ([gately.cn](https://gately.cn)) находится в `website/` и основан на VitePress: `cd website && pnpm install && pnpm dev`; `pnpm deploy:site` собирает сайт и синхронизирует его с сервером.
 
@@ -331,9 +331,9 @@ make lint     # gofmt, go vet, проверка типов фронтенда
 
 Вопросы, отзывы и советы по использованию приветствуются в группе Telegram: [t.me/gately_chat](https://t.me/gately_chat), или отсканируйте QR-код телефоном:
 
-<a href="https://t.me/gately_chat"><img src="docs/images/telegram-qr.svg" alt="Отсканируйте, чтобы вступить в группу Gately в Telegram" width="160"></a>
+<a href="https://t.me/gately_chat"><img src="../images/telegram-qr.svg" alt="Отсканируйте, чтобы вступить в группу Gately в Telegram" width="160"></a>
 
-Об ошибках сообщайте в [GitHub Issues](https://github.com/wangwanjie/gately/issues) и прикладывайте [диагностический пакет](docs/ru/DIAGNOSTICS.md) (Настройки → Диагностика). Он создаётся локально и не содержит паролей, токенов, доменов и реальных IP-адресов.
+Об ошибках сообщайте в [GitHub Issues](https://github.com/wangwanjie/gately/issues) и прикладывайте [диагностический пакет](../ru/DIAGNOSTICS.md) (Настройки → Диагностика). Он создаётся локально и не содержит паролей, токенов, доменов и реальных IP-адресов.
 
 ## Поддержать
 
@@ -345,4 +345,4 @@ make lint     # gofmt, go vet, проверка типов фронтенда
 
 ## Лицензия
 
-[Apache License 2.0](LICENSE)
+[Apache License 2.0](../../LICENSE)
