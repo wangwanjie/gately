@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -208,6 +209,40 @@ func TestRunLogLine(t *testing.T) {
 	}
 	if !strings.Contains(raw, "/a/secret") {
 		t.Errorf("OnLine 应收到原始输出: %q", raw)
+	}
+}
+
+// TestOnStartBeforeOutput 验证 OnStart 一定先于本次启动的任何输出行执行：
+// 进程一启动就打印的行若先被处理，OnStart 里清除上次运行状态的逻辑会把它抹掉（EasyTier 的 TUN 错误提示曾因此偶发丢失）。
+func TestOnStartBeforeOutput(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("依赖 sh")
+	}
+	_, log := newLog()
+	var mu sync.Mutex
+	var order []string
+	spec := Spec{
+		Path: "sh", Args: []string{"-c", "echo first"},
+		OnStart: func() {
+			// 故意拖慢启动回调，放大输出先到的窗口
+			time.Sleep(200 * time.Millisecond)
+			mu.Lock()
+			order = append(order, "start")
+			mu.Unlock()
+		},
+		OnLine: func(l string) {
+			mu.Lock()
+			order = append(order, "line:"+l)
+			mu.Unlock()
+		},
+	}
+	if err := Run(context.Background(), spec, log); err != nil {
+		t.Fatal(err)
+	}
+	mu.Lock()
+	defer mu.Unlock()
+	if len(order) != 2 || order[0] != "start" || order[1] != "line:first" {
+		t.Errorf("OnStart 应先于输出行: %v", order)
 	}
 }
 
