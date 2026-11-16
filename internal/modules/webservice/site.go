@@ -484,6 +484,8 @@ func (rt *upstreamRoundTripper) RoundTrip(req *http.Request) (*http.Response, er
 		if h1 := rt.h1[up]; h1 != nil && out.Header.Get("Upgrade") != "" {
 			tr = h1
 		}
+		// 后台登录 Cookie 只交给本实例的管理后台，按实际发往的后端判断（换后端重试时重新判断）
+		stripAdminCookies(out, up.url)
 		resp, err := tr.RoundTrip(out)
 		if err == nil || !dialFailed(err) || req.Context().Err() != nil || (body != nil && body.read.Load()) {
 			return resp, err
