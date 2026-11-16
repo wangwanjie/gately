@@ -463,7 +463,7 @@ type Counters struct {
 // New 创建模块。
 func New() *Module {
 	return &Module{now: time.Now, stats: map[string]*ruleStats{}, fwGrants: map[fwGrantKey]time.Time{}, webKick: make(chan struct{}, 1),
-		replay: map[string]time.Time{}, failSeen: map[netip.Addr]time.Time{}, bucket: tokenBucket{rate: 200, burst: 400},
+		replay: map[string]time.Time{}, failSeen: map[netip.Addr]time.Time{}, bucket: tokenBucket{rate: globalRate, burst: globalBurst},
 		perSrc: newSrcLimiter()}
 }
 
@@ -772,14 +772,14 @@ func (m *Module) handle(packet []byte, src netip.Addr, transport, via string) er
 	now := m.now()
 	// 先按来源网段限速，再过全局令牌桶：单个来源（或伪造来源集中的网段）的洪水只耗尽自己网段的令牌，
 	// 不会占满全局速率、挤掉其他来源的合法敲门
+	snap := m.snap.Load()
 	m.stateMu.Lock()
-	ok := m.perSrc.take(src, now) && m.bucket.take(now)
+	ok := m.perSrc.take(src, now) && m.bucket.takeN(now, packetCost(len(packet), len(snap.rules)))
 	m.stateMu.Unlock()
 	if !ok {
 		m.count(func(c *Counters) { c.Ignored++ })
 		return errLimited
 	}
-	snap := m.snap.Load()
 	var (
 		rule *compiledRule
 		msg  *spa.Message
@@ -1217,7 +1217,25 @@ func (m *Module) revokeRuleLocked(key string) {
 	m.stateMu.Unlock()
 }
 
-// tokenBucket 是简单的令牌桶，限制每秒尝试解密的报文数，防止伪造报文洪水占满 CPU。调用方持有 stateMu。
+// 全局令牌桶按 HMAC 校验量计费，防止伪造报文洪水占满 CPU：每个报文消耗「启用的规则数 × 长度单位数」个令牌
+// （HMAC 认证失败的报文要用每条规则的密钥各算一次，成本与规则数、报文长度成正比）。
+// 每秒 globalRate 个单位：Apple M2 上一个单位（一次 200 字节报文的 HMAC-SHA256 连同解析与统计）约 1.3 微秒，
+// 预算用满时约占单核 3%；单条规则、常见长度（150～300 字节）的报文每秒可认证 2 万个，比原来的 200 个高两个数量级，
+// 分散在大量网段的伪造洪水要达到这个速率才能挤掉合法敲门。性能较弱的路由器上预算用满时 CPU 占用相应升高。
+const (
+	globalRate  = 20000
+	globalBurst = 2 * globalRate
+	// hmacUnitLen 为一个计费单位对应的报文长度
+	hmacUnitLen = 512
+)
+
+// packetCost 返回长度为 n 的报文在 rules 条启用规则下消耗的令牌数，至少为 1，不超过桶容量。
+func packetCost(n, rules int) float64 {
+	units := max((n+hmacUnitLen-1)/hmacUnitLen, 1)
+	return min(float64(max(rules, 1)*units), globalBurst)
+}
+
+// tokenBucket 是简单的令牌桶。调用方持有 stateMu。
 type tokenBucket struct {
 	rate, burst float64
 	tokens      float64
@@ -1225,6 +1243,11 @@ type tokenBucket struct {
 }
 
 func (b *tokenBucket) take(now time.Time) bool {
+	return b.takeN(now, 1)
+}
+
+// takeN 取出 n 个令牌，不足时不取并返回 false。n 超过桶容量时按容量计，避免永远无法通过。
+func (b *tokenBucket) takeN(now time.Time, n float64) bool {
 	if b.last.IsZero() {
 		b.tokens, b.last = b.burst, now
 	}
@@ -1232,10 +1255,11 @@ func (b *tokenBucket) take(now time.Time) bool {
 		b.tokens = min(b.burst, b.tokens+d*b.rate)
 		b.last = now
 	}
-	if b.tokens < 1 {
+	n = min(n, b.burst)
+	if b.tokens < n {
 		return false
 	}
-	b.tokens--
+	b.tokens -= n
 	return true
 }
 
@@ -1251,6 +1275,11 @@ const (
 type srcLimiter struct {
 	buckets  map[netip.Prefix]*tokenBucket
 	overflow tokenBucket
+	// pruneAt 为最近一次清理的时间：网段数满了以后每个新网段都会触发清理，清理要遍历全部桶，
+	// 分散来源的洪水下每个报文都遍历一遍反而比认证本身更耗 CPU，所以每秒最多清理一次
+	pruneAt time.Time
+	// prunes 为清理次数，供测试检查
+	prunes int
 }
 
 func newSrcLimiter() *srcLimiter {
@@ -1271,7 +1300,9 @@ func (l *srcLimiter) take(src netip.Addr, now time.Time) bool {
 	p := srcPrefix(src)
 	b := l.buckets[p]
 	if b == nil {
-		if len(l.buckets) >= srcCap {
+		if len(l.buckets) >= srcCap && (l.pruneAt.IsZero() || now.Sub(l.pruneAt) >= time.Second) {
+			l.pruneAt = now
+			l.prunes++
 			l.prune(now)
 		}
 		if len(l.buckets) >= srcCap {
