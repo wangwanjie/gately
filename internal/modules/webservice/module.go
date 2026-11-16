@@ -5,6 +5,7 @@ package webservice
 import (
 	"context"
 	"crypto/rand"
+	"crypto/tls"
 	"encoding/hex"
 	"errors"
 	"fmt"
@@ -119,6 +120,14 @@ func (m *Module) Init(env module.Env) error {
 	m.auth = newAuthenticator(m.cfg.Settings.AuthSecret)
 	m.auth.setBanSeconds(m.cfg.Settings.AutoBanSeconds)
 	m.applyOAuthLocked()
+	if m.certs != nil {
+		// 证书模块中有证书的域名由管理员掌握，默认站点可以从这些域名发起第三方登录
+		certs := m.certs
+		m.auth.setCertLookup(func(name string) bool {
+			_, err := certs.GetCertificate(&tls.ClientHelloInfo{ServerName: name})
+			return err == nil
+		})
+	}
 	// 手工编辑配置填入无效或过宽（如 0.0.0.0/0）的可信代理时不启用真实 IP，避免请求头可被任意伪造
 	if from, headers, err := normalizeRealIP(m.cfg.Settings.RealIPFrom, m.cfg.Settings.RealIPHeaders); err != nil {
 		m.logs.Logger("").Errorf("真实 IP 设置无效，未启用: %v", err)
@@ -378,12 +387,26 @@ func (m *Module) saveLocked() error {
 	return err
 }
 
-// refreshAdminPass 按当前配置更新“有站点开启后台登录免认证”的标记，站点据此决定是否签发桥接凭据（见 adminpass.go）。
+// refreshAdminPass 按当前配置更新“有站点开启后台登录免认证”的标记，站点据此决定是否签发桥接凭据（见 adminpass.go），
+// 同时更新默认站点发起第三方登录时可接受的站点域名（见 oauthOrigin）。
 func (m *Module) refreshAdminPass() {
 	if m.auth != nil {
 		m.auth.adminPass.Store(anyAdminPass(m.cfg.Listeners))
 		m.auth.setAdminHosts(adminPassDomains(m.cfg.Listeners))
+		m.auth.setSiteHosts(siteDomains(m.cfg.Listeners))
 	}
+}
+
+// siteDomains 返回全部监听中填写的站点域名（含停用的监听与站点）：它们都由管理员填写，
+// 默认站点据此判断访问域名能否作为第三方登录的回跳地址。
+func siteDomains(listeners []Listener) []string {
+	var out []string
+	for _, l := range listeners {
+		for _, s := range l.Sites {
+			out = append(out, s.Domains...)
+		}
+	}
+	return out
 }
 
 // ListenerView 是带运行状态的监听器。
