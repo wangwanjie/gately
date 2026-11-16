@@ -38,6 +38,7 @@
   "quicMaxStreams": "Máx. de streams QUIC",
   "quicDefaultHint": "0 = padrão {n}",
   "quicTuningHelp": "O intervalo de keepalive deve ser menor que o tempo de ociosidade. Reduzir os streams limita os recursos de uma conexão QUIC. frpc e frps são configurados separadamente",
+  "autoFirewallHelp": "Libera no firewall local a porta de conexão do frps (TCP), as portas UDP de KCP / QUIC e as portas http / https. Com endereço de escuta, só esse endereço é liberado; nada é necessário se o frps escuta apenas em 127.0.0.1. Removido ao desativar ou excluir a instância. As portas remotas pedidas pelo frpc não são cobertas; libere-as manualmente se precisar",
   "tokenServerPlaceholder": "Altamente recomendado; o frpc deve usar o mesmo token",
   "proxyBindAddr": "Endereço de escuta de proxies",
   "proxyBindAddrHelp": "Endereço em que escutam as portas HTTP / HTTPS e as portas remotas dos proxies tcp / udp",

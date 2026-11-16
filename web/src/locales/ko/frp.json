@@ -38,6 +38,7 @@
   "quicMaxStreams": "QUIC 최대 스트림 수",
   "quicDefaultHint": "0은 기본값 {n}",
   "quicTuningHelp": "킵얼라이브 간격은 유휴 종료 시간보다 짧아야 합니다. 스트림 수를 줄이면 QUIC 연결 하나가 쓰는 자원을 제한할 수 있습니다. frpc와 frps에서 각각 설정합니다",
+  "autoFirewallHelp": "로컬 방화벽에서 frps 연결 포트(TCP), KCP / QUIC UDP 포트, http / https 포트를 허용합니다. 바인드 주소를 지정하면 해당 주소만 허용하고, 127.0.0.1에서만 수신하면 필요하지 않습니다. 인스턴스를 비활성화하거나 삭제하면 해제됩니다. frpc가 요청하는 프록시 원격 포트는 포함되지 않으므로 필요하면 직접 허용하세요",
   "tokenServerPlaceholder": "반드시 설정하는 것을 권장하며, frpc도 같은 토큰을 사용해야 합니다",
   "proxyBindAddr": "프록시 수신 주소",
   "proxyBindAddrHelp": "HTTP / HTTPS 포트와 tcp / udp 프록시 원격 포트의 수신 주소입니다",

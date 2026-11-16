@@ -17,6 +17,7 @@ import (
 	"encoding/json"
 
 	"github.com/wangwanjie/gately/internal/config"
+	"github.com/wangwanjie/gately/internal/fwopen"
 	"github.com/wangwanjie/gately/internal/logbuf"
 	"github.com/wangwanjie/gately/internal/luckyimport"
 	"github.com/wangwanjie/gately/internal/module"
@@ -335,5 +336,39 @@ func TestImportQUICTuning(t *testing.T) {
 	}
 	if !reflect.DeepEqual(*cres.Client, c) || len(cres.Warnings) != 0 {
 		t.Errorf("frpc 回导不一致: %+v %v", *cres.Client, cres.Warnings)
+	}
+}
+
+func TestServerFirewallPorts(t *testing.T) {
+	str := func(ps []fwopen.Port) string {
+		var out []string
+		for _, p := range ps {
+			out = append(out, p.String())
+		}
+		return strings.Join(out, " | ")
+	}
+	// 所有地址：TCP 连接端口、KCP / QUIC 的 UDP 端口与 http / https 端口都放行
+	got := str(serverFirewallPorts(ServerSettings{BindPort: 7000, KCPBindPort: 7000, QUICBindPort: 7001, VhostHTTPPort: 8080, VhostHTTPSPort: 8081}))
+	for _, want := range []string{"TCP 7000", "UDP 7000", "UDP 7001", "TCP 8080-8081"} {
+		if !strings.Contains(got, want) {
+			t.Errorf("缺少 %s: %s", want, got)
+		}
+	}
+	// 未启用的端口不放行
+	if got := str(serverFirewallPorts(ServerSettings{BindPort: 7000})); strings.Contains(got, "UDP") || strings.Contains(got, "8080") {
+		t.Errorf("只应放行连接端口: %s", got)
+	}
+	// 只监听回环地址的连接端口无需放行，但 http 端口按代理监听地址（未填写即所有地址）放行
+	got = str(serverFirewallPorts(ServerSettings{BindAddr: "127.0.0.1", BindPort: 7000, KCPBindPort: 7000, VhostHTTPPort: 8080}))
+	if strings.Contains(got, "7000") || !strings.Contains(got, "8080") {
+		t.Errorf("回环监听的放行范围错误: %s", got)
+	}
+	// 连接端口绑定具体地址时只放行发往该地址的连接
+	got = str(serverFirewallPorts(ServerSettings{BindAddr: "192.168.1.2", BindPort: 7000, ProxyBindAddr: "127.0.0.1", VhostHTTPPort: 8080}))
+	if !strings.Contains(got, "192.168.1.2") || strings.Contains(got, "8080") {
+		t.Errorf("绑定地址的放行范围错误: %s", got)
+	}
+	if got := serverFirewallPorts(ServerSettings{BindAddr: "127.0.0.1", BindPort: 7000}); len(got) != 0 {
+		t.Errorf("全部回环时不应放行: %v", got)
 	}
 }

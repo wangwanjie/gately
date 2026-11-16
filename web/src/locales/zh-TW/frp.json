@@ -38,6 +38,7 @@
   "quicMaxStreams": "QUIC 最大並行串流",
   "quicDefaultHint": "0 為預設 {n}",
   "quicTuningHelp": "保活間隔必須小於閒置中斷時間；調小並行串流數可限制單一 QUIC 連線佔用的資源。frpc 與 frps 兩端各自設定",
+  "autoFirewallHelp": "在本機防火牆放行 frps 的連線連接埠（TCP）、KCP / QUIC 的 UDP 連接埠與 http / https 連接埠；填寫了監聽位址時只放行該位址，只監聽 127.0.0.1 時無需放行。實例停用或刪除時撤銷。frpc 申請的代理遠端連接埠不在放行範圍內，需要時仍須在防火牆手動放行",
   "tokenServerPlaceholder": "強烈建議設定，frpc 需使用相同權杖",
   "proxyBindAddr": "代理監聽位址",
   "proxyBindAddrHelp": "HTTP / HTTPS 連接埠和 tcp / udp 代理遠端連接埠的監聽位址",

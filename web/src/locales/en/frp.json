@@ -38,6 +38,7 @@
   "quicMaxStreams": "QUIC max streams",
   "quicDefaultHint": "0 = default {n}",
   "quicTuningHelp": "The keepalive period must be shorter than the idle timeout. Lowering max streams limits the resources one QUIC connection can use. frpc and frps are set separately",
+  "autoFirewallHelp": "Allows the frps connection port (TCP), the KCP / QUIC UDP ports and the http / https ports in the local firewall. With a bind address only that address is allowed, and nothing is needed when frps listens on 127.0.0.1 only. Removed when the instance is disabled or deleted. Remote ports requested by frpc are not covered; open them in the firewall yourself if needed",
   "tokenServerPlaceholder": "Strongly recommended; frpc must use the same token",
   "proxyBindAddr": "Proxy bind address",
   "proxyBindAddrHelp": "Address the HTTP / HTTPS ports and the remote ports of tcp / udp proxies listen on",

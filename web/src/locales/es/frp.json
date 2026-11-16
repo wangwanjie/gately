@@ -38,6 +38,7 @@
   "quicMaxStreams": "Flujos QUIC máx.",
   "quicDefaultHint": "0 = predeterminado {n}",
   "quicTuningHelp": "El intervalo de keepalive debe ser menor que el tiempo de inactividad. Reducir los flujos limita los recursos de una conexión QUIC. frpc y frps se configuran por separado",
+  "autoFirewallHelp": "Permite en el cortafuegos local el puerto de conexión de frps (TCP), los puertos UDP de KCP / QUIC y los puertos http / https. Con dirección de escucha solo se permite esa dirección; no hace falta si frps solo escucha en 127.0.0.1. Se retira al desactivar o eliminar la instancia. Los puertos remotos que pide frpc no se incluyen; ábrelos tú si hace falta",
   "tokenServerPlaceholder": "Muy recomendable; frpc debe usar el mismo token",
   "proxyBindAddr": "Dirección de escucha de proxies",
   "proxyBindAddrHelp": "Dirección en la que escuchan los puertos HTTP / HTTPS y los puertos remotos de los proxies tcp / udp",
