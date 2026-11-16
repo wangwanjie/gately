@@ -1,4 +1,4 @@
-// Gately 修改：仅在 Linux 与 macOS 编译（构建约束）。
+// Gately 修改：仅在 Linux 与 macOS 编译（构建约束）；连接处理协程中的 panic 只关闭该连接。
 
 //go:build linux || darwin
 
@@ -147,6 +147,8 @@ func (s *Listener) Serve(ctx context.Context, ln net.Listener) error {
 		wg.Add(1)
 		go func(c net.Conn) {
 			defer wg.Done()
+			// Gately 新增：处理函数中漏网的 panic 只关闭这一个连接，不结束整个进程
+			defer recoverConnPanic(s.Log, "handler", func() { _ = c.Close() })
 			s.Handler(ctx, c, s.Log, s.MaxFrame)
 		}(conn)
 	}
