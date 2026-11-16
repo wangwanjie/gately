@@ -28,6 +28,62 @@ var proxyTypes = map[string]bool{TypeTCP: true, TypeUDP: true, TypeHTTP: true, T
 
 var protocols = map[string]bool{"": true, "tcp": true, "kcp": true, "quic": true, "websocket": true, "wss": true}
 
+// QUICTuning 是 quic 传输的调节参数，frpc 与 frps 两端字段相同；0 表示使用 frp 默认值。
+type QUICTuning struct {
+	// QUICKeepalivePeriod 为 quic 连接的保活间隔（秒），frp 默认 10
+	QUICKeepalivePeriod int `json:"quicKeepalivePeriod"`
+	// QUICMaxIdleTimeout 为 quic 连接无数据时的断开时间（秒），frp 默认 30；必须大于保活间隔
+	QUICMaxIdleTimeout int `json:"quicMaxIdleTimeout"`
+	// QUICMaxIncomingStreams 为单个 quic 连接允许同时打开的流数量，frp 默认 100000；调小可限制单个连接占用的资源
+	QUICMaxIncomingStreams int `json:"quicMaxIncomingStreams"`
+}
+
+// 与 frp 默认值保持一致，用于校验保活间隔与断开时间的关系。
+const (
+	frpQUICKeepalive   = 10
+	frpQUICMaxIdle     = 30
+	maxQUICSeconds     = 86400
+	maxQUICStreamLimit = 1000000
+)
+
+// Validate 校验 quic 调节参数：范围合法，且按生效值（未填则取 frp 默认值）保活间隔小于断开时间，
+// 否则 quic 连接会在发出保活包之前就被判定空闲而反复断开。
+func (q *QUICTuning) Validate() error {
+	if q.QUICKeepalivePeriod < 0 || q.QUICKeepalivePeriod > maxQUICSeconds {
+		return fmt.Errorf("QUIC 保活间隔需在 1 到 %d 秒之间，0 为默认", maxQUICSeconds)
+	}
+	if q.QUICMaxIdleTimeout < 0 || q.QUICMaxIdleTimeout > maxQUICSeconds {
+		return fmt.Errorf("QUIC 空闲断开时间需在 1 到 %d 秒之间，0 为默认", maxQUICSeconds)
+	}
+	if q.QUICMaxIncomingStreams < 0 || q.QUICMaxIncomingStreams > maxQUICStreamLimit {
+		return fmt.Errorf("QUIC 最大并发流数需在 1 到 %d 之间，0 为默认", maxQUICStreamLimit)
+	}
+	keepalive, idle := q.QUICKeepalivePeriod, q.QUICMaxIdleTimeout
+	if keepalive == 0 {
+		keepalive = frpQUICKeepalive
+	}
+	if idle == 0 {
+		idle = frpQUICMaxIdle
+	}
+	if keepalive >= idle {
+		return errors.New("QUIC 保活间隔必须小于空闲断开时间")
+	}
+	return nil
+}
+
+// toml 输出非默认的 quic 参数，键名与 frp 配置一致。
+func (q QUICTuning) toml(b *strings.Builder) {
+	if q.QUICKeepalivePeriod != 0 {
+		fmt.Fprintf(b, "transport.quic.keepalivePeriod = %d\n", q.QUICKeepalivePeriod)
+	}
+	if q.QUICMaxIdleTimeout != 0 {
+		fmt.Fprintf(b, "transport.quic.maxIdleTimeout = %d\n", q.QUICMaxIdleTimeout)
+	}
+	if q.QUICMaxIncomingStreams != 0 {
+		fmt.Fprintf(b, "transport.quic.maxIncomingStreams = %d\n", q.QUICMaxIncomingStreams)
+	}
+}
+
 // ClientSettings 是 frpc（客户端）与 frps 之间的连接参数。
 type ClientSettings struct {
 	ServerAddr string `json:"serverAddr"`
@@ -36,6 +92,8 @@ type ClientSettings struct {
 	User       string `json:"user"`
 	// Protocol 为 frpc 与 frps 之间的传输协议，留空使用 tcp
 	Protocol string `json:"protocol"`
+	// QUICTuning 只在 Protocol 为 quic 时生效
+	QUICTuning
 }
 
 // ServerSettings 是 frps（服务端）的监听与认证参数。
@@ -48,8 +106,10 @@ type ServerSettings struct {
 	// KCPBindPort 为 frpc 用 kcp 协议连接的 UDP 端口，0 表示不启用；可与 BindPort 相同（TCP 与 UDP 互不占用）
 	KCPBindPort int `json:"kcpBindPort"`
 	// QUICBindPort 为 frpc 用 quic 协议连接的 UDP 端口，0 表示不启用；不能与 KCPBindPort 相同
-	QUICBindPort int    `json:"quicBindPort"`
-	Token        string `json:"token"`
+	QUICBindPort int `json:"quicBindPort"`
+	// QUICTuning 为 quic 监听的调节参数，只在设置了 QUICBindPort 时生效
+	QUICTuning
+	Token string `json:"token"`
 	// ProxyBindAddr 是 HTTP / HTTPS 端口与 tcp / udp 代理远程端口的监听地址，留空监听所有地址
 	ProxyBindAddr string `json:"proxyBindAddr"`
 	// VhostHTTPPort 与 VhostHTTPSPort 为 0 时不启用 http / https 代理
@@ -202,7 +262,7 @@ func (c *ClientSettings) Validate() error {
 	if !protocols[c.Protocol] {
 		return fmt.Errorf("不支持的传输协议 %q", c.Protocol)
 	}
-	return nil
+	return c.QUICTuning.Validate()
 }
 
 // Validate 校验并规范化 frpc 实例。
@@ -268,6 +328,9 @@ func (s *ServerSettings) Validate() error {
 	// kcp 与 quic 都是 UDP 监听，同一地址上端口相同会导致后启动的一个绑定失败
 	if s.KCPBindPort != 0 && s.KCPBindPort == s.QUICBindPort {
 		return errors.New("KCP 与 QUIC 端口不能相同")
+	}
+	if err := s.QUICTuning.Validate(); err != nil {
+		return err
 	}
 	if _, err := ParseAllowPorts(s.AllowPorts); err != nil {
 		return err
@@ -430,6 +493,9 @@ func ClientTOML(c ClientSettings, proxies []Proxy) string {
 	if c.Protocol != "" {
 		fmt.Fprintf(&b, "transport.protocol = %s\n", quote(c.Protocol))
 	}
+	if c.Protocol == "quic" {
+		c.QUICTuning.toml(&b)
+	}
 	names := map[string]bool{}
 	for _, p := range proxies {
 		// 停用与重名的代理不写入配置
@@ -476,6 +542,7 @@ func ServerTOML(s ServerSettings) string {
 	}
 	if s.QUICBindPort != 0 {
 		fmt.Fprintf(&b, "quicBindPort = %d\n", s.QUICBindPort)
+		s.QUICTuning.toml(&b)
 	}
 	if s.ProxyBindAddr != "" {
 		fmt.Fprintf(&b, "proxyBindAddr = %s\n", quote(s.ProxyBindAddr))
