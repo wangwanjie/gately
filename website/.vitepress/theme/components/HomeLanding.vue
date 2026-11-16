@@ -7,7 +7,7 @@ import {
   Globe, RadioTower, ArrowLeftRight, ShieldCheck, Waypoints, ShieldAlert, Network, Boxes,
   Terminal, HardDrive, Clock, KeyRound, Copy, Check, Github, Eye,
   Bell, DatabaseBackup, Activity, Bot, UserCheck, ChartLine, AppWindow, LogIn, Server, ArrowRight,
-  Layers, ScrollText, History, Braces, Smartphone, Rocket, CircleCheck, ShieldBan, Split, Workflow, Play, X
+  Layers, ScrollText, History, Braces, Smartphone, Rocket, CircleCheck, ShieldBan, Split, Workflow, Play, X, ArrowDown
 } from 'lucide-vue-next'
 
 // 所有文案来自当前语言包（.vitepress/i18n/<语言>.json 的 home 节点），图标按顺序与条目一一对应
@@ -270,6 +270,24 @@ function onSpot(e: PointerEvent) {
         <video ref="tourVideo" :src="tourOpen ? tourSrc : undefined" controls playsinline muted preload="none" width="1440" height="900" />
       </div>
     </dialog>
+
+    <!-- 能替代哪些工具：左侧是常见做法，右侧是 Gately 里对应的模块，内容与 README 对照表一致 -->
+    <section class="wrap replaces">
+      <header class="head" data-r>
+        <h2>{{ h.replaces.title }}</h2>
+        <p>{{ h.replaces.desc }}</p>
+      </header>
+      <div class="rp-grid">
+        <article v-for="(r, i) in h.replaces.items" :key="r.module" class="rp" data-r :style="{ '--i': i % 3 }">
+          <p class="rp-from">{{ r.from }}</p>
+          <ArrowDown :size="14" class="rp-arrow" aria-hidden="true" />
+          <h3>{{ r.module }}</h3>
+          <p class="rp-text">{{ r.text }}</p>
+        </article>
+      </div>
+      <!-- eslint-disable-next-line vue/no-v-html -->
+      <p class="rp-note" data-r v-html="h.replaces.note" />
+    </section>
 
     <!-- 平台与集成滚动条带 -->
     <section class="marquee" :aria-label="h.worksWith">
@@ -542,6 +560,19 @@ h1 .sub { margin-top: 12px; font-size: .56em; line-height: 1.3; letter-spacing: 
 .tour-close { position: absolute; z-index: 1; top: 10px; right: 10px; display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; color: #fff; background: rgba(0, 0, 0, .55); border: 1px solid rgba(255, 255, 255, .25); cursor: pointer; }
 .tour-close:hover { background: rgba(0, 0, 0, .8); }
 
+/* ---- 能替代哪些工具 ---- */
+.replaces { padding-top: 72px; padding-bottom: 56px; }
+.replaces .head { margin-bottom: 32px; }
+.rp-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.rp { padding: 18px 20px 20px; border-radius: 14px; border: 1px solid var(--vp-c-divider); background: var(--vp-c-bg-soft); }
+.rp-from { margin: 0; font-size: 13px; line-height: 1.5; color: var(--vp-c-text-3); }
+.rp-arrow { display: block; margin: 8px 0 6px; color: var(--vp-c-brand-1); opacity: .7; }
+.rp h3 { margin: 0 0 6px; font-size: 16px; font-weight: 700; color: var(--vp-c-brand-1); }
+.rp-text { margin: 0; font-size: 14px; line-height: 1.65; color: var(--vp-c-text-2); }
+.rp-note { margin: 24px auto 0; max-width: 720px; text-align: center; font-size: 14px; line-height: 1.7; color: var(--vp-c-text-2); }
+.rp-note :deep(a) { color: var(--vp-c-brand-1); font-weight: 600; text-decoration: none; }
+.rp-note :deep(a:hover) { text-decoration: underline; }
+
 /* ---- marquee ---- */
 .marquee { padding: 8px 0 12px; }
 .marquee-cap { margin: 0 0 14px; text-align: center; font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--vp-c-text-3); }
@@ -700,6 +731,7 @@ h1 .sub { margin-top: 12px; font-size: .56em; line-height: 1.3; letter-spacing: 
   .hero-grid { grid-template-columns: 1fr; }
   h1 { font-size: 42px; }
   .why { grid-template-columns: repeat(2, 1fr); }
+  .rp-grid { grid-template-columns: repeat(2, 1fr); }
   .feat .card { flex-basis: calc((100% - 16px) / 2); }
   .show-row, .show-row.flip, .show-row.phone { grid-template-columns: 1fr; gap: 32px; padding: 48px 0; }
   .show-row.flip .show-text { order: 0; }
@@ -718,6 +750,10 @@ h1 .sub { margin-top: 12px; font-size: .56em; line-height: 1.3; letter-spacing: 
   .lead { font-size: 15px; line-height: 1.75; }
   .block { padding-top: 72px; }
   .why { grid-template-columns: 1fr; }
+  .rp-grid { grid-template-columns: 1fr; gap: 10px; }
+  .rp { padding: 14px 16px 16px; }
+  .rp-arrow { margin: 4px 0 2px; }
+  .replaces { padding-top: 56px; padding-bottom: 40px; }
   .feat .card { flex-basis: 100%; }
   .show-text h2 { font-size: 26px; }
   .head h2, .final h2, .fnos h2 { font-size: 26px; }

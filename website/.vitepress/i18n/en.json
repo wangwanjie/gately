@@ -97,6 +97,58 @@
       "tour": "Watch the 2-minute tour",
       "close": "Close"
     },
+    "replaces": {
+      "title": "What it replaces",
+      "desc": "The tools you run today and the Gately module that takes over.",
+      "note": "You can turn off any module you do not need, or build a binary with only the modules you pick at <a href=\"https://build.gately.cn\" target=\"_blank\" rel=\"noreferrer\">build.gately.cn</a>.",
+      "items": [
+        {
+          "from": "nginx, Nginx Proxy Manager",
+          "module": "Web services",
+          "text": "Reverse proxy, static sites, redirects, HTTP/3, per-site access rules; imports nginx config"
+        },
+        {
+          "from": "certbot, acme.sh",
+          "module": "SSL certificates",
+          "text": "DNS-01 and HTTP-01, wildcard, automatic renewal and deployment"
+        },
+        {
+          "from": "ddns-go, DDNS scripts",
+          "module": "Dynamic DNS",
+          "text": "35+ providers, IPv4 and IPv6"
+        },
+        {
+          "from": "haproxy SNI routing, sslh",
+          "module": "Protocol routing",
+          "text": "HTTPS, SSH, RDP and more share one port"
+        },
+        {
+          "from": "fail2ban",
+          "module": "Intrusion prevention",
+          "text": "Log jails, decoy ports and scan detection, bans dropped in nftables or iptables"
+        },
+        {
+          "from": "ModSecurity, a separate WAF",
+          "module": "WAF",
+          "text": "Coraza with OWASP CRS v4, per site"
+        },
+        {
+          "from": "A login gateway in front of apps",
+          "module": "Web sign-in",
+          "text": "Built-in sign-in, TOTP, Passkeys and an OIDC provider; forward auth also supported"
+        },
+        {
+          "from": "Hand-run frpc, cloudflared, tailscaled",
+          "module": "Networking & tunnels",
+          "text": "Managed frp, Cloudflare Tunnel, Tailscale, NetBird and EasyTier with install, update and rollback"
+        },
+        {
+          "from": "Hole-punching setups without a public IPv4",
+          "module": "STUN traversal",
+          "text": "TCP and UDP hole punching; address changes sync to DNS and notifications"
+        }
+      ]
+    },
     "featuresTitle": "Everyday network tools, ready to go",
     "featuresDesc": "From pointing a domain at your home to guarding a whole row of websites, it all happens in one interface.",
     "features": [

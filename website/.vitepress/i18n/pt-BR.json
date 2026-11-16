@@ -97,6 +97,58 @@
       "tour": "Ver o tour de 2 minutos",
       "close": "Fechar"
     },
+    "replaces": {
+      "title": "O que o Gately substitui",
+      "desc": "As ferramentas que você usa hoje e o módulo do Gately que assume a tarefa.",
+      "note": "Você pode desligar os módulos de que não precisa ou gerar em <a href=\"https://build.gately.cn\" target=\"_blank\" rel=\"noreferrer\">build.gately.cn</a> um binário só com os módulos escolhidos.",
+      "items": [
+        {
+          "from": "nginx, Nginx Proxy Manager",
+          "module": "Serviços Web",
+          "text": "Proxy reverso, sites estáticos, redirecionamentos, HTTP/3, regras de acesso por site; importa configuração do nginx"
+        },
+        {
+          "from": "certbot, acme.sh",
+          "module": "Certificados SSL",
+          "text": "DNS-01 e HTTP-01, curinga, renovação e implantação automáticas"
+        },
+        {
+          "from": "ddns-go, scripts de DDNS",
+          "module": "DNS dinâmico",
+          "text": "Mais de 35 provedores, IPv4 e IPv6"
+        },
+        {
+          "from": "Roteamento SNI do haproxy, sslh",
+          "module": "Roteamento por protocolo",
+          "text": "HTTPS, SSH, RDP e outros compartilham uma porta"
+        },
+        {
+          "from": "fail2ban",
+          "module": "Prevenção de intrusão",
+          "text": "Regras sobre logs, portas isca e detecção de varreduras; bloqueios no nftables ou iptables"
+        },
+        {
+          "from": "Um WAF separado",
+          "module": "Firewall WAF",
+          "text": "Coraza com OWASP CRS v4, por site"
+        },
+        {
+          "from": "Um gateway de login na frente dos apps",
+          "module": "Autenticação web",
+          "text": "Login integrado, TOTP, Passkeys e provedor OIDC; forward auth também é suportado"
+        },
+        {
+          "from": "frpc, cloudflared e tailscaled mantidos à mão",
+          "module": "Redes e túneis",
+          "text": "frp, Cloudflare Tunnel, Tailscale, NetBird e EasyTier gerenciados, com instalação, atualização e reversão"
+        },
+        {
+          "from": "Soluções de perfuração de NAT sem IPv4 público",
+          "module": "Travessia STUN",
+          "text": "Perfuração TCP e UDP; mudanças de endereço vão automaticamente para o DNS e as notificações"
+        }
+      ]
+    },
     "featuresTitle": "As ferramentas de rede do dia a dia, prontas para usar",
     "featuresDesc": "De apontar um domínio para a sua casa a proteger uma fileira inteira de sites, tudo acontece na mesma interface.",
     "features": [

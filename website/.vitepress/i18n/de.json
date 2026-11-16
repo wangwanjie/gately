@@ -97,6 +97,58 @@
       "tour": "2-minütige Tour ansehen",
       "close": "Schließen"
     },
+    "replaces": {
+      "title": "Was Gately ersetzt",
+      "desc": "Die Werkzeuge, die Sie heute einsetzen, und das Gately-Modul, das sie übernimmt.",
+      "note": "Nicht benötigte Module lassen sich abschalten, oder Sie erzeugen auf <a href=\"https://build.gately.cn\" target=\"_blank\" rel=\"noreferrer\">build.gately.cn</a> eine Binärdatei nur mit den gewählten Modulen.",
+      "items": [
+        {
+          "from": "nginx, Nginx Proxy Manager",
+          "module": "Web-Dienste",
+          "text": "Reverse Proxy, statische Sites, Weiterleitungen, HTTP/3, Zugriffsregeln pro Site; importiert nginx-Konfigurationen"
+        },
+        {
+          "from": "certbot, acme.sh",
+          "module": "SSL-Zertifikate",
+          "text": "DNS-01 und HTTP-01, Wildcard, automatische Erneuerung und Verteilung"
+        },
+        {
+          "from": "ddns-go, DDNS-Skripte",
+          "module": "Dynamisches DNS",
+          "text": "Über 35 Anbieter, IPv4 und IPv6"
+        },
+        {
+          "from": "haproxy-SNI-Routing, sslh",
+          "module": "Protokoll-Routing",
+          "text": "HTTPS, SSH, RDP und mehr teilen sich einen Port"
+        },
+        {
+          "from": "fail2ban",
+          "module": "Einbruchschutz",
+          "text": "Log-Regeln, Köderports und Scan-Erkennung; Sperren landen in nftables oder iptables"
+        },
+        {
+          "from": "Eine separate WAF",
+          "module": "WAF-Firewall",
+          "text": "Coraza mit OWASP CRS v4, pro Site"
+        },
+        {
+          "from": "Ein Login-Gateway vor den Anwendungen",
+          "module": "Web-Anmeldung",
+          "text": "Eingebaute Anmeldung, TOTP, Passkeys und ein OIDC-Anbieter; Forward Auth wird ebenfalls unterstützt"
+        },
+        {
+          "from": "Von Hand betriebene frpc, cloudflared, tailscaled",
+          "module": "Netzwerk & Tunnel",
+          "text": "Verwaltete frp, Cloudflare Tunnel, Tailscale, NetBird und EasyTier mit Installation, Update und Rollback"
+        },
+        {
+          "from": "Hole-Punching-Lösungen ohne öffentliche IPv4",
+          "module": "STUN-Traversal",
+          "text": "TCP- und UDP-Hole-Punching; Adressänderungen gehen automatisch an DNS und Benachrichtigungen"
+        }
+      ]
+    },
     "featuresTitle": "Netzwerkwerkzeuge für jeden Tag, sofort einsatzbereit",
     "featuresDesc": "Von der eigenen Domain fürs Zuhause bis zum Schutz einer ganzen Reihe von Websites: alles in derselben Oberfläche.",
     "features": [

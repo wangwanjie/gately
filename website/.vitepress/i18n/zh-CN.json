@@ -97,6 +97,58 @@
       "tour": "看 2 分钟巡览视频",
       "close": "关闭"
     },
+    "replaces": {
+      "title": "能替代哪些工具",
+      "desc": "你现在在用的工具，在 Gately 里对应的模块。",
+      "note": "用不到的模块可以关闭，也可以在 <a href=\"https://build.gately.cn\" target=\"_blank\" rel=\"noreferrer\">build.gately.cn</a> 只选需要的模块生成更小的安装包。",
+      "items": [
+        {
+          "from": "nginx、Nginx Proxy Manager",
+          "module": "Web 服务",
+          "text": "反向代理、静态站点、重定向、HTTP/3、按站点的访问控制；可导入 nginx 配置"
+        },
+        {
+          "from": "acme.sh、certbot",
+          "module": "SSL 证书",
+          "text": "DNS-01 / HTTP-01、泛域名、自动续期与分发"
+        },
+        {
+          "from": "ddns-go、DDNS 脚本",
+          "module": "动态域名",
+          "text": "35+ 服务商，IPv4 / IPv6"
+        },
+        {
+          "from": "haproxy 按 SNI 分流、sslh",
+          "module": "协议分流",
+          "text": "HTTPS、SSH、RDP 等共用一个端口"
+        },
+        {
+          "from": "fail2ban",
+          "module": "入侵防护",
+          "text": "日志规则、诱饵端口、扫描检测，封禁写入 nftables / iptables"
+        },
+        {
+          "from": "单独部署的 WAF",
+          "module": "WAF 防火墙",
+          "text": "Coraza + OWASP CRS v4，按站点开关"
+        },
+        {
+          "from": "应用前面另加的登录网关",
+          "module": "网页认证",
+          "text": "内置登录、两步验证、Passkey 和 OIDC 身份提供方"
+        },
+        {
+          "from": "手动维护的 frpc、cloudflared、tailscaled",
+          "module": "组网与穿透",
+          "text": "托管 frp、Cloudflare Tunnel、Tailscale、NetBird、EasyTier，带安装、更新、回滚"
+        },
+        {
+          "from": "没有公网 IPv4 时的各种打洞方案",
+          "module": "STUN 穿透",
+          "text": "TCP / UDP 打洞，地址变化自动同步到域名和通知"
+        }
+      ]
+    },
     "featuresTitle": "常用的网络功能，都已备好",
     "featuresDesc": "从给家里配一个域名，到守好一整排网站，都在同一个界面里完成。",
     "features": [

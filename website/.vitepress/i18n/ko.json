@@ -97,6 +97,58 @@
       "tour": "2분 둘러보기 영상 보기",
       "close": "닫기"
     },
+    "replaces": {
+      "title": "대체할 수 있는 도구",
+      "desc": "지금 쓰는 도구와 Gately에서 이를 맡는 모듈.",
+      "note": "필요 없는 모듈은 끌 수 있고, <a href=\"https://build.gately.cn\" target=\"_blank\" rel=\"noreferrer\">build.gately.cn</a>에서 필요한 모듈만 골라 더 작은 바이너리를 만들 수도 있습니다.",
+      "items": [
+        {
+          "from": "nginx, Nginx Proxy Manager",
+          "module": "웹 서비스",
+          "text": "리버스 프록시, 정적 사이트, 리디렉션, HTTP/3, 사이트별 접근 제어; nginx 설정 가져오기"
+        },
+        {
+          "from": "certbot, acme.sh",
+          "module": "SSL 인증서",
+          "text": "DNS-01 / HTTP-01, 와일드카드, 자동 갱신과 배포"
+        },
+        {
+          "from": "ddns-go, DDNS 스크립트",
+          "module": "동적 DNS",
+          "text": "35개 이상의 제공자, IPv4 / IPv6"
+        },
+        {
+          "from": "haproxy SNI 라우팅, sslh",
+          "module": "프로토콜 라우팅",
+          "text": "HTTPS, SSH, RDP 등이 포트 하나를 공유"
+        },
+        {
+          "from": "fail2ban",
+          "module": "침입 방지",
+          "text": "로그 규칙, 미끼 포트, 스캔 탐지; 차단은 nftables / iptables에 반영"
+        },
+        {
+          "from": "별도로 운영하는 WAF",
+          "module": "WAF 방화벽",
+          "text": "Coraza + OWASP CRS v4, 사이트별로 켜고 끄기"
+        },
+        {
+          "from": "앱 앞에 따로 두는 로그인 게이트웨이",
+          "module": "웹 인증",
+          "text": "내장 로그인, 2단계 인증, Passkey, OIDC 공급자; 포워드 인증도 지원"
+        },
+        {
+          "from": "직접 관리하는 frpc, cloudflared, tailscaled",
+          "module": "네트워킹 및 터널",
+          "text": "frp, Cloudflare Tunnel, Tailscale, NetBird, EasyTier 관리, 설치·업데이트·롤백 지원"
+        },
+        {
+          "from": "공인 IPv4가 없을 때의 홀 펀칭 방법",
+          "module": "STUN 통과",
+          "text": "TCP / UDP 홀 펀칭; 주소가 바뀌면 DNS와 알림에 자동 반영"
+        }
+      ]
+    },
     "featuresTitle": "자주 쓰는 네트워크 기능을 모두 갖췄습니다",
     "featuresDesc": "집에 도메인 하나 연결하는 일부터 여러 웹사이트를 지키는 일까지, 한 화면에서 끝납니다.",
     "features": [
