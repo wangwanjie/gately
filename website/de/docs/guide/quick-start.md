@@ -5,13 +5,12 @@ Bereitstellen, anmelden und die erste Regel anlegen in fünf Minuten.
 ## 1. Starten
 
 ```bash
-docker run -d --name gately --network host \
+docker run -d --name gately --network host --cap-add NET_ADMIN \
   -v ./gately-data:/etc/gately \
-  -v /var/run/docker.sock:/var/run/docker.sock \
   ghcr.io/wangwanjie/gately:latest
 ```
 
-Wenn Sie die Docker-Verwaltung nicht brauchen, lassen Sie die Einbindung von `docker.sock` weg. Portweiterleitung, STUN und Web-Dienste lauschen auf Ports des Hosts, daher empfehlen wir `--network host`.
+Um Docker aus Gately zu verwalten, ergänzen Sie den Befehl um `-v /var/run/docker.sock:/var/run/docker.sock`. `--cap-add NET_ADMIN` erlaubt dem Einbruchschutz, Sperren in die Firewall des Hosts zu schreiben. Portweiterleitung, STUN und Web-Dienste lauschen auf Ports des Hosts, daher empfehlen wir `--network host`.
 
 Ist GHCR für Sie langsam, verwenden Sie stattdessen `vanjayak/gately:latest` von Docker Hub; es ist dasselbe Image.
 

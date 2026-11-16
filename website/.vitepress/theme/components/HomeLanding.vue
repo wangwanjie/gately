@@ -93,21 +93,37 @@ const marquee = [
   'WebDAV', 'SMB', 'Passkey', 'OIDC', 'Telegram', 'ntfy', 'Bark', 'MCP'
 ]
 
-const COMPOSE = `services:
-  gately:
-    image: ghcr.io/wangwanjie/gately:latest
-    container_name: gately
-    restart: unless-stopped
-    network_mode: host
-    volumes:
-      - ./data:/etc/gately
-      - /var/run/docker.sock:/var/run/docker.sock
-    environment:
-      - TZ=Asia/Shanghai`
+// Compose 示例：与 docker run 一致加 NET_ADMIN、默认不挂 docker.sock；
+// 时区按页面语言给出常见值，与安装文档一致；英文页不写 TZ（容器默认 UTC）
+const COMPOSE_TZ: Record<string, string> = {
+  'zh-CN': 'Asia/Shanghai', 'zh-TW': 'Asia/Taipei', ja: 'Asia/Tokyo', ko: 'Asia/Seoul', es: 'Europe/Madrid',
+  fr: 'Europe/Paris', de: 'Europe/Berlin', ru: 'Europe/Moscow', 'pt-BR': 'America/Sao_Paulo'
+}
+const compose = computed(() => {
+  const tz = COMPOSE_TZ[shotLang.value]
+  const lines = [
+    'services:',
+    '  gately:',
+    '    image: ghcr.io/wangwanjie/gately:latest',
+    '    container_name: gately',
+    '    restart: unless-stopped',
+    '    network_mode: host',
+    '    cap_add:',
+    '      - NET_ADMIN',
+    '    volumes:',
+    '      - ./data:/etc/gately',
+    `      # ${h.value.composeDockerHint}`,
+    '      # - /var/run/docker.sock:/var/run/docker.sock'
+  ]
+  if (tz) {
+    lines.push('    environment:', `      - TZ=${tz}`)
+  }
+  return lines.join('\n')
+})
 
 const installTabs = computed(() => [
   { key: 'docker', label: 'Docker', code: h.value.installDocker },
-  { key: 'compose', label: 'Compose', code: COMPOSE },
+  { key: 'compose', label: 'Compose', code: compose.value },
   { key: 'binary', label: h.value.installTabBinary, code: h.value.installBinary },
   { key: 'fnos', label: h.value.installTabFnos, code: h.value.installFnos },
   { key: 'openwrt', label: 'OpenWrt', code: h.value.installOpenwrt }

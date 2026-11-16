@@ -261,7 +261,8 @@
     "installTitle": "Opérationnel en une minute",
     "installDesc": "Images disponibles pour amd64, arm64 et arm/v7. Après le démarrage, ouvrez <code>http://IP_DE_L_APPAREIL:16680</code> et connectez-vous avec le compte par défaut <code>admin</code> et le mot de passe par défaut <code>gately.cn</code>, puis changez-le immédiatement.",
     "installTabBinary": "Binaire",
-    "installDocker": "docker run -d --name gately --network host \\\n  -v ./gately-data:/etc/gately \\\n  -v /var/run/docker.sock:/var/run/docker.sock \\\n  ghcr.io/wangwanjie/gately:latest",
+    "installDocker": "docker run -d --name gately --network host --cap-add NET_ADMIN \\\n  -v ./gately-data:/etc/gately \\\n  ghcr.io/wangwanjie/gately:latest\n\n# Pour gérer Docker depuis Gately, ajoutez aussi :\n#   -v /var/run/docker.sock:/var/run/docker.sock",
+    "composeDockerHint": "Décommentez la ligne suivante pour gérer Docker depuis Gately",
     "installBinary": "# Téléchargez l'archive de votre plateforme depuis Releases et extrayez-la\n./gately -c /etc/gately\n\n# L'interface d'administration écoute par défaut sur :16680\n# Compte par défaut admin, mot de passe par défaut gately.cn",
     "installTabFnos": "fnOS",
     "installFnos": "# 1. Téléchargez gately_<version>_fnos_x86.fpk depuis Releases (_arm.fpk pour les appareils ARM)\n# 2. Dans fnOS, ouvrez Centre d'applications → Installation manuelle, sélectionnez le fichier et terminez l'assistant\n# 3. Cliquez sur l'icône Gately du bureau fnOS pour l'ouvrir via la passerelle unifiée\n\n# Compte par défaut admin, mot de passe par défaut gately.cn",
@@ -285,7 +286,7 @@
       },
       {
         "q": "Pourquoi recommander le réseau host pour la redirection de ports et STUN ?",
-        "a": "Ces modules écoutent directement sur les ports de l'hôte. Si vous n'avez pas besoin de gérer Docker, vous pouvez retirer le montage de docker.sock."
+        "a": "Ces modules écoutent directement sur les ports de l'hôte. --cap-add NET_ADMIN permet à la prévention d'intrusion d'écrire les bannissements dans le pare-feu de l'hôte ; ne montez /var/run/docker.sock que si vous voulez gérer Docker."
       }
     ],
     "moreFaq": "Plus de questions →",

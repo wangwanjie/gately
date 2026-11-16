@@ -261,7 +261,8 @@
     "installTitle": "En marcha en un minuto",
     "installDesc": "Hay imágenes para amd64, arm64 y arm/v7. Tras arrancar, abre <code>http://IP_DEL_DISPOSITIVO:16680</code> e inicia sesión con la cuenta predeterminada <code>admin</code> y la contraseña predeterminada <code>gately.cn</code>; cámbiala enseguida.",
     "installTabBinary": "Binario",
-    "installDocker": "docker run -d --name gately --network host \\\n  -v ./gately-data:/etc/gately \\\n  -v /var/run/docker.sock:/var/run/docker.sock \\\n  ghcr.io/wangwanjie/gately:latest",
+    "installDocker": "docker run -d --name gately --network host --cap-add NET_ADMIN \\\n  -v ./gately-data:/etc/gately \\\n  ghcr.io/wangwanjie/gately:latest\n\n# Para gestionar Docker desde Gately, añade también:\n#   -v /var/run/docker.sock:/var/run/docker.sock",
+    "composeDockerHint": "Quita el comentario de la línea siguiente para gestionar Docker desde Gately",
     "installBinary": "# Descarga desde Releases el archivo para tu plataforma y descomprímelo\n./gately -c /etc/gately\n\n# La interfaz de administración escucha por defecto en :16680\n# Cuenta predeterminada admin, contraseña predeterminada gately.cn",
     "installTabFnos": "fnOS",
     "installFnos": "# 1. Descarga desde Releases gately_<version>_fnos_x86.fpk (_arm.fpk para dispositivos ARM)\n# 2. En fnOS, abre Centro de aplicaciones → Instalación manual, elige el archivo y completa el asistente\n# 3. Haz clic en el icono de Gately del escritorio de fnOS para abrirlo a través de la pasarela unificada\n\n# Cuenta predeterminada admin, contraseña predeterminada gately.cn",
@@ -285,7 +286,7 @@
       },
       {
         "q": "¿Por qué se recomienda la red del host para el reenvío de puertos y STUN?",
-        "a": "Estos módulos escuchan directamente en puertos del host. Si no necesitas la gestión de Docker, puedes quitar el montaje de docker.sock."
+        "a": "Estos módulos escuchan directamente en puertos del host. --cap-add NET_ADMIN permite que la prevención de intrusiones escriba los bloqueos en el cortafuegos del host; monta /var/run/docker.sock solo si quieres gestionar Docker."
       }
     ],
     "moreFaq": "Más preguntas →",

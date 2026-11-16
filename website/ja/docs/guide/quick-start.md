@@ -5,13 +5,12 @@
 ## 1. 起動
 
 ```bash
-docker run -d --name gately --network host \
+docker run -d --name gately --network host --cap-add NET_ADMIN \
   -v ./gately-data:/etc/gately \
-  -v /var/run/docker.sock:/var/run/docker.sock \
   ghcr.io/wangwanjie/gately:latest
 ```
 
-Docker 管理機能が不要な場合は、`docker.sock` のマウントを外せます。ポート転送、STUN、Web サービスはホストのポートを待ち受ける必要があるため、`--network host` を推奨します。
+Gately から Docker を管理する場合は、コマンドに `-v /var/run/docker.sock:/var/run/docker.sock` を追加してください。`--cap-add NET_ADMIN` は侵入防御がブロックをホストのファイアウォールに書き込むためのものです。ポート転送、STUN、Web サービスはホストのポートを待ち受ける必要があるため、`--network host` を推奨します。
 
 GHCR へのアクセスが遅い場合は、Docker Hub の `vanjayak/gately:latest` を使えます。中身は同じイメージです。
 

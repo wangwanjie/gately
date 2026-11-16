@@ -261,7 +261,8 @@
     "installTitle": "In einer Minute startklar",
     "installDesc": "Images gibt es für amd64, arm64 und arm/v7. Nach dem Start <code>http://GERÄTE-IP:16680</code> öffnen und mit dem Standardkonto <code>admin</code> und dem Standardpasswort <code>gately.cn</code> anmelden; das Passwort danach sofort ändern.",
     "installTabBinary": "Binärdatei",
-    "installDocker": "docker run -d --name gately --network host \\\n  -v ./gately-data:/etc/gately \\\n  -v /var/run/docker.sock:/var/run/docker.sock \\\n  ghcr.io/wangwanjie/gately:latest",
+    "installDocker": "docker run -d --name gately --network host --cap-add NET_ADMIN \\\n  -v ./gately-data:/etc/gately \\\n  ghcr.io/wangwanjie/gately:latest\n\n# Um Docker aus Gately zu verwalten, zusätzlich angeben:\n#   -v /var/run/docker.sock:/var/run/docker.sock",
+    "composeDockerHint": "Für die Docker-Verwaltung die nächste Zeile einkommentieren",
     "installBinary": "# Das Archiv für Ihre Plattform von Releases herunterladen und entpacken\n./gately -c /etc/gately\n\n# Die Verwaltungsoberfläche lauscht standardmäßig auf :16680\n# Standardkonto admin, Standardpasswort gately.cn",
     "installTabFnos": "fnOS",
     "installFnos": "# 1. gately_<version>_fnos_x86.fpk von Releases herunterladen (_arm.fpk für ARM-Geräte)\n# 2. In fnOS App Center → Manuelle Installation öffnen, Datei wählen und den Assistenten abschließen\n# 3. Auf das Gately-Symbol auf dem fnOS-Desktop klicken, um es über das einheitliche Gateway zu öffnen\n\n# Standardkonto admin, Standardpasswort gately.cn",
@@ -285,7 +286,7 @@
       },
       {
         "q": "Warum wird für Portweiterleitung und STUN das Host-Netzwerk empfohlen?",
-        "a": "Diese Module lauschen direkt auf Ports des Hosts. Wenn Sie keine Docker-Verwaltung brauchen, können Sie die docker.sock-Einbindung weglassen."
+        "a": "Diese Module lauschen direkt auf Ports des Hosts. --cap-add NET_ADMIN erlaubt dem Einbruchschutz, Sperren in die Host-Firewall zu schreiben; /var/run/docker.sock nur einbinden, wenn Sie die Docker-Verwaltung nutzen möchten."
       }
     ],
     "moreFaq": "Weitere Fragen →",

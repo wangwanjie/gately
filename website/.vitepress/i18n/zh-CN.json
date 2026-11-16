@@ -261,7 +261,8 @@
     "installTitle": "一分钟装好",
     "installDesc": "镜像支持 amd64、arm64、arm/v7。启动后访问 <code>http://设备IP:16680</code>，用默认账号 <code>admin</code> 与默认密码 <code>gately.cn</code> 登录，登录后请立即修改密码。",
     "installTabBinary": "二进制",
-    "installDocker": "docker run -d --name gately --network host \\\n  -v ./gately-data:/etc/gately \\\n  -v /var/run/docker.sock:/var/run/docker.sock \\\n  ghcr.io/wangwanjie/gately:latest",
+    "installDocker": "docker run -d --name gately --network host --cap-add NET_ADMIN \\\n  -v ./gately-data:/etc/gately \\\n  ghcr.io/wangwanjie/gately:latest\n\n# 需要 Docker 管理时再加上：\n#   -v /var/run/docker.sock:/var/run/docker.sock",
+    "composeDockerHint": "需要 Docker 管理时取消下一行的注释",
     "installBinary": "# 从 Releases 下载对应平台的压缩包并解压\n./gately -c /etc/gately\n\n# 管理界面默认监听 :16680\n# 默认账号 admin，默认密码 gately.cn",
     "installTabFnos": "飞牛 fnOS",
     "installFnos": "# 1. 从 Releases 下载 gately_<版本>_fnos_x86.fpk（ARM 设备选 _arm.fpk）\n# 2. 飞牛「应用中心 → 手动安装」，选择文件并完成向导\n# 3. 点击飞牛桌面上的 Gately 图标，经统一网关打开管理界面\n\n# 默认账号 admin，默认密码 gately.cn",
@@ -285,7 +286,7 @@
       },
       {
         "q": "端口转发、STUN 为什么推荐 host 网络？",
-        "a": "这些模块需要直接监听宿主机端口。不需要 Docker 管理时，可去掉 docker.sock 挂载。"
+        "a": "这些模块需要直接监听宿主机端口。--cap-add NET_ADMIN 让入侵防护把封禁写入宿主机防火墙；需要 Docker 管理时再挂载 /var/run/docker.sock。"
       }
     ],
     "moreFaq": "更多问题 →",

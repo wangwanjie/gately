@@ -5,13 +5,12 @@ Deploy, sign in and create your first rule in five minutes.
 ## 1. Start
 
 ```bash
-docker run -d --name gately --network host \
+docker run -d --name gately --network host --cap-add NET_ADMIN \
   -v ./gately-data:/etc/gately \
-  -v /var/run/docker.sock:/var/run/docker.sock \
   ghcr.io/wangwanjie/gately:latest
 ```
 
-If you do not need Docker management, drop the `docker.sock` mount. Port forwarding, STUN and web services listen on host ports, so `--network host` is recommended.
+To manage Docker from Gately, add `-v /var/run/docker.sock:/var/run/docker.sock` to the command. `--cap-add NET_ADMIN` lets Intrusion Prevention write bans to the host firewall. Port forwarding, STUN and web services listen on host ports, so `--network host` is recommended.
 
 If GHCR is slow for you, use `vanjayak/gately:latest` from Docker Hub instead; it is the same image.
 
