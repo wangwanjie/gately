@@ -92,39 +92,11 @@
     "lead": "Gately se coloca en la entrada de tu red doméstica o de un servidor y se encarga del camino desde internet hasta tus servicios: mantiene tu dominio apuntando a una IP que cambia, obtiene y renueva certificados, enruta todos los servicios por un único puerto 443, pone inicio de sesión y un WAF delante de ellos y bloquea las direcciones que hacen sondeos. Instálalo en un NAS, un router o un servidor en la nube y configúralo todo desde el navegador.",
     "ctaStart": "Inicio rápido",
     "ctaDownload": "Descargar",
-    "mockTitle": "gately · Resumen",
-    "mockRows": [
-      [
-        "DNS dinámico",
-        "75 registros sincronizados",
-        "ok"
-      ],
-      [
-        "Traversal STUN",
-        "18 reglas en ejecución",
-        "ok"
-      ],
-      [
-        "Reenvío de puertos",
-        "25 reglas en ejecución",
-        "ok"
-      ],
-      [
-        "Servicios web",
-        "27 sitios · HTTPS",
-        "ok"
-      ],
-      [
-        "Certificados SSL",
-        "5 certificados · renovación automática",
-        "ok"
-      ],
-      [
-        "Cortafuegos WAF",
-        "CRS v4 · modo de bloqueo",
-        "warn"
-      ]
-    ],
+    "product": {
+      "overview": "Resumen",
+      "tour": "Ver el recorrido de 2 minutos",
+      "close": "Cerrar"
+    },
     "featuresTitle": "Las herramientas de red de siempre, listas para usar",
     "featuresDesc": "Desde apuntar un dominio a tu casa hasta proteger una fila entera de sitios web, todo se hace en la misma interfaz.",
     "features": [
