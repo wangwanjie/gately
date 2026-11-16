@@ -19,9 +19,10 @@
           <button v-if="isMobile" class="icon-btn" :aria-label="t('layout.openMenu')" @click="drawer = true">
             <Menu :size="20" />
           </button>
+          <!-- 手机上页头滚走后也要知道在哪一页：顶栏显示当前页面名 -->
           <template v-if="isMobile">
             <AppLogo :size="26" />
-            <span class="header-title">Gately</span>
+            <span class="header-title">{{ route.meta.titleKey ? t(route.meta.titleKey as string) : 'Gately' }}</span>
           </template>
           <template v-else>
             <span v-if="group" class="crumb">{{ group }}</span>
