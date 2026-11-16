@@ -337,8 +337,16 @@ func compile(in Instance, onMatch func(types.MatchedRule)) (coraza.WAF, error) {
 	if onMatch != nil {
 		cfg = cfg.WithErrorCallback(onMatch)
 	}
-	return coraza.NewWAF(cfg)
+	w, err := coraza.NewWAF(cfg)
+	// 构建时去掉了 @validateSchema 时，Coraza 只报 “operator validateSchema not found”，这里换成说明原因与处理办法的提示
+	if err != nil && !validateSchemaAvailable && strings.Contains(err.Error(), "operator validateSchema not found") {
+		return nil, errValidateSchemaUnavailable
+	}
+	return w, err
 }
+
+// errValidateSchemaUnavailable 是自定义规则用到 @validateSchema、而本次构建没有包含该操作符时的错误。
+var errValidateSchemaUnavailable = errors.New("自定义规则使用了 @validateSchema 操作符，当前版本为减小程序体积没有包含它，请删除或改写用到它的规则")
 
 type compiled struct {
 	// waf 为规则组编译出的 Coraza 实例；只用雷池、没有启用规则组时为空，不再经过 Coraza
