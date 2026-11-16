@@ -33,6 +33,9 @@ type Rule struct {
 	TargetPorts     string   `json:"targetPorts"`
 	// MaxConnections 是该规则每个 TCP 端口的最大并发连接数，0 表示使用全局默认值
 	MaxConnections int `json:"maxConnections"`
+	// MaxConnsPerSource 是每个 TCP 端口上单个来源（IPv4 地址、IPv6 /64）的最大并发连接数，0 表示使用全局默认值；
+	// 回环与内网来源不受此限制
+	MaxConnsPerSource int `json:"maxConnsPerSource"`
 	// UDPSessionTimeout 是 UDP 会话空闲超时（秒），0 表示使用全局默认值
 	UDPSessionTimeout int `json:"udpSessionTimeout"`
 	// ProxyProtocol 非空时，TCP 连接目标后先发送 PROXY 协议头（v1 或 v2），把真实客户端地址告诉下游
@@ -47,10 +50,13 @@ type Rule struct {
 
 // Settings 是模块级配置。
 type Settings struct {
-	Enable                   bool `json:"enable"`
-	DefaultMaxConnections    int  `json:"defaultMaxConnections"`
-	DefaultUDPSessionTimeout int  `json:"defaultUDPSessionTimeout"`
-	MaxUDPSessions           int  `json:"maxUDPSessions"`
+	Enable                bool `json:"enable"`
+	DefaultMaxConnections int  `json:"defaultMaxConnections"`
+	// DefaultMaxConnsPerSource 是单个来源的默认最大并发连接数，0 表示取所在端口最大连接数的一半：
+	// 单个来源最多占用一半名额，其余来源总能连接；家庭使用中一个来源的并发连接远少于这个数
+	DefaultMaxConnsPerSource int `json:"defaultMaxConnsPerSource"`
+	DefaultUDPSessionTimeout int `json:"defaultUDPSessionTimeout"`
+	MaxUDPSessions           int `json:"maxUDPSessions"`
 	// DialTimeout 是连接目标的超时（秒）
 	DialTimeout int `json:"dialTimeout"`
 }
@@ -85,6 +91,9 @@ func (s *Settings) normalize() {
 	}
 	if s.DialTimeout <= 0 {
 		s.DialTimeout = d.DialTimeout
+	}
+	if s.DefaultMaxConnsPerSource < 0 {
+		s.DefaultMaxConnsPerSource = 0
 	}
 }
 
@@ -124,7 +133,7 @@ func (r *Rule) Validate() error {
 	if len(r.TargetAddresses) == 0 {
 		return fmt.Errorf("至少填写一个目标地址")
 	}
-	if r.MaxConnections < 0 || r.UDPSessionTimeout < 0 {
+	if r.MaxConnections < 0 || r.MaxConnsPerSource < 0 || r.UDPSessionTimeout < 0 {
 		return fmt.Errorf("连接数与超时不能为负数")
 	}
 	return r.Access.Normalize()

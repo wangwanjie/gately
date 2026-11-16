@@ -185,6 +185,10 @@
           <el-input-number v-model="editing.maxConnections" :min="0" :max="100000" />
           <span class="help">{{ t('protoRoute.useGlobalDefault') }}</span>
         </el-form-item>
+        <el-form-item :label="t('protoRoute.maxConnsPerSource')">
+          <el-input-number v-model="editing.maxConnsPerSource" :min="0" :max="100000" />
+          <span class="help">{{ t('protoRoute.useGlobalDefault') }}</span>
+        </el-form-item>
         <IPAccessEditor v-model:mode="editing.ipMode" v-model:list="editing.ipList" v-model:sets="editing.ipSets" v-model:deny-list="editing.ipDenyList" v-model:deny-sets="editing.ipDenySets" v-model:knock="editing.knock" :note="t('protoRoute.ipAccessNote')" />
         <el-form-item :label="t('common.remark')">
           <el-input v-model="editing.remark" />
@@ -203,6 +207,10 @@
       <el-form v-if="settingsForm" :model="settingsForm" label-width="150px" :label-position="labelPosition">
         <el-form-item :label="t('protoRoute.enableModule')"><el-switch v-model="settingsForm.enable" /></el-form-item>
         <el-form-item :label="t('protoRoute.defaultMaxConnections')"><el-input-number v-model="settingsForm.defaultMaxConnections" :min="1" /></el-form-item>
+        <el-form-item :label="t('protoRoute.defaultMaxConnsPerSource')">
+          <el-input-number v-model="settingsForm.defaultMaxConnsPerSource" :min="0" />
+          <div class="form-help">{{ t('protoRoute.defaultMaxConnsPerSourceHelp') }}</div>
+        </el-form-item>
         <el-form-item :label="t('protoRoute.dialTimeout')"><el-input-number v-model="settingsForm.dialTimeout" :min="1" :max="60" /></el-form-item>
       </el-form>
       <template #footer>
@@ -261,6 +269,8 @@ interface Rule {
   // 等待客户端发来可识别数据的秒数，可带一位小数，0 为默认 5 秒
   sniffTimeout: number
   maxConnections: number
+  // 单个来源（IPv4 地址、IPv6 /64）的最大并发连接数，0 使用全局默认值
+  maxConnsPerSource?: number
   // 来源 IP 访问控制：ipMode 为 ''（关闭）、whitelist、blacklist；ipSets 为引用的订阅 IP 列表 key
   ipMode: string
   ipList: string[]
@@ -332,6 +342,8 @@ interface RuleView extends Rule {
 interface Settings {
   enable: boolean
   defaultMaxConnections: number
+  // 单个来源的默认最大并发连接数，0 为最大连接数的一半
+  defaultMaxConnsPerSource: number
   dialTimeout: number
 }
 
@@ -427,6 +439,7 @@ function emptyRule(): Rule {
     proxyProtocol: '',
     sniffTimeout: 0,
     maxConnections: 0,
+    maxConnsPerSource: 0,
     ipMode: '',
     ipList: [],
     ipSets: [],

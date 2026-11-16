@@ -102,6 +102,10 @@
           <el-input-number v-model="editing.maxConnections" :min="0" :max="100000" />
           <span class="help">{{ t('portForward.useGlobalDefault') }}</span>
         </el-form-item>
+        <el-form-item :label="t('portForward.maxConnsPerSource')">
+          <el-input-number v-model="editing.maxConnsPerSource" :min="0" :max="100000" />
+          <span class="help">{{ t('portForward.useGlobalDefault') }}</span>
+        </el-form-item>
         <el-form-item :label="t('portForward.udpTimeout')">
           <el-input-number v-model="editing.udpSessionTimeout" :min="0" :max="3600" />
           <span class="help">{{ t('portForward.useGlobalDefault') }}</span>
@@ -132,6 +136,10 @@
       <el-form v-if="settingsForm" :model="settingsForm" label-width="150px" :label-position="labelPosition">
         <el-form-item :label="t('portForward.enableModule')"><el-switch v-model="settingsForm.enable" /></el-form-item>
         <el-form-item :label="t('portForward.defaultMaxConnections')"><el-input-number v-model="settingsForm.defaultMaxConnections" :min="1" /></el-form-item>
+        <el-form-item :label="t('portForward.defaultMaxConnsPerSource')">
+          <el-input-number v-model="settingsForm.defaultMaxConnsPerSource" :min="0" />
+          <div class="form-help">{{ t('portForward.defaultMaxConnsPerSourceHelp') }}</div>
+        </el-form-item>
         <el-form-item :label="t('portForward.defaultUdpTimeout')"><el-input-number v-model="settingsForm.defaultUDPSessionTimeout" :min="1" /></el-form-item>
         <el-form-item :label="t('portForward.maxUdpSessions')"><el-input-number v-model="settingsForm.maxUDPSessions" :min="1" /></el-form-item>
         <el-form-item :label="t('portForward.dialTimeout')"><el-input-number v-model="settingsForm.dialTimeout" :min="1" :max="60" /></el-form-item>
@@ -185,6 +193,8 @@ interface Rule {
   targetAddresses: string[]
   targetPorts: string
   maxConnections: number
+  // 单个来源（IPv4 地址、IPv6 /64）的最大并发连接数，0 使用全局默认值
+  maxConnsPerSource?: number
   udpSessionTimeout: number
   // 发送给目标的 PROXY 协议版本，空为不发送（仅 TCP）
   proxyProtocol: string
@@ -220,6 +230,8 @@ interface RuleView extends Rule {
 interface Settings {
   enable: boolean
   defaultMaxConnections: number
+  // 单个来源的默认最大并发连接数，0 为最大连接数的一半
+  defaultMaxConnsPerSource: number
   defaultUDPSessionTimeout: number
   maxUDPSessions: number
   dialTimeout: number
@@ -280,6 +292,7 @@ function emptyRule(): Rule {
     targetAddresses: [],
     targetPorts: '',
     maxConnections: 0,
+    maxConnsPerSource: 0,
     udpSessionTimeout: 0,
     proxyProtocol: '',
     ipMode: '',

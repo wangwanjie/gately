@@ -47,6 +47,8 @@ type Rule struct {
 	SniffTimeout float64 `json:"sniffTimeout"`
 	// MaxConnections 是该规则每个端口的最大并发连接数，0 表示使用全局默认值
 	MaxConnections int `json:"maxConnections"`
+	// MaxConnsPerSource 是每个端口上单个来源（IPv4 地址、IPv6 /64）的最大并发连接数，0 表示使用全局默认值
+	MaxConnsPerSource int `json:"maxConnsPerSource"`
 	// Access 为来源 IP 访问控制（白名单 / 黑名单），在识别协议之前判断；封禁表中的地址无论何种模式都会被拒绝
 	iplist.Access
 	Remark string `json:"remark"`
@@ -79,6 +81,9 @@ type Route struct {
 type Settings struct {
 	Enable                bool `json:"enable"`
 	DefaultMaxConnections int  `json:"defaultMaxConnections"`
+	// DefaultMaxConnsPerSource 是单个来源（IPv4 地址、IPv6 /64）的默认最大并发连接数，0 表示取所在端口最大连接数的一半；
+	// 回环与内网来源不受此限制。只连接不发送数据的连接由识别超时处理，不另设超时
+	DefaultMaxConnsPerSource int `json:"defaultMaxConnsPerSource"`
 	// DialTimeout 是连接目标的超时（秒）
 	DialTimeout int `json:"dialTimeout"`
 }
@@ -101,6 +106,9 @@ func (s *Settings) normalize() {
 	}
 	if s.DialTimeout <= 0 {
 		s.DialTimeout = d.DialTimeout
+	}
+	if s.DefaultMaxConnsPerSource < 0 {
+		s.DefaultMaxConnsPerSource = 0
 	}
 }
 
@@ -137,7 +145,7 @@ func (r *Rule) Validate() error {
 	if r.SniffTimeout != 0 && (r.SniffTimeout < minSniffTimeout || r.SniffTimeout > maxSniffTimeout) {
 		return fmt.Errorf("识别超时需为 0（使用默认 5 秒）或 %g～%d 秒", minSniffTimeout, maxSniffTimeout)
 	}
-	if r.MaxConnections < 0 {
+	if r.MaxConnections < 0 || r.MaxConnsPerSource < 0 {
 		return fmt.Errorf("连接数不能为负数")
 	}
 	if len(r.Routes) == 0 && len(r.TargetAddresses) == 0 {

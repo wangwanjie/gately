@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 	"net"
+	"net/netip"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -125,7 +126,7 @@ func TestServeTCPLimitAndStop(t *testing.T) {
 	probe, _ := net.Listen("tcp", "127.0.0.1:0")
 	addr := probe.Addr().String()
 	probe.Close()
-	err := s.ServeTCP(ctx, "tcp", addr, 1, func(string, ...any) { warned.Add(1) }, func(c net.Conn) {
+	err := s.ServeTCP(ctx, "tcp", addr, Limits{Max: 1}, func(string, ...any) { warned.Add(1) }, func(c net.Conn) {
 		handled.Add(1)
 		<-release
 		c.Close()
@@ -158,5 +159,109 @@ func TestServeTCPLimitAndStop(t *testing.T) {
 	s.Stop()
 	if _, err := net.DialTimeout("tcp", addr, 200*time.Millisecond); err == nil {
 		t.Fatal("Stop 后监听应关闭")
+	}
+}
+
+// ServeTCP 的单来源上限：同一 IPv4 地址、同一 IPv6 /64 的并发连接超过上限即被拒绝，释放后可以再连；
+// 内网来源不受单来源上限约束；超限警告按时间合并。
+func TestServeTCPPerSourceLimit(t *testing.T) {
+	queue := make(chan netip.Addr, 32)
+	old := remoteAddrOf
+	remoteAddrOf = func(net.Conn) (netip.Addr, bool) { return <-queue, true }
+	t.Cleanup(func() { remoteAddrOf = old })
+
+	var s Server
+	ctx := s.Context(context.Background())
+	var warned atomic.Int32
+	handled := make(chan string, 32)
+	probe, _ := net.Listen("tcp", "127.0.0.1:0")
+	addr := probe.Addr().String()
+	probe.Close()
+	if err := s.ServeTCP(ctx, "tcp", addr, Limits{Max: 20, PerSource: 2}, func(string, ...any) { warned.Add(1) }, func(c net.Conn) {
+		buf := make([]byte, 16)
+		n, _ := c.Read(buf)
+		handled <- string(buf[:n])
+		// 保持连接直到客户端关闭或服务停止
+		_, _ = c.Read(buf)
+		c.Close()
+	}); err != nil {
+		t.Fatal(err)
+	}
+	defer s.Stop()
+	var clients []net.Conn
+	defer func() {
+		for _, c := range clients {
+			c.Close()
+		}
+	}()
+	// connect 以 from 为来源建立一个连接，返回是否被接受
+	connect := func(from, tag string) bool {
+		t.Helper()
+		queue <- netip.MustParseAddr(from)
+		c, err := net.Dial("tcp", addr)
+		if err != nil {
+			t.Fatal(err)
+		}
+		clients = append(clients, c)
+		_, _ = c.Write([]byte(tag))
+		select {
+		case got := <-handled:
+			if got != tag {
+				t.Fatalf("处理的连接应为 %s，实际 %s", tag, got)
+			}
+			return true
+		case <-time.After(time.Second):
+		}
+		_ = c.SetReadDeadline(time.Now().Add(2 * time.Second))
+		if _, err := c.Read(make([]byte, 1)); err == nil {
+			t.Fatalf("%s 既没有被处理也没有被关闭", tag)
+		}
+		return false
+	}
+	steps := []struct {
+		from, tag string
+		want      bool
+	}{
+		{"203.0.113.7", "a1", true},
+		{"203.0.113.7", "a2", true},
+		{"203.0.113.7", "a3", false},
+		{"203.0.113.8", "b1", true},
+		{"2001:db8:1:2::1", "v1", true},
+		{"2001:db8:1:2::ffff", "v2", true},
+		{"2001:db8:1:2:1::1", "v3", false},
+		{"2001:db8:1:3::1", "w1", true},
+		{"192.168.1.20", "p1", true},
+		{"192.168.1.20", "p2", true},
+		{"192.168.1.20", "p3", true},
+		{"::ffff:203.0.113.7", "a4", false},
+	}
+	for _, st := range steps {
+		if got := connect(st.from, st.tag); got != st.want {
+			t.Fatalf("%s（%s）接受 = %v，应为 %v", st.tag, st.from, got, st.want)
+		}
+	}
+	if n := warned.Load(); n != 1 {
+		t.Fatalf("10 秒内的单来源超限应只记录 1 条警告，实际 %d", n)
+	}
+	// 释放 203.0.113.7 的一个连接后可以再连
+	clients[0].Close()
+	deadline := time.Now().Add(2 * time.Second)
+	for {
+		if connect("203.0.113.7", "a5") {
+			break
+		}
+		if time.Now().After(deadline) {
+			t.Fatal("释放名额后应能再次连接")
+		}
+	}
+}
+
+func TestPerSourceLimit(t *testing.T) {
+	for _, c := range []struct{ rule, def, total, want int }{
+		{0, 0, 256, 128}, {0, 0, 1, 1}, {0, 0, 3, 1}, {0, 64, 256, 64}, {8, 64, 256, 8}, {500, 0, 256, 256}, {0, 1000, 10, 10},
+	} {
+		if got := PerSourceLimit(c.rule, c.def, c.total); got != c.want {
+			t.Fatalf("PerSourceLimit(%d, %d, %d) = %d，应为 %d", c.rule, c.def, c.total, got, c.want)
+		}
 	}
 }
