@@ -207,6 +207,11 @@
           </el-select>
           <div class="form-help">{{ t('frp.protocolHelp') }}</div>
         </el-form-item>
+        <template v-if="editingClient.protocol === 'quic'">
+          <el-form-item :label="t('frp.quicKeepalive')"><el-input-number v-model="editingClient.quicKeepalivePeriod" :min="0" :max="86400" /><span class="help">{{ t('frp.quicDefaultHint', { n: 10 }) }}</span></el-form-item>
+          <el-form-item :label="t('frp.quicMaxIdle')"><el-input-number v-model="editingClient.quicMaxIdleTimeout" :min="0" :max="86400" /><span class="help">{{ t('frp.quicDefaultHint', { n: 30 }) }}</span></el-form-item>
+          <el-form-item :label="t('frp.quicMaxStreams')"><el-input-number v-model="editingClient.quicMaxIncomingStreams" :min="0" :max="1000000" /><span class="help">{{ t('frp.quicDefaultHint', { n: 100000 }) }}</span></el-form-item>
+        </template>
         <!-- 只用于生成代理链接：frpc 不知道 frps 的 vhost 端口与子域名根域名，按 frps 一侧填写 -->
         <el-divider content-position="left">{{ t('frp.accessAddr') }}</el-divider>
         <el-form-item :label="t('frp.accessHttp')">
@@ -262,6 +267,14 @@
           <el-input-number v-model="editingServer.quicBindPort" :min="0" :max="65535" />
           <div class="form-help">{{ t('frp.quicBindPortHelp') }}</div>
         </el-form-item>
+        <template v-if="editingServer.quicBindPort">
+          <el-form-item :label="t('frp.quicKeepalive')"><el-input-number v-model="editingServer.quicKeepalivePeriod" :min="0" :max="86400" /><span class="help">{{ t('frp.quicDefaultHint', { n: 10 }) }}</span></el-form-item>
+          <el-form-item :label="t('frp.quicMaxIdle')"><el-input-number v-model="editingServer.quicMaxIdleTimeout" :min="0" :max="86400" /><span class="help">{{ t('frp.quicDefaultHint', { n: 30 }) }}</span></el-form-item>
+          <el-form-item :label="t('frp.quicMaxStreams')">
+            <el-input-number v-model="editingServer.quicMaxIncomingStreams" :min="0" :max="1000000" /><span class="help">{{ t('frp.quicDefaultHint', { n: 100000 }) }}</span>
+            <div class="form-help">{{ t('frp.quicTuningHelp') }}</div>
+          </el-form-item>
+        </template>
         <el-form-item :label="t('frp.token')">
           <SecretInput v-model="editingServer.token" :reveal="secretOf(serverSecretKey && `/api/frp/servers/${serverSecretKey}/secrets`, 'token')" :placeholder="t('frp.tokenServerPlaceholder')" />
         </el-form-item>
@@ -460,6 +473,10 @@ interface ClientSettings {
   token: string
   user: string
   protocol: string
+  // quic 调节参数，0 为 frp 默认值，只在协议为 quic 时生效
+  quicKeepalivePeriod: number
+  quicMaxIdleTimeout: number
+  quicMaxIncomingStreams: number
 }
 interface ServerSettings {
   bindAddr: string
@@ -467,6 +484,10 @@ interface ServerSettings {
   // kcpBindPort 与 quicBindPort 为 UDP 监听端口，0 表示不启用
   kcpBindPort: number
   quicBindPort: number
+  // quic 调节参数，0 为 frp 默认值，只在设置了 quicBindPort 时生效
+  quicKeepalivePeriod: number
+  quicMaxIdleTimeout: number
+  quicMaxIncomingStreams: number
   token: string
   proxyBindAddr: string
   vhostHttpPort: number
@@ -695,7 +716,7 @@ function emptyAccess(): ClientAccess {
 }
 
 function emptyClient(): Client {
-  return { name: '', group: '', enable: true, serverAddr: '', serverPort: 7000, token: '', user: '', protocol: '', access: emptyAccess(), remark: '' }
+  return { name: '', group: '', enable: true, serverAddr: '', serverPort: 7000, token: '', user: '', protocol: '', quicKeepalivePeriod: 0, quicMaxIdleTimeout: 0, quicMaxIncomingStreams: 0, access: emptyAccess(), remark: '' }
 }
 
 function emptyServer(): Server {
@@ -707,6 +728,9 @@ function emptyServer(): Server {
     bindPort: 7000,
     kcpBindPort: 0,
     quicBindPort: 0,
+    quicKeepalivePeriod: 0,
+    quicMaxIdleTimeout: 0,
+    quicMaxIncomingStreams: 0,
     token: '',
     proxyBindAddr: '',
     vhostHttpPort: 0,
@@ -729,8 +753,23 @@ function emptyServer(): Server {
 // pickClient 只取实例字段，去掉运行状态
 function pickClient(v: Client): Client {
   const { key, name, group, enable, serverAddr, serverPort, token, user, protocol, remark } = v
-  // 旧版本返回的数据没有 access，补齐默认值
-  return { key, name, group, enable, serverAddr, serverPort, token, user, protocol, access: { ...emptyAccess(), ...v.access }, remark }
+  // 旧版本返回的数据没有 access 与 quic 参数，补齐默认值
+  return {
+    key,
+    name,
+    group,
+    enable,
+    serverAddr,
+    serverPort,
+    token,
+    user,
+    protocol,
+    quicKeepalivePeriod: v.quicKeepalivePeriod ?? 0,
+    quicMaxIdleTimeout: v.quicMaxIdleTimeout ?? 0,
+    quicMaxIncomingStreams: v.quicMaxIncomingStreams ?? 0,
+    access: { ...emptyAccess(), ...v.access },
+    remark,
+  }
 }
 
 // accessPortModel 把访问端口的 0（不生成链接）映射为输入框的空值
@@ -797,6 +836,9 @@ function pickServer(v: Server): Server {
   }
   out.kcpBindPort = out.kcpBindPort ?? 0
   out.quicBindPort = out.quicBindPort ?? 0
+  out.quicKeepalivePeriod = out.quicKeepalivePeriod ?? 0
+  out.quicMaxIdleTimeout = out.quicMaxIdleTimeout ?? 0
+  out.quicMaxIncomingStreams = out.quicMaxIncomingStreams ?? 0
   // 后端空名单返回 null，编辑时统一为数组
   out.ipList = out.ipList ?? []
   out.ipSets = out.ipSets ?? []

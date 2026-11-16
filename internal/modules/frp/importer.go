@@ -309,6 +309,17 @@ func ParseImport(role, content string) (*ImportResult, error) {
 	return res, nil
 }
 
+// importQUIC 读取 quic 调节参数（TOML 的 transport.quic.* 与旧版 INI 的 quic_*），并登记为已处理字段。
+func importQUIC(top map[string]any, h handled) QUICTuning {
+	h.add("transport.quic.keepalivePeriod", "quic_keepalive_period", "transport.quic.maxIdleTimeout", "quic_max_idle_timeout",
+		"transport.quic.maxIncomingStreams", "quic_max_incoming_streams")
+	return QUICTuning{
+		QUICKeepalivePeriod:    pickInt(top, "transport.quic.keepalivePeriod", "quic_keepalive_period"),
+		QUICMaxIdleTimeout:     pickInt(top, "transport.quic.maxIdleTimeout", "quic_max_idle_timeout"),
+		QUICMaxIncomingStreams: pickInt(top, "transport.quic.maxIncomingStreams", "quic_max_incoming_streams"),
+	}
+}
+
 func importClient(top map[string]any, legacy bool, res *ImportResult) *ClientSettings {
 	h := handled{}
 	h.add("authentication_method", "auth.method", "loginFailExit", "login_fail_exit")
@@ -318,6 +329,7 @@ func importClient(top map[string]any, legacy bool, res *ImportResult) *ClientSet
 		User:       pick(top, "user"),
 		Token:      pick(top, "auth.token", "token", "privilege_token"),
 		Protocol:   pick(top, "transport.protocol", "protocol"),
+		QUICTuning: importQUIC(top, h),
 	}
 	h.add("serverAddr", "server_addr", "serverPort", "server_port", "user", "auth.token", "token", "privilege_token", "transport.protocol", "protocol")
 	if c.ServerAddr == "" {
@@ -354,6 +366,7 @@ func importServer(top map[string]any, legacy bool, res *ImportResult) *ServerSet
 		BindPort:       pickInt(top, "bindPort", "bind_port"),
 		KCPBindPort:    pickInt(top, "kcpBindPort", "kcp_bind_port"),
 		QUICBindPort:   pickInt(top, "quicBindPort", "quic_bind_port"),
+		QUICTuning:     importQUIC(top, h),
 		ProxyBindAddr:  pick(top, "proxyBindAddr", "proxy_bind_addr"),
 		Token:          pick(top, "auth.token", "token", "privilege_token"),
 		VhostHTTPPort:  pickInt(top, "vhostHTTPPort", "vhost_http_port"),

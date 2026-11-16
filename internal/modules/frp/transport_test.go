@@ -134,7 +134,8 @@ func TestRealFrpsKCPAndQUIC(t *testing.T) {
 	echoPort := echo.Addr().(*net.TCPAddr).Port
 
 	const token = "udp-token"
-	s := ServerSettings{BindAddr: "127.0.0.1", BindPort: freeTCP(), KCPBindPort: freeUDP(), QUICBindPort: freeUDP(), Token: token}
+	s := ServerSettings{BindAddr: "127.0.0.1", BindPort: freeTCP(), KCPBindPort: freeUDP(), QUICBindPort: freeUDP(), Token: token,
+		QUICTuning: QUICTuning{QUICKeepalivePeriod: 5, QUICMaxIdleTimeout: 20, QUICMaxIncomingStreams: 500}}
 	for s.QUICBindPort == s.KCPBindPort {
 		s.QUICBindPort = freeUDP()
 	}
@@ -168,7 +169,14 @@ func TestRealFrpsKCPAndQUIC(t *testing.T) {
 
 	try := func(protocol string, port int, tok string) (int, bool) {
 		remote := freeTCP()
-		cfg := fmt.Sprintf("serverAddr = \"127.0.0.1\"\nserverPort = %d\nloginFailExit = false\ntransport.protocol = %q\nauth.method = \"token\"\nauth.token = %q\n[[proxies]]\nname = %q\ntype = \"tcp\"\nlocalIP = \"127.0.0.1\"\nlocalPort = %d\nremotePort = %d\n",
+		// quic 连接带上非默认的调节参数，确认 frps 与 frpc 都能解析并正常工作
+		tuning := ""
+		if protocol == "quic" {
+			var tb strings.Builder
+			s.QUICTuning.toml(&tb)
+			tuning = tb.String()
+		}
+		cfg := fmt.Sprintf("serverAddr = \"127.0.0.1\"\nserverPort = %d\nloginFailExit = false\ntransport.protocol = %q\nauth.method = \"token\"\nauth.token = %q\n"+tuning+"[[proxies]]\nname = %q\ntype = \"tcp\"\nlocalIP = \"127.0.0.1\"\nlocalPort = %d\nremotePort = %d\n",
 			port, protocol, tok, "p-"+protocol, echoPort, remote)
 		cmd := start(frpc, write(protocol+"-"+tok+".toml", cfg))
 		defer func() { _ = cmd.Process.Kill() }()
@@ -241,5 +249,91 @@ func TestImportLuckyFRPUDPPorts(t *testing.T) {
 		if c.warn != "" && !strings.Contains(joined, c.warn) || strings.Contains(joined, "暂不支持") {
 			t.Errorf("%s: 提示不符: %s", c.params, joined)
 		}
+	}
+}
+
+func TestQUICTuningValidate(t *testing.T) {
+	ok := []QUICTuning{
+		{},
+		{QUICKeepalivePeriod: 5, QUICMaxIdleTimeout: 20, QUICMaxIncomingStreams: 1000},
+		// 只改一项时按另一项的 frp 默认值判断：保活 10、空闲 30
+		{QUICKeepalivePeriod: 29},
+		{QUICMaxIdleTimeout: 11},
+		{QUICMaxIncomingStreams: maxQUICStreamLimit},
+	}
+	for _, q := range ok {
+		if err := q.Validate(); err != nil {
+			t.Errorf("%+v 应通过: %v", q, err)
+		}
+	}
+	bad := []QUICTuning{
+		{QUICKeepalivePeriod: -1},
+		{QUICKeepalivePeriod: maxQUICSeconds + 1},
+		{QUICMaxIdleTimeout: -1},
+		{QUICMaxIdleTimeout: maxQUICSeconds + 1},
+		{QUICMaxIncomingStreams: -1},
+		{QUICMaxIncomingStreams: maxQUICStreamLimit + 1},
+		// 保活不小于空闲时间会让连接反复断开
+		{QUICKeepalivePeriod: 30},
+		{QUICMaxIdleTimeout: 10},
+		{QUICKeepalivePeriod: 20, QUICMaxIdleTimeout: 20},
+	}
+	for _, q := range bad {
+		if err := q.Validate(); err == nil {
+			t.Errorf("%+v 应被拒绝", q)
+		}
+	}
+	// 服务端与客户端的校验都生效
+	if err := (&ServerSettings{QUICTuning: QUICTuning{QUICKeepalivePeriod: 30}}).Validate(); err == nil {
+		t.Error("frps 应校验 quic 参数")
+	}
+	if err := (&ClientSettings{ServerPort: 7000, QUICTuning: QUICTuning{QUICMaxIdleTimeout: 5}}).Validate(); err == nil {
+		t.Error("frpc 应校验 quic 参数")
+	}
+}
+
+func TestQUICTuningTOML(t *testing.T) {
+	q := QUICTuning{QUICKeepalivePeriod: 5, QUICMaxIdleTimeout: 20, QUICMaxIncomingStreams: 1000}
+	srv := ServerTOML(ServerSettings{BindPort: 7000, QUICBindPort: 7001, QUICTuning: q})
+	for _, want := range []string{"transport.quic.keepalivePeriod = 5", "transport.quic.maxIdleTimeout = 20", "transport.quic.maxIncomingStreams = 1000"} {
+		if !strings.Contains(srv, want) {
+			t.Errorf("frps 配置缺少 %s\n%s", want, srv)
+		}
+	}
+	// 没有开启 quic 监听时不输出调节参数
+	if got := ServerTOML(ServerSettings{BindPort: 7000, QUICTuning: q}); strings.Contains(got, "quic") {
+		t.Errorf("未开启 quic 监听时不应输出\n%s", got)
+	}
+	// 默认值不输出
+	if got := ServerTOML(ServerSettings{BindPort: 7000, QUICBindPort: 7001}); strings.Contains(got, "transport.quic") {
+		t.Errorf("未设置时不应输出\n%s", got)
+	}
+	cli := ClientTOML(ClientSettings{ServerAddr: "a", ServerPort: 7001, Protocol: "quic", QUICTuning: q}, nil)
+	if !strings.Contains(cli, "transport.quic.maxIdleTimeout = 20") {
+		t.Errorf("frpc 配置缺少 quic 参数\n%s", cli)
+	}
+	// 协议不是 quic 时不输出
+	if got := ClientTOML(ClientSettings{ServerAddr: "a", ServerPort: 7000, QUICTuning: q}, nil); strings.Contains(got, "quic") {
+		t.Errorf("协议不是 quic 时不应输出\n%s", got)
+	}
+}
+
+func TestImportQUICTuning(t *testing.T) {
+	q := QUICTuning{QUICKeepalivePeriod: 5, QUICMaxIdleTimeout: 20, QUICMaxIncomingStreams: 1000}
+	s := ServerSettings{BindPort: 7000, QUICBindPort: 7001, QUICTuning: q, DashboardAddr: "127.0.0.1"}
+	res, err := ParseImport(RoleServer, ServerTOML(s))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(*res.Server, s) || len(res.Warnings) != 0 {
+		t.Errorf("frps 回导不一致: %+v %v", *res.Server, res.Warnings)
+	}
+	c := ClientSettings{ServerAddr: "a.example.com", ServerPort: 7001, Protocol: "quic", QUICTuning: q}
+	cres, err := ParseImport(RoleClient, ClientTOML(c, nil))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(*cres.Client, c) || len(cres.Warnings) != 0 {
+		t.Errorf("frpc 回导不一致: %+v %v", *cres.Client, cres.Warnings)
 	}
 }
