@@ -60,6 +60,8 @@
 
 所有類型的站台都可設定存取日誌、跨來源（CORS）、自訂請求標頭與回應標頭（每行 `Key: Value`，Value 留空表示刪除該標頭），並可引用一個 [WAF 防火牆](/zh-TW/docs/modules/waf) 實例（實例不存在或停用時放行）。請求標頭、回應標頭與 Content-Type 的編輯方式見 [請求標頭與回應標頭](#headers)。
 
+開啟跨來源時，Gately 依請求的 `Origin` 回寫 `Access-Control-Allow-Origin` 並允許攜帶憑證。站台限制了訪客時（基本驗證、網頁驗證、轉發驗證、轉發 Gately 登入 Cookie、信任後端驗證標記、站台或路徑規則的 IP 白名單、敲門准入），只接受站台自身網域作為來源，其他網頁無法藉訪客的登入狀態或所在網路讀取站台內容；其餘站台接受任意來源。
+
 存取日誌會記錄用戶端 IP、方法、網域與路徑、狀態碼、耗時、站點名稱，行尾依 nginx 的格式附上 Referer 與 User-Agent（缺少時為 `-`），同一個對外 IP 後面的不同裝置可以透過 User-Agent 區分。可在日誌中依站點、狀態碼、來源 IP 等條件篩選，見 [執行日誌的檢視與篩選](/zh-TW/docs/guide/configuration#log-filter)。
 
 ### 重新導向變數 {#redirect-vars}

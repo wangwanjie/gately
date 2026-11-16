@@ -60,6 +60,8 @@ Le point de terminaison correspondant est `POST /api/webservice/sites/batch`, av
 
 Les sites de tous types peuvent définir un journal d'accès, le cross-origin (CORS), des en-têtes de requête et de réponse personnalisés (un `Key: Value` par ligne ; une Value vide supprime cet en-tête), et peuvent référencer une instance de [Pare-feu WAF](/fr/docs/modules/waf) (si l'instance n'existe pas ou est désactivée, les requêtes passent sans filtrage). Voir [En-têtes de requête et de réponse](#headers) pour la modification des en-têtes de requête, des en-têtes de réponse et du Content-Type.
 
+Avec le cross-origin activé, Gately renvoie l'`Origin` de la requête dans `Access-Control-Allow-Origin` et autorise les identifiants. Lorsque le site restreint ses visiteurs (authentification Basic, authentification web, authentification déléguée, transmission des cookies de connexion Gately, confiance dans le marqueur d'authentification du backend, liste d'IP autorisées sur le site ou dans une règle de chemin, ou knock obligatoire), seuls les domaines du site lui-même sont acceptés comme origine : d'autres pages web ne peuvent pas lire le site en profitant de la session ou du réseau du visiteur. Les autres sites acceptent toute origine.
+
 Les entrées du journal d'accès enregistrent l'IP du client, la méthode, le domaine et le chemin, le code d'état, la durée et le nom du site, suivis du Referer et du User-Agent au format nginx (`-` s'ils manquent) : les appareils situés derrière une même IP publique se distinguent ainsi par leur User-Agent. Le journal peut être filtré par site, code d'état, IP source, etc. Voir [consulter et filtrer les journaux d'exécution](/fr/docs/guide/configuration#log-filter).
 
 ### Variables de redirection {#redirect-vars}

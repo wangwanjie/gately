@@ -60,6 +60,8 @@ The matching endpoint is `POST /api/webservice/sites/batch` with the body `{"sit
 
 Sites of every type can set an access log, cross-origin (CORS), custom request and response headers (one `Key: Value` per line; an empty Value removes that header), and can reference a [WAF Firewall](/en/docs/modules/waf) instance (if the instance does not exist or is disabled, requests pass through). See [Request and response headers](#headers) for how request headers, response headers and Content-Type are edited.
 
+With cross-origin enabled, Gately echoes the request's `Origin` in `Access-Control-Allow-Origin` and allows credentials. When the site restricts who can visit (basic authentication, web authentication, forward authentication, forwarding Gately sign-in cookies, trusting the backend's authentication marker, an IP allowlist on the site or a path rule, or a knock requirement), only the site's own domains are accepted as origins, so other web pages cannot read the site through a visitor's sign-in or network; other sites accept any origin.
+
 Access log entries record the client IP, method, domain and path, status code, duration and site name, followed by the Referer and User-Agent in nginx format (`-` when missing), so different devices behind the same public IP can be told apart by User-Agent. The log can be filtered by site, status code, client IP and more; see [viewing and filtering runtime logs](/en/docs/guide/configuration#log-filter).
 
 ### Redirect variables {#redirect-vars}
