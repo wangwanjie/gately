@@ -60,3 +60,9 @@ You can give rules a "Group" (up to 64 characters). The list shows groups as col
 Click "Sort" to enter sort mode. Use the arrows to move rules up and down or to move whole groups. Check several rules and drag any one of them to move them together; dropping onto rules or the header of another group moves them into that group. The toolbar moves the checked rules into a group in one step, or out of their group when the name is left empty. Order and groups only affect the list, and changing them means forwarding is not restarted and open connections stay up.
 
 Hover over a group header and click the pencil button to rename the group: everything in it moves to the new name and keeps its position and order. Choosing a name that is already in use merges the two groups after a confirmation.
+
+## Connection limits and empty connections
+
+Besides "Max connections", each TCP port limits the concurrent connections from a single source (an IPv4 address or an IPv6 /64): by default half of the max connections (128 for the default 256); set "Max connections per source" in a rule or change the default in the global settings. Loopback and private addresses are not limited. Connections over the limit are closed right away, and the run log records this at most once every 10 seconds.
+
+A TCP connection on which neither side sends any data within the "First data timeout" (global setting, 60 seconds by default) is closed, freeing slots held by empty connections; server-first protocols such as SSH, FTP and MySQL and client-first protocols such as HTTP and TLS send data immediately and are unaffected. Raise the value (up to 3600 seconds) for protocols where both sides stay silent for a long time after connecting.

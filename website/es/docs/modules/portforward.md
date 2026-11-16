@@ -60,3 +60,9 @@ Puede asignar a las reglas un «Grupo» (hasta 64 caracteres). La lista muestra 
 Pulse «Ordenar» para entrar en el modo de orden. Use las flechas para subir o bajar las reglas o mover grupos enteros. Marque varias y arrastre cualquiera de ellas para moverlas juntas; al soltarlas sobre un elemento o el encabezado de otro grupo pasan a ese grupo. La barra de herramientas mueve de una vez los elementos marcados a un grupo, o los saca de su grupo si deja el nombre vacío. El orden y los grupos solo afectan a la lista, y al cambiarlos el reenvío no se reinicia y las conexiones abiertas se mantienen.
 
 Pase el ratón por el encabezado de un grupo y pulse el lápiz para renombrarlo: todos sus elementos pasan al nuevo nombre y conservan su posición y orden. Si elige un nombre ya usado, tras confirmar se fusionan los dos grupos.
+
+## Límites de conexiones y conexiones vacías
+
+Además del «Máx. de conexiones», cada puerto TCP limita las conexiones simultáneas de un solo origen (una dirección IPv4 o un /64 IPv6): por defecto la mitad del máximo de conexiones (128 con el valor por defecto de 256); puedes indicar «Máx. de conexiones por origen» en la regla o cambiar el valor por defecto en la configuración global. Las direcciones de loopback y privadas no se limitan. Las conexiones que superan el límite se cierran al instante y el registro lo anota como máximo una vez cada 10 segundos.
+
+Se cierra la conexión TCP en la que ningún extremo envía datos dentro del «Tiempo para los primeros datos» (configuración global, 60 segundos por defecto), liberando las plazas ocupadas por conexiones vacías; los protocolos en que habla primero el servidor (SSH, FTP, MySQL) y en que habla primero el cliente (HTTP, TLS) envían datos de inmediato y no se ven afectados. Aumenta el valor (hasta 3600 segundos) para protocolos en que ambos extremos callan mucho tiempo tras conectar.

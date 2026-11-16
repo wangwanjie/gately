@@ -60,3 +60,9 @@ Vous pouvez attribuer un « Groupe » (64 caractères au plus) à les règles. L
 Cliquez sur « Trier » pour passer en mode tri. Les flèches déplacent les règles vers le haut ou le bas, ou des groupes entiers. Cochez-en plusieurs et faites glisser l’un d’eux pour les déplacer ensemble ; déposés sur un élément ou l’en-tête d’un autre groupe, ils rejoignent ce groupe. La barre d’outils place d’un coup les éléments cochés dans un groupe, ou les retire de leur groupe si le nom est laissé vide. L’ordre et les groupes n’affectent que la liste, et les modifier signifie que le transfert n’est pas redémarré et les connexions ouvertes sont conservées.
 
 Survolez l’en-tête d’un groupe et cliquez sur le crayon pour le renommer : tous ses éléments passent sous le nouveau nom et gardent leur position et leur ordre. Un nom déjà utilisé fusionne les deux groupes après confirmation.
+
+## Limites de connexions et connexions vides
+
+En plus des « Connexions max. », chaque port TCP limite les connexions simultanées d'une même source (une adresse IPv4 ou un /64 IPv6) : par défaut la moitié des connexions max. (128 pour la valeur par défaut de 256) ; indiquez « Connexions max. par source » dans une règle ou changez la valeur par défaut dans les réglages globaux. Les adresses de bouclage et privées ne sont pas limitées. Les connexions au-delà sont fermées aussitôt, et le journal le note au plus une fois toutes les 10 secondes.
+
+Une connexion TCP sur laquelle aucun côté n'envoie de données dans le « Délai des premières données » (réglage global, 60 secondes par défaut) est fermée, ce qui libère les places occupées par des connexions vides ; les protocoles où le serveur parle en premier (SSH, FTP, MySQL) comme ceux où le client parle en premier (HTTP, TLS) échangent des données tout de suite et ne sont pas concernés. Augmentez la valeur (jusqu'à 3600 secondes) pour les protocoles où les deux côtés restent longtemps silencieux après la connexion.
