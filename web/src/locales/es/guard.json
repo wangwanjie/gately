@@ -90,7 +90,8 @@
   "event": {
     "authFailed": "Inicio de sesión fallido en el panel",
     "wafBlocked": "Solicitud bloqueada por el WAF",
-    "knockFailed": "Llamada de port knocking rechazada"
+    "knockFailed": "Llamada de port knocking rechazada",
+    "fileAuthFailed": "Inicio de sesión fallido en servicio de archivos"
   },
   "sourceHelp": {
     "file": "Lee las líneas nuevas del archivo y cambia al archivo nuevo tras la rotación. Una ruta por línea.",
@@ -241,6 +242,10 @@
     "gately-knock": {
       "name": "Llamadas de port knocking fallidas",
       "desc": "Orígenes que envían repetidamente paquetes de llamada que fallan la autenticación, son repetidos o piden puertos no autorizados (un mismo origen cuenta como máximo una vez cada 5 segundos)"
+    },
+    "gately-files": {
+      "name": "Inicios de sesión fallidos en servicios de archivos",
+      "desc": "Orígenes cuyos inicios de sesión en WebDAV, FTP o SMB fallan o se rechazan tras demasiados fallos (un mismo origen cuenta como máximo una vez cada 5 segundos)"
     },
     "web-decoy": {
       "name": "Rutas señuelo web",

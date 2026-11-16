@@ -90,7 +90,8 @@
   "event": {
     "authFailed": "Échec de connexion à la console",
     "wafBlocked": "Requête bloquée par le WAF",
-    "knockFailed": "Frappe de port knocking rejetée"
+    "knockFailed": "Frappe de port knocking rejetée",
+    "fileAuthFailed": "Échec de connexion au service de fichiers"
   },
   "sourceHelp": {
     "file": "Lit les nouvelles lignes du fichier et passe au nouveau fichier après une rotation. Un chemin par ligne.",
@@ -241,6 +242,10 @@
     "gately-knock": {
       "name": "Échecs de port knocking",
       "desc": "Sources qui envoient à répétition des paquets de frappe dont l'authentification échoue, rejoués ou demandant des ports non autorisés (une même source compte au plus une fois toutes les 5 secondes)"
+    },
+    "gately-files": {
+      "name": "Échecs de connexion aux services de fichiers",
+      "desc": "Sources dont les connexions WebDAV, FTP ou SMB échouent ou sont refusées après trop d'échecs (une même source compte au plus une fois toutes les 5 secondes)"
     },
     "web-decoy": {
       "name": "Chemins leurres web",

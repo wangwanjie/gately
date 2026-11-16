@@ -518,7 +518,7 @@ const { isMobile, labelPosition } = useFormLayout()
 const sources = ['file', 'journal', 'command', 'docker', 'event', 'web', 'tls']
 // TLS 握手失败的原因类别，与后端 webprobe.TLSKinds 一致
 const tlsKindList = ['eof', 'reset', 'timeout', 'protocol', 'negotiation', 'nocert', 'alert', 'other']
-const eventTypes = ['auth.failed', 'waf.blocked', 'knock.failed']
+const eventTypes = ['auth.failed', 'waf.blocked', 'knock.failed', 'fileauth.failed']
 const defaultTrapPorts = '23,135,1433,1521,3389,5900,6379,11211'
 
 const tab = ref('bans')
@@ -766,7 +766,7 @@ function applyWebPreset(id: string) {
 
 // eventKey 把事件类型映射为 guard.event.* 文案键
 function eventKey(e: string) {
-  const keys: Record<string, string> = { 'auth.failed': 'authFailed', 'waf.blocked': 'wafBlocked', 'knock.failed': 'knockFailed' }
+  const keys: Record<string, string> = { 'auth.failed': 'authFailed', 'waf.blocked': 'wafBlocked', 'knock.failed': 'knockFailed', 'fileauth.failed': 'fileAuthFailed' }
   return keys[e] ?? e
 }
 
