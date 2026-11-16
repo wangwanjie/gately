@@ -1,8 +1,12 @@
+// Gately 修改：报文中的偏移与长度改用 bounds 包在 uint64 中判断边界，32 位平台上不会因 int 转换为负数而越界。
+
 package smb2
 
 import (
 	"encoding/binary"
 	"fmt"
+
+	"github.com/wangwanjie/gately/internal/gosamba/bounds"
 )
 
 // File information classes used in SET_INFO requests.
@@ -41,11 +45,11 @@ func DecodeSetInfoRequest(body []byte) (SetInfoRequest, error) {
 	bufOffAbs := binary.LittleEndian.Uint16(body[8:])
 	copy(r.FileID[:], body[16:32])
 	if r.BufferLength > 0 {
-		off := int(bufOffAbs) - headerSize
-		if off < 0 || off+int(r.BufferLength) > len(body) {
+		start, end, ok := bounds.RelSpan(uint64(bufOffAbs), headerSize, uint64(r.BufferLength), len(body))
+		if !ok {
 			return SetInfoRequest{}, fmt.Errorf("%w: SET_INFO buffer out of bounds", ErrShortBuffer)
 		}
-		r.Buffer = append([]byte(nil), body[off:off+int(r.BufferLength)]...)
+		r.Buffer = append([]byte(nil), body[start:end]...)
 	}
 	return r, nil
 }

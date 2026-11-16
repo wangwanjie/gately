@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { defineConfig, type DefaultTheme, type HeadConfig } from 'vitepress'
@@ -18,6 +18,140 @@ function loadPack(code: string): any | null {
 const packs = siteLocales
   .map((loc) => ({ loc, pack: loadPack(loc.code) }))
   .filter((x): x is { loc: SiteLocale; pack: any } => x.pack !== null)
+
+// 最新版本号取自简体中文版本公告的文件名（news/v<版本>.md），按数字逐段比较
+const latestVersion = readdirSync(resolve(here, '..', 'news'))
+  .map((f) => /^v([\d.]+)\.md$/.exec(f)?.[1])
+  .filter((v): v is string => !!v)
+  .sort((a, b) => {
+    const x = a.split('.').map(Number)
+    const y = b.split('.').map(Number)
+    for (let i = 0; i < Math.max(x.length, y.length); i++) {
+      if ((x[i] ?? 0) !== (y[i] ?? 0)) {
+        return (x[i] ?? 0) - (y[i] ?? 0)
+      }
+    }
+    return 0
+  })
+  .pop()
+
+// 首页的结构化数据：软件信息与常见问题（取当前语言首页的 FAQ 文案）
+function homeJsonLd(pack: any, url: string, prefix: string, image: string): string {
+  const data = [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: 'Gately',
+      url,
+      description: pack.description,
+      inLanguage: pack.lang,
+      applicationCategory: 'UtilitiesApplication',
+      applicationSubCategory: 'Network gateway',
+      operatingSystem: 'Linux, macOS, Windows, FreeBSD, OpenWrt, fnOS, Docker',
+      softwareVersion: latestVersion,
+      license: 'https://www.apache.org/licenses/LICENSE-2.0',
+      downloadUrl: `${SITE}${prefix}/download`,
+      installUrl: `${SITE}${prefix}/docs/guide/install`,
+      image,
+      codeRepository: REPO,
+      sameAs: [REPO],
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' }
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      inLanguage: pack.lang,
+      mainEntity: pack.home.faqs.map((f: { q: string; a: string }) => ({
+        '@type': 'Question',
+        name: f.q,
+        acceptedAnswer: { '@type': 'Answer', text: f.a }
+      }))
+    }
+  ]
+  // 内联在 <script> 里，转义 < 以免文案中出现 </script>
+  return JSON.stringify(data).replace(/</g, '\\u003c')
+}
+
+// ---- 版本公告 RSS ----
+// 读取 Markdown 头部的 title / description（值可能带双引号、单引号或不带引号，均为单行）
+function readFrontmatter(file: string): Record<string, string> {
+  const m = /^---\n([\s\S]*?)\n---/.exec(readFileSync(file, 'utf8'))
+  const out: Record<string, string> = {}
+  for (const line of m?.[1].split('\n') ?? []) {
+    const kv = /^(\w+):\s*(.*)$/.exec(line)
+    if (!kv) {
+      continue
+    }
+    let v = kv[2].trim()
+    if (v.startsWith('"')) {
+      v = JSON.parse(v)
+    } else if (v.startsWith("'")) {
+      v = v.slice(1, -1).replace(/''/g, "'")
+    }
+    out[kv[1]] = v
+  }
+  return out
+}
+
+// 发布日期取自简体中文公告正文第一处「YYYY 年 M 月 D 日」，各语言共用（按北京时间零点）
+function newsDate(version: string): Date | null {
+  const file = resolve(here, '..', 'news', `v${version}.md`)
+  if (!existsSync(file)) {
+    return null
+  }
+  const m = /(\d{4}) 年 (\d{1,2}) 月 (\d{1,2}) 日/.exec(readFileSync(file, 'utf8'))
+  if (!m) {
+    return null
+  }
+  return new Date(`${m[1]}-${m[2].padStart(2, '0')}-${m[3].padStart(2, '0')}T00:00:00+08:00`)
+}
+
+function xmlEscape(text: string): string {
+  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+}
+
+// 生成某个语言的 RSS 2.0：条目为该语言 news/ 下的全部版本公告，按日期与版本号倒序
+function buildFeed(loc: SiteLocale, pack: any): string {
+  const p = prefixOf(loc)
+  const dir = resolve(here, '..', loc.dir, 'news')
+  const items = readdirSync(dir)
+    .map((f) => /^v([\d.]+)\.md$/.exec(f)?.[1])
+    .filter((v): v is string => !!v)
+    .map((version) => ({ version, fm: readFrontmatter(resolve(dir, `v${version}.md`)), date: newsDate(version) }))
+    .filter((x): x is { version: string; fm: Record<string, string>; date: Date } => x.date !== null)
+    .sort((a, b) => b.date.getTime() - a.date.getTime() || b.version.localeCompare(a.version, 'en', { numeric: true }))
+  const index = readFrontmatter(resolve(dir, 'index.md'))
+  const self = `${SITE}${p}/feed.xml`
+  const entries = items.map(({ version, fm, date }) => {
+    const link = `${SITE}${p}/news/v${version}`
+    return [
+      '    <item>',
+      `      <title>${xmlEscape(fm.title ?? `Gately v${version}`)}</title>`,
+      `      <link>${link}</link>`,
+      `      <guid isPermaLink="true">${link}</guid>`,
+      `      <pubDate>${date.toUTCString()}</pubDate>`,
+      `      <description>${xmlEscape(fm.description ?? '')}</description>`,
+      '    </item>'
+    ].join('\n')
+  })
+  return [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">',
+    '  <channel>',
+    `    <title>${xmlEscape(`Gately · ${pack.nav.changelog}`)}</title>`,
+    `    <link>${SITE}${p}/news/</link>`,
+    `    <atom:link href="${self}" rel="self" type="application/rss+xml" />`,
+    `    <description>${xmlEscape(index.description ?? pack.description)}</description>`,
+    `    <language>${pack.lang}</language>`,
+    items.length ? `    <lastBuildDate>${items[0].date.toUTCString()}</lastBuildDate>` : '',
+    ...entries,
+    '  </channel>',
+    '</rss>',
+    ''
+  ]
+    .filter((line) => line !== '')
+    .join('\n')
+}
 
 function prefixOf(loc: SiteLocale) {
   return loc.dir ? `/${loc.dir}` : ''
@@ -59,13 +193,10 @@ function buildThemeConfig(loc: SiteLocale, pack: any): DefaultTheme.Config & Rec
     langMenuLabel: ui.langMenuLabel,
     footer: {
       message: ui.footerMessage,
-      copyright: `© 2026 Gately Contributors · <a href="${REPO}" target="_blank" rel="noreferrer">GitHub</a> · <span class="tg-foot"><a href="${TELEGRAM}" target="_blank" rel="noreferrer">Telegram</a><span class="tg-pop"><img src="/telegram-qr.svg" alt="Telegram QR" width="140" height="140" loading="lazy"></span></span>`
+      copyright: `© 2026 Gately Contributors · <a href="${REPO}" target="_blank" rel="noreferrer">GitHub</a> · <a href="${p}/feed.xml">RSS</a> · <span class="tg-foot"><a href="${TELEGRAM}" target="_blank" rel="noreferrer">Telegram</a><span class="tg-pop"><img src="/telegram-qr.svg" alt="Telegram QR" width="140" height="140" loading="lazy"></span></span>`
     },
-    // 首页与下载页组件使用的文案
-    aiNotice: ui.aiNotice,
-    home: pack.home,
-    download: pack.download,
-    sponsor: pack.sponsor
+    // 文档页顶部的 AI 翻译提示；首页、下载、赞助文案较大，改由 transformPageData 只注入到用到它们的页面
+    aiNotice: ui.aiNotice
   }
 }
 
@@ -97,9 +228,8 @@ const locales = Object.fromEntries(
       themeConfig: buildThemeConfig(loc, pack),
       head: [
         ['meta', { name: 'keywords', content: pack.keywords }],
-        ['meta', { property: 'og:title', content: pack.ogTitle }],
-        ['meta', { property: 'og:description', content: pack.description }],
-        ['meta', { property: 'og:locale', content: pack.lang.replace('-', '_') }]
+        ['meta', { property: 'og:locale', content: pack.lang.replace('-', '_') }],
+        ['link', { rel: 'alternate', type: 'application/rss+xml', title: `Gately · ${pack.nav.changelog}`, href: `${prefixOf(loc)}/feed.xml` }]
       ] as HeadConfig[]
     }
   ])
@@ -141,7 +271,8 @@ export default defineConfig({
     ['meta', { name: 'apple-mobile-web-app-title', content: 'Gately' }],
     ['meta', { name: 'theme-color', content: '#0e7c66' }],
     ['meta', { property: 'og:type', content: 'website' }],
-    ['meta', { property: 'og:url', content: SITE }],
+    ['meta', { property: 'og:site_name', content: 'Gately' }],
+    ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
     ['script', {}, redirectScript]
   ],
   locales,
@@ -154,12 +285,61 @@ export default defineConfig({
     ],
     search: { provider: 'local', options: { locales: searchLocales } }
   },
-  // 为每个页面输出多语言互链，便于搜索引擎按语言展示
-  transformHead({ pageData }) {
+  // 首页、下载页、赞助页组件的文案只放进用到该组件的页面数据（frontmatter.siteText），
+  // 站点数据（内联在每个 HTML 里）不再携带全部 10 种语言的这三块文案
+  transformPageData(pageData) {
+    const file = resolve(here, '..', pageData.relativePath)
+    if (!existsSync(file)) {
+      return
+    }
+    const src = readFileSync(file, 'utf8')
+    const parts = ([['HomeLanding', 'home'], ['DownloadList', 'download'], ['SponsorPanel', 'sponsor']] as const).filter(([tag]) =>
+      src.includes(`<${tag}`)
+    )
+    if (!parts.length) {
+      return
+    }
+    const loc = siteLocales.find((l) => l.dir && pageData.relativePath.startsWith(`${l.dir}/`)) ?? siteLocales.find((l) => !l.dir)
+    const pack = packs.find((x) => x.loc.code === loc?.code)?.pack
+    if (!pack) {
+      return
+    }
+    pageData.frontmatter.siteText = Object.fromEntries(parts.map(([, key]) => [key, pack[key]]))
+  },
+  // 构建结束后为每个语言写出版本公告 RSS：简体中文在 /feed.xml，其余语言在 /<语言>/feed.xml
+  buildEnd({ outDir }) {
+    for (const { loc, pack } of packs) {
+      const dir = resolve(outDir, loc.dir)
+      mkdirSync(dir, { recursive: true })
+      writeFileSync(resolve(dir, 'feed.xml'), buildFeed(loc, pack))
+    }
+  },
+  // 为每个页面输出规范地址、分享卡片信息与多语言互链，便于搜索引擎按语言展示
+  transformHead({ pageData, title, description }) {
     const rel = pageData.relativePath.replace(/(^|\/)index\.md$/, '$1').replace(/\.md$/, '')
     const current = siteLocales.find((l) => l.dir && rel.startsWith(`${l.dir}/`))
     const slug = current ? rel.slice(current.dir.length + 1) : rel
-    const tags: HeadConfig[] = []
+    const code = current?.code ?? 'zh-CN'
+    const url = `${SITE}/${rel}`
+    // 分享图只有中英文两张：简繁中文用中文图，其余语言用英文图
+    const image = `${SITE}/${code.startsWith('zh') ? 'og-zh' : 'og-en'}.png`
+    const tags: HeadConfig[] = [
+      ['link', { rel: 'canonical', href: url }],
+      ['meta', { property: 'og:url', content: url }],
+      ['meta', { property: 'og:title', content: title }],
+      ['meta', { property: 'og:description', content: description }],
+      ['meta', { property: 'og:image', content: image }],
+      ['meta', { property: 'og:image:width', content: '1200' }],
+      ['meta', { property: 'og:image:height', content: '630' }],
+      ['meta', { property: 'og:image:alt', content: 'Gately' }],
+      ['meta', { name: 'twitter:image', content: image }]
+    ]
+    if (slug === '' && pageData.frontmatter.layout === 'page') {
+      const own = packs.find(({ loc }) => loc.code === code)
+      if (own) {
+        tags.push(['script', { type: 'application/ld+json' }, homeJsonLd(own.pack, url, prefixOf(own.loc), image)])
+      }
+    }
     for (const { loc } of packs) {
       const target = `${loc.dir ? `${loc.dir}/` : ''}${slug}`
       const file = resolve(here, '..', `${target}.md`.replace(/\/\.md$/, '/index.md'))

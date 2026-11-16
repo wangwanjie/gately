@@ -87,6 +87,7 @@
   "basicAuth": "Basic-Auth",
   "users": "Benutzer",
   "usersPlaceholder": "Einer pro Zeile als Benutzername:Passwort (das Passwort kann ein bcrypt-Hash sein)",
+  "usersHelp": "Passwörter werden beim Speichern als bcrypt-Hash abgelegt und lassen sich danach nicht mehr anzeigen. Gespeicherte Passwörter erscheinen als ********: unverändert lassen oder nur „Benutzername:“ schreiben, um sie zu behalten; zum Ändern ******** durch das neue Passwort ersetzen",
   "thirdParty": "Anmeldung über Drittanbieter",
   "oauthUsersPlaceholder": "Eine erlaubte Identität pro Zeile als Anbieter-Schlüssel:Konto, z. B. github:octocat, google:me{'@'}gmail.com, qq:openid. Einen Kommentar nach # am Zeilenende anfügen; github:* trifft auf jedes GitHub-Konto zu",
   "providerHelp": "Anbieter müssen zuerst in den „Globalen Einstellungen“ konfiguriert werden",

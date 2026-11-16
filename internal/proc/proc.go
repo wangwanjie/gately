@@ -346,7 +346,11 @@ func execOnce(ctx context.Context, spec Spec, log *logbuf.Logger, onStarted func
 		}
 	}}
 	cmd.Stdout, cmd.Stderr = w, w
+	// 启动回调完成前先扣住输出：进程一启动就打印的行（如创建 TUN 网卡失败）若先于 OnStart 被处理，
+	// OnStart 里“清除上次运行状态”的逻辑会把刚记录的内容抹掉。输出暂存在管道里，回调结束后按原顺序处理
+	w.mu.Lock()
 	if err := cmd.Start(); err != nil {
+		w.mu.Unlock()
 		// 二进制缺失、无执行权限等启动错误交给调用方，不进入重启循环
 		return err, nil
 	}
@@ -357,6 +361,7 @@ func execOnce(ctx context.Context, spec Spec, log *logbuf.Logger, onStarted func
 	if spec.OnStart != nil {
 		spec.OnStart()
 	}
+	w.mu.Unlock()
 	err := cmd.Wait()
 	w.flush()
 	if onExited != nil {

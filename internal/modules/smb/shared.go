@@ -80,6 +80,34 @@ func buildAccounts(s Settings, shared []fileusers.User) (out []account, issues [
 	return out, issues
 }
 
+// accountsShape 返回不含密码的账号集合指纹：与当前服务相同时说明只改了密码，不必重启服务。
+func accountsShape(accounts []account) string {
+	var b strings.Builder
+	for _, a := range accounts {
+		fmt.Fprintf(&b, "%s\x00", a.Name)
+		for _, sh := range a.Shares() {
+			fmt.Fprintf(&b, "%s\x01%s\x01%t\x00", sh.Name, sh.Path, sh.ReadOnly)
+		}
+		b.WriteByte('\n')
+	}
+	return b.String()
+}
+
+// passwordChanged 返回 old 与 updated 中密码（按 NT 哈希比较）不同的账号名；两者的账号与目录需相同（见 accountsShape）。
+func passwordChanged(old, updated []account) []string {
+	prev := map[string][16]byte{}
+	for _, a := range old {
+		prev[strings.ToLower(a.Name)] = userdb.NTHash(a.Password)
+	}
+	var out []string
+	for _, a := range updated {
+		if h, ok := prev[strings.ToLower(a.Name)]; !ok || h != userdb.NTHash(a.Password) {
+			out = append(out, a.Name)
+		}
+	}
+	return out
+}
+
 // accountsKey 返回账号集合的指纹，共享用户变化后只有指纹不同时才需要重启服务。
 func accountsKey(accounts []account) string {
 	var b strings.Builder

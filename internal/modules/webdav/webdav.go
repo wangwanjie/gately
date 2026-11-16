@@ -6,6 +6,7 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"path/filepath"
@@ -28,6 +29,16 @@ import (
 
 // ID 是模块标识。
 const ID = "webdav"
+
+// 连接超时。读写请求体与响应本身不设总时长（大文件上传下载可能持续很久），只限制停顿的时间。
+var (
+	// readHeaderTimeout 为读取请求头（含 TLS 握手）的最长时间
+	readHeaderTimeout = 30 * time.Second
+	// idleTimeout 为保持连接在两次请求之间空闲的最长时间，空闲连接到时关闭，客户端下次请求时重新连接
+	idleTimeout = 2 * time.Minute
+	// bodyIdleTimeout 为读取请求体时两次收到数据之间的最长间隔：上传停住超过这个时间即断开，持续传输的慢速上传不受影响
+	bodyIdleTimeout = 2 * time.Minute
+)
 
 // User 是一个 WebDAV 账号。
 type User struct {
@@ -228,7 +239,7 @@ func (m *Module) restartLocked() {
 	// 被封禁地址的连接在 Accept 时直接关闭
 	ln = banlist.Default.Listener(ln)
 	// ErrorLog 把 TLS 握手失败等错误写入模块运行日志
-	m.srv = &http.Server{Handler: http.HandlerFunc(m.serve), ReadHeaderTimeout: 30 * time.Second, ErrorLog: m.logs.Logger("").ServerErrorLog()}
+	m.srv = &http.Server{Handler: http.HandlerFunc(m.serve), ReadHeaderTimeout: readHeaderTimeout, IdleTimeout: idleTimeout, ErrorLog: m.logs.Logger("").ServerErrorLog()}
 	if m.settings.TLS {
 		if m.certs == nil {
 			ln.Close()
@@ -273,7 +284,8 @@ func newUserHandler(u User) *userHandler {
 	if len(u.Mounts) > 0 {
 		fs = mountfs.WebDAV(u.Mounts)
 	} else {
-		fs = xwebdav.Dir(u.Root)
+		// 经 os.Root 访问，指向用户目录之外的符号链接无法被跟随
+		fs = mountfs.RootDAV(u.Root)
 		if u.ReadOnly {
 			fs = mountfs.ReadOnlyDAV{FileSystem: fs}
 		}
@@ -306,6 +318,8 @@ func (m *Module) serve(w http.ResponseWriter, r *http.Request) {
 	ip := httpx.ClientIP(r)
 	// 失败次数（含进行中的校验）已达上限的来源一律拒绝，包括凭据正确的请求，避免被拒绝的来源借响应判断密码是否猜中
 	if ok && m.throttle.Blocked(ip) {
+		// 被限流后仍在尝试：同样报告给入侵防护
+		fileusers.ReportAuthFailure("WebDAV", ip, name)
 		http.Error(w, "429 Too Many Requests", http.StatusTooManyRequests)
 		return
 	}
@@ -319,6 +333,7 @@ func (m *Module) serve(w http.ResponseWriter, r *http.Request) {
 	} else if ok {
 		// 其余带凭据的请求先占位：失败次数加进行中的校验达到上限时直接拒绝，不再校验密码
 		if !m.throttle.Reserve(ip) {
+			fileusers.ReportAuthFailure("WebDAV", ip, name)
 			http.Error(w, "429 Too Many Requests", http.StatusTooManyRequests)
 			return
 		}
@@ -331,11 +346,33 @@ func (m *Module) serve(w http.ResponseWriter, r *http.Request) {
 		} else if ok {
 			m.logs.Add(logbuf.LevelWarn, "", fmt.Sprintf("%s 认证失败（用户 %q）", r.RemoteAddr, fileusers.ClipName(name)))
 		}
+		// 带了凭据但校验失败才算登录失败；不带凭据的请求是客户端在等待 401 质询，不报告
+		if ok {
+			fileusers.ReportAuthFailure("WebDAV", ip, name)
+		}
 		w.Header().Set("WWW-Authenticate", `Basic realm="Gately WebDAV"`)
 		http.Error(w, "401 Unauthorized", http.StatusUnauthorized)
 		return
 	}
+	if r.Body != nil && r.Body != http.NoBody {
+		// 每次读取请求体前把读截止时间推后 bodyIdleTimeout：停住的上传会超时断开，不会一直占用连接
+		r.Body = &idleBody{ReadCloser: r.Body, rc: http.NewResponseController(w), idle: bodyIdleTimeout}
+	}
 	uh.handler.ServeHTTP(w, r)
+}
+
+// idleBody 在每次读取前刷新连接的读截止时间，使请求体读取只受停顿时长限制。
+// 请求结束后 http.Server 会为下一个请求重新设置截止时间。
+type idleBody struct {
+	io.ReadCloser
+	rc   *http.ResponseController
+	idle time.Duration
+}
+
+func (b *idleBody) Read(p []byte) (int, error) {
+	// 测试中的 ResponseRecorder 不支持截止时间，忽略错误
+	_ = b.rc.SetReadDeadline(time.Now().Add(b.idle))
+	return b.ReadCloser.Read(p)
 }
 
 // Routes 实现 module.Module。

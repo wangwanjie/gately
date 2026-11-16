@@ -1,8 +1,13 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import { readdirSync, readFileSync, statSync, unlinkSync, writeFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync, statSync, unlinkSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
+import { createHash } from 'node:crypto'
 import { constants, gzipSync } from 'node:zlib'
+import type { Plugin } from 'vite'
+import { LOCALE_STORAGE_KEY, allLocales, fallbackOf } from './src/i18n/localeMeta.ts'
+import { localeHintScript } from './src/i18n/localeHint.ts'
+import { fillMissing } from './src/i18n/localeFill.ts'
 
 // 全部界面语言及对应的 Element Plus 语言包，顺序同语言切换菜单
 const ALL_LOCALES: Record<string, string> = {
@@ -51,10 +56,19 @@ const localesModule = () => {
       }
       const codes = builtLocales()
       const messages: string[] = []
+      const fallback = fallbackOf(codes)
+      const jsonFiles = (code: string) => readdirSync(join(localesDir, code)).filter((f) => f.endsWith('.json')).sort()
       for (const code of codes) {
-        for (const file of readdirSync(join(localesDir, code)).filter((f) => f.endsWith('.json')).sort()) {
+        const own = jsonFiles(code)
+        for (const file of own) {
           // 键与 import.meta.glob 的结果保持同一格式：../locales/<语言>/<命名空间>.json
           messages.push(`  ${JSON.stringify(`../locales/${code}/${file}`)}: () => import(${JSON.stringify(join(localesDir, code, file))}),`)
+        }
+        // 目标语言缺少整个命名空间时改用回退语言的同名文件，与缺键补齐（gately-locale-fill）保持一致
+        if (code !== fallback) {
+          for (const file of jsonFiles(fallback).filter((f) => !own.includes(f))) {
+            messages.push(`  ${JSON.stringify(`../locales/${code}/${file}`)}: () => import(${JSON.stringify(join(localesDir, fallback, file))}),`)
+          }
         }
       }
       const element = codes.map((code) => `  ${JSON.stringify(code)}: () => import('element-plus/es/locale/lang/${ALL_LOCALES[code]}'),`)
@@ -63,6 +77,76 @@ const localesModule = () => {
         `export const messageLoaders = {\n${messages.join('\n')}\n}`,
         `export const elementLoaders = {\n${element.join('\n')}\n}`,
       ].join('\n')
+    },
+  }
+}
+
+// 构建时把目标语言缺少的文案键用回退语言的文案补齐：运行时不必再加载回退语言包（省一个 130 KB 左右的下载），
+// 缺键也不会闪现键名。正常情况下各语言键集合完全一致（scripts/check-i18n.mjs 校验），这里只是兜底，补齐时给出构建警告。
+const localeFill = (): Plugin => {
+  const localesDir = resolve(import.meta.dirname, 'src/locales')
+  return {
+    name: 'gately-locale-fill',
+    enforce: 'pre',
+    transform(code, id) {
+      const m = /[\\/]src[\\/]locales[\\/]([^\\/]+)[\\/]([^\\/]+\.json)$/.exec(id)
+      if (!m) {
+        return null
+      }
+      const fallback = fallbackOf(builtLocales())
+      const basePath = join(localesDir, fallback, m[2])
+      if (m[1] === fallback || !existsSync(basePath)) {
+        return null
+      }
+      this.addWatchFile(basePath)
+      const target = JSON.parse(code)
+      const filled = fillMissing(target, JSON.parse(readFileSync(basePath, 'utf8')))
+      if (filled === 0) {
+        return null
+      }
+      this.warn(`${m[1]}/${m[2]} 缺少 ${filled} 个键，已用 ${fallback} 的文案补齐`)
+      return { code: JSON.stringify(target), map: null }
+    },
+  }
+}
+
+// 首屏语言包预加载：构建时生成一个极小的外部脚本并插到 <head> 最前面，页面打开后它按已保存的语言偏好
+// 或浏览器语言给对应语言包插入 modulepreload，使语言包与主包并行下载。
+// 语言包文件名带内容哈希，所以脚本在构建末尾按实际产物生成；用外部脚本而非内联脚本是为了兼容严格的 CSP。
+const localeHint = (): Plugin => {
+  let scriptFile = ''
+  return {
+    name: 'gately-locale-hint',
+    apply: 'build',
+    generateBundle: {
+      // 先于 vite 的 html 处理，保证 transformIndexHtml 触发时脚本文件名已确定
+      order: 'pre',
+      handler(_options, bundle) {
+        const codes = builtLocales()
+        const files: Record<string, string> = {}
+        for (const code of codes) {
+          // 文件名形如 assets/locale-zh-CN-<8 位哈希>.js；哈希里可能含 - 与 _，所以按语言代码取前缀而不是整体拆分
+          const prefix = `assets/locale-${code}-`
+          const hit = Object.entries(bundle).find(([name, item]) => item.type === 'chunk' && name.startsWith(prefix) && /^[\w-]{8}\.js$/.test(name.slice(prefix.length)))
+          if (!hit) {
+            throw new Error(`没有找到语言 ${code} 的语言包产物，无法生成预加载脚本`)
+          }
+          files[code] = hit[0].slice('assets/'.length)
+        }
+        const source = localeHintScript(files, allLocales.filter((l) => codes.includes(l.code)), fallbackOf(codes), LOCALE_STORAGE_KEY)
+        const hash = createHash('sha256').update(source).digest('base64url').slice(0, 8)
+        scriptFile = `assets/locale-hint-${hash}.js`
+        this.emitFile({ type: 'asset', fileName: scriptFile, source })
+      },
+    },
+    transformIndexHtml: {
+      order: 'post',
+      handler() {
+        if (!scriptFile) {
+          return []
+        }
+        return [{ tag: 'script', attrs: { src: `./${scriptFile}` }, injectTo: 'head-prepend' }]
+      },
     },
   }
 }
@@ -95,7 +179,7 @@ const precompress = {
 }
 
 export default defineConfig({
-  plugins: [vue(), localesModule(), keepGitkeep, precompress],
+  plugins: [vue(), localesModule(), localeFill(), localeHint(), keepGitkeep, precompress],
   // 资源使用相对路径，页面位于子路径（如飞牛 fnOS 统一网关的 /app/gately/）时也能加载
   base: './',
   build: {
@@ -112,6 +196,19 @@ export default defineConfig({
                 const m = /[\\/]src[\\/]locales[\\/]([^\\/]+)[\\/][^\\/]+\.json$/.exec(id)
                 return m ? `locale-${m[1]}` : null
               },
+            },
+            {
+              // Vue 运行时单独成块：图标分组要用到它，若与路由等共享代码混在一个块里，两个块会互相引用而在加载时出错
+              name: 'vue',
+              test: /node_modules[\\/](?:\.pnpm[\\/][^\\/]*[\\/]node_modules[\\/])?(?:vue|@vue[\\/][^\\/]+)[\\/]/,
+              priority: 10,
+            },
+            {
+              // 被两个及以上页面块共用的图标合并成一个文件（原先每个共用图标各占一个约 0.5 KB 的请求，首屏二十多个）；
+              // 只被一个页面用到的图标仍留在该页面块里，不增加首屏体积
+              name: 'lucide',
+              test: /node_modules[\\/](?:\.pnpm[\\/][^\\/]*[\\/]node_modules[\\/])?lucide-vue-next[\\/]/,
+              minShareCount: 2,
             },
           ],
         },

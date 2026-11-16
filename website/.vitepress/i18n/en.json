@@ -87,44 +87,68 @@
       "text": "v0.6.6.6 released: navigation panel search and sign-in-only links, 16 new DNS providers, trusted sources for frpc →",
       "link": "/en/news/v0.6.6.6"
     },
-    "titleLine1": "The all-in-one network gateway",
-    "titleLine2": "Open source, ready out of the box",
-    "lead": "DNS and NAT traversal, reverse proxy and HTTPS certificates, WAF and intrusion prevention, single sign-on and file sharing: everything your home network and servers need at the edge, managed from one console. Run it on a NAS, a soft router or a cloud server and set it all up in your browser.",
+    "titleLine1": "One gateway for your self-hosted services",
+    "titleLine2": "Reverse proxy, HTTPS, DDNS, NAT traversal, WAF and bans, in one binary",
+    "lead": "Gately sits at the edge of a home network or a server and handles the path from the internet to your services: it keeps your domain pointed at a changing IP, gets and renews certificates, routes every service through one port 443, puts sign-in and a WAF in front of them, and bans addresses that probe. Run it on a NAS, a router or a cloud server and configure everything in the browser.",
     "ctaStart": "Quick Start",
     "ctaDownload": "Download",
-    "mockTitle": "gately · Overview",
-    "mockRows": [
-      [
-        "Dynamic DNS",
-        "75 records in sync",
-        "ok"
-      ],
-      [
-        "STUN Traversal",
-        "18 rules running",
-        "ok"
-      ],
-      [
-        "Port Forwarding",
-        "25 rules running",
-        "ok"
-      ],
-      [
-        "Web Services",
-        "27 sites · HTTPS",
-        "ok"
-      ],
-      [
-        "SSL Certificates",
-        "5 certificates · auto-renewal",
-        "ok"
-      ],
-      [
-        "WAF Firewall",
-        "CRS v4 · blocking mode",
-        "warn"
+    "product": {
+      "overview": "Overview",
+      "tour": "Watch the 2-minute tour",
+      "close": "Close"
+    },
+    "replaces": {
+      "title": "What it replaces",
+      "desc": "The tools you run today and the Gately module that takes over.",
+      "note": "You can turn off any module you do not need, or build a binary with only the modules you pick at <a href=\"https://build.gately.cn\" target=\"_blank\" rel=\"noreferrer\">build.gately.cn</a>.",
+      "items": [
+        {
+          "from": "nginx, Nginx Proxy Manager",
+          "module": "Web services",
+          "text": "Reverse proxy, static sites, redirects, HTTP/3, per-site access rules; imports nginx config"
+        },
+        {
+          "from": "certbot, acme.sh",
+          "module": "SSL certificates",
+          "text": "DNS-01 and HTTP-01, wildcard, automatic renewal and deployment"
+        },
+        {
+          "from": "ddns-go, DDNS scripts",
+          "module": "Dynamic DNS",
+          "text": "35+ providers, IPv4 and IPv6"
+        },
+        {
+          "from": "haproxy SNI routing, sslh",
+          "module": "Protocol routing",
+          "text": "HTTPS, SSH, RDP and more share one port"
+        },
+        {
+          "from": "fail2ban",
+          "module": "Intrusion prevention",
+          "text": "Log jails, decoy ports and scan detection, bans dropped in nftables or iptables"
+        },
+        {
+          "from": "ModSecurity, a separate WAF",
+          "module": "WAF",
+          "text": "Coraza with OWASP CRS v4, per site"
+        },
+        {
+          "from": "A login gateway in front of apps",
+          "module": "Web sign-in",
+          "text": "Built-in sign-in, TOTP, Passkeys and an OIDC provider; forward auth also supported"
+        },
+        {
+          "from": "Hand-run frpc, cloudflared, tailscaled",
+          "module": "Networking & tunnels",
+          "text": "Managed frp, Cloudflare Tunnel, Tailscale, NetBird and EasyTier with install, update and rollback"
+        },
+        {
+          "from": "Hole-punching setups without a public IPv4",
+          "module": "STUN traversal",
+          "text": "TCP and UDP hole punching; address changes sync to DNS and notifications"
+        }
       ]
-    ],
+    },
     "featuresTitle": "Everyday network tools, ready to go",
     "featuresDesc": "From pointing a domain at your home to guarding a whole row of websites, it all happens in one interface.",
     "features": [
@@ -237,7 +261,8 @@
     "installTitle": "Running in a minute",
     "installDesc": "Images are available for amd64, arm64 and arm/v7. After starting, open <code>http://DEVICE_IP:16680</code> and sign in with the default account <code>admin</code> and default password <code>gately.cn</code>, then change the password right away.",
     "installTabBinary": "Binary",
-    "installDocker": "docker run -d --name gately --network host \\\n  -v ./gately-data:/etc/gately \\\n  -v /var/run/docker.sock:/var/run/docker.sock \\\n  ghcr.io/wangwanjie/gately:latest",
+    "installDocker": "docker run -d --name gately --network host --cap-add NET_ADMIN \\\n  -v ./gately-data:/etc/gately \\\n  ghcr.io/wangwanjie/gately:latest\n\n# To manage Docker from Gately, also add:\n#   -v /var/run/docker.sock:/var/run/docker.sock",
+    "composeDockerHint": "Uncomment the next line to manage Docker from Gately",
     "installBinary": "# Download the archive for your platform from Releases and extract it\n./gately -c /etc/gately\n\n# The admin UI listens on :16680 by default\n# Default account admin, default password gately.cn",
     "installTabFnos": "fnOS",
     "installFnos": "# 1. Download gately_<version>_fnos_x86.fpk from Releases (_arm.fpk for ARM devices)\n# 2. In fnOS, open App Center → Manual install, pick the file and finish the wizard\n# 3. Click the Gately icon on the fnOS desktop to open it through the unified gateway\n\n# Default account admin, default password gately.cn",
@@ -261,7 +286,7 @@
       },
       {
         "q": "Why is host networking recommended for port forwarding and STUN?",
-        "a": "These modules listen directly on host ports. If you do not need Docker management, you can drop the docker.sock mount."
+        "a": "These modules listen directly on host ports. --cap-add NET_ADMIN lets intrusion prevention write bans to the host firewall; mount /var/run/docker.sock only if you want Docker management."
       }
     ],
     "moreFaq": "More questions →",

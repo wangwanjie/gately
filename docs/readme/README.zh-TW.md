@@ -1,0 +1,368 @@
+<p align="center">
+  <a href="https://gately.cn/zh-TW/"><img src="../images/banner.zh-TW.svg" alt="Gately：開源網路閘道，內建網頁介面，一個程式，瀏覽器裡全部設定" width="100%"></a>
+</p>
+
+<p align="center">
+  <a href="https://gately.cn/zh-TW/">官網</a> · <a href="https://gately.cn/zh-TW/docs/guide/quick-start">文件</a> · <a href="https://github.com/wangwanjie/gately/releases/latest">下載</a> · <a href="https://gately.cn/zh-TW/news/">更新日誌</a> · <a href="https://github.com/user-attachments/assets/a86576dc-22f9-40f8-bc57-b013b044e139">導覽影片</a> · <a href="https://github.com/wangwanjie/gately/discussions">Discussions</a> · <a href="https://t.me/gately_chat">Telegram</a><br>
+  <a href="../../README.md">English</a> | <a href="../../README.zh-CN.md">简体中文</a> | <b>繁體中文</b> | <a href="README.ja.md">日本語</a> | <a href="README.ko.md">한국어</a> | <a href="README.es.md">Español</a> | <a href="README.fr.md">Français</a> | <a href="README.de.md">Deutsch</a> | <a href="README.ru.md">Русский</a> | <a href="README.pt-BR.md">Português (Brasil)</a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/wangwanjie/gately/releases/latest"><img src="https://img.shields.io/github/v/release/wangwanjie/gately?style=flat-square&color=0e7c66&label=release" alt="Release"></a>
+  <a href="../../LICENSE"><img src="https://img.shields.io/github/license/wangwanjie/gately?style=flat-square&color=0e7c66" alt="License"></a>
+  <a href="https://hub.docker.com/r/vanjayak/gately"><img src="https://img.shields.io/docker/pulls/vanjayak/gately?style=flat-square&color=0e7c66&logo=docker&logoColor=white" alt="Docker pulls"></a>
+</p>
+
+# Gately
+
+**裝在 NAS、軟路由或雲端主機上的網路閘道：反向代理、HTTPS 憑證、動態網域、內網穿透、WAF 和入侵防護，一個程式，全部在瀏覽器裡設定。**
+
+從公網到你家裡或伺服器上的服務，這一路要做的事 Gately 都接管：網域跟著變動的 IP 走，憑證自動簽發續期，所有服務共用一個 443 連接埠，每個站台前面可以加登入和 WAF，探測和暴力破解的位址自動封鎖。原始碼以 Apache-2.0 開源，設定是本機上的明文 JSON，預設不連線任何專案方伺服器。
+
+<img src="../images/zh-TW/overview.webp" alt="Gately 總覽頁" width="100%">
+
+## 能取代哪些工具
+
+| 你現在在用 | Gately 裡對應 |
+| --- | --- |
+| nginx、Nginx Proxy Manager | Web 服務：反向代理、靜態站台、重新導向、HTTP/3、依站台的存取控制；可匯入 nginx 設定 |
+| acme.sh、certbot | SSL 憑證：DNS-01 / HTTP-01、萬用字元、自動續期與部署 |
+| ddns-go、DDNS 腳本 | 動態網域：30+ 服務商，IPv4 / IPv6 |
+| haproxy 依 SNI 分流、sslh | 協定分流：HTTPS、SSH、RDP 等共用一個連接埠 |
+| fail2ban | 入侵防護：日誌規則、誘餌連接埠、掃描偵測，封鎖寫入 nftables / iptables |
+| 單獨部署的 WAF | Coraza + OWASP CRS v4，依站台開關 |
+| 應用程式前面另加的登入閘道 | 內建網頁驗證、兩步驟驗證、Passkey 和 OIDC 身分提供者 |
+| 手動維護的 frpc、cloudflared、tailscaled | 託管 frp、Cloudflare Tunnel、Tailscale、NetBird、EasyTier，含安裝、更新、回滾 |
+| 沒有公網 IPv4 時的各種打洞方案 | STUN 穿透：TCP / UDP 打洞，位址變更可同步到解析記錄、Webhook 與腳本 |
+
+用不到的模組可以關閉，也可以在 [build.gately.cn](https://build.gately.cn) 只選需要的模組產生更小的安裝包。
+
+## 一分鐘跑起來
+
+```bash
+docker run -d --name gately --network host --cap-add NET_ADMIN \
+  -v ./gately-data:/etc/gately \
+  ghcr.io/wangwanjie/gately:latest
+```
+
+開啟 `http://裝置IP:16680`，用 `admin` / `gately.cn` 登入，依提示設定自己的密碼。`--network host` 讓 Gately 能監聽你設定的連接埠；`--cap-add NET_ADMIN` 供入侵防護把封鎖寫入主機防火牆，不加時封鎖仍對 Gately 自身的服務生效。需要 Docker 管理時加上 `-v /var/run/docker.sock:/var/run/docker.sock`。映像檔支援 amd64、arm64、arm/v7，同時發佈到 GHCR 與 Docker Hub 的 `vanjayak/gately`（同一份映像檔與標籤，存取 GHCR 不便時改用 `vanjayak/gately:latest`）。
+
+飛牛 fnOS 有原生應用（接入統一閘道，桌面圖示直接開啟），OpenWrt / iStoreOS 有 ipk / apk 和 LuCI 外掛，其他系統有單一執行檔：[二進位檔與系統服務](#安裝) · [OpenWrt](#安裝) · [飛牛](#安裝) · [Docker Compose](../../deploy/docker-compose.yml) · [全部安裝方式](https://gately.cn/zh-TW/docs/guide/install)
+
+忘記密碼或遺失兩步驟驗證器時，在伺服器上執行 `gately reset-password` 或 `gately reset-totp`（Docker 為 `docker exec -it gately gately reset-password`），詳見[重設密碼與兩步驟驗證](https://gately.cn/zh-TW/docs/guide/install#reset)。路由器等儲存空間有限的裝置，可以在 [build.gately.cn](https://build.gately.cn) 只勾選需要的模組與介面語言，線上產生更小的執行檔、OpenWrt 或飛牛安裝包，或多架構 Docker 映像檔。
+
+## 放在網路入口，憑什麼信它
+
+- **看得見**：Apache-2.0 開源；預設不連線任何專案方伺服器，不回報裝置資訊；每個對外位址（公網 IP 查詢、STUN、更新檢查）都可檢視、可修改、可關閉；第三方登入使用你自己的 OAuth 應用程式，不經過中轉。
+- **可驗證**：每個發佈產物都附 cosign 簽章、建置來源證明和 SBOM（[驗證方法](../zh-TW/VERIFY.md)）；安全修復以 [GitHub 安全公告](https://github.com/wangwanjie/gately/security/advisories)公開。
+- **可追溯**：操作稽核、設定歷史比對與一鍵回滾，設定是明文 JSON，可以直接放進 git。
+- **效能跟得上**：同機 2 核心對比 haproxy + nginx 組合，HTTPS 反向代理 26k 對 14.7k req/s（[數據與測試方法](#效能)）。
+
+## 功能
+
+先看幾張管理介面的截圖，完整功能清單在本節最後。
+
+### 一眼看清全局
+
+概覽頁集中顯示 CPU、記憶體、磁碟與流量，網路卡及其公網 IPv4 / IPv6，以及每個模組的執行狀態，哪裡需要處理一目了然。
+
+<img src="../images/zh-TW/overview.webp" alt="一眼看清全局" width="100%">
+
+### 能取代 nginx 的 Web 服務
+
+依網域做反向代理、靜態檔案和重新導向，支援 HTTPS 與 HTTP/3。每個站點可以單獨啟用 WAF、IP 規則和登入驗證，改設定不會中斷現有連線。
+
+<img src="../images/zh-TW/web.webp" alt="能取代 nginx 的 Web 服務" width="100%">
+
+<p><b>站點統計</b> — 按分鐘統計請求數、錯誤、後端健康狀態，以及來源 IP 與國家排行。</p>
+
+<img src="../images/zh-TW/site-stats.webp" alt="站點統計" width="100%">
+
+### 網路拓撲
+
+即時查看流量從訪客經監聽、站點到後端的走向。點選節點可看 QPS、流量與活躍 IP，依訪客 IP 篩選，七種版面任意切換，分享截圖前還能一鍵遮蔽。
+
+<img src="../images/zh-TW/topology.webp" alt="網路拓撲" width="100%">
+
+### 一個 443 連接埠，所有服務共用
+
+協定分流依網域或協定把多個服務放在同一個連接埠上，TLS 原樣透傳，再用 PROXY 協定保留真實用戶端位址。
+
+<img src="../images/zh-TW/protoroute.webp" alt="一個 443 連接埠，所有服務共用" width="100%">
+
+### 動態網域，主流服務商都支援
+
+Cloudflare、阿里雲、DNSPod、Route 53 等都能用。支援 IPv4 與 IPv6，IP 可以從 URL、網路卡或指令取得，位址一變就發通知。
+
+<img src="../images/zh-TW/ddns.webp" alt="動態網域，主流服務商都支援" width="100%">
+
+### 入侵防護
+
+類 fail2ban 的規則讀取日誌檔案、journald 和容器日誌，誘餌連接埠與掃描偵測揪出探測行為。封鎖同步到 nftables，直接在核心裡丟棄封包。
+
+<img src="../images/zh-TW/guard.webp" alt="入侵防護" width="100%">
+
+### frp、Tailscale 與 Cloudflare 通道
+
+多個 frpc、frps 實例同時執行，和 Tailscale、cloudflared 通道放在一起管理。這些程式的安裝、更新與回滾都交給 Gately 處理。
+
+<img src="../images/zh-TW/frp.webp" alt="frp、Tailscale 與 Cloudflare 通道" width="100%">
+
+### 還有這些
+
+<table>
+<tr>
+<td width="50%" valign="top">
+
+**Docker**<br>容器、Compose、日誌與終端機，映像檔一鍵升級，失敗自動回滾。
+
+<img src="../images/zh-TW/docker.webp" alt="Docker" width="100%">
+
+</td>
+<td width="50%" valign="top">
+
+**Web 終端機**<br>在瀏覽器裡使用 SSH、Telnet 和本機 Shell，支援 SFTP 與分割視窗。
+
+<img src="../images/zh-TW/terminal.webp" alt="Web 終端機" width="100%">
+
+</td>
+</tr>
+</table>
+
+<table>
+<tr>
+<td width="50%" valign="top">
+
+**設定歷史**<br>每次修改都保留舊版本，可以比對差異、一鍵回滾。
+
+<img src="../images/zh-TW/config-history.webp" alt="設定歷史" width="100%">
+
+</td>
+<td width="50%" valign="top">
+
+**API、命令列與 MCP**<br>依模組授權的 API 權杖、內建 OpenAPI 文件、`gately ctl`，以及供 AI 助理接入的 MCP 服務。
+
+<img src="../images/zh-TW/api-docs.webp" alt="API、命令列與 MCP" width="100%">
+
+</td>
+</tr>
+</table>
+
+<details>
+<summary><b>完整功能清單</b></summary>
+
+幾個模組共用同樣的基礎能力：STUN 穿透、連接埠轉發、協定分流支援來源 IP 白名單／黑名單與優先拒絕名單（可引用訂閱 IP 清單），並自動在本機防火牆放行各自的連接埠。Tailscale、NetBird、EasyTier、frp、Cloudflare 通道與 File Browser 執行外部程式，由 Gately 線上安裝、更新、回滾與解除安裝，並且都附「恢復預設設定」。
+
+| 模組 | 功能 |
+| --- | --- |
+| 動態網域 | Alibaba Cloud、Cloudflare、Tencent Cloud、DNSPod、Huawei Cloud、GoDaddy、Porkbun、dynv6、DuckDNS、Amazon Route 53、OVHcloud、Gandi、NS1、Bunny DNS、Namecheap、騰訊雲 EdgeOne、阿里雲 ESA、百度智慧雲、火山引擎、DNS.LA、雨雲、時代互聯（Now.cn）、新網互聯（Eranet）、Tnet.hk、HiPM DNSMgr、Vercel、NameSilo、Dynadot、Spaceship、Name.com、Gcore、ClouDNS、deSEC、DynDNS2（No-IP、Dynu 等）、自訂回呼 |
+| 動態網域：任務 | 以 URL／網路卡／指令取得 IP；IPv4/IPv6；Webhook；分組、排序與搜尋；備註寫入服務商；刪除任務時可同時刪除服務商處的解析 |
+| STUN 穿透 | TCP/UDP、保活、UPnP/NAT-PMP、內建轉發、位址變更時觸發 Webhook 與腳本 |
+| 連接埠轉發 | TCP/UDP、IPv4/IPv6、連接埠範圍、多目標故障轉移、連線數限制、流量統計、PROXY 協定（v1/v2）；分組、排序與搜尋 |
+| 協定分流 | 多個服務共用 443 等同一個連接埠：依協定辨識連線並透傳、不解密，TLS 依 SNI 與 ALPN、HTTP 依 Host，Minecraft 依伺服器位址，另可辨識 SSH、RDP、SOCKS、OpenVPN、RTSP、SIP、XMPP、MQTT、AMQP、PostgreSQL、Redis、SMB、Git、IRC、ADB、BitTorrent，VNC 等伺服器先發話的協定走等待逾時路由；預設目標、每條路由可單獨設定 PROXY 協定 |
+| SSL 憑證 | ACME 自動簽發與續期，支援 DNS-01（萬用字元；委派子網域依 SOA 自動識別 DNS 區域）與 HTTP-01（無需 DNS 服務商）；EAB、上傳、讀取檔案、對應到目錄並執行腳本 |
+| SSL 憑證：IP 與短期憑證 | 短期憑證與公網 IP 位址憑證（Let's Encrypt shortlived 設定檔） |
+| SSL 憑證：部署 | 憑證更新後經 SSH 推送到其他主機並執行指令，或重新啟動使用憑證的 Docker 容器 |
+| Tailscale | 託管 tailscaled（使用者空間網路，容器友善）或接入系統既有的常駐程式；驗證金鑰／登入連結、Headscale、子網路由、出口節點、節點清單、SOCKS5 代理、固定連接埠、額外參數與環境變數；Linux 上可線上安裝 |
+| NetBird | 加入 NetBird 官方雲或自建管理服務；託管 netbird 常駐程式（使用者態網路，可讓其他節點存取本機服務）或接入系統既有服務；設定金鑰/登入連結、接受路由、作為路由節點、接受 DNS、拒絕入站、節點清單（直連/中繼、延遲）、SOCKS5 代理；Linux、macOS、Windows 可線上安裝 |
+| EasyTier | 託管 easytier-core：優先 P2P 打洞，支援自建或選擇中繼節點，使用者態網路、連接埠轉發、子網代理、出口節點、KCP/QUIC 代理 |
+| frp | 可同時執行多個 frpc 與 frps 實例：frpc（tcp/udp/http/https/stcp/xtcp 代理，新增刪除即時生效，代理存取位址可點擊、複製）與 frps（連接埠白名單、子網域、主控台、依來源 IP 限制 frpc 登入）；可一鍵匯入舊版 ini／新版 toml 設定 |
+| Cloudflare 通道 | cloudflared 權杖通道與 trycloudflare 臨時通道，多通道、自動重啟、公開位址顯示；權杖通道可透過 Cloudflare API 編輯路由規則並建立 DNS 記錄 |
+| WAF 防火牆 | Coraza + OWASP CRS v4，可依檔案啟用規則、自訂 SecLang、攔截／僅偵測；還可接入自行部署的雷池（SafeLine）偵測引擎；本實例管理員工作階段不經過 WAF；可信任已登入使用者 |
+| WAF：大型請求 | 請求內容檢查上限可調，超過上限時只檢查前段或依路徑略過，網盤、WebDAV 等上傳站台也能掛上 WAF |
+| 入侵防護：日誌規則 | 類 fail2ban 的日誌規則（日誌檔案、systemd 日誌、命令輸出、Docker 容器日誌、管理後台登入失敗、WAF 攔截、連接埠敲門被拒絕），內建 SSH、Nginx、Vaultwarden 等範本 |
+| 入侵防護：探測偵測 | 誘餌連接埠與連接埠掃描偵測（自動識別 Gately 各模組的開放連接埠，含 frpc 申請的遠端連接埠；IPv6 嚴格模式依 /64 封鎖；封鎖原因包含命中的連接埠）；Web 路徑探測封鎖：按監聽統計誘餌路徑（/.env、/.git 等）、未知網域掃描與連續 404；TLS 握手失敗封鎖：按失敗類型（中途斷開、重置、逾時、非 TLS 等）與監聽統計 |
+| 入侵防護：封鎖 | 統一封鎖清單，支援手動網段與永久封鎖、遞增時長與白名單；封鎖同步到系統防火牆（nftables / iptables + ipset）在核心層丟棄，沒有 nftables 的平台對 Gately 自身的服務生效 |
+| 連接埠敲門 | 相容 fwknop 用戶端的單封包敲門（SPA）：AES-256 加密、HMAC 認證、防重放與時間窗口；受保護連接埠在系統防火牆（nftables / iptables + ipset）中攔截，敲門成功的位址在限定時間內放行，已建立的連線不受影響 |
+| 連接埠敲門：整合 | 連接埠轉發、協定分流（可依路由）與 STUN 可選「需要敲門」，不需要防火牆權限；協定分流可接收經 TCP 送來的敲門封包，對外只開一個連接埠；Web 登入後放行：訪客在 Web 站點登入後其 IP 取得授權（IPv6 依 /64，可寫入系統防火牆），不需要用戶端；被拒絕的敲門可交給入侵防護封鎖 |
+| Docker 管理 | 容器建立與編輯、日誌與終端機、Compose、映像檔更新檢查與一鍵升級（失敗自動還原）、網路與磁碟區；拉取、建置、Compose、批次升級等背景任務可中途停止 |
+| Docker：升級自身 | 升級 Gately 自身所在的容器（經臨時輔助容器，失敗時還原舊容器） |
+| Web 終端機 | SSH（主機金鑰首次信任）、Telnet、本機 Shell（預設關閉）；代理、持久工作階段、SFTP 檔案管理、2FA 與協定確認、快捷指令、分割畫面；手機上長按選取複製、貼上面板與剪貼簿記錄 |
+| 網路診斷 | Ping、路由追蹤、連接埠探測、DNS 查詢、測速、區域網路掃描 |
+| 通知中心 | Webhook、Telegram、Bark、ntfy、Gotify、Pushover、Discord、Slack、Server酱、PushPlus、WeCom、DingTalk、Feishu、電子郵件；等級、萬用字元與靜音去重規則；全域或依渠道的代理（HTTP 與 SOCKS5）；內建規則範本（關鍵故障、憑證到期、位址變更、登入、設定變更、版本更新）；管理後台新位址登入提醒 |
+| 設定備份 | 加密備份（scrypt + AES-GCM）、保留策略、定時備份到本機目錄或儲存掛載點 |
+| 命令列與 MCP | `gately ctl` 呼叫執行中的實例，`gately mcp` 以 stdio 提供 MCP 服務（預設唯讀） |
+| 網路喚醒 | 魔術封包廣播、上線探測；巴法雲語音控制（小愛同學、小度、Google Assistant） |
+| 網路喚醒：關機 | 遠端關機、重新開機與睡眠：裝置上的用戶端（Windows/Linux/macOS/OpenWrt，主動連線，無需開放連接埠）、Web 終端 SSH 命令或 HTTP 請求 |
+| WebDAV、FTP、SMB | 多使用者、獨立目錄、唯讀，三個服務共用一份共享使用者；FTP 另有 FTPS 與被動連接埠範圍；SMB 另有依使用者分享多個目錄、SMB 2/3、加密與 Bonjour 探索 |
+| File Browser | 託管 FileBrowser Quantum 網頁檔案管理器：多實例、多個共享目錄與唯讀、帳號密碼或反向代理驗證 |
+| 儲存掛載 | 本機目錄、遠端 WebDAV 與 SMB 共用掛載，線上檔案管理 |
+| 排程工作 | cron 運算式，指令或 HTTP 請求，執行記錄 |
+| 清單管理 | 規則、執行個體、憑證、解析記錄、終端連線與 API 權杖等清單統一支援分組、手動排序（拖曳或箭頭，可多選批次移動）與搜尋，多選後可批次啟用、停用、刪除；Web 服務站台還能批次增刪或取代網域、批次修改選項，並可透過編輯、批次或拖曳移到其他監聽；多數清單可切換卡片／精簡檢視；調整順序與分組不會重新啟動服務，手機上也能操作；多數項目可複製為副本再修改，密碼等金鑰沿用原項目 |
+| 管理員登入 | Passkey（WebAuthn）登入、兩步驟驗證（TOTP）、唯讀帳號、登入失敗限流（遞增鎖定）、陌生位址失敗額度（抵禦分散式暴力破解）、弱密碼偵測與強制修改密碼、關閉密碼登入（只用 Passkey）、安全評分 |
+| 管理端存取 | 安全入口、僅內網存取、可自訂未授權存取的回應以隱藏管理連接埠（一般 404、空白頁、中斷連線、不回應或自訂頁面）、管理介面 HTTPS、信任本機反向代理傳來的真實用戶端位址 |
+| 系統設定 | 多組 API 權杖（依模組讀寫授權）、已儲存的密碼與金鑰可依需求顯示（需寫入權限）、自訂 DNS（支援 DoH）、時區、設定備份與還原、依需求開關功能模組（關閉的模組不啟動服務、不提供介面） |
+| 更新檢查 | 自動檢查新版本與安全公告（匿名存取 GitHub，可關閉），受已公開安全問題影響時醒目提示並傳送通知 |
+| 飛牛原生應用 | 離線 `.fpk` 安裝包（x86 / ARM）；接入飛牛統一閘道，從飛牛桌面圖示開啟，遠端網域同樣可用；飛牛管理員可憑飛牛登入狀態直接登入（預設關閉）；以 root 執行，可監聽 80/443 並管理 Docker |
+| 稽核與歷史 | 操作稽核日誌：登入、設定變更、存取敏感內容（不記錄請求內容與任何金鑰）；每次覆寫設定檔前保留舊版本，可比對差異並一鍵回滾；宣告式設定目錄（`-apply`），便於 GitOps |
+| 監控 | 效能面板：主機、Gately 程序與站台的 60 秒 / 1 小時 / 24 小時趨勢，含首位元組延遲 P50 / P95；託管程序（frp、Tailscale、NetBird、cloudflared、File Browser）的 CPU 與記憶體；門檻告警（指標 + 門檻 + 持續時長），觸發與恢復經通知中心傳送 |
+| 指標與自檢 | 全域 Prometheus 指標 `/api/metrics`（憑證、DDNS、STUN、連接埠轉發、Web 服務），附 Grafana 儀表板；一鍵網路自檢（公網 IP、電信商 NAT（CGNAT）、系統時間、80/443 連接埠、DDNS 解析、憑證到期、HTTPS 站台缺少憑證、frp 代理衝突） |
+| 遷移 | 匯入 nginx 設定（支援 `nginx -T` 輸出）：反向代理與 upstream、靜態目錄、跳轉、分路徑後端、存取控制，`auth_request` 轉換為轉發認證 |
+
+#### Web 服務
+
+各項功能的細節見 [Web 服務文件](https://gately.cn/zh-TW/docs/modules/web)。
+
+| 面向 | 功能 |
+| --- | --- |
+| 站點類型 | 反向代理、重新導向、靜態檔案（無副檔名網址、自訂 404 頁面）、固定文字、中斷連線（相當於 nginx `return 444`）、導覽面板 |
+| 監聽與協定 | HTTPS、HTTP/3（QUIC）、HTTP 與 HTTPS 共用同一埠（跳轉或直接服務）、監聽可附加 HTTP 埠（如 443 再開 80，跳轉或直接服務）、WebSocket、http:// 後端用明文 HTTP/2（h2c）反向代理 gRPC、PROXY 協定收發、監聽自動放行本機防火牆連接埠 |
+| 後端 | 依路徑分流後端、依登入使用者分流到不同後端（類似 nginx `map $remote_user`，也適用於重新導向／靜態檔案／導覽面板／固定文字站點）、後端權重／備援／負載平衡策略、主動與被動健康檢查、建立連線失敗自動重試下一個後端、後端連線／TLS 交握／回應標頭逾時、訪客讀寫閒置逾時、HTTPS 後端依造訪網域傳送 SNI、路徑改寫與去除前綴 |
+| 登入認證 | 基本驗證、網頁驗證、GitHub/Google/QQ/OIDC 登入、支援 TOTP 二次驗證與 Passkey 並可自助修改密碼的共用使用者、跨子網域單一登入、內建 OIDC 身分提供者（讓 Gitea、Grafana 等應用程式以共用使用者登入）、轉發認證到 Authelia 等外部服務、公網 Gately 把登入 Cookie 轉發給內網 Gately、向後端傳遞登入使用者的使用者名稱、電子郵件、顯示名稱與群組請求標頭、後台登入免認證（已登入管理後台的管理員造訪站點無需再認證，支援跨父網域）、信任已登入使用者（略過 WAF 與路徑探測） |
+| 存取控制 | IP 黑白名單與定時重新整理的訂閱 IP 清單（如省市 IP 段）、先於白名單判斷的優先拒絕名單（適合放入惡意 IP 情資清單）、GeoIP 國家過濾、路徑規則、臨時分享連結、驗證失敗自動封鎖、敲門准入（未經敲門放行的來源無法存取站點）與登入後放行（站點認證通過後為訪客 IP 授權敲門規則）、存取被拒絕時直接中斷連線而不回傳 403 |
+| 效能 | 壓縮、限流、回應快取（依路徑快取規則：不快取/單獨時長/強制快取）與清空快取 |
+| 錯誤頁 | 404 與 5xx 錯誤頁可選 10 種內建風格或自己的 HTML（上傳或伺服器檔案，經安全檢查並在沙箱中顯示），可攔截後端回傳的錯誤頁（類似 nginx `proxy_intercept_errors`） |
+| 可觀測 | 分鐘級存取統計與 Prometheus 指標、依站點查看即時連線並可中斷或封鎖、拓撲視圖即時顯示監聽 → 站點 → 後端的 QPS、流量與活動 IP（依 IP 醒目提示鏈路、遮蔽位址、「聚焦活動」、回放：快照依容量保留在記憶體中，預設關閉）、依位址的訪客稽核（站點、路徑、身分、被攔截占比、保留期限）、存取記錄依天壓縮封存與匯出 |
+| 導覽面板 | 以站點提供的連結頁：內網訪客看到內網位址、內建圖示、其他存取方式、與管理介面相同的換膚、搜尋引擎、背景圖片、登入後可見的連結、大小卡片、訪客語言切換、自訂頁尾 |
+| 維運 | 修改站台不會中斷既有連線、站台分組、排序與搜尋、從可信代理（CDN、WAF）的請求標頭取得訪客真實 IP、網域可點擊、複製完整網址 |
+
+</details>
+
+## 安裝
+
+Docker 最快（見[一分鐘跑起來](#一分鐘跑起來)），其他方式如下：
+
+<details>
+<summary><b>二進位檔</b></summary>
+
+從 [Releases](https://github.com/wangwanjie/gately/releases) 下載對應平台的壓縮檔（Linux amd64/arm64/arm/mips/mipsle/riscv64、macOS、Windows、FreeBSD），解壓縮後執行：
+
+```bash
+./gately -c /etc/gately
+```
+
+參數：`-c` 設定目錄（也可用環境變數 `GATELY_CONFIG_DIR`），`-listen` 覆寫管理介面監聽位址，`-apply` 每次啟動時將目錄中的 `<名稱>.json` 覆寫到設定目錄（環境變數 `GATELY_APPLY_DIR`，適合 GitOps 與 Kubernetes；帳號與權杖檔案不允許覆寫），`-version` 輸出版本。無人值守安裝時可設定環境變數 `GATELY_INITIAL_PASSWORD` 指定管理員初始密碼，取代預設密碼 `gately.cn`。
+
+開機自啟：解壓後執行 `sudo ./gately service install`（Windows 在系統管理員終端機執行 `.\gately.exe service install`）。Linux 會註冊 systemd 服務，macOS 註冊 launchd 常駐程式（加 `-user` 可免 sudo 註冊為登入項目），Windows 註冊為系統服務，安裝後立即啟動並在異常結束後自動重新啟動；設定目錄預設為 `/etc/gately`、`/usr/local/etc/gately` 或 `%ProgramData%\Gately`，可用 `-c`、`-listen` 指定。服務引用的是目前執行檔的路徑，請先把程式放到最終位置。之後用 `gately service uninstall|start|stop|restart|status` 管理，解除安裝時保留設定目錄。
+
+服務範本：[systemd](../../deploy/systemd/gately.service)、[OpenWrt procd](../../deploy/openwrt/gately.init)。驗證下載的壓縮檔與映像檔（cosign 簽章、建置來源證明、SBOM）請見[驗證發布產物](../zh-TW/VERIFY.md)。
+
+</details>
+
+<details>
+<summary><b>飛牛原生應用</b></summary>
+
+每個 Release 附帶飛牛 fnOS 的離線安裝包 `gately_<版本>_fnos_x86.fpk`（Intel/AMD）與 `gately_<版本>_fnos_arm.fpk`（ARM）。它們沒有上架官方應用中心，需要手動安裝：開啟 **應用中心 → 手動安裝**（左下角按鈕），選擇檔案並完成精靈。
+
+- **支援飛牛統一閘道**：點擊飛牛桌面上的 Gately 圖示，管理介面經飛牛統一閘道在 `/app/gately/` 下開啟，與飛牛共用同一個存取入口。區域網路位址、遠端存取飛牛的網域都能直接使用，無需額外開放或對應 16680 連接埠。經閘道存取時由飛牛負責存取控制（只有飛牛管理員能開啟），安全入口與「僅允許內網存取」只約束直接存取 16680 連接埠。
+- **支援飛牛管理員登入狀態直接登入**：在 **設定 → 存取控制 → 飛牛登入狀態自動登入** 開啟後，已登入飛牛的管理員點擊桌面圖示即可進入 Gately，無需密碼與兩步驟驗證碼；一般飛牛使用者仍需登入。主動登出後，登入頁會顯示「使用飛牛帳號 &lt;使用者名稱&gt; 登入」按鈕，不會靜默重新登入。該開關預設關閉，只在飛牛安裝包中顯示。
+- 區域網路內也可直接存取 `http://<NAS 位址>:16680`。預設帳號 `admin`，預設密碼 `gately.cn`。
+- 應用以 `root` 身分執行，因此可以監聽 80/443、透過 `docker.sock` 管理 Docker、使用真實的 Web 終端機。請只安裝在自己掌控的 NAS 上。
+- 設定儲存在應用的 `var` 目錄，解除安裝時預設保留；在解除安裝精靈中選擇「全部刪除」才會清除。升級時手動安裝新版 `.fpk` 即可。
+- 安裝包同時提供命令列入口 `gately`（`/usr/local/bin/gately`），可使用 `gately ctl` 與 `gately mcp`。
+- 16680 連接埠與 Docker 映像檔相同，啟動原生應用前請先停止 `gately` 容器。
+- 下載後可依[驗證發布產物](../zh-TW/VERIFY.md)驗證，`.fpk` 的 SHA-256 同樣列在 `checksums.txt`。
+
+</details>
+
+<details>
+<summary><b>OpenWrt</b></summary>
+
+每個 Release 附帶 OpenWrt 安裝包：`gately_<版本>_openwrt_<架構>.ipk` 用於 OpenWrt 24.10 及更早版本（含 iStoreOS），以 `opkg install` 安裝；`.apk` 用於 OpenWrt 25.12 起，以 `apk add --allow-untrusted` 安裝。架構有 amd64 / arm64 / arm / mipsle / mips / riscv64，依 `/etc/openwrt_release` 中的 `DISTRIB_ARCH` 選擇，對照表見[安裝文件](https://gately.cn/zh-TW/docs/guide/install#openwrt)。
+
+- 安裝後自動啟用開機自動啟動並啟動服務，管理介面為 `http://<路由器位址>:16680`，預設帳號 `admin`，預設密碼 `gately.cn`。
+- 設定位於 `/etc/gately`，升級、解除安裝與刷寫韌體（sysupgrade）時都會保留。升級時安裝新版安裝包即可，「關於」頁的線上升級會提示改用套件管理器。
+- 程式約 32 MB，適合 x86 軟路由、ARM64 盒子等儲存空間較大的裝置；arm 安裝包需要 ARMv7 且具備硬體浮點運算。
+- 另附 LuCI 外掛 `luci-app-gately_<版本>_openwrt_all.ipk` / `.apk`（與架構無關），安裝後在 LuCI「服務 → Gately」中查看執行狀態、啟停服務、設定開機自動啟動與管理介面連接埠，並一鍵開啟管理介面。
+
+</details>
+
+## 維運
+
+監控、API 與託管程式在[文件](https://gately.cn/zh-TW/docs/guide/introduction)裡各有專頁，這裡保留要點。
+
+<details>
+<summary><b>監控</b></summary>
+
+建立一組僅具 `metrics:read` 權限的 API 權杖，讓 Prometheus 抓取 `/api/metrics`。指標清單、告警範例與 Grafana 儀表板請見[監控指標](../zh-TW/MONITORING.md)。
+
+</details>
+
+<details>
+<summary><b>API 呼叫</b></summary>
+
+在管理後台「API 權杖」頁建立權杖（可建立多組，依模組分別授予唯讀或讀寫，可設定到期時間，建立後明文只會顯示一次），腳本即可批次呼叫管理介面：
+
+```bash
+curl -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns/tasks
+```
+
+帳號、兩步驟驗證、權杖管理以及備份、還原、重啟、系統設定介面只能使用登入工作階段。全部介面、所需權限與資料結構見管理後台「API 文件」頁，也可以用 `make api-docs` 匯出到 [docs/api](../api/zh-TW)（`openapi.json` 與 `API.md`），官網 https://gately.cn 發布時直接引用。
+
+從舊版升級時，原本的全域 API 權杖會自動變成一筆「舊版權杖」（值不變，擁有全部模組權限），建議在 API 權杖頁收緊權限或換成新權杖。
+
+</details>
+
+<details>
+<summary><b>Tailscale、NetBird、EasyTier、frp、cloudflared</b></summary>
+
+這五個模組託管官方的外部程式（自動重啟、日誌彙整到介面），Gately 本體不內建它們。各模組頁面的「線上安裝」卡片從上游下載最新正式版或指定版本，校驗 SHA-256 後安裝到設定目錄的 `bin/`，並重啟使用它的處理程序；可以為每個程式單獨設定下載代理，留空時使用設定中的更新代理。替換下來的版本保留最近 3 個，新版本有問題時可一鍵回滾；不再需要時可以解除安裝程式。頁首的「恢復預設設定」與解除安裝分開，會停止處理程序、清空模組設定並刪除 Gately 為它產生的檔案（frp 設定檔、File Browser 實例資料、Tailscale 與 NetBird 登入狀態），舊設定可在設定歷史中還原。Tailscale 官方只為 Linux 提供可直接執行的程式套件，其他系統請用官方安裝程式並填寫路徑。程式依下列順序尋找：模組設定中填寫的路徑、設定目錄下的 `bin/`、`PATH`。也可以自行把二進位檔放進設定目錄，Docker 部署時例如 `./gately-data/bin/frpc`；Tailscale 需要同時提供 `tailscale` 與 `tailscaled`。設定檔中的權杖與金鑰以 0600 權限儲存，cloudflared 的權杖透過環境變數傳遞，不會出現在處理程序清單中。
+
+File Browser 模組託管 [FileBrowser Quantum](https://github.com/gtsteffaniak/filebrowser)（原版 filebrowser 已封存、不再修復安全問題），尋找順序與線上安裝、更新、回滾同上，安裝位置為 `bin/filebrowser`。管理員密碼透過環境變數傳遞，不寫入設定檔。
+
+</details>
+
+## 效能
+
+依 SNI 的協定分流加上 Web 服務，可以取代常見的 haproxy（依 SNI 做 TCP 分流）+ nginx（TLS 與反向代理）組合。下表在同一台機器上，依一台真實伺服器的設定比較兩者：90 個網域依 SNI 分流，兩層之間使用 PROXY 協定 v2，ECDSA P-256 憑證，TLS 1.3。
+
+| 情境 | haproxy + nginx | Gately |
+| --- | --- | --- |
+| HTTPS 反向代理，長連線，1 KB 回應，64 並行連線 | 14,767 req/s（p99 35.9 ms） | **26,434 req/s**（p99 5.7 ms） |
+| 同上，HTTP/2 | 未測試（nginx 設定使用 HTTP/1.1） | 27,795 req/s |
+| 每個請求建立新的 TLS 連線，32 並行連線 | 2,557 req/s | **3,448 req/s** |
+| 1 MB 回應，16 並行連線 | 1,053 MB/s | **1,585 MB/s** |
+| SNI 透傳 TLS 資料流，4 條連線 | 2,927 MB/s | **4,962 MB/s** |
+| SNI 透傳，每秒新建連線數，64 並行連線 | 6,334 /s | 6,266 /s（持平） |
+| 負載下的記憶體 | haproxy ≈ 21 MB + nginx ≈ 21 MB | ≈ 110 MB（包含所有模組的單一程序） |
+
+<details>
+<summary><b>測試方法</b></summary>
+
+- 機器：Intel Core i5-13500T。為貼近小型雲端伺服器，每套方案限制在 2 個 CPU 核心（haproxy 與 nginx 在 Docker 中使用 `--cpuset-cpus`，Gately 用 `taskset` 綁定核心），後端與壓測程式執行在其他核心。
+- haproxy 使用 `mode tcp`、`req_ssl_sni` 規則與 `send-proxy-v2`。nginx 使用 `worker_processes 2` 與正式站台的代理設定，其中 `Connection: upgrade` 會讓每個請求建立一條新的後端連線；啟用 upstream keep-alive 的 nginx 在小型回應上會縮小差距。
+- Gately 的路徑是 SNI 規則、PROXY v2、再到 Web 服務監聽，層數與 haproxy → nginx 相同。
+- 每個情境執行 10 秒，重複測試的情境差異在 3% 以內。在真實的 2 vCPU 雲端主機上，靜態站台為 5.5k req/s 對 3.4k req/s；用戶端使用 X25519 時，新建 TLS 連線持平（雙方都約每秒 480–550 條），使用 Go 用戶端與新版瀏覽器預設提供的後量子混合金鑰交換時，Gately 在該次測試中完成的握手少約 13%。
+- 結果受硬體、設定與流量影響，僅用於確認 Gately 跟得上 haproxy 與 nginx，請用自己的實際負載實測。
+
+</details>
+
+## 開發
+
+相依套件：Go 1.26+、Node.js 24+、pnpm。
+
+```bash
+make web      # 建置前端（輸出到 web/dist，由 go:embed 嵌入）
+make build    # 編譯 bin/gately
+make test     # go test -race ./...
+make lint     # gofmt、go vet、前端型別檢查
+```
+
+自訂建置標籤、需要額外環境的測試、模組開發要求與多語言流程見 [CONTRIBUTING.md](../../CONTRIBUTING.md)（英文）和[官網貢獻指南](https://gately.cn/zh-TW/docs/guide/contributing)。目錄結構與技術選型見 [docs/zh-TW/ROADMAP.md](../zh-TW/ROADMAP.md)。官網（[gately.cn](https://gately.cn)）原始碼在 `website/`，基於 VitePress：`cd website && pnpm install && pnpm dev`。
+
+## 發版說明
+
+- Gately 處於 1.0 之前。版本號最多四段（例如 `v0.6.6.6`），某個小版本的後續修復發佈時最後一段遞增。
+- 每個 `v*` 標籤都會執行[發佈流程](../../.github/workflows/release.yml)：建置各平台執行檔、OpenWrt 與飛牛安裝包、多架構 Docker 映像檔，並對產物簽章。映像檔帶版本標籤和 `latest`，`latest` 始終指向最新版本。
+- 發版頻繁：2026 年 10 月 17 日到 11 月 15 日共 55 個版本標籤。[GitHub Releases](https://github.com/wangwanjie/gately/releases) 的說明依模組分節並標出升級提示，官網[更新日誌](https://gately.cn/zh-TW/news/)有版本公告。
+- 安全修復只發佈在最新版本上（[SECURITY.md](../../SECURITY.md)）。正式環境建議固定映像檔標籤，例如 `ghcr.io/wangwanjie/gately:v0.6.6.6`，升級前先讀發佈說明，設定改動可在設定歷史中回滾。
+
+## 貢獻
+
+歡迎提交 Issue 與 Pull Request。程式碼、模組、測試與翻譯的要求見 [CONTRIBUTING.md](../../CONTRIBUTING.md)，參與者共同遵守[行為準則](../../CODE_OF_CONDUCT.md)。
+
+## 交流群
+
+提問和分享設定請到 [GitHub Discussions](https://github.com/wangwanjie/gately/discussions)；日常交流在 Telegram 群：[t.me/gately_chat](https://t.me/gately_chat)，也可以用手機掃描 QR Code 加入：
+
+<a href="https://t.me/gately_chat"><img src="../images/telegram-qr.svg" alt="掃描加入 Gately Telegram 群組" width="160"></a>
+
+Bug 請提交到 [GitHub Issues](https://github.com/wangwanjie/gately/issues)，並附上[診斷包](../zh-TW/DIAGNOSTICS.md)（設定 → 診斷）；診斷包在本機產生，不含密碼、權杖、網域名稱和真實 IP。安全問題請依 [SECURITY.md](../../SECURITY.md) 私下回報。
+
+## 贊助
+
+Gately 的全部功能免費開放。如果它幫到了你，歡迎透過 USDT、[愛發電](https://ifdian.net/a/gately)或微信贊助，收款碼與地址見[官網贊助頁](https://gately.cn/zh-TW/sponsor)。
+
+## 授權條款
+
+[Apache License 2.0](../../LICENSE)

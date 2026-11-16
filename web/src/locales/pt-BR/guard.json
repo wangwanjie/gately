@@ -90,7 +90,8 @@
   "event": {
     "authFailed": "Falha de login no painel",
     "wafBlocked": "Requisição bloqueada pelo WAF",
-    "knockFailed": "Batida de port knocking recusada"
+    "knockFailed": "Batida de port knocking recusada",
+    "fileAuthFailed": "Falha de login no serviço de arquivos"
   },
   "sourceHelp": {
     "file": "Lê as linhas novas do arquivo e passa para o arquivo novo após a rotação. Um caminho por linha.",
@@ -241,6 +242,10 @@
     "gately-knock": {
       "name": "Batidas de port knocking com falha",
       "desc": "Origens que enviam repetidamente pacotes de batida que falham na autenticação, são repetidos ou pedem portas não autorizadas (uma mesma origem conta no máximo uma vez a cada 5 segundos)"
+    },
+    "gately-files": {
+      "name": "Falhas de login nos serviços de arquivos",
+      "desc": "Origens cujos logins no WebDAV, FTP ou SMB falham ou são recusados após falhas demais (uma mesma origem conta no máximo uma vez a cada 5 segundos)"
     },
     "web-decoy": {
       "name": "Caminhos isca web",

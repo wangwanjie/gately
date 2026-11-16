@@ -1,8 +1,12 @@
+// Gately 修改：报文中的偏移与长度改用 bounds 包在 uint64 中判断边界，32 位平台上不会因 int 转换为负数而越界。
+
 package smb2
 
 import (
 	"encoding/binary"
 	"fmt"
+
+	"github.com/wangwanjie/gately/internal/gosamba/bounds"
 )
 
 type WriteRequest struct {
@@ -29,11 +33,11 @@ func DecodeWriteRequest(body []byte) (WriteRequest, error) {
 	}
 	copy(r.FileID[:], body[16:32])
 	if r.Length > 0 {
-		off := int(dataOffAbs) - headerSize
-		if off < 0 || off+int(r.Length) > len(body) {
+		start, end, ok := bounds.RelSpan(uint64(dataOffAbs), headerSize, uint64(r.Length), len(body))
+		if !ok {
 			return WriteRequest{}, fmt.Errorf("%w: WRITE Buffer out of bounds", ErrShortBuffer)
 		}
-		r.Data = body[off : off+int(r.Length)]
+		r.Data = body[start:end]
 	}
 	return r, nil
 }
