@@ -19,6 +19,10 @@ Eine Web Application Firewall auf Basis von [Coraza](https://coraza.io/) und OWA
 2. Passen Sie bei Fehlalarmen die Regeldateien an oder fügen Sie eigene Ausnahmen hinzu;
 3. Wechseln Sie danach auf „Blockieren“.
 
+## Regex-Vorfilter
+
+Jede Instanz hat einen Schalter „Regex-Vorfilter“, standardmäßig an (vor dem Upgrade vorhandene Instanzen gelten als eingeschaltet). Eingeschaltet schließt die WAF Reguläre Ausdrücke, die nicht passen können, vorab über Literal-Schlüsselwörter der Regeln aus und senkt die Erkennungs-CPU um etwa 16 %. Bekannt: Bei der Standard-Schutzstufe (Paranoia-Level 1) wird ein Beispiel des CRS-Regressionstests 942220 #2 nicht erkannt. Für die vollständige Erkennung den Schalter ausschalten.
+
 ## Anfragen der Verwaltungsoberfläche
 
 Wird die Verwaltungsoberfläche über eine Website mit WAF per Reverse Proxy erreicht, umgehen Anfragen mit einer gültigen Administratorsitzung dieser Instanz die WAF (einschließlich SafeLine). Gespeicherte Konfigurationen enthalten oft Dateipfade (etwa die Bemerkungen des nginx-Imports), HTML (eigene Fehlerseiten) und Skripte (Zertifikatsbereitstellung), die von den CRS-Regeln gegen Path Traversal, XSS und Command Injection mit 403 blockiert würden. Die Sitzung ist vom Server signiert, und nur die Administratorrolle zählt; Anfragen von Nur-Lese-Konten, Besuchern und Verwaltungsoberflächen anderer Instanzen werden weiterhin geprüft.

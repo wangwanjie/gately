@@ -353,7 +353,7 @@ Issues und Pull Requests sind willkommen. Die Checkliste für Code, Module, Test
 
 ## Community
 
-Fragen stellen und Ihr Setup zeigen können Sie in den [GitHub Discussions](https://github.com/wangwanjie/gately/discussions); lockerer Austausch findet in der Telegram-Gruppe [t.me/gately_chat](https://t.me/gately_chat) statt.
+Fragen stellen Sie bitte in [GitHub Discussions Q&A](https://github.com/wangwanjie/gately/discussions/categories/q-a), wo Antworten durchsuchbar bleiben, und Ihr Setup zeigen Sie ebenfalls in den Discussions; für den direkten Austausch gibt es die Telegram-Gruppe [t.me/gately_chat](https://t.me/gately_chat) statt.
 
 Fehler bitte in den [GitHub Issues](https://github.com/wangwanjie/gately/issues) melden und ein [Diagnosepaket](../de/DIAGNOSTICS.md) (Einstellungen → Diagnose) anhängen. Es wird lokal erzeugt und enthält keine Passwörter, Tokens, Domains oder echten IP-Adressen. Sicherheitsprobleme melden Sie bitte vertraulich, wie in [SECURITY.md](../../SECURITY.md) beschrieben.
 

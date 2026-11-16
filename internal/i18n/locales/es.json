@@ -2760,6 +2760,7 @@
   "管理后台登录失败": "Error de inicio de sesión en el panel de administración",
   "管理后台登录成功": "Inicio de sesión correcto en el panel de administración",
   "管理后台登录成功的地址 %s 在 %d 小时内免于自动封禁": "La dirección %s inició sesión en el panel de administración y queda exenta de bloqueos automáticos durante %d horas",
+  "管理后台登录成功的地址 %s 在 %d 小时内免于诱饵端口与扫描检测的封禁": "La dirección %s inició sesión en el panel de administración y queda exenta de los bloqueos por puertos señuelo y escaneo de puertos durante %d horas",
   "管理后台第三方登录：已迁移 %d 个允许的身份，需在「系统设置 → 第三方登录」填写你自己的 OAuth 应用与回调基础地址后启用": "Inicio de sesión de terceros en el panel de administración: se migraron %d identidades permitidas; para activarlo, configure su propia aplicación OAuth y la dirección base de callback en «Ajustes del sistema → Inicio de sesión de terceros»",
   "管理后台访问敏感内容": "Acceso a contenido sensible en el panel de administración",
   "管理后台配置变更": "Cambio de configuración en el panel de administración",
