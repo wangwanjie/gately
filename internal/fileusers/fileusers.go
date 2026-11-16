@@ -216,11 +216,13 @@ func (r *Registry) LoadErr() error {
 // List 返回可以登录的共享用户的副本；读取到的列表未通过校验时返回空。
 func (r *Registry) List() []User {
 	r.mu.RLock()
-	defer r.mu.RUnlock()
 	if r.loadErr != nil {
+		r.mu.RUnlock()
 		return nil
 	}
 	out := clone(r.users)
+	r.mu.RUnlock()
+	// 判断目录要访问文件系统（目录在失去响应的网络挂载上时可能很慢），放在锁外进行
 	for i := range out {
 		// 与配置目录重叠的目录不提供，见 Usable
 		out[i], _ = Usable(out[i])
@@ -230,6 +232,17 @@ func (r *Registry) List() []User {
 
 // Lookup 按用户名（区分大小写）查找可以登录的共享用户。
 func (r *Registry) Lookup(name string) (User, bool) {
+	u, ok := r.lookupRaw(name)
+	if !ok {
+		return User{}, false
+	}
+	// 与配置目录重叠的目录不提供，见 Usable；判断目录要访问文件系统，放在锁外进行
+	u, _ = Usable(u)
+	return u, true
+}
+
+// lookupRaw 返回已保存的共享用户（目录未经 Usable 处理）。
+func (r *Registry) lookupRaw(name string) (User, bool) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	if r.loadErr != nil {
@@ -238,8 +251,6 @@ func (r *Registry) Lookup(name string) (User, bool) {
 	for _, u := range r.users {
 		if u.Name == name {
 			u.Mounts = slices.Clone(u.Mounts)
-			// 与配置目录重叠的目录不提供，见 Usable
-			u, _ = Usable(u)
 			return u, true
 		}
 	}
