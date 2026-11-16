@@ -322,14 +322,7 @@ func (s *safelineChecker) check(w http.ResponseWriter, r *http.Request, c *compi
 	}
 	c.blocked.Add(1)
 	s.log.With(fields).Warnf("雷池拦截了请求: %s %s %s%s，事件 ID %s", ip, r.Method, r.Host, r.URL.Path, orNone(eventID))
-	events.Publish(events.Event{
-		Type:    events.WAFBlocked,
-		Source:  s.name,
-		Level:   events.LevelWarn,
-		Title:   "WAF 拦截了请求",
-		Message: r.Method + " " + r.Host + r.URL.Path,
-		Fields:  map[string]string{"ip": r.RemoteAddr, "host": r.Host, "path": r.URL.Path},
-	})
+	events.Publish(blockedEvent(s.name, r))
 	httpx.MarkWAFBlocked(r)
 	writeSafeLineBlock(w, r, res, eventID)
 	return false
