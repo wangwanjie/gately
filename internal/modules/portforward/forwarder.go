@@ -91,17 +91,18 @@ func (r *runner) current() *route {
 	return r.routes.Load()
 }
 
-// effectiveLimits 返回规则实际使用的每端口最大连接数与 UDP 会话超时（规则未设置时取全局默认值）。
-func effectiveLimits(rule Rule, settings Settings) (maxConns int, udpTimeout time.Duration) {
-	maxConns = rule.MaxConnections
-	if maxConns <= 0 {
-		maxConns = settings.DefaultMaxConnections
+// effectiveLimits 返回规则实际使用的每端口连接上限与 UDP 会话超时（规则未设置时取全局默认值）。
+func effectiveLimits(rule Rule, settings Settings) (limits l4proxy.Limits, udpTimeout time.Duration) {
+	limits.Max = rule.MaxConnections
+	if limits.Max <= 0 {
+		limits.Max = settings.DefaultMaxConnections
 	}
+	limits.PerSource = l4proxy.PerSourceLimit(rule.MaxConnsPerSource, settings.DefaultMaxConnsPerSource, limits.Max)
 	udpTimeout = time.Duration(rule.UDPSessionTimeout) * time.Second
 	if udpTimeout <= 0 {
 		udpTimeout = time.Duration(settings.DefaultUDPSessionTimeout) * time.Second
 	}
-	return maxConns, udpTimeout
+	return limits, udpTimeout
 }
 
 // canUpdate 判断新配置能否在不重新监听的情况下生效：监听协议、地址、端口映射与连接上限都不变，
@@ -135,7 +136,7 @@ func (r *runner) start(parent context.Context) error {
 	ctx := r.srv.Context(parent)
 	log := r.current().log
 
-	maxConns, udpTimeout := effectiveLimits(r.rule, r.settings)
+	limits, udpTimeout := effectiveLimits(r.rule, r.settings)
 
 	okCount := 0
 	for _, proto := range r.rule.Protocols {
@@ -144,7 +145,7 @@ func (r *runner) start(parent context.Context) error {
 			var startErr error
 			if strings.HasPrefix(proto, "tcp") {
 				targetPort := pair.Target
-				startErr = r.srv.ServeTCP(ctx, proto, addr, maxConns, func(format string, args ...any) {
+				startErr = r.srv.ServeTCP(ctx, proto, addr, limits, func(format string, args ...any) {
 					r.current().log.Warnf(format, args...)
 				}, func(conn net.Conn) {
 					// 每个连接固定使用建立时的配置，热更新只影响之后的新连接

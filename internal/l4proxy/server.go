@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io"
 	"net"
+	"net/netip"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -65,10 +66,106 @@ func (s *Server) Stop() {
 	s.wg.Wait()
 }
 
+// Limits 是一个 TCP 监听的并发连接上限。
+type Limits struct {
+	// Max 为并发连接总数上限
+	Max int
+	// PerSource 为单个来源（IPv4 地址、IPv6 /64）的并发连接上限，0 表示不限制。
+	// 回环、内网与链路本地地址不受此限制：它们是本机进程或局域网设备，不是这个上限要防的互联网来源，
+	// Docker 网桥等场景下大量正常连接也会共用同一个内网地址
+	PerSource int
+}
+
+// PerSourceLimit 计算单来源上限：rule 为规则设置，def 为全局默认值（均为 0 表示未设置），total 为总上限。
+// 都未设置时取总上限的一半（至少 1）；结果不超过总上限。
+func PerSourceLimit(rule, def, total int) int {
+	n := rule
+	if n <= 0 {
+		n = def
+	}
+	if n <= 0 {
+		n = total / 2
+	}
+	return min(max(n, 1), total)
+}
+
+// remoteAddrOf 返回连接的来源地址，可在测试中替换。
+var remoteAddrOf = func(c net.Conn) (netip.Addr, bool) {
+	ap, err := netip.ParseAddrPort(c.RemoteAddr().String())
+	if err != nil {
+		return netip.Addr{}, false
+	}
+	return ap.Addr().Unmap(), true
+}
+
+// sourceLimitWarnEvery 为单来源超限警告的最短间隔：同一监听持续被单个来源占满时不逐个连接记录
+const sourceLimitWarnEvery = 10 * time.Second
+
+// sourceLimiter 按来源（IPv4 地址、IPv6 /64）统计并发连接数。
+type sourceLimiter struct {
+	limit int
+	mu    sync.Mutex
+	count map[netip.Prefix]int
+	// warnAt 为最近一次记录超限警告的时间，suppressed 为其后被拒绝而未单独记录的连接数
+	warnAt     time.Time
+	suppressed int
+}
+
+// exemptSource 判断来源是否不受单来源上限约束：回环、内网（含运营商级 NAT 与 IPv6 ULA）与链路本地地址。
+func exemptSource(a netip.Addr) bool {
+	return a.IsLoopback() || a.IsPrivate() || a.IsLinkLocalUnicast() || a.IsUnspecified() || cgnat.Contains(a)
+}
+
+var cgnat = netip.MustParsePrefix("100.64.0.0/10")
+
+// sourceKey 返回来源的统计键：IPv4 为地址本身，IPv6 按 /64 合并（同一用户通常持有整个 /64，可以随意更换地址）。
+func sourceKey(a netip.Addr) netip.Prefix {
+	if a.Is4() {
+		return netip.PrefixFrom(a, 32)
+	}
+	p, _ := a.Prefix(64)
+	return p
+}
+
+// acquire 为来源占用一个名额，超过上限返回 false。ok 为 false（无法解析地址）或来源豁免时总是成功，release 为空操作。
+func (l *sourceLimiter) acquire(a netip.Addr, ok bool) (release func(), allowed bool) {
+	a = a.Unmap()
+	if l == nil || !ok || exemptSource(a) {
+		return func() {}, true
+	}
+	key := sourceKey(a)
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	if l.count[key] >= l.limit {
+		return nil, false
+	}
+	l.count[key]++
+	return func() {
+		l.mu.Lock()
+		if l.count[key]--; l.count[key] <= 0 {
+			delete(l.count, key)
+		}
+		l.mu.Unlock()
+	}, true
+}
+
+// shouldWarn 判断这次超限是否记录警告，返回自上次警告以来未记录的次数。
+func (l *sourceLimiter) shouldWarn(now time.Time) (bool, int) {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	if !l.warnAt.IsZero() && now.Sub(l.warnAt) < sourceLimitWarnEvery {
+		l.suppressed++
+		return false, 0
+	}
+	n := l.suppressed
+	l.warnAt, l.suppressed = now, 0
+	return true, n
+}
+
 // ServeTCP 在 addr 上监听 TCP，每个连接在独立协程中交给 handle 处理，handle 返回后连接计数释放。
-// 被封禁地址的连接在 Accept 时直接关闭；并发连接超过 maxConns 时新连接被拒绝，并通过 warnf 记录。
-// handle 负责关闭连接。
-func (s *Server) ServeTCP(ctx context.Context, network, addr string, maxConns int, warnf func(format string, args ...any), handle func(net.Conn)) error {
+// 被封禁地址的连接在 Accept 时直接关闭；并发连接超过 limits.Max、或单个来源超过 limits.PerSource 时新连接被拒绝，
+// 并通过 warnf 记录（单来源超限每 10 秒最多记录一条）。handle 负责关闭连接。
+func (s *Server) ServeTCP(ctx context.Context, network, addr string, limits Limits, warnf func(format string, args ...any), handle func(net.Conn)) error {
 	var lc net.ListenConfig
 	ln, err := lc.Listen(ctx, network, addr)
 	if err != nil {
@@ -76,7 +173,11 @@ func (s *Server) ServeTCP(ctx context.Context, network, addr string, maxConns in
 	}
 	ln = banlist.Default.Listener(ln)
 	s.Track(ln)
-	sem := make(chan struct{}, maxConns)
+	sem := make(chan struct{}, limits.Max)
+	var perSrc *sourceLimiter
+	if limits.PerSource > 0 {
+		perSrc = &sourceLimiter{limit: limits.PerSource, count: map[netip.Prefix]int{}}
+	}
 	s.Go(func() {
 		for {
 			conn, err := ln.Accept()
@@ -89,15 +190,29 @@ func (s *Server) ServeTCP(ctx context.Context, network, addr string, maxConns in
 				time.Sleep(100 * time.Millisecond)
 				continue
 			}
+			release, ok := perSrc.acquire(remoteAddrOf(conn))
+			if !ok {
+				if warn, more := perSrc.shouldWarn(time.Now()); warn {
+					if more > 0 {
+						warnf("%s 单个来源超过最大连接数 %d，拒绝 %s（此前 10 秒内另有 %d 个连接因此被拒绝）", addr, limits.PerSource, conn.RemoteAddr(), more)
+					} else {
+						warnf("%s 单个来源超过最大连接数 %d，拒绝 %s", addr, limits.PerSource, conn.RemoteAddr())
+					}
+				}
+				conn.Close()
+				continue
+			}
 			select {
 			case sem <- struct{}{}:
 			default:
-				warnf("%s 超过最大连接数 %d，拒绝 %s", addr, maxConns, conn.RemoteAddr())
+				release()
+				warnf("%s 超过最大连接数 %d，拒绝 %s", addr, limits.Max, conn.RemoteAddr())
 				conn.Close()
 				continue
 			}
 			s.Go(func() {
 				defer func() { <-sem }()
+				defer release()
 				handle(conn)
 			})
 		}
