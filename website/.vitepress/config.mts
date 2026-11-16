@@ -97,8 +97,6 @@ const locales = Object.fromEntries(
       themeConfig: buildThemeConfig(loc, pack),
       head: [
         ['meta', { name: 'keywords', content: pack.keywords }],
-        ['meta', { property: 'og:title', content: pack.ogTitle }],
-        ['meta', { property: 'og:description', content: pack.description }],
         ['meta', { property: 'og:locale', content: pack.lang.replace('-', '_') }]
       ] as HeadConfig[]
     }
@@ -141,7 +139,8 @@ export default defineConfig({
     ['meta', { name: 'apple-mobile-web-app-title', content: 'Gately' }],
     ['meta', { name: 'theme-color', content: '#0e7c66' }],
     ['meta', { property: 'og:type', content: 'website' }],
-    ['meta', { property: 'og:url', content: SITE }],
+    ['meta', { property: 'og:site_name', content: 'Gately' }],
+    ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
     ['script', {}, redirectScript]
   ],
   locales,
@@ -154,12 +153,26 @@ export default defineConfig({
     ],
     search: { provider: 'local', options: { locales: searchLocales } }
   },
-  // 为每个页面输出多语言互链，便于搜索引擎按语言展示
-  transformHead({ pageData }) {
+  // 为每个页面输出规范地址、分享卡片信息与多语言互链，便于搜索引擎按语言展示
+  transformHead({ pageData, title, description }) {
     const rel = pageData.relativePath.replace(/(^|\/)index\.md$/, '$1').replace(/\.md$/, '')
     const current = siteLocales.find((l) => l.dir && rel.startsWith(`${l.dir}/`))
     const slug = current ? rel.slice(current.dir.length + 1) : rel
-    const tags: HeadConfig[] = []
+    const code = current?.code ?? 'zh-CN'
+    const url = `${SITE}/${rel}`
+    // 分享图只有中英文两张：简繁中文用中文图，其余语言用英文图
+    const image = `${SITE}/${code.startsWith('zh') ? 'og-zh' : 'og-en'}.png`
+    const tags: HeadConfig[] = [
+      ['link', { rel: 'canonical', href: url }],
+      ['meta', { property: 'og:url', content: url }],
+      ['meta', { property: 'og:title', content: title }],
+      ['meta', { property: 'og:description', content: description }],
+      ['meta', { property: 'og:image', content: image }],
+      ['meta', { property: 'og:image:width', content: '1200' }],
+      ['meta', { property: 'og:image:height', content: '630' }],
+      ['meta', { property: 'og:image:alt', content: 'Gately' }],
+      ['meta', { name: 'twitter:image', content: image }]
+    ]
     for (const { loc } of packs) {
       const target = `${loc.dir ? `${loc.dir}/` : ''}${slug}`
       const file = resolve(here, '..', `${target}.md`.replace(/\/\.md$/, '/index.md'))
