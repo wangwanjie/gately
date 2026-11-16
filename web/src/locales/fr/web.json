@@ -87,6 +87,7 @@
   "basicAuth": "Auth Basic",
   "users": "Utilisateurs",
   "usersPlaceholder": "Un par ligne au format utilisateur:mot_de_passe (le mot de passe peut être un hash bcrypt)",
+  "usersHelp": "Les mots de passe sont enregistrés sous forme de hash bcrypt et ne peuvent plus être consultés ensuite. Les mots de passe enregistrés s'affichent comme ******** : laissez-les tels quels, ou écrivez seulement « utilisateur: », pour les conserver ; pour en changer un, remplacez ******** par le nouveau",
   "thirdParty": "Connexion tierce",
   "oauthUsersPlaceholder": "Une identité autorisée par ligne au format clé-fournisseur:compte, p. ex. github:octocat, google:me{'@'}gmail.com, qq:openid. Ajoutez un commentaire après # en fin de ligne ; github:* correspond à tout compte GitHub",
   "providerHelp": "Les fournisseurs doivent d'abord être configurés dans les « Paramètres globaux »",

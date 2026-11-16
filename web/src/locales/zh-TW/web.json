@@ -87,6 +87,7 @@
   "basicAuth": "基本驗證",
   "users": "使用者",
   "usersPlaceholder": "每行一個 使用者名稱:密碼（密碼可為 bcrypt 雜湊）",
+  "usersHelp": "密碼儲存時轉為 bcrypt 雜湊，之後無法再檢視原密碼。已儲存的密碼顯示為 ********：保持不變或只寫「使用者名稱:」表示不修改，要改密碼時把 ******** 換成新密碼",
   "thirdParty": "第三方登入",
   "oauthUsersPlaceholder": "每行一個允許的身分：提供者識別碼:帳號，如 github:octocat、google:me{'@'}gmail.com、qq:openid；行尾可用 # 加備註；github:* 表示任意 GitHub 帳號",
   "providerHelp": "提供者需先在「全域設定」中設定",

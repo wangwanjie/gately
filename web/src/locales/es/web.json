@@ -87,6 +87,7 @@
   "basicAuth": "Autenticación básica",
   "users": "Usuarios",
   "usersPlaceholder": "Uno por línea como usuario:contraseña (la contraseña puede ser un hash bcrypt)",
+  "usersHelp": "Las contraseñas se guardan como hash bcrypt y después no se pueden ver. Las contraseñas guardadas se muestran como ********: déjalas así, o escribe solo «usuario:», para conservarlas; para cambiar una, sustituye ******** por la nueva",
   "thirdParty": "Inicio de sesión de terceros",
   "oauthUsersPlaceholder": "Una identidad permitida por línea como clave-proveedor:cuenta, p. ej. github:octocat, google:me{'@'}gmail.com, qq:openid. Añade un comentario tras # al final de la línea; github:* coincide con cualquier cuenta de GitHub",
   "providerHelp": "Los proveedores deben configurarse antes en \"Ajustes globales\"",
