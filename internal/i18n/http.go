@@ -8,6 +8,7 @@ import (
 	"net"
 	"net/http"
 	"strings"
+	"sync"
 )
 
 // RequestLang 返回请求期望的语言：优先 Accept-Language，没有时使用服务端语言。
@@ -130,7 +131,8 @@ type transWriter struct {
 	path   string
 	get    bool
 	status int
-	buf    bytes.Buffer
+	// buf 缓存响应体，取自 captureBufs，finish 写出后归还
+	buf *bytes.Buffer
 	// capture 为 true 时响应体被缓存，结束后翻译再输出
 	capture bool
 	decided bool
@@ -166,10 +168,19 @@ func (t *transWriter) Write(p []byte) (int, error) {
 		t.decide(http.StatusOK)
 	}
 	if t.capture {
+		if t.buf == nil {
+			t.buf = captureBufs.Get().(*bytes.Buffer)
+		}
 		return t.buf.Write(p)
 	}
 	return t.ResponseWriter.Write(p)
 }
+
+// captureBufs 复用缓存响应体的缓冲区：管理界面每隔几秒轮询一次，不必每个请求都重新分配几百 KB
+var captureBufs = sync.Pool{New: func() any { return new(bytes.Buffer) }}
+
+// captureBufKeep 以上的缓冲区不放回对象池
+const captureBufKeep = 1 << 20
 
 func (t *transWriter) Flush() {
 	if t.capture {
@@ -193,30 +204,42 @@ func (t *transWriter) ReadFrom(r io.Reader) (int64, error) {
 }
 
 // finish 翻译缓存的响应体并输出。
+//
+// 响应里没有汉字时（多数配置类接口）原样写出：不解析、不重新编码，字段顺序与数字都保持处理器写出的样子。
+// 有汉字时只改写需要翻译的那些字符串，其余字节照抄，见 rewriteJSON。
 func (t *transWriter) finish() {
 	if !t.capture {
 		return
 	}
-	body := t.buf.Bytes()
-	ct := t.Header().Get("Content-Type")
-	if strings.Contains(ct, "json") {
-		var v any
-		if err := json.Unmarshal(body, &v); err == nil {
-			if t.status >= 400 || fullTranslate(t.path) {
-				v = TrDeep(t.lang, v)
-			} else {
-				v = TrFields(t.lang, v)
+	var body []byte
+	if t.buf != nil {
+		body = t.buf.Bytes()
+		defer func() {
+			// 响应已经写出，缓冲区可以复用
+			if t.buf.Cap() <= captureBufKeep {
+				t.buf.Reset()
+				captureBufs.Put(t.buf)
 			}
-			var out bytes.Buffer
-			enc := json.NewEncoder(&out)
-			if err := enc.Encode(v); err == nil {
-				body = out.Bytes()
+			t.buf = nil
+		}()
+	}
+	ct := t.Header().Get("Content-Type")
+	changed := false
+	if strings.Contains(ct, "json") {
+		if mayHaveHanJSON(body) {
+			deep := t.status >= 400 || fullTranslate(t.path)
+			if out, ok := rewriteJSON(t.lang, body, deep); ok {
+				body, changed = out, true
 			}
 		}
-	} else {
+	} else if hasHan(body) {
 		body = []byte(Tr(t.lang, strings.TrimRight(string(body), "\n")) + "\n")
+		changed = true
 	}
-	t.Header().Del("Content-Length")
+	if changed {
+		// 内容长度变了；没改动时处理器设置的长度仍然有效
+		t.Header().Del("Content-Length")
+	}
 	t.ResponseWriter.WriteHeader(t.status)
 	_, _ = t.ResponseWriter.Write(body)
 }
