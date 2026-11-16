@@ -2,7 +2,8 @@
 # 构建阶段固定运行在构建机平台上，Go 交叉编译到目标平台（node 镜像不提供 arm/v7 等平台）
 #
 # 定制构建（build.gately.cn）通过构建参数裁剪内容，默认值即完整版：
-#   GATELY_TAGS      go build 的 tags，例如 no_waf,no_smb,lang_zh（见 modules.json）
+#   GATELY_TAGS      go build 的 tags，例如 no_waf,no_smb,lang_zh（见 modules.json）；
+#                    始终另带 coraza.disabled_operators.validateSchema（去掉 WAF 用不到的 @validateSchema，程序约小 2.3 MB）
 #   GATELY_LOCALES   管理界面打包的语言，例如 zh-CN,zh-TW,en；留空为全部
 #   WITH_DOCKER_CLI  是否安装 docker-cli 与 compose，只有 Docker 管理模块用到
 #   WITH_NFTABLES    是否安装 nftables（以及内核没有 nf_tables 时使用的 iptables-legacy 与 ipset），
@@ -28,7 +29,7 @@ ARG TARGETOS
 ARG TARGETARCH
 ARG TARGETVARIANT
 ARG GATELY_TAGS=
-RUN GOOS=$TARGETOS GOARCH=$TARGETARCH GOARM=${TARGETVARIANT#v} CGO_ENABLED=0 go build -trimpath -tags "$GATELY_TAGS" \
+RUN GOOS=$TARGETOS GOARCH=$TARGETARCH GOARM=${TARGETVARIANT#v} CGO_ENABLED=0 go build -trimpath -tags "coraza.disabled_operators.validateSchema${GATELY_TAGS:+,$GATELY_TAGS}" \
     -ldflags "-s -w -X github.com/wangwanjie/gately/internal/version.Version=${VERSION} -X github.com/wangwanjie/gately/internal/version.Commit=${COMMIT} -X github.com/wangwanjie/gately/internal/version.BuildDate=$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
     -o /out/gately ./cmd/gately
 

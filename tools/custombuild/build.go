@@ -13,6 +13,19 @@ import (
 	"time"
 )
 
+// baseTags 是所有构建都带的标签（与 Makefile、Dockerfile、发布流程一致）：去掉 WAF 用不到的 Coraza @validateSchema
+// 操作符及其依赖（JSON Schema、YAML 库），程序约小 2.3 MB。
+const baseTags = "coraza.disabled_operators.validateSchema"
+
+// goTags 返回 go build 的 -tags 值：基础标签加上按模块与语言计算出的标签（可为空）。
+// resolve 输出的 tags 只含后者，镜像构建由 Dockerfile 自行补上基础标签。
+func goTags(tags string) string {
+	if tags == "" {
+		return baseTags
+	}
+	return baseTags + "," + tags
+}
+
 // versionPattern 为 -version 允许的写法。
 var versionPattern = regexp.MustCompile(`^v[0-9]+(\.[0-9]+){1,3}$`)
 
@@ -74,7 +87,7 @@ func build(r resolved, version, out string, skipWeb bool) error {
 		fmt.Printf("编译 %s（%s/%s）\n", t.ID, t.GOOS, t.GOARCH)
 		// mips 路由器大多没有硬件浮点，使用软浮点以免运行时报非法指令（与发布流程一致）
 		env := []string{"GOOS=" + t.GOOS, "GOARCH=" + t.GOARCH, "GOMIPS=softfloat", "CGO_ENABLED=0"}
-		if err := run(".", env, "go", "build", "-trimpath", "-tags", r.Tags, "-ldflags", ldflags, "-o", bin, "./cmd/gately"); err != nil {
+		if err := run(".", env, "go", "build", "-trimpath", "-tags", goTags(r.Tags), "-ldflags", ldflags, "-o", bin, "./cmd/gately"); err != nil {
 			return err
 		}
 		switch t.Kind {

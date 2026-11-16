@@ -87,3 +87,13 @@ func TestBuildRejectsBadVersion(t *testing.T) {
 		}
 	}
 }
+
+// 本地打包时 go build 总带上基础标签，模块与语言标签接在后面。
+func TestGoTags(t *testing.T) {
+	if got := goTags(""); got != "coraza.disabled_operators.validateSchema" {
+		t.Fatalf("完整构建也应带基础标签: %s", got)
+	}
+	if got := goTags("no_smb,lang_zh"); got != "coraza.disabled_operators.validateSchema,no_smb,lang_zh" {
+		t.Fatalf("标签拼接错误: %s", got)
+	}
+}
