@@ -9,7 +9,7 @@
 
     <ModuleBanner v-if="settings && !settings.enable" :title="t('portForward.moduleOffTitle')" :loading="enabling" @enable="enableModule" />
 
-    <GroupedList :gl="gl" :loading="loading" :compact="compact" :empty-text="t('portForward.empty')" :count-text="(n: number) => t('portForward.groupCount', { count: n })">
+    <GroupedList :gl="gl" :error="loadError" @retry="load" :loading="loading" :compact="compact" :empty-text="t('portForward.empty')" :count-text="(n: number) => t('portForward.groupCount', { count: n })">
       <template #item="{ it, sorting, bind }">
       <EntityCard
         v-bind="bind"
@@ -150,7 +150,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
 import { ArrowLeftRight, CopyPlus, Pencil, Plus, SlidersHorizontal, Trash2, TriangleAlert } from 'lucide-vue-next'
-import { api, formatBytes } from '../api'
+import { api, errorText, formatBytes } from '../api'
 import GroupedList from '../components/GroupedList.vue'
 import GroupInput from '../components/GroupInput.vue'
 import IPAccessEditor from '../components/IPAccessEditor.vue'
@@ -237,6 +237,8 @@ const protocols = [
 ]
 
 const { t } = useI18n()
+// 列表最近一次加载失败的原因，空为成功；接口出错时列表显示错误而不是空状态
+const loadError = ref('')
 // 读取端口敲门规则目录，卡片上显示“需要敲门”的规则名称
 useKnockRules()
 const compact = useCompactView('portforward')
@@ -319,6 +321,9 @@ function ruleStatus(r: RuleView): { type: StatusType; text: string; title?: stri
 async function load() {
   try {
     rules.value = await api.get<RuleView[]>('/api/portforward/rules')
+    loadError.value = ''
+  } catch (e) {
+    loadError.value = errorText(e)
   } finally {
     loading.value = false
   }

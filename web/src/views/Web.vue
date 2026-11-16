@@ -47,7 +47,9 @@
     <WebBatch ref="batchDialog" :waf-instances="wafInstances" :listeners="moveListeners" @done="onBatchDone" />
 
     <div v-loading="loading" class="card-list">
-      <el-empty v-if="!loading && !listeners.length" :description="t('web.empty')" />
+      <LoadError v-if="loadError && listeners.length" bar :error="loadError" @retry="load" />
+      <LoadError v-if="!loading && loadError && !listeners.length" :error="loadError" @retry="load" />
+      <el-empty v-else-if="!loading && !listeners.length" :description="t('web.empty')" />
       <EntityCard
         v-for="(l, li) in listeners"
         :key="l.key"
@@ -717,7 +719,7 @@ import {
   Workflow,
   ArrowRightLeft,
 } from 'lucide-vue-next'
-import { api, type OAuthProvider } from '../api'
+import { api, errorText, type OAuthProvider } from '../api'
 import { moduleEnabled as navModuleEnabled } from '../nav'
 import GroupHeader from '../components/GroupHeader.vue'
 import SortToolbar from '../components/SortToolbar.vue'
@@ -727,6 +729,7 @@ import GroupInput from '../components/GroupInput.vue'
 import { useGroupRename, useSortSelect } from '../composables/useGroupSort'
 import { buildSections, displayItems as displayGroupItems, dropTarget, flatten, moveInto, moveSection, moveStep, renameSection, type GroupItem, type Section } from '../groupSort'
 import PageHeader from '../components/PageHeader.vue'
+import LoadError from '../components/LoadError.vue'
 import ModuleBanner from '../components/ModuleBanner.vue'
 import CompactToggle from '../components/CompactToggle.vue'
 import EntityCard from '../components/EntityCard.vue'
@@ -922,6 +925,8 @@ interface SiteRow {
 }
 
 const { t } = useI18n()
+// 列表最近一次加载失败的原因，空为成功；接口出错时列表显示错误而不是空状态
+const loadError = ref('')
 const router = useRouter()
 const route = useRoute()
 
@@ -1677,6 +1682,9 @@ async function putListener(l: Listener) {
 async function load() {
   try {
     listeners.value = await api.get<ListenerView[]>('/api/webservice/listeners')
+    loadError.value = ''
+  } catch (e) {
+    loadError.value = errorText(e)
   } finally {
     loading.value = false
   }
@@ -2226,7 +2234,8 @@ onMounted(async () => {
   if (props.dialogOnly) {
     return
   }
-  await prepare()
+  // 全局设置读取失败不阻止监听列表加载；列表本身失败时显示错误
+  await prepare().catch(() => undefined)
   loadIPLists()
   loadForwards()
   loadPanels()

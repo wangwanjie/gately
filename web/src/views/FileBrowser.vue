@@ -11,7 +11,7 @@
       <el-button size="small" type="primary" :icon="Download" @click="installer?.install()">{{ t('components.programInstall.install') }}</el-button>
     </el-alert>
 
-    <GroupedList :gl="gl" :compact="compact" grid :empty-text="t('filebrowser.empty')">
+    <GroupedList :gl="gl" :error="loadError" @retry="loadInstances" :compact="compact" grid :empty-text="t('filebrowser.empty')">
       <template #item="{ it: row, item: it, sorting, bind }">
         <EntityCard v-bind="bind" :off="!it.enable" :compact="compact || sorting">
           <template v-if="sorting" #lead>
@@ -159,7 +159,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
 import { CopyPlus, Download, FolderOpen, FolderPlus, Pencil, Plus, RefreshCw, Save, Terminal, Trash2, X } from 'lucide-vue-next'
-import { api } from '../api'
+import { api, errorText } from '../api'
 import UrlLink from '../components/UrlLink.vue'
 import SecretInput from '../components/SecretInput.vue'
 import { secretOf } from '../secrets'
@@ -231,6 +231,8 @@ const fbLocales = [
 ]
 
 const { t, locale } = useI18n()
+// 列表最近一次加载失败的原因，空为成功；接口出错时列表显示错误而不是空状态
+const loadError = ref('')
 const { isMobile, labelPosition } = useFormLayout()
 const instances = ref<InstanceView[]>([])
 const compact = useCompactView('filebrowser')
@@ -329,7 +331,9 @@ function badge(it: InstanceView): { type: StatusType; text: string; title?: stri
 async function loadInstances() {
   try {
     instances.value = await api.get<InstanceView[]>('/api/filebrowser/instances')
-  } catch {
+    loadError.value = ''
+  } catch (e) {
+    loadError.value = errorText(e)
     // 轮询失败时保留上一次的状态
   }
 }

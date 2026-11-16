@@ -50,6 +50,9 @@
     <template v-if="webEnabled">
       <h3 class="section">{{ t('perf.sitesSection') }}</h3>
       <el-table :data="sites" size="small" stripe :empty-text="t('perf.noSites')" class="sites" @row-click="openSite">
+        <template v-if="loadError" #empty>
+          <LoadError compact :error="loadError" @retry="loadLive" />
+        </template>
         <el-table-column :label="t('perf.site')" min-width="200" show-overflow-tooltip>
           <template #default="{ row }">{{ row.name }}</template>
         </el-table-column>
@@ -95,7 +98,7 @@
           <router-link v-if="notifyHint.link" to="/notify">{{ t('perf.goNotify') }}</router-link>
         </template>
       </el-alert>
-      <GroupedList :gl="glRules" :compact="compactRules" grid :empty-text="t('perf.noRules')">
+      <GroupedList :gl="glRules" :error="loadError" @retry="loadRules" :compact="compactRules" grid :empty-text="t('perf.noRules')">
         <template #item="{ it, item: r, sorting, bind }">
           <EntityCard v-bind="bind" :off="!r.enable" :compact="compactRules || sorting">
             <template #lead>
@@ -197,11 +200,12 @@ import { computed, onMounted, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import { CopyPlus, Gauge, Pencil, Plus, Trash2 } from 'lucide-vue-next'
-import { api } from '../api'
+import { api, errorText } from '../api'
 import { moduleEnabled } from '../nav'
 import PageHeader from '../components/PageHeader.vue'
 import EntityCard from '../components/EntityCard.vue'
 import GroupedList from '../components/GroupedList.vue'
+import LoadError from '../components/LoadError.vue'
 import GroupInput from '../components/GroupInput.vue'
 import ListTools from '../components/ListTools.vue'
 import SortCheck from '../components/SortCheck.vue'
@@ -306,6 +310,8 @@ interface NotifyRule {
 }
 
 const { t } = useI18n()
+// 列表最近一次加载失败的原因，空为成功；接口出错时列表显示错误而不是空状态
+const loadError = ref('')
 const { isMobile, labelPosition } = useFormLayout()
 // 模块开关来自会话信息，用 computed 保证会话加载后同步更新
 const webEnabled = computed(() => moduleEnabled('webservice'))
@@ -656,28 +662,39 @@ async function removeRule(r: Rule) {
 }
 
 async function loadRules() {
-  rules.value = await api.get<Rule[]>('/api/perf/rules')
+  try {
+    rules.value = await api.get<Rule[]>('/api/perf/rules')
+    loadError.value = ''
+  } catch (e) {
+    loadError.value = errorText(e)
+  }
 }
 
 async function loadOverview() {
   try {
     overview.value = await api.get<Overview>(`/api/perf/overview?range=${range.value}`)
     lastOverview = Date.now()
+    loadError.value = ''
   } catch (e) {
-    ElMessage.error((e as Error).message)
+    loadError.value = errorText(e)
   }
 }
 
 async function loadLive() {
-  const [a, s, p] = await Promise.all([
-    api.get<AlertState[]>('/api/perf/alerts'),
-    webEnabled.value ? api.get<SiteView[]>('/api/perf/sites') : Promise.resolve([]),
-    // 旧版本后端没有这个接口，取不到时当作没有托管进程
-    api.get<ManagedRow[]>('/api/perf/processes').catch(() => [] as ManagedRow[]),
-  ])
-  alerts.value = a
-  sites.value = s
-  processes.value = p ?? []
+  try {
+    const [a, s, p] = await Promise.all([
+      api.get<AlertState[]>('/api/perf/alerts'),
+      webEnabled.value ? api.get<SiteView[]>('/api/perf/sites') : Promise.resolve([]),
+      // 旧版本后端没有这个接口，取不到时当作没有托管进程
+      api.get<ManagedRow[]>('/api/perf/processes').catch(() => [] as ManagedRow[]),
+    ])
+    alerts.value = a
+    sites.value = s
+    processes.value = p ?? []
+    loadError.value = ''
+  } catch (e) {
+    loadError.value = errorText(e)
+  }
 }
 
 async function loadNotify() {
@@ -706,10 +723,11 @@ const polling = usePolling(async () => {
 onMounted(async () => {
   try {
     metrics.value = await api.get<MetricDef[]>('/api/perf/metrics')
-    await Promise.all([loadOverview(), loadLive(), loadRules(), loadNotify()])
   } catch (e) {
-    ElMessage.error((e as Error).message)
+    loadError.value = errorText(e)
   }
+  // 各加载函数自行捕获错误并显示在列表上
+  await Promise.all([loadOverview(), loadLive(), loadRules(), loadNotify()])
   polling.start()
 })
 </script>

@@ -12,7 +12,7 @@
 
     <ModuleBanner v-if="moduleOff" :title="t('ddns.moduleOffTitle')" :desc="t('ddns.moduleOffDesc')" :loading="enabling" @enable="enableModule" />
 
-    <GroupedList :gl="gl" :loading="loading" :compact="compact" :empty-text="t('ddns.empty')" :empty-image-size="120" :count-text="(n: number) => t('ddns.groupCount', { count: n })">
+    <GroupedList :gl="gl" :error="loadError" @retry="settingsLoaded ? load() : init()" :loading="loading" :compact="compact" :empty-text="t('ddns.empty')" :empty-image-size="120" :count-text="(n: number) => t('ddns.groupCount', { count: n })">
       <template #item="{ it, item: tk, sorting, bind }">
         <EntityCard
           v-bind="bind"
@@ -277,7 +277,7 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
 import { ArrowUpDown, ChevronsDownUp, ChevronsUpDown, CopyPlus, Globe, ListPlus, Pencil, Plus, RefreshCw, SlidersHorizontal, Trash2, Zap } from 'lucide-vue-next'
-import { api } from '../api'
+import { api, errorText } from '../api'
 import GroupHeader from '../components/GroupHeader.vue'
 import GroupedList from '../components/GroupedList.vue'
 import GroupInput from '../components/GroupInput.vue'
@@ -374,6 +374,8 @@ interface TaskView extends Task {
 type Badge = { type: StatusType; text: string; title?: string }
 
 const { t } = useI18n()
+// 列表最近一次加载失败的原因，空为成功；接口出错时列表显示错误而不是空状态
+const loadError = ref('')
 const compact = useCompactView('ddns')
 const { isMobile, labelPosition } = useFormLayout()
 const tasks = ref<TaskView[]>([])
@@ -634,6 +636,9 @@ function recordSync(tk: TaskView, r: DNSRecord) {
 async function load() {
   try {
     tasks.value = await api.get<TaskView[]>('/api/ddns/tasks')
+    loadError.value = ''
+  } catch (e) {
+    loadError.value = errorText(e)
   } finally {
     loading.value = false
   }
@@ -903,8 +908,9 @@ async function enableModule() {
   enabling.value = false
 }
 
-onMounted(async () => {
-  // 任务列表与元数据一起并行请求，首屏只需一次往返；数据一并赋值，避免服务商名称先显示内部名再跳成标题
+// init 首次加载：任务列表与元数据一起并行请求，首屏只需一次往返；数据一并赋值，避免服务商名称先显示内部名再跳成标题。
+// 失败时列表显示错误与重试按钮（重试再次调用 init），轮询照常启动，网络恢复后自动刷新任务列表
+async function init() {
   try {
     const [p, i, d, s, tk] = await Promise.all([
       api.get<ProviderMeta[]>('/api/ddns/providers'),
@@ -920,9 +926,16 @@ onMounted(async () => {
     settings.deleteRemote = !!s.deleteRemote
     settingsLoaded.value = true
     tasks.value = tk
+    loadError.value = ''
+  } catch (e) {
+    loadError.value = errorText(e)
   } finally {
     loading.value = false
   }
+}
+
+onMounted(async () => {
+  await init()
   polling.start()
 })
 </script>

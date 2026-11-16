@@ -47,7 +47,11 @@
           <el-input v-model="filter" :placeholder="t('guard.ban.search')" clearable class="search" :prefix-icon="Search" />
         </div>
         <!-- 只渲染当前页：封禁积累到数千条时一次性渲染会让页面卡死（issue #73） -->
+        <LoadError v-if="loadError && bans.length" bar :error="loadError" class="table-load-error" @retry="loadAll" />
         <el-table :data="banPager.rows.value" :empty-text="t('guard.ban.empty')" size="small" class="ban-table" row-key="key">
+          <template v-if="loadError" #empty>
+            <LoadError compact :error="loadError" @retry="loadAll" />
+          </template>
           <el-table-column :label="t('guard.ban.address')" min-width="170">
             <template #default="{ row }"><span class="mono">{{ row.key }}</span></template>
           </el-table-column>
@@ -101,7 +105,7 @@
             <el-button type="primary" :icon="Plus" @click="openJail()">{{ t('guard.jail.add') }}</el-button>
           </div>
         </div>
-        <GroupedList :gl="gl" :compact="compact" grid :empty-text="t('guard.jail.empty')">
+        <GroupedList :gl="gl" :error="loadError" @retry="loadAll" :compact="compact" grid :empty-text="t('guard.jail.empty')">
           <template #item="{ it, item: j, sorting, bind }">
             <EntityCard v-bind="bind" :off="!j.enable" :compact="compact || sorting">
               <template #lead>
@@ -397,12 +401,13 @@ import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { Ban, CopyPlus, Crosshair, FileCode, Flame, FlaskConical, LayoutTemplate, Pencil, Plus, Radar, RefreshCw, Save, Search, ShieldBan, SlidersHorizontal, Trash2 } from 'lucide-vue-next'
-import { api } from '../api'
+import { api, errorText } from '../api'
 import PageHeader from '../components/PageHeader.vue'
 import ListPager from '../components/ListPager.vue'
 import { usePager } from '../composables/usePager'
 import EntityCard from '../components/EntityCard.vue'
 import GroupedList from '../components/GroupedList.vue'
+import LoadError from '../components/LoadError.vue'
 import GroupInput from '../components/GroupInput.vue'
 import ListTools from '../components/ListTools.vue'
 import SortCheck from '../components/SortCheck.vue'
@@ -511,6 +516,8 @@ interface TestResult {
 }
 
 const { t } = useI18n()
+// 最近一次加载失败的原因，空为成功；接口出错时列表显示错误而不是空状态
+const loadError = ref('')
 const route = useRoute()
 const router = useRouter()
 const { isMobile, labelPosition } = useFormLayout()
@@ -849,8 +856,9 @@ async function loadAll() {
   try {
     const [s] = await Promise.all([api.get<Settings>('/api/guard/settings'), loadStatus(), loadBans(), loadJails()])
     settings.value = s
+    loadError.value = ''
   } catch (e) {
-    ElMessage.error((e as Error).message)
+    loadError.value = errorText(e)
   }
 }
 
@@ -858,8 +866,10 @@ async function loadAll() {
 async function refresh() {
   try {
     await Promise.all([loadStatus(), loadBans(), loadJails()])
-  } catch {
-    // 定时刷新失败时保持原内容
+    loadError.value = ''
+  } catch (e) {
+    // 定时刷新失败时保持原内容，只显示一行提示
+    loadError.value = errorText(e)
   }
 }
 
@@ -1065,6 +1075,9 @@ onMounted(async () => {
 }
 .guard-tabs {
   margin-top: 16px;
+}
+.table-load-error {
+  margin-bottom: 8px;
 }
 .toolbar {
   display: flex;

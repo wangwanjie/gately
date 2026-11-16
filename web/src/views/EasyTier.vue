@@ -15,7 +15,7 @@
         </div>
       </div>
       <div class="g-card-body">
-        <GroupedList :gl="gl" :compact="compact" grid :empty-text="t('easytier.noInstances')" :empty-image-size="60">
+        <GroupedList :gl="gl" :error="loadError" @retry="load" :compact="compact" grid :empty-text="t('easytier.noInstances')" :empty-image-size="60">
           <template #item="{ it, item: v, sorting, bind }">
             <EntityCard v-bind="bind" :off="!v.enable" :compact="compact || sorting">
               <template v-if="sorting" #lead>
@@ -202,7 +202,7 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import { Cable, CopyPlus, Pencil, Plus, RefreshCw, Save, Terminal, Trash2, Waypoints } from 'lucide-vue-next'
-import { api } from '../api'
+import { api, errorText } from '../api'
 import { isReadonly } from '../nav'
 import SecretInput from '../components/SecretInput.vue'
 import { secretOf } from '../secrets'
@@ -292,6 +292,8 @@ interface SettingsView {
 }
 
 const { t } = useI18n()
+// 列表最近一次加载失败的原因，空为成功；接口出错时列表显示错误而不是空状态
+const loadError = ref('')
 const { isMobile, labelPosition } = useFormLayout()
 
 const instances = ref<InstanceView[]>([])
@@ -372,15 +374,20 @@ function peerBadge(p: Peer): { type: StatusType; text: string } {
 }
 
 async function load() {
-  const [list, st, settings] = await Promise.all([
-    api.get<InstanceView[]>('/api/easytier/instances'),
-    api.get<Status[]>('/api/easytier/status'),
-    api.get<SettingsView>('/api/easytier/settings'),
-  ])
-  instances.value = list
-  statuses.value = st
-  program.corePath = settings.settings.corePath
-  corePath.value = settings.core
+  try {
+    const [list, st, settings] = await Promise.all([
+      api.get<InstanceView[]>('/api/easytier/instances'),
+      api.get<Status[]>('/api/easytier/status'),
+      api.get<SettingsView>('/api/easytier/settings'),
+    ])
+    instances.value = list
+    statuses.value = st
+    program.corePath = settings.settings.corePath
+    corePath.value = settings.core
+    loadError.value = ''
+  } catch (e) {
+    loadError.value = errorText(e)
+  }
 }
 
 // refresh 只刷新实例运行状态与节点状态，不影响正在编辑的表单
@@ -389,7 +396,9 @@ async function refresh() {
     const [list, st] = await Promise.all([api.get<InstanceView[]>('/api/easytier/instances'), api.get<Status[]>('/api/easytier/status')])
     instances.value = list
     statuses.value = st
-  } catch {
+    loadError.value = ''
+  } catch (e) {
+    loadError.value = errorText(e)
     // 轮询失败时保留上一次的状态
   }
 }

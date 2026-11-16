@@ -6,7 +6,7 @@
       <el-button type="primary" :icon="Plus" @click="openEditor()">{{ t('waf.addInstance') }}</el-button>
     </PageHeader>
 
-    <GroupedList :gl="gl" :compact="compact" :empty-text="t('waf.empty')">
+    <GroupedList :gl="gl" :error="loadError" @retry="load" :compact="compact" :empty-text="t('waf.empty')">
       <template #item="{ it, item: w, sorting, bind }">
         <EntityCard v-bind="bind" :off="!w.enable" :compact="compact || sorting">
           <template #lead>
@@ -176,7 +176,7 @@ import { onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
 import { ChevronDown, ChevronUp, CopyPlus, Pencil, Plus, ShieldHalf, Trash2 } from 'lucide-vue-next'
-import { api } from '../api'
+import { api, errorText } from '../api'
 import PageHeader from '../components/PageHeader.vue'
 import CompactToggle from '../components/CompactToggle.vue'
 import EntityCard from '../components/EntityCard.vue'
@@ -241,6 +241,8 @@ interface InstanceView extends Instance {
 }
 
 const { t } = useI18n()
+// 列表最近一次加载失败的原因，空为成功；接口出错时列表显示错误而不是空状态
+const loadError = ref('')
 const compact = useCompactView('waf')
 const { isMobile, labelPosition } = useFormLayout()
 const instances = ref<InstanceView[]>([])
@@ -307,7 +309,12 @@ function moveRuleSet(i: number, d: number) {
 }
 
 async function load() {
-  instances.value = await api.get('/api/waf/instances')
+  try {
+    instances.value = await api.get('/api/waf/instances')
+    loadError.value = ''
+  } catch (e) {
+    loadError.value = errorText(e)
+  }
 }
 
 // openEditor 打开编辑框：copy 为 true 时以 row 为模板新建副本
@@ -387,7 +394,11 @@ async function remove(row: InstanceView) {
 }
 
 onMounted(async () => {
-  crsFiles.value = await api.get('/api/waf/crs')
+  try {
+    crsFiles.value = await api.get('/api/waf/crs')
+  } catch {
+    // 规则文件列表读取失败不阻止实例列表加载；列表本身失败时显示错误
+  }
   await load()
   polling.start()
 })

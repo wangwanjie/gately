@@ -43,6 +43,18 @@ async function request<T>(method: string, url: string, body?: unknown): Promise<
   return data as T
 }
 
+// errorText 返回请求失败的说明，用于列表的加载失败提示：网络中断时 fetch 抛出的 TypeError 只有英文的 "Failed to fetch"，
+// 换成本地化的提示；接口返回的错误使用后端给出的说明
+export function errorText(e: unknown): string {
+  if (e instanceof ApiError) {
+    return e.message
+  }
+  if (e instanceof TypeError) {
+    return t('common.networkError')
+  }
+  return e instanceof Error ? e.message : String(e)
+}
+
 export const api = {
   get: <T>(url: string) => request<T>('GET', url),
   post: <T>(url: string, body?: unknown) => request<T>('POST', url, body),
