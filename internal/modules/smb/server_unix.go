@@ -32,6 +32,22 @@ const supported = true
 // durableTimeout 是断线后可续用的文件句柄保留时长，与 gosamba 默认值一致。
 const durableTimeout = 60 * time.Second
 
+// 认证完成前的连接限制。未登录的连接不需要凭据就能建立，不加限制时空连接会被一直持有，
+// 大量连接还会耗尽文件描述符与内存，连带同一进程中的管理后台与其他服务。
+// 登录成功后恢复原有的 5 分钟空闲超时与 16 MiB 帧上限，大文件传输不受影响。
+const (
+	// preAuthIdleTimeout 为登录前等待下一个请求的最长时间：访达、资源管理器在保存了密码时一秒内完成登录
+	preAuthIdleTimeout = 30 * time.Second
+	// preAuthDeadline 为从连接到完成登录的最长时间，给输错密码后重新输入留出余量
+	preAuthDeadline = 60 * time.Second
+	// preAuthMaxFrame 为登录前单个请求的上限：SESSION_SETUP 的安全缓冲区长度只有 16 位，正常请求不超过约 64 KiB
+	preAuthMaxFrame = 128 << 10
+	// preAuthMaxConns 为同时处于登录前的连接总数上限，preAuthMaxConnsPerIP 为单个来源（IPv6 按 /64）的上限；
+	// 已登录的连接不计入。正常客户端每次连接只在登录前停留不到一秒，家庭与小团队远用不到这些名额
+	preAuthMaxConns      = 256
+	preAuthMaxConnsPerIP = 32
+)
+
 // server 是一次启动的 SMB 服务，持有监听与全部连接。
 type server struct {
 	ln     net.Listener
@@ -109,6 +125,12 @@ func startServer(s Settings, accounts []account, logs *logbuf.Buffer) (*server, 
 		// 按来源地址限制认证失败次数（与 WebDAV、FTP 相同：15 分钟内失败 10 次后拒绝），
 		// 限流状态随一次启动的服务保存，重启后清空
 		AuthLimiter: &fileusers.Throttle{},
+		PreAuth: &parent.PreAuthLimits{
+			IdleTimeout: preAuthIdleTimeout,
+			Deadline:    preAuthDeadline,
+			MaxFrame:    preAuthMaxFrame,
+			Slots:       &parent.PreAuthSlots{MaxTotal: preAuthMaxConns, MaxPerIP: preAuthMaxConnsPerIP},
+		},
 	}
 
 	ln, err := net.Listen("tcp", net.JoinHostPort(s.ListenIP, strconv.Itoa(s.Port)))
@@ -305,6 +327,10 @@ func (h *logHandler) Handle(_ context.Context, r slog.Record) error {
 		if strings.Contains(attrs["err"], "directory not empty") {
 			return nil
 		}
+	case "too many unauthenticated connections; refusing new ones":
+		// 同一时刻最多记录一条（gosamba 内部按 30 秒限频），上限数值写入日志便于判断是否需要排查
+		h.logs.Add(logbuf.LevelWarn, "", fmt.Sprintf("%s 未登录的连接过多（全部来源上限 %s，单个来源上限 %s），已拒绝新连接", remote, attrs["max_total"], attrs["max_per_ip"]))
+		return nil
 	case "negotiate failed":
 		// 客户端常同时尝试多个地址，再关掉多余的连接，协商前断开属于正常现象
 		if strings.HasSuffix(attrs["err"], "EOF") || strings.Contains(attrs["err"], "connection reset") {

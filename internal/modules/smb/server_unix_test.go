@@ -465,3 +465,62 @@ func TestInitInvalidConfig(t *testing.T) {
 		t.Fatalf("加载时应规范化配置: %+v %v", m2.settings, m2.loadErr)
 	}
 }
+
+// TestPreAuthConnectionLimit：同一来源未登录的连接达到上限后，新连接立即被关闭并写入运行日志；
+// 已登录的连接不占用名额，达到上限时仍能登录。
+func TestPreAuthConnectionLimit(t *testing.T) {
+	m, port := startTestModule(t, Settings{Users: []User{{Name: "alice", Password: "p1", Root: t.TempDir()}}})
+	addr := "127.0.0.1:" + strconv.Itoa(port)
+	// 先登录一条，确认已登录的连接不计入上限
+	if _, err := dial(t, port, "alice", "p1"); err != nil {
+		t.Fatal(err)
+	}
+	var idle []net.Conn
+	t.Cleanup(func() {
+		for _, c := range idle {
+			c.Close()
+		}
+	})
+	for i := 0; i < preAuthMaxConnsPerIP; i++ {
+		c, err := net.Dial("tcp", addr)
+		if err != nil {
+			t.Fatal(err)
+		}
+		idle = append(idle, c)
+	}
+	// 服务端处理到全部空连接需要一点时间：持续尝试，直到新连接被立即关闭
+	deadline := time.Now().Add(5 * time.Second)
+	for {
+		c, err := net.Dial("tcp", addr)
+		if err != nil {
+			t.Fatal(err)
+		}
+		_ = c.SetReadDeadline(time.Now().Add(300 * time.Millisecond))
+		_, rerr := c.Read(make([]byte, 1))
+		c.Close()
+		if rerr != nil && !errors.Is(rerr, os.ErrDeadlineExceeded) {
+			break
+		}
+		if time.Now().After(deadline) {
+			t.Fatal("超过单个来源的上限后新连接应被立即关闭")
+		}
+	}
+	if !hasLog(m, "未登录的连接过多") {
+		t.Fatal("拒绝连接应写入运行日志")
+	}
+	// 释放空连接后可以照常登录
+	for _, c := range idle {
+		c.Close()
+	}
+	idle = nil
+	deadline = time.Now().Add(5 * time.Second)
+	for {
+		if _, err := dial(t, port, "alice", "p1"); err == nil {
+			break
+		}
+		if time.Now().After(deadline) {
+			t.Fatal("空连接关闭后应能登录")
+		}
+		time.Sleep(50 * time.Millisecond)
+	}
+}
