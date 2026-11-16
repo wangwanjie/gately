@@ -587,7 +587,7 @@
   "lkcf 载荷长度无效": "Invalid lkcf payload length",
   "location %s 未导入": "location %s was not imported",
   "location %s 没有可转换的内容，未导入": "location %s has nothing that can be converted and was not imported",
-  "location %s 的 %s 未导入，站点的后端超时对所有路径生效": "%s in location %s was not imported; the site's backend timeouts apply to all paths",
+  "location %s 的 %s 未导入，站点的后端超时对所有路径生效": "%[2]s in location %[1]s was not imported; the site's backend timeouts apply to all paths",
   "location %s 的 proxy_pass 带路径 %s：nginx 会把前缀替换为该路径，Gately 原样转发请求路径，请确认后端路径": "proxy_pass in location %s has the path %s: nginx replaces the prefix with it, while Gately forwards the request path unchanged; check the backend path",
   "location %s 的 proxy_pass 路径 %s 不以 / 结尾，nginx 会直接拼接（如 %sx），导入后按 %s/x 转发，请确认后端路径": "The proxy_pass path %[2]s of location %[1]s does not end with /, so nginx joins it directly (for example %[3]sx); after import requests go to %[4]s/x, please check the backend path",
   "location %s 的 proxy_pass 路径 %s 带查询串，无法转换，请确认后端路径": "proxy_pass of location %s has a query string in its path %s and cannot be converted; check the backend path",
