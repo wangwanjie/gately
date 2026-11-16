@@ -71,12 +71,12 @@
 
     <el-dialog v-model="editorVisible" :title="editing.key ? t('portForward.editRule') : t('portForward.addRule')" width="600px" :fullscreen="isMobile">
       <CopyHint :from="copyFrom" />
-      <el-form :model="editing" label-width="110px" :label-position="labelPosition">
+      <el-form ref="formRef" :model="editing" :rules="formRules" label-width="110px" :label-position="labelPosition">
         <el-form-item :label="t('common.name')">
           <el-input v-model="editing.name" :placeholder="t('portForward.namePlaceholder')" />
         </el-form-item>
         <GroupInput v-model="editing.group" :groups="gl.groupNames.value" />
-        <el-form-item :label="t('portForward.protocol')" required>
+        <el-form-item :label="t('portForward.protocol')" prop="protocols" required>
           <el-checkbox-group v-model="editing.protocols">
             <el-checkbox v-for="p in protocols" :key="p.value" :value="p.value">{{ p.label }}</el-checkbox>
           </el-checkbox-group>
@@ -85,10 +85,10 @@
         <el-form-item :label="t('portForward.listenAddress')">
           <el-input v-model="editing.listenAddress" :placeholder="t('portForward.listenAddressPlaceholder')" />
         </el-form-item>
-        <el-form-item :label="t('portForward.listenPorts')" required>
+        <el-form-item :label="t('portForward.listenPorts')" prop="listenPorts" required>
           <el-input v-model="editing.listenPorts" :placeholder="t('portForward.portsPlaceholder')" />
         </el-form-item>
-        <el-form-item :label="t('portForward.targetAddress')" required>
+        <el-form-item :label="t('portForward.targetAddress')" prop="targetAddresses" required>
           <el-input v-model="targetsText" type="textarea" :rows="2" :placeholder="t('portForward.targetAddressPlaceholder')" />
           <TargetHint :lines="targetLines" :ports="editing.targetPorts" @split="splitTargets" />
         </el-form-item>
@@ -150,9 +150,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, nextTick, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ElMessage } from 'element-plus'
+import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { ArrowLeftRight, CopyPlus, Pencil, Plus, SlidersHorizontal, Trash2, TriangleAlert } from 'lucide-vue-next'
 import { api, errorText, formatBytes } from '../api'
 import GroupedList from '../components/GroupedList.vue'
@@ -177,6 +177,7 @@ import AdvancedToggle from '../components/AdvancedToggle.vue'
 import { createItem, uniqueName, type CopySource } from '../copyDraft'
 import { useFormLayout } from '../composables/useIsMobile'
 import { usePolling } from '../composables/usePolling'
+import { validateForm } from '../composables/useFormValidate'
 
 interface Rule {
   key?: string
@@ -338,6 +339,15 @@ async function loadSettings() {
   settings.value = await api.get<Settings>('/api/portforward/settings')
 }
 
+// 编辑框的前端校验：协议、监听端口与目标地址必填（目标地址的写法问题由 TargetHint 即时提示）
+const formRef = ref<FormInstance>()
+const formRules = computed<FormRules>(() => ({
+  protocols: [{ type: 'array', required: true, min: 1, message: t('portForward.protocolRequired'), trigger: 'change' }],
+  listenPorts: [{ required: true, whitespace: true, message: t('portForward.listenPortsRequired'), trigger: 'blur' }],
+  // 目标地址的输入框绑定的是文本，按拆分后的地址判断
+  targetAddresses: [{ trigger: 'blur', validator: (_r: unknown, _v: unknown, cb: (e?: Error) => void) => cb(targetLines.value.length ? undefined : new Error(t('portForward.targetRequired'))) }],
+}))
+
 // advOpen 为编辑框是否展开「高级设置」；advCount 为与默认值不同的高级字段数
 const advOpen = ref(false)
 const advCount = computed(() => {
@@ -376,6 +386,7 @@ function openEditor(row?: RuleView, copy = false) {
   targetsText.value = (editing.value.targetAddresses ?? []).join('\n')
   advOpen.value = advCount.value > 0
   editorVisible.value = true
+  void nextTick(() => formRef.value?.clearValidate())
 }
 
 // targetLines 为目标地址输入框按行（或逗号）拆开的地址
@@ -394,6 +405,10 @@ function splitTargets(v: { hosts: string[]; port: number }) {
 
 async function save() {
   editing.value.targetAddresses = targetLines.value
+  // 必填项先在前端检查，未填时标红并聚焦
+  if (!(await validateForm(formRef.value))) {
+    return
+  }
   saving.value = true
   try {
     const { key, ...body } = editing.value

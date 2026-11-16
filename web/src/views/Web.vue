@@ -252,10 +252,10 @@
     <el-dialog v-model="listenerVisible" :title="editingListener.key ? t('web.editListener') : t('web.addListener')" width="560px" :fullscreen="isMobile">
       <CopyHint :from="copyListenerFrom" />
       <el-alert v-if="!editingListener.key && !copyListenerFrom" :title="t('web.newListenerHint')" type="info" :closable="false" show-icon class="listener-hint" />
-      <el-form :model="editingListener" label-width="130px" :label-position="labelPosition">
+      <el-form ref="listenerForm" :model="editingListener" :rules="listenerRules" label-width="130px" :label-position="labelPosition">
         <el-form-item :label="t('common.name')"><el-input v-model="editingListener.name" /></el-form-item>
         <el-form-item :label="t('web.listenIp')"><el-input v-model="editingListener.listenIp" :placeholder="t('web.listenIpPlaceholder')" /></el-form-item>
-        <el-form-item :label="t('web.port')" required><el-input-number v-model="editingListener.port" :min="1" :max="65535" /></el-form-item>
+        <el-form-item :label="t('web.port')" prop="port" required><el-input-number v-model="editingListener.port" :min="1" :max="65535" /></el-form-item>
         <el-form-item label="HTTPS">
           <el-switch v-model="editingListener.tls" />
           <span class="help">{{ t('web.tlsHelp') }}</span>
@@ -339,7 +339,7 @@
 
     <el-dialog v-model="siteVisible" :title="siteIsDefault ? t('web.defaultSite') : site.key ? t('web.editSite') : t('web.addSite')" width="760px" top="5vh" :fullscreen="isMobile">
       <CopyHint :from="copySiteFrom" />
-      <el-form :model="site" label-width="130px" :label-position="labelPosition">
+      <el-form ref="siteForm" :model="site" :rules="siteRules" label-width="130px" :label-position="labelPosition">
         <el-alert v-if="siteIsDefault" :title="t('web.defaultSiteHint')" type="info" :closable="false" show-icon class="listener-hint" />
         <!-- 所属监听：新建或复制时决定建在哪个监听下（例如把 HTTP 站点复制到 HTTPS 监听），编辑已有站点时改动即在保存后移到该监听；
              默认站点属于所在监听，不能移动 -->
@@ -352,7 +352,7 @@
         </el-form-item>
         <el-tabs v-model="siteTab">
           <el-tab-pane :label="t('web.tabBasic')" name="basic">
-            <el-form-item v-if="!siteIsDefault" :label="t('web.domains')" required>
+            <el-form-item v-if="!siteIsDefault" :label="t('web.domains')" prop="domains" required>
               <el-input v-model="domainsText" type="textarea" :rows="2" class="mono" :placeholder="t('web.domainsPlaceholder')" />
             </el-form-item>
             <el-form-item :label="t('common.name')"><el-input v-model="site.name" /></el-form-item>
@@ -371,7 +371,7 @@
               <!-- 断开连接类型没有安全页，“名单内放行、其余断开”需改用反向代理 + IP 访问控制 + 拒绝时断开连接（#53） -->
               <div v-if="site.type === 'close'" class="form-help">{{ t('web.typeCloseAllow') }}</div>
             </el-form-item>
-            <el-form-item v-if="site.type === 'proxy'" :label="t('web.targets')" required>
+            <el-form-item v-if="site.type === 'proxy'" :label="t('web.targets')" prop="targets" required>
               <el-input v-model="targetsText" type="textarea" :rows="2" class="mono" :placeholder="t('web.targetsPlaceholder')" />
             </el-form-item>
             <!-- 反向代理站点的后端连接选项紧跟后端地址；其他类型站点的放在安全页的按用户分流下面（#79） -->
@@ -403,7 +403,7 @@
               </el-form-item>
             </template>
             <template v-if="site.type === 'redirect'">
-              <el-form-item :label="t('web.redirectTo')" required>
+              <el-form-item :label="t('web.redirectTo')" prop="redirectTo" required>
                 <el-input v-model="site.redirectTo" placeholder="https://example.com" />
                 <div class="form-help">{{ t('web.redirectHostHelp') }}</div>
                 <div class="form-help">{{ t('web.redirectVarsHelp') }}</div>
@@ -416,7 +416,7 @@
               </el-form-item>
             </template>
             <template v-if="site.type === 'static'">
-              <el-form-item :label="t('web.root')" required><el-input v-model="site.root" placeholder="/data/www" /></el-form-item>
+              <el-form-item :label="t('web.root')" prop="root" required><el-input v-model="site.root" placeholder="/data/www" /></el-form-item>
               <el-form-item :label="t('web.listDir')"><el-switch v-model="site.listDir" /></el-form-item>
               <el-form-item :label="t('web.cleanUrls')">
                 <el-switch v-model="site.cleanUrls" />
@@ -708,10 +708,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
 import {
   ArrowUpDown,
   BarChart3,
@@ -783,6 +783,7 @@ import { listenErrorKind } from '../netaddr'
 import { certRequestDomains, siteCertState, type SiteCert, type SiteCertState } from '../siteCert'
 import { loadForwardSources } from '../forwardSources'
 import { useFormLayout } from '../composables/useIsMobile'
+import { validateForm } from '../composables/useFormValidate'
 import { useListText, splitLines } from '../composables/useListText'
 import ListInput from '../components/ListInput.vue'
 import HeaderEditor from '../components/HeaderEditor.vue'
@@ -988,6 +989,29 @@ async function loadPanels() {
 // errorPagesVisible 为自定义错误页面库对话框（从设置中打开）
 const errorPagesVisible = ref(false)
 const siteTab = ref('basic')
+// 监听与站点表单的引用与前端校验规则：必填项未填时标红并聚焦，不必等后端返回 toast
+const listenerForm = ref<FormInstance>()
+const siteForm = ref<FormInstance>()
+const listenerRules = computed<FormRules>(() => ({
+  port: [{ required: true, type: 'number', min: 1, max: 65535, message: t('web.portRequired'), trigger: 'change' }],
+}))
+// listRule 校验列表字段至少有一项（域名、后端地址为数组）
+function listRule(message: string) {
+  return {
+    trigger: 'blur',
+    validator: (_r: unknown, v: string[] | undefined, cb: (e?: Error) => void) => cb((v ?? []).some((x) => x.trim()) ? undefined : new Error(message)),
+  }
+}
+// textRule 校验文本字段非空
+function textRule(message: string) {
+  return { trigger: 'blur', validator: (_r: unknown, v: string | undefined, cb: (e?: Error) => void) => cb((v ?? '').trim() ? undefined : new Error(message)) }
+}
+const siteRules = computed<FormRules>(() => ({
+  domains: [listRule(t('web.domainsRequired'))],
+  targets: [listRule(t('web.targetsRequired'))],
+  redirectTo: [textRule(t('web.redirectToRequired'))],
+  root: [textRule(t('web.rootRequired'))],
+}))
 const site = ref<Site>(emptySite())
 const siteIsDefault = ref(false)
 let siteOwner: ListenerView | null = null
@@ -1796,6 +1820,7 @@ function openListener(l?: ListenerView, copy = false) {
     editingListener.value.name = uniqueName(l.name, listeners.value.map((x) => x.name))
   }
   listenerVisible.value = true
+  void nextTick(() => listenerForm.value?.clearValidate())
 }
 
 // hostPort 返回“监听地址:端口”，IPv6 地址加方括号，未指定地址显示 *
@@ -1815,6 +1840,9 @@ function stripShareLinks(s: Site): Site {
 }
 
 async function saveListener() {
+  if (!(await validateForm(listenerForm.value))) {
+    return
+  }
   saving.value = true
   try {
     const { key, ...body } = editingListener.value
@@ -2023,6 +2051,8 @@ function openSite(l: ListenerView, row?: SiteRow, copy = false) {
   site.value = draft
   siteTab.value = 'basic'
   siteVisible.value = true
+  // 上次打开时的校验标红不带到这次
+  void nextTick(() => siteForm.value?.clearValidate())
   fetchSettings()
     .then((s) => {
       adminPassReady.value = !!s.ssoDomain || !!s.adminPassEntry
@@ -2074,6 +2104,10 @@ const siteMovePlainRisk = computed(() => {
 
 async function saveSite() {
   if (!siteOwner) {
+    return
+  }
+  // 必填项先在前端检查：出错的字段都在「基本」页，切过去再标红并聚焦
+  if (!(await validateForm(siteForm.value, () => void (siteTab.value = 'basic')))) {
     return
   }
   // 编辑已有站点并换了所属监听：先保存修改，再移到所选监听（新建与复制时 siteOwner 已随选择切换）
