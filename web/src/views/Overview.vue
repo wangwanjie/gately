@@ -1123,4 +1123,11 @@ onBeforeUnmount(() => {
     width: 64px;
   }
 }
+/* 手机上点击区域至少 40px（视觉大小不变，用内边距与负外边距扩大可点范围） */
+@media (max-width: 767.98px) {
+  .health-btn {
+    min-height: 40px;
+    align-items: center;
+  }
+}
 </style>
