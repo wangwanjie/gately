@@ -1,4 +1,4 @@
-// Gately 修改：仅在 Linux 与 macOS 编译（构建约束）。
+// Gately 修改：仅在 Linux 与 macOS 编译（构建约束）；阻塞锁等待协程中的 panic 只断开本连接。
 
 //go:build linux || darwin
 
@@ -306,6 +306,8 @@ func (d *Dispatcher) startLockWait(rw io.ReadWriter, hdr smb2.Header, sess *Sess
 // requests while this one waits.
 func (d *Dispatcher) awaitLock(rw io.ReadWriter, hdr smb2.Header, sess *Session, open *Open, ops []lockOp, asyncID uint64, reg *notifyReg) {
 	defer pendingLockWaits.Add(-1)
+	// Gately 新增：panic 时断开连接，不让 panic 结束整个进程
+	defer recoverConnPanic(d.Log, "lock-wait", d.killConn)
 	defer d.unregisterNotify(hdr.MessageID)
 
 	timeout := time.NewTimer(lockWaitTimeout)

@@ -1,4 +1,4 @@
-// Gately 修改：仅在 Linux 与 macOS 编译（构建约束）；客户端给出的偏移与长度改用 bounds 包在 uint64 中判断边界。
+// Gately 修改：仅在 Linux 与 macOS 编译（构建约束）；客户端给出的偏移与长度改用 bounds 包在 uint64 中判断边界；连接与工作协程中的 panic 只断开本连接（见 parent/gately_recover.go）。
 
 //go:build linux || darwin
 
@@ -137,6 +137,11 @@ func connWorkers() int {
 type connPool struct {
 	sem chan struct{}
 	wg  sync.WaitGroup
+
+	// Gately 新增：工作协程中的 panic 由 recoverConnPanic 捕获并记录到 log，再调用 onPanic 断开连接，
+	// 不让一个帧的处理缺陷结束整个进程。为 nil 时只记录日志。
+	log     *slog.Logger
+	onPanic func()
 }
 
 func newConnPool(n int) *connPool { return &connPool{sem: make(chan struct{}, n)} }
@@ -155,6 +160,7 @@ func (p *connPool) submit(fn func()) {
 			<-p.sem
 			p.wg.Done()
 		}()
+		defer recoverConnPanic(p.log, "frame", p.onPanic)
 		fn()
 	}()
 }
@@ -274,6 +280,9 @@ func releaseConnOpens(sessions *SessionTable, durable *DurableTable) {
 func ServeConn(ctx context.Context, c net.Conn, log *slog.Logger, maxFrame uint32, opts ConnOptions) {
 	defer c.Close()
 	log = log.With("remote", c.RemoteAddr().String())
+	// Gately 新增：读循环（含 NEGOTIATE、SESSION_SETUP 与串行执行的帧）中的 panic 只断开本连接。
+	// 这里最先登记、最后执行：后面登记的清理（排空工作池、关闭写协程、释放句柄）在 panic 时照常先执行
+	defer recoverConnPanic(log, "connection", func() { _ = c.Close() })
 	log.Info("connection opened")
 
 	// Force the socket shut when the server context is cancelled, so a read
@@ -331,6 +340,7 @@ func ServeConn(ctx context.Context, c net.Conn, log *slog.Logger, maxFrame uint3
 	cio := &connIO{r: br, w: writer}
 
 	pool := newConnPool(connWorkers())
+	pool.log = log
 
 	// aborted is set by a handler that has decided the connection must go.
 	//
@@ -346,6 +356,11 @@ func ServeConn(ctx context.Context, c net.Conn, log *slog.Logger, maxFrame uint3
 		// flag, or this deadline lands after the one it armed and the read
 		// returns at once.
 		_ = c.SetReadDeadline(time.Now())
+	}
+	// 工作协程 panic 后结束读循环并关闭连接；排队中的回复可能缺失，客户端会重新连接
+	pool.onPanic = func() {
+		abort()
+		_ = c.Close()
 	}
 
 	sessions := NewSessionTable()

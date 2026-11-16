@@ -1,4 +1,4 @@
-// Gately 修改：按用户解析共享、签名校验改用 Session.verifySigned、签名密钥经 signingKey() 加锁读取（见 parent/gately.go）；仅在 Linux 与 macOS 编译（构建约束）；客户端给出的偏移与长度改用 bounds 包在 uint64 中判断边界。
+// Gately 修改：按用户解析共享、签名校验改用 Session.verifySigned、签名密钥经 signingKey() 加锁读取（见 parent/gately.go）；仅在 Linux 与 macOS 编译（构建约束）；客户端给出的偏移与长度改用 bounds 包在 uint64 中判断边界；CHANGE_NOTIFY 协程中的 panic 只断开本连接。
 
 //go:build linux || darwin
 
@@ -3709,9 +3709,14 @@ func (d *Dispatcher) handleChangeNotify(rw io.ReadWriter, hdr smb2.Header, body 
 	}
 
 	go func() {
+		// Gately 新增：panic 时断开连接（客户端会重新连接并重新注册监视），不让 panic 结束整个进程
+		defer recoverConnPanic(d.Log, "change-notify", d.killConn)
 		defer w.Close()
 		defer d.unregisterNotify(hdr.MessageID)
-		go w.Watch()
+		go func() {
+			defer recoverConnPanic(d.Log, "change-notify-watch", d.killConn)
+			w.Watch()
+		}()
 
 		var entries []smb2.NotifyEntry
 		cancelled := false
