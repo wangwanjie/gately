@@ -140,6 +140,8 @@ type App struct {
 	pendingTOTP       string
 	// crash 为本次运行的崩溃记录，未开启时为 nil（方法均可在 nil 上调用）
 	crash *crashlog.Recorder
+	// gwOrigins 为经统一网关访问时已确认的管理界面页面来源，见 gatewayOriginHost
+	gwOrigins gatewayOrigins
 }
 
 // New 加载配置并初始化所有模块，但不启动网络服务。
@@ -616,6 +618,9 @@ func (a *App) handleLogin(w http.ResponseWriter, r *http.Request) {
 	events.Publish(events.Event{Type: events.LoginSuccessful, Source: "管理后台", Level: events.LevelInfo,
 		Title: "管理后台登录成功", Message: fmt.Sprintf("%s 从 %s 登录", req.Username, ip), Fields: map[string]string{"ip": ip, "user": req.Username}})
 	a.noteLoginIP(ip, req.Username, "密码")
+	if req.Username == a.auth.Username() {
+		a.learnGatewayLoginOrigin(r)
+	}
 	http.SetCookie(w, &http.Cookie{
 		Name:     auth.CookieName,
 		Value:    token,

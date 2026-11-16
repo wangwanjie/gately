@@ -528,6 +528,20 @@ func TestGatewayTerminalWebSocket(t *testing.T) {
 			return d.DialContext(ctx, "unix", sockPath)
 		},
 	}}
+	// 浏览器里管理界面进入后先上报界面语言：这个带会话、被浏览器标明同源的请求让服务端确认了页面来源，
+	// 之后不带 Sec-Fetch-Site 的 WebSocket 握手才会被接受（见 gatewayOriginHost）
+	req, _ := http.NewRequest("PUT", "http://nas.example.com/app/gately/api/account/ui-language", strings.NewReader(`{"language":"zh-CN"}`))
+	req.Host = "nas.example.com"
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Cookie", "gately_token="+token)
+	req.Header.Set("Origin", "https://nas.example.com:4433")
+	req.Header.Set("Sec-Fetch-Site", "same-origin")
+	req.Header.Set("Accept-Language", "zh-CN")
+	if resp, err := unixClient.Do(req); err != nil || resp.StatusCode != 200 {
+		t.Fatalf("上报界面语言失败: %v %v", err, resp)
+	} else {
+		resp.Body.Close()
+	}
 	for _, lang := range []string{"zh-CN", "en"} {
 		t.Run(lang, func(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
