@@ -283,7 +283,8 @@ const panelSrc = `<!doctype html>
 {{if not .Preview}}<script nonce="{{.Nonce}}">` + panelJS + `</script>{{end}}
 </body></html>`
 
-var panelTpl = template.Must(template.New("panel").Parse(panelSrc))
+// panelTpl 为导航面板的页面模板，首次渲染面板时解析
+var panelTpl = newLazyTemplate("panel", panelSrc)
 
 // panelIconData 是模板中的图标：图片地址与颜色已转为模板的安全类型，Class 引用页面中生成的颜色类。
 type panelIconData struct {
@@ -540,7 +541,7 @@ func RenderPanel(r *http.Request, v PanelView) ([]byte, string) {
 		"LAN": v.LAN, "Switchable": v.Switchable, "Forced": v.Forced, "Preview": v.Preview,
 	}
 	var buf bytes.Buffer
-	_ = panelTpl.Execute(&buf, data)
+	_ = panelTpl.get().Execute(&buf, data)
 	if v.Preview {
 		return forPreview(buf.Bytes(), panelPreviewCSP), ""
 	}

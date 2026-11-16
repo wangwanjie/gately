@@ -2,7 +2,6 @@ package webpage
 
 import (
 	"bytes"
-	"html/template"
 	"net/http"
 	"strconv"
 	"unicode/utf8"
@@ -42,10 +41,10 @@ var styleTexts = map[string]string{
 	"todoOther": "请检查访问地址，或返回首页。",
 }
 
-// style 是一个已编译的内置风格。
+// style 是一个内置风格，模板在首次使用时解析。
 type style struct {
 	id  string
-	tpl *template.Template
+	tpl *lazyTemplate
 }
 
 var (
@@ -63,11 +62,10 @@ const sharedPartials = `{{define "head"}}<meta charset="utf-8"><meta name="viewp
 {{if .Home}}<a class="b {{if or .Action .Retry}}sec{{else}}pri{{end}}" href="/">{{.T.home}}</a>{{end}}
 </nav>{{end}}{{end}}`
 
-// registerStyle 注册一个内置风格，src 需以 {{define "page"}} 定义完整页面；在包初始化时调用，模板错误直接 panic。
+// registerStyle 注册一个内置风格，src 需以 {{define "page"}} 定义完整页面；在包初始化时调用。
+// 模板在首次使用时才解析，模板错误届时直接 panic，测试中由 TestTemplatesParse 提前发现。
 func registerStyle(id, src string) {
-	t := template.Must(template.New(id).Parse(sharedPartials))
-	template.Must(t.Parse(src))
-	s := &style{id: id, tpl: t}
+	s := &style{id: id, tpl: newLazyTemplate(id, sharedPartials, src)}
 	styleList = append(styleList, s)
 	styleByID[id] = s
 }
@@ -121,8 +119,9 @@ func RenderError(r *http.Request, p Problem, styleID string) []byte {
 	s := styleByID[styleID]
 	if s == nil {
 		mu.RLock()
-		t := pages["error"]
+		lt := pages["error"]
 		mu.RUnlock()
+		t := lt.get()
 		data["Lang"] = lang
 		data["T"] = Localize(lang, errorTexts)
 		_ = t.ExecuteTemplate(&buf, "layout", data)
@@ -133,7 +132,7 @@ func RenderError(r *http.Request, p Problem, styleID string) []byte {
 	data["Path"] = clipShown(r.URL.Path, maxShownPath)
 	data["Server"] = p.Code >= 500
 	data["NotFound"] = p.Code == http.StatusNotFound
-	_ = s.tpl.ExecuteTemplate(&buf, "page", data)
+	_ = s.tpl.get().ExecuteTemplate(&buf, "page", data)
 	return buf.Bytes()
 }
 
