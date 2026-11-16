@@ -13,7 +13,7 @@
       {{ t('stun.intro') }}
     </el-alert>
 
-    <GroupedList :gl="gl" :loading="loading" :compact="compact" :empty-text="t('stun.empty')">
+    <GroupedList :gl="gl" :error="loadError" @retry="load" :loading="loading" :compact="compact" :empty-text="t('stun.empty')">
       <template #item="{ it, item: r, sorting, bind }">
         <EntityCard v-bind="bind" :off="!r.enable || moduleOff" :compact="compact || sorting">
           <template #lead>
@@ -229,7 +229,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
 import { CopyPlus, Pencil, Plus, Radar, RotateCw, SlidersHorizontal, Trash2 } from 'lucide-vue-next'
-import { api, formatBytes } from '../api'
+import { api, errorText, formatBytes } from '../api'
 import PageHeader from '../components/PageHeader.vue'
 import ModuleBanner from '../components/ModuleBanner.vue'
 import CompactToggle from '../components/CompactToggle.vue'
@@ -330,6 +330,8 @@ interface Settings {
 
 const vars = ['ruleName', 'time', 'ip', 'port', 'ipAddr']
 const { t } = useI18n()
+// 列表最近一次加载失败的原因，空为成功；接口出错时列表显示错误而不是空状态
+const loadError = ref('')
 // 读取端口敲门规则目录，卡片上显示“需要敲门”的规则名称
 useKnockRules()
 const { isMobile, labelPosition } = useFormLayout()
@@ -463,6 +465,9 @@ function copy(s: string, e: MouseEvent) {
 async function load() {
   try {
     rules.value = await api.get<RuleView[]>('/api/stun/rules')
+    loadError.value = ''
+  } catch (e) {
+    loadError.value = errorText(e)
   } finally {
     loading.value = false
   }
@@ -579,7 +584,11 @@ async function saveSettings() {
 
 onMounted(async () => {
   loadModule()
-  interfaces.value = await api.get<NetInterface[]>('/api/stun/netinterfaces')
+  try {
+    interfaces.value = await api.get<NetInterface[]>('/api/stun/netinterfaces')
+  } catch {
+    // 网卡列表读取失败不阻止规则列表加载；列表本身失败时显示错误
+  }
   await load()
   polling.start()
 })

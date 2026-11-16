@@ -77,7 +77,9 @@
       </div>
 
       <div v-loading="loading" class="g-card-body list-body">
-        <el-empty v-if="!items.length && !loading" :description="emptyText" :image-size="72" />
+        <LoadError v-if="loadError && items.length" bar :error="loadError" class="list-load-error" @retry="load" />
+        <LoadError v-if="loadError && !items.length && !loading" compact :error="loadError" @retry="load" />
+        <el-empty v-else-if="!items.length && !loading" :description="emptyText" :image-size="72" />
 
         <!-- 桌面端：表格 -->
         <el-table v-else-if="!isMobile" :data="items" row-key="ip" class="v-table" @row-click="(row: Item) => openDetail(row.ip)">
@@ -396,9 +398,10 @@ import {
   X,
 } from 'lucide-vue-next'
 import PageHeader from '../components/PageHeader.vue'
+import LoadError from '../components/LoadError.vue'
 import SiteLogDialog from '../components/SiteLogDialog.vue'
 import DayBars from '../components/VisitorDayBars.vue'
-import { api, formatBytes } from '../api'
+import { api, errorText, formatBytes } from '../api'
 import { isReadonly } from '../nav'
 import { useFormLayout } from '../composables/useIsMobile'
 import { copyText } from '../composables/useClipboard'
@@ -406,6 +409,8 @@ import type { DayPoint, Ident, Item, LastReq, SiteRef, VisitorDetail, VisitorInf
 import { latestOnly, shrinkImpact } from '../visitors'
 
 const { t, locale } = useI18n()
+// 列表最近一次加载失败的原因，空为成功；接口出错时显示错误而不是空状态
+const loadError = ref('')
 const { isMobile, labelPosition } = useFormLayout()
 
 const ranges = computed(() => [
@@ -601,9 +606,10 @@ async function load() {
       page.value = last
       await load()
     }
+    loadError.value = ''
   } catch (e) {
     if (listSeq.isLatest(seq)) {
-      ElMessage.error((e as Error).message)
+      loadError.value = errorText(e)
     }
   } finally {
     if (listSeq.isLatest(seq)) {
@@ -924,6 +930,9 @@ button.tile:focus-visible {
 .list-body {
   padding: 0;
   min-height: 120px;
+}
+.list-load-error {
+  margin: 8px 12px;
 }
 .list-body > .el-empty {
   padding: 32px 0;

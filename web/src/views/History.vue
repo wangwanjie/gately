@@ -13,6 +13,9 @@
       </div>
       <div class="g-card-body table-body">
         <el-table v-loading="loading" :data="versions" :empty-text="t('history.empty')">
+          <template v-if="loadError" #empty>
+            <LoadError compact :error="loadError" @retry="load" />
+          </template>
           <el-table-column :label="t('history.savedAt')" min-width="200">
             <template #default="{ row }">{{ new Date(row.time).toLocaleString() }}</template>
           </el-table-column>
@@ -51,7 +54,8 @@ import { useI18n } from 'vue-i18n'
 import { FileDiff, History, RefreshCw, Undo2 } from 'lucide-vue-next'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import PageHeader from '../components/PageHeader.vue'
-import { api } from '../api'
+import LoadError from '../components/LoadError.vue'
+import { api, errorText } from '../api'
 
 interface Version {
   id: string
@@ -69,6 +73,8 @@ interface DiffLine {
 }
 
 const { t } = useI18n()
+// 列表最近一次加载失败的原因，空为成功；接口出错时显示错误而不是空状态
+const loadError = ref('')
 const files = ref<HistoryFile[]>([])
 const current = ref('')
 const loading = ref(false)
@@ -90,8 +96,9 @@ async function load() {
     if (!files.value.some((f) => f.name === current.value)) {
       current.value = files.value[0]?.name ?? ''
     }
+    loadError.value = ''
   } catch (e) {
-    ElMessage.error((e as Error).message)
+    loadError.value = errorText(e)
   } finally {
     loading.value = false
   }

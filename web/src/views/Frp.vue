@@ -17,7 +17,7 @@
             </div>
           </div>
           <div class="g-card-body">
-            <GroupedList :gl="glClients" :compact="compactClients" grid :empty-text="t('frp.noClients')" :empty-image-size="60">
+            <GroupedList :gl="glClients" :error="loadError" @retry="load" :compact="compactClients" grid :empty-text="t('frp.noClients')" :empty-image-size="60">
               <template #item="{ it, item: c, sorting, bind }">
                 <EntityCard v-bind="bind" :off="!c.enable" :compact="compactClients || sorting">
                   <template v-if="sorting" #lead>
@@ -66,7 +66,7 @@
             </div>
           </div>
           <div class="g-card-body">
-            <GroupedList :gl="glProxies" :compact="compactProxies" grid :empty-text="t('frp.noProxies')" :empty-image-size="60">
+            <GroupedList :gl="glProxies" :error="loadError" @retry="load" :compact="compactProxies" grid :empty-text="t('frp.noProxies')" :empty-image-size="60">
               <template #item="{ it, item: p, sorting, bind }">
                 <EntityCard v-bind="bind" :off="!p.enable || !clientOf(p)?.enable" :compact="compactProxies || sorting">
                   <template v-if="sorting" #lead>
@@ -119,7 +119,7 @@
             </div>
           </div>
           <div class="g-card-body">
-            <GroupedList :gl="glServers" :compact="compactServers" grid :empty-text="t('frp.noServers')" :empty-image-size="60">
+            <GroupedList :gl="glServers" :error="loadError" @retry="load" :compact="compactServers" grid :empty-text="t('frp.noServers')" :empty-image-size="60">
               <template #item="{ it, item: s, sorting, bind }">
                 <EntityCard v-bind="bind" :off="!s.enable" :compact="compactServers || sorting">
                   <template v-if="sorting" #lead>
@@ -448,7 +448,7 @@ import { computed, onMounted, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import { ArrowRightLeft, CopyPlus, FileUp, Pencil, Plug, Plus, RefreshCw, Save, Server, Terminal, Trash2, Waypoints } from 'lucide-vue-next'
-import { api } from '../api'
+import { api, errorText } from '../api'
 import { secretOf } from '../secrets'
 import CopyHint from '../components/CopyHint.vue'
 import { asciiCopyName, createItem, uniqueName, type CopySource } from '../copyDraft'
@@ -578,6 +578,8 @@ interface Proxy {
 }
 
 const { t } = useI18n()
+// 列表最近一次加载失败的原因，空为成功；接口出错时列表显示错误而不是空状态
+const loadError = ref('')
 const { isMobile, labelPosition } = useFormLayout()
 
 // hostPort 拼接地址与端口，IPv6 地址加方括号；地址为空时只显示端口
@@ -659,20 +661,25 @@ function instanceBadge(v: { enable: boolean } & InstanceState): { type: StatusTy
 }
 
 async function load() {
-  const [c, s, p, st] = await Promise.all([
-    api.get<ClientView[]>('/api/frp/clients'),
-    api.get<ServerView[]>('/api/frp/servers'),
-    api.get<Proxy[]>('/api/frp/proxies'),
-    api.get<SettingsView>('/api/frp/settings'),
-  ])
-  clients.value = c
-  servers.value = s
-  proxies.value = p
-  settings.value = st
-  frpcPath.value = st.settings.frpcPath
-  frpsPath.value = st.settings.frpsPath
-  if (proxyFilter.value && !c.some((x) => x.key === proxyFilter.value)) {
-    proxyFilter.value = ''
+  try {
+    const [c, s, p, st] = await Promise.all([
+      api.get<ClientView[]>('/api/frp/clients'),
+      api.get<ServerView[]>('/api/frp/servers'),
+      api.get<Proxy[]>('/api/frp/proxies'),
+      api.get<SettingsView>('/api/frp/settings'),
+    ])
+    clients.value = c
+    servers.value = s
+    proxies.value = p
+    settings.value = st
+    frpcPath.value = st.settings.frpcPath
+    frpsPath.value = st.settings.frpsPath
+    if (proxyFilter.value && !c.some((x) => x.key === proxyFilter.value)) {
+      proxyFilter.value = ''
+    }
+    loadError.value = ''
+  } catch (e) {
+    loadError.value = errorText(e)
   }
 }
 
@@ -682,7 +689,9 @@ async function refresh() {
     const [c, s] = await Promise.all([api.get<ClientView[]>('/api/frp/clients'), api.get<ServerView[]>('/api/frp/servers')])
     clients.value = c
     servers.value = s
-  } catch {
+    loadError.value = ''
+  } catch (e) {
+    loadError.value = errorText(e)
     // 轮询失败时保留上一次的状态
   }
 }

@@ -16,7 +16,7 @@
       @enable="enableRenew"
     />
 
-    <GroupedList :gl="gl" :loading="loading" :compact="compact" :empty-text="t('ssl.empty')">
+    <GroupedList :gl="gl" :error="loadError" @retry="load" :loading="loading" :compact="compact" :empty-text="t('ssl.empty')">
       <template #item="{ it, item: c, sorting, bind }">
         <EntityCard v-bind="bind" :off="!c.enable" :compact="compact || sorting">
           <template #lead>
@@ -287,7 +287,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
 import { CopyPlus, Download, Pencil, Plus, RotateCw, Send, ShieldCheck, SlidersHorizontal, Trash2, Upload } from 'lucide-vue-next'
-import { api } from '../api'
+import { api, errorText } from '../api'
 import { moduleBuilt } from '../nav'
 import SecretInput from '../components/SecretInput.vue'
 import { secretOf } from '../secrets'
@@ -430,6 +430,8 @@ const enabling = ref(false)
 const targets = ref<DeployTargets>({ ssh: [], containers: [] })
 const deploying = ref('')
 const { t } = useI18n()
+// 列表最近一次加载失败的原因，空为成功；接口出错时列表显示错误而不是空状态
+const loadError = ref('')
 const { isMobile, labelPosition } = useFormLayout()
 // 定时刷新，标签页在后台时暂停
 const polling = usePolling(load, 5000)
@@ -648,6 +650,9 @@ function certStatus(c: CertView): { type: StatusType; text: string; title?: stri
 async function load() {
   try {
     certs.value = await api.get<CertView[]>('/api/ssl/certs')
+    loadError.value = ''
+  } catch (e) {
+    loadError.value = errorText(e)
   } finally {
     loading.value = false
   }
@@ -788,7 +793,11 @@ async function saveSettings() {
 onMounted(async () => {
   loadRenew()
   loadTargets()
-  providers.value = await api.get<ProviderMeta[]>('/api/ssl/providers')
+  try {
+    providers.value = await api.get<ProviderMeta[]>('/api/ssl/providers')
+  } catch {
+    // 服务商列表读取失败不阻止证书列表加载；列表本身失败时显示错误
+  }
   await load()
   polling.start()
 })

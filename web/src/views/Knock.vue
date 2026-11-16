@@ -88,7 +88,7 @@
       </div>
     </div>
 
-    <GroupedList :gl="gl" :compact="compact" grid :empty-text="t('knock.rule.empty')">
+    <GroupedList :gl="gl" :error="loadError" @retry="load" :compact="compact" grid :empty-text="t('knock.rule.empty')">
       <template #item="{ it, item: r, sorting, bind }">
         <EntityCard v-bind="bind" :off="!r.enable" :compact="compact || sorting">
           <template #lead>
@@ -285,7 +285,7 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import { Activity, Copy, CopyPlus, FileCode, KeyRound, Lock, Pencil, Plus, RefreshCw, Settings2, Terminal, Trash2, Unlock } from 'lucide-vue-next'
-import { api } from '../api'
+import { api, errorText } from '../api'
 import { fetchSecret, secretOf } from '../secrets'
 import SecretInput from '../components/SecretInput.vue'
 import PageHeader from '../components/PageHeader.vue'
@@ -383,6 +383,8 @@ interface Status {
 }
 
 const { t } = useI18n()
+// 列表最近一次加载失败的原因，空为成功；接口出错时列表显示错误而不是空状态
+const loadError = ref('')
 const { isMobile, labelPosition } = useFormLayout()
 const compact = useCompactView('knock')
 const rules = ref<RuleView[]>([])
@@ -451,15 +453,20 @@ function empty(): Rule {
 }
 
 async function load() {
-  const [r, s, st] = await Promise.all([
-    api.get<RuleView[]>('/api/knock/rules'),
-    api.get<Status>('/api/knock/status'),
-    api.get<KnockSettings>('/api/knock/settings'),
-  ])
-  rules.value = r
-  status.value = s
-  settings.value = st
-  serverOffset.value = new Date(s.now).getTime() - Date.now()
+  try {
+    const [r, s, st] = await Promise.all([
+      api.get<RuleView[]>('/api/knock/rules'),
+      api.get<Status>('/api/knock/status'),
+      api.get<KnockSettings>('/api/knock/settings'),
+    ])
+    rules.value = r
+    status.value = s
+    settings.value = st
+    serverOffset.value = new Date(s.now).getTime() - Date.now()
+    loadError.value = ''
+  } catch (e) {
+    loadError.value = errorText(e)
+  }
 }
 
 const listenBadge = computed((): { type: StatusType; text: string } => {
