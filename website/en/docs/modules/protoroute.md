@@ -11,6 +11,8 @@ Each rule has:
 - A default target: the rule's own target addresses, target ports and PROXY protocol setting, used when no route matches or the protocol is not recognized;
 - A detection timeout: how many seconds to wait for recognizable data from the client; 0 means the default of 5 seconds.
 
+Each port also limits the concurrent connections from a single source (an IPv4 address or an IPv6 /64), by default to half of the max connections; set "Max connections per source" in a rule or change the default in the global settings. Loopback and private addresses are not limited; connections that send no data are handled by the detection timeout.
+
 ## Recognized protocols
 
 | Route protocol | Recognized by | Further matching |

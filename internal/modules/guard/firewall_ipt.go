@@ -2,13 +2,16 @@ package guard
 
 // iptables（legacy）+ ipset 后端：内核没有 nf_tables（如群晖 DSM）、或系统没有 nft 命令时使用。
 //
-// 规则结构与 nftables 后端一一对应，全部写在 mangle 表 Gately 自己的链中：
-//   - mangle PREROUTING 第一条跳到 GATELY_PRE：丢弃封禁集合、诱饵端口与扫描检测集合中的来源，再进入 GATELY_DENY
-//     （网段与永久封禁）。PREROUTING 在路由之前，发往本机、转发给 Docker 容器与内网设备的流量都会被丢弃；
+// 规则结构与 nftables 后端一一对应：
+//   - mangle PREROUTING 第一条跳到 GATELY_PRE：丢弃封禁集合中的来源，再进入 GATELY_DENY（网段与永久封禁）。
+//     PREROUTING 在路由之前，发往本机、转发给 Docker 容器与内网设备的流量都会被丢弃；
 //     回复方向的包属于本机主动发起的连接，照常放行；
-//   - mangle INPUT 第一条跳到 GATELY_IN：诱饵端口与扫描检测，命中时由内核把来源加入集合（SET 目标）并丢弃。
+//   - nat PREROUTING 中跳到 GATELY_NAT：诱饵端口与扫描检测不在内核里凭 SYN 封禁（源地址可以伪造），
+//     只把发往本机的诱饵端口新连接、以及连接未开放端口超过阈值的可疑来源的后续新连接重定向（REDIRECT）给 Gately，
+//     由 Gately 完成握手后再封禁（见 handshake.go）。跳转追加在 nat PREROUTING 末尾，
+//     Docker 等已经做了目的地址转换的连接不会再经过这里；内核缺少 REDIRECT 目标时只写 mangle 部分。
 //
-// 用 mangle 表而不是 filter 表：群晖防火墙、Docker 会在 filter 表的 INPUT / FORWARD 最前面插入自己的规则，
+// 封禁用 mangle 表而不是 filter 表：群晖防火墙、Docker 会在 filter 表的 INPUT / FORWARD 最前面插入自己的规则，
 // 被它们放行的连接不会再经过排在后面的规则；mangle 表先于 filter 表处理，跳转规则的位置由轮询维护。
 //
 // 群晖内核只有 hash:ip 类型的集合，没有 hash:net，网段与永久封禁写成 GATELY_DENY 中的逐条规则；
@@ -32,14 +35,15 @@ import (
 	"github.com/wangwanjie/gately/internal/banlist"
 )
 
-// Gately 在 mangle 表中使用的链
+// Gately 使用的链
 const (
-	iptPre     = "GATELY_PRE"
-	iptDeny    = "GATELY_DENY"
-	iptIn      = "GATELY_IN"
-	iptTrap    = "GATELY_TRAP"
-	iptScan    = "GATELY_SCAN"
-	iptScanHit = "GATELY_SCANHIT"
+	// mangle 表
+	iptPre  = "GATELY_PRE"
+	iptDeny = "GATELY_DENY"
+	// nat 表：诱饵端口与扫描检测的重定向
+	iptNat  = "GATELY_NAT"
+	iptScan = "GATELY_SCAN"
+	iptSus  = "GATELY_SUS"
 	// iptMaxHitcount 为 recent 模块单个来源能记录的最多连接次数，扫描阈值超过时按此值处理
 	iptMaxHitcount = 255
 	// iptMultiport 为 multiport 一条规则最多容纳的端口数（一个范围占两个）
@@ -49,21 +53,29 @@ const (
 	iptMaxTimeout = 2147483
 	// iptRefresh 为按上限写入的元素在到期前多久重新写入
 	iptRefresh = 24 * time.Hour
-	// iptMaxElem 为每个集合最多容纳的元素数（ipset 默认 65536，长期封禁累计超过时写入会失败）
-	iptMaxElem = 1048576
-	// iptPortLogSeconds / iptPortLogMax 为命中端口记录的保留时间与容量
-	iptPortLogSeconds = 300
-	iptPortLogMax     = 16384
+	// iptMaxElem 为每个集合最多容纳的元素数：封禁集合由封禁表写入（封禁表本身有总量上限），
+	// 可疑来源集合由内核按收到的包写入，满了以后新的来源不再加入
+	iptMaxElem = nftSetSize
 )
 
-// iptChains 为全部自有链；iptInChains 为随设置、白名单与端口变化而重写的 input 部分
+// iptChains 为 mangle 表中的自有链；iptNatChains 为 nat 表中的自有链，随设置、白名单与端口变化而重写
 var (
-	iptChains   = []string{iptPre, iptDeny, iptIn, iptTrap, iptScan, iptScanHit}
-	iptInChains = []string{iptIn, iptTrap, iptScan, iptScanHit}
+	iptChains    = []string{iptPre, iptDeny}
+	iptNatChains = []string{iptNat, iptScan, iptSus}
 )
 
-// iptJumps 为内建链到自有链的跳转，必须是内建链的第一条规则
-var iptJumps = [][2]string{{"PREROUTING", iptPre}, {"INPUT", iptIn}}
+// 旧版本在 mangle 表 INPUT 中由内核凭 SYN 直接封禁诱饵端口与扫描来源，升级后写入规则时清理这些链、跳转与集合
+var (
+	iptLegacyChains = []string{"GATELY_IN", "GATELY_TRAP", "GATELY_SCAN", "GATELY_SCANHIT"}
+	iptLegacyJump   = [2]string{"INPUT", "GATELY_IN"}
+	iptLegacySets   = []string{"trap", "scan", "port"}
+)
+
+// iptJumps 为 mangle 表内建链到自有链的跳转，必须是内建链的第一条规则
+var iptJumps = [][2]string{{"PREROUTING", iptPre}}
+
+// iptNatJump 为 nat 表 PREROUTING 到 GATELY_NAT 的跳转，追加在末尾（排在 Docker 等目的地址转换之后），只要求存在
+var iptNatJump = [2]string{"PREROUTING", iptNat}
 
 // iptCandidates 为 PATH 之外查找命令的目录：以服务方式运行时 PATH 里常常没有 sbin 目录
 var iptCandidates = []string{"/usr/sbin", "/sbin", "/usr/bin", "/bin"}
@@ -92,8 +104,8 @@ type iptBackend struct {
 	fams    []iptFamily
 	ipset   string
 	version string
-	// portLogErr 为最近一次重建时创建命中端口集合失败的原因（内核缺少 hash:ip,port 模块等），为空表示正常或未启用
-	portLogErr error
+	// redirErr 为最近一次重建时写入 nat 表重定向规则失败的原因（内核缺少 nat 表或 REDIRECT 目标等），为空表示正常或未启用
+	redirErr error
 }
 
 // findIPTFn 查找可用的 iptables（legacy）与 ipset，可在测试中替换
@@ -203,7 +215,7 @@ func execCmd(ctx context.Context, stdin, bin string, args ...string) (string, er
 	return out.String(), nil
 }
 
-// iptSet 返回集合名，kind 为 ban / trap / scan。
+// iptSet 返回集合名，kind 为 ban（封禁）、sus（可疑来源），或旧版本的 trap / scan / port。
 func iptSet(kind string, v6 bool) string {
 	if v6 {
 		return "gately_" + kind + "6"
@@ -229,42 +241,36 @@ func (b *iptBackend) hasV6() bool {
 	return false
 }
 
-// setNames 返回全部集合名。
+// setNames 返回全部集合名（含旧版本的集合，重建与删除时一并清理）。
 func (b *iptBackend) setNames() []string {
 	var out []string
 	for _, f := range b.fams {
-		for _, kind := range []string{"ban", "trap", "scan", "port"} {
+		for _, kind := range append([]string{"ban", "sus"}, iptLegacySets...) {
 			out = append(out, iptSet(kind, f.v6))
 		}
 	}
 	return out
 }
 
-// createSets 返回创建全部集合的 ipset restore 语句。IPv6 集合按 /64 聚合。
-func (b *iptBackend) createSets() string {
+// createSets 返回创建集合的 ipset restore 语句：封禁集合，以及扫描检测需要的可疑来源集合。IPv6 集合按 /64 聚合。
+func (b *iptBackend) createSets(sus bool) string {
 	var sb strings.Builder
 	for _, f := range b.fams {
-		for _, kind := range []string{"ban", "trap", "scan"} {
+		kinds := []string{"ban"}
+		if sus {
+			kinds = append(kinds, "sus")
+		}
+		for _, kind := range kinds {
+			timeout := 0
+			if kind == "sus" {
+				timeout = suspectSeconds
+			}
 			if f.v6 {
-				fmt.Fprintf(&sb, "create %s hash:ip family inet6 netmask 64 timeout 0 maxelem %d\n", iptSet(kind, true), iptMaxElem)
+				fmt.Fprintf(&sb, "create %s hash:ip family inet6 netmask 64 timeout %d maxelem %d\n", iptSet(kind, true), timeout, iptMaxElem)
 			} else {
-				fmt.Fprintf(&sb, "create %s hash:ip family inet timeout 0 maxelem %d\n", iptSet(kind, false), iptMaxElem)
+				fmt.Fprintf(&sb, "create %s hash:ip family inet timeout %d maxelem %d\n", iptSet(kind, false), timeout, iptMaxElem)
 			}
 		}
-	}
-	return sb.String()
-}
-
-// createPortSets 返回创建命中端口集合的语句：记录最近命中诱饵端口或未开放端口的 (来源地址, 端口)，供写入封禁原因；
-// 满了以后新的组合不再记录。与其他集合分开创建：精简固件的内核可能缺少 hash:ip,port，失败时只放弃记录端口。
-func (b *iptBackend) createPortSets() string {
-	var sb strings.Builder
-	for _, f := range b.fams {
-		family := "inet"
-		if f.v6 {
-			family = "inet6"
-		}
-		fmt.Fprintf(&sb, "create %s hash:ip,port family %s timeout %d maxelem %d\n", iptSet("port", f.v6), family, iptPortLogSeconds, iptPortLogMax)
 	}
 	return sb.String()
 }
@@ -284,11 +290,6 @@ func iptElement(e banlist.Entry, now time.Time) (stmt string, exp time.Time, cap
 	}
 	p, _ := banlist.KeyPrefix(e.Key)
 	return fmt.Sprintf("add %s %s timeout %d", iptSet("ban", p.Addr().Is6()), p.Addr(), sec), now.Add(time.Duration(sec) * time.Second), capped, true
-}
-
-// iptSetTimeout 返回 SET 目标使用的超时秒数，不超过 ipset 的上限。
-func iptSetTimeout(sec int) int {
-	return min(sec, iptMaxTimeout)
 }
 
 // iptDelStmt 返回从封禁集合删除单个来源的 ipset 语句。
@@ -339,77 +340,80 @@ func multiportChunks(list []portRange) []string {
 	return out
 }
 
-// iptRules 生成一个地址族在 mangle 表中各自有链的规则（不含表头与链声明）。
-// s 为生效的设置（严格模式未就绪时 IPv6Strict 为 false），allow 为白名单，deny 为网段与永久封禁。
-// portLog 为 false 时不写记录命中端口的规则（未创建端口集合）。
-func iptRules(s Settings, v6 bool, allow, deny []netip.Prefix, open, trap []portRange, portLog bool) map[string][]string {
+// iptRules 生成一个地址族在 mangle 表中各自有链的规则（不含表头与链声明），deny 为网段与永久封禁。
+func iptRules(v6 bool, deny []netip.Prefix) map[string][]string {
 	rules := map[string][]string{}
 	add := func(chain, rule string) {
 		rules[chain] = append(rules[chain], "-A "+chain+" "+rule)
 	}
 	add(iptPre, "-i lo -j RETURN")
 	add(iptPre, "-m conntrack --ctdir REPLY -j RETURN")
-	for _, kind := range []string{"ban", "trap", "scan"} {
-		add(iptPre, fmt.Sprintf("-m set --match-set %s src -j DROP", iptSet(kind, v6)))
-	}
+	add(iptPre, fmt.Sprintf("-m set --match-set %s src -j DROP", iptSet("ban", v6)))
 	add(iptPre, "-j "+iptDeny)
 	for _, p := range deny {
 		if p.Addr().Is6() == v6 {
 			add(iptDeny, "-s "+p.String()+" -j DROP")
 		}
 	}
-	if !s.Trap.Enable && !s.Scan.Enable {
+	return rules
+}
+
+// iptNatRules 生成一个地址族在 nat 表中重定向诱饵端口与可疑来源连接的规则。
+// s 为生效的设置（严格模式未就绪时 IPv6Strict 为 false），allow 为白名单与可信来源，rp 为确认握手的监听端口。
+func iptNatRules(s Settings, v6 bool, allow []netip.Prefix, open, trap []portRange, rp redirPorts) map[string][]string {
+	rules := map[string][]string{}
+	if !rp.ok() || !s.Trap.Enable && !s.Scan.Enable {
 		return rules
 	}
-	// 诱饵端口与扫描检测只看发往本机的新连接（SYN），白名单地址不参与
-	add(iptIn, "-i lo -j RETURN")
+	add := func(chain, rule string) {
+		rules[chain] = append(rules[chain], "-A "+chain+" "+rule)
+	}
+	// 只处理发往本机的 TCP 新连接，白名单地址不参与
+	add(iptNat, "-i lo -j RETURN")
+	add(iptNat, "! -p tcp -j RETURN")
+	add(iptNat, "-p tcp ! --syn -j RETURN")
+	add(iptNat, "-m addrtype ! --dst-type LOCAL -j RETURN")
 	for _, p := range allow {
 		if p.Addr().Is6() == v6 {
-			add(iptIn, "-s "+p.String()+" -j RETURN")
+			add(iptNat, "-s "+p.String()+" -j RETURN")
 		}
-	}
-	mask := ""
-	if v6 {
-		mask = " --mask " + v6Mask
 	}
 	if s.Trap.Enable {
-		// 诱饵端口为空时没有跳转规则，之后端口不再被监听时由轮询补上
+		// 诱饵端口为空时没有重定向规则，之后端口不再被监听时由轮询补上
 		for _, c := range multiportChunks(trap) {
-			add(iptIn, "-p tcp --syn -m multiport --dports "+c+" -j "+iptTrap)
+			add(iptNat, fmt.Sprintf("-p tcp -m multiport --dports %s -j REDIRECT --to-ports %d", c, rp.trap))
 		}
-		if portLog {
-			add(iptTrap, fmt.Sprintf("-j SET --add-set %s src,dst --exist --timeout %d", iptSet("port", v6), iptPortLogSeconds))
-		}
-		add(iptTrap, fmt.Sprintf("-j SET --add-set %s src --exist --timeout %d", iptSet("trap", v6), iptSetTimeout(banSeconds(s, s.Trap.BanSeconds))))
-		add(iptTrap, "-j DROP")
 	}
-	if s.Scan.Enable {
-		add(iptIn, "-p tcp --syn -j "+iptScan)
-		for _, c := range multiportChunks(open) {
-			add(iptScan, "-p tcp -m multiport --dports "+c+" -j RETURN")
-		}
-		// 走到这里的都是未开放端口的新连接，记录来源与端口
-		if portLog {
-			add(iptScan, fmt.Sprintf("-j SET --add-set %s src,dst --exist --timeout %d", iptSet("port", v6), iptPortLogSeconds))
-		}
-		if v6 && s.Scan.IPv6Strict {
-			// 严格模式：IPv6 来源第一次连接开放端口以外的端口即封禁（按 /64）
-			add(iptScan, "-j "+iptScanHit)
-		} else {
-			n := min(s.Scan.Threshold, iptMaxHitcount)
-			add(iptScan, fmt.Sprintf("-m recent --name %s%s --set", iptRecent(v6), mask))
-			add(iptScan, fmt.Sprintf("-m recent --name %s%s --rcheck --seconds 60 --hitcount %d -j %s", iptRecent(v6), mask, n, iptScanHit))
-		}
-		add(iptScanHit, fmt.Sprintf("-j SET --add-set %s src --exist --timeout %d", iptSet("scan", v6), iptSetTimeout(banSeconds(s, s.Scan.BanSeconds))))
-		add(iptScanHit, "-j DROP")
+	if !s.Scan.Enable {
+		return rules
 	}
+	add(iptNat, "-p tcp -j "+iptScan)
+	for _, c := range multiportChunks(open) {
+		add(iptScan, "-p tcp -m multiport --dports "+c+" -j RETURN")
+	}
+	// 走到这里的都是未开放端口的新连接：已是可疑来源的交给 Gately 确认握手，否则计数
+	add(iptScan, fmt.Sprintf("-p tcp -m set --match-set %s src -j REDIRECT --to-ports %d", iptSet("sus", v6), rp.scan))
+	if v6 && s.Scan.IPv6Strict {
+		// 严格模式：IPv6 来源第一次连接开放端口以外的端口即成为可疑来源（按 /64）
+		add(iptScan, "-j "+iptSus)
+	} else {
+		mask := ""
+		if v6 {
+			mask = " --mask " + v6Mask
+		}
+		n := min(s.Scan.Threshold, iptMaxHitcount)
+		add(iptScan, fmt.Sprintf("-m recent --name %s%s --set", iptRecent(v6), mask))
+		add(iptScan, fmt.Sprintf("-m recent --name %s%s --rcheck --seconds 60 --hitcount %d -j %s", iptRecent(v6), mask, n, iptSus))
+	}
+	add(iptSus, fmt.Sprintf("-j SET --add-set %s src --exist --timeout %d", iptSet("sus", v6), suspectSeconds))
+	add(iptSus, fmt.Sprintf("-p tcp -j REDIRECT --to-ports %d", rp.scan))
 	return rules
 }
 
 // renderRestore 生成 iptables-restore --noflush 的输入：声明的链会被清空后写入新规则，其他链不受影响。
-func renderRestore(chains []string, rules map[string][]string) string {
+func renderRestore(table string, chains []string, rules map[string][]string) string {
 	var sb strings.Builder
-	sb.WriteString("*mangle\n")
+	sb.WriteString("*" + table + "\n")
 	for _, c := range chains {
 		fmt.Fprintf(&sb, ":%s - [0:0]\n", c)
 	}
@@ -426,15 +430,25 @@ func renderRestore(chains []string, rules map[string][]string) string {
 type iptPlan struct {
 	allow, deny []netip.Prefix
 	open, trap  []portRange
-	// portLog 表示命中端口集合已创建，规则中记录命中的端口
-	portLog bool
+	// redir 为确认握手的监听端口，零值表示不写 nat 表的重定向规则
+	redir redirPorts
 }
 
-// restoreChains 用 iptables-restore --noflush 重写各地址族中指定的链。
-func (b *iptBackend) restoreChains(ctx context.Context, s Settings, plan iptPlan, chains []string) error {
+// restoreChains 用 iptables-restore --noflush 重写各地址族 mangle 表中指定的链。
+func (b *iptBackend) restoreChains(ctx context.Context, plan iptPlan, chains []string) error {
 	for _, f := range b.fams {
-		rules := iptRules(s, f.v6, plan.allow, plan.deny, plan.open, plan.trap, plan.portLog)
-		if _, err := b.run(ctx, renderRestore(chains, rules), f.restore, f.restoreArgs()...); err != nil {
+		if _, err := b.run(ctx, renderRestore("mangle", chains, iptRules(f.v6, plan.deny)), f.restore, f.restoreArgs()...); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// restoreNat 重写各地址族 nat 表中的自有链（全部声明，内容按 plan 生成）。
+func (b *iptBackend) restoreNat(ctx context.Context, s Settings, plan iptPlan) error {
+	for _, f := range b.fams {
+		rules := iptNatRules(s, f.v6, plan.allow, plan.open, plan.trap, plan.redir)
+		if _, err := b.run(ctx, renderRestore("nat", iptNatChains, rules), f.restore, f.restoreArgs()...); err != nil {
 			return err
 		}
 	}
@@ -443,13 +457,19 @@ func (b *iptBackend) restoreChains(ctx context.Context, s Settings, plan iptPlan
 
 // rebuild 重建全部链与集合并写入当前封禁，返回写入集合的单个来源及其解封时间，
 // 以及按上限写入的来源在内核中的到期时间。
-// 顺序：清空自有链（解除对集合的引用）→ 重建集合 → 写入规则 → 把跳转规则放到内建链第一位。
+// 顺序：清空自有链（解除对集合的引用）、清理旧版本的规则 → 重建集合 → 写入规则 → 把跳转规则放到内建链第一位。
+// 诱饵端口或扫描检测开启时再写入 nat 表的重定向规则，失败时记入 redirErr，其余规则照常生效。
 func (b *iptBackend) rebuild(ctx context.Context, s Settings, plan iptPlan, entries []banlist.Entry, now time.Time) (members, capped map[string]time.Time, err error) {
+	b.redirErr = nil
+	nat := plan.redir.ok() && (s.Trap.Enable || s.Scan.Enable)
 	for _, f := range b.fams {
-		if _, err := b.run(ctx, renderRestore(iptChains, nil), f.restore, f.restoreArgs()...); err != nil {
+		if _, err := b.run(ctx, renderRestore("mangle", iptChains, nil), f.restore, f.restoreArgs()...); err != nil {
 			return nil, nil, err
 		}
 	}
+	// nat 表的链引用可疑来源集合，销毁集合之前先删除；旧版本的链引用旧集合，同样先删除
+	b.removeNat(ctx)
+	b.removeLegacy(ctx)
 	var sb strings.Builder
 	for _, name := range b.setNames() {
 		_, err := b.run(ctx, "", b.ipset, "destroy", name)
@@ -457,17 +477,19 @@ func (b *iptBackend) rebuild(ctx context.Context, s Settings, plan iptPlan, entr
 		case err == nil, strings.Contains(err.Error(), "does not exist"):
 		case strings.Contains(err.Error(), "in use"):
 			// 集合仍被其他规则引用（例如手工加过引用它的规则）时无法销毁，清空后沿用；类型不同时下面的 create 会报错
-			sb.WriteString("flush " + name + "\n")
+			if strings.HasPrefix(name, "gately_ban") || strings.HasPrefix(name, "gately_sus") {
+				sb.WriteString("flush " + name + "\n")
+			}
 		default:
 			return nil, nil, err
 		}
 	}
 	members, capped = map[string]time.Time{}, map[string]time.Time{}
-	create := b.createSets()
 	// 创建在前、清空在后：create 对已存在的同类型集合不报错（-exist）
-	sets := create + sb.String()
+	sets := b.createSets(nat && s.Scan.Enable) + sb.String()
 	sb.Reset()
 	sb.WriteString(sets)
+	n4, n6 := 0, 0
 	for _, e := range entries {
 		stmt, exp, isCapped, ok := iptElement(e, now)
 		if !ok {
@@ -476,6 +498,15 @@ func (b *iptBackend) rebuild(ctx context.Context, s Settings, plan iptPlan, entr
 		p, _ := banlist.KeyPrefix(e.Key)
 		if p.Addr().Is6() && !b.hasV6() {
 			continue
+		}
+		// 集合容量有限：超出的部分（只可能来自旧版本留下的超大封禁表）只在 Gately 自身的服务上生效
+		if p.Addr().Is4() && n4 >= iptMaxElem || p.Addr().Is6() && n6 >= iptMaxElem {
+			continue
+		}
+		if p.Addr().Is4() {
+			n4++
+		} else {
+			n6++
 		}
 		members[e.Key] = e.Until
 		if isCapped {
@@ -486,30 +517,116 @@ func (b *iptBackend) rebuild(ctx context.Context, s Settings, plan iptPlan, entr
 	if _, err := b.run(ctx, sb.String(), b.ipset, "restore", "-exist"); err != nil {
 		return nil, nil, err
 	}
-	// 只在诱饵端口或扫描检测开启时创建命中端口集合；创建失败（内核缺少 hash:ip,port）时放弃记录端口，
-	// 其余规则照常写入。每次重建都重新尝试，偶发错误不会永久关闭端口记录
-	plan.portLog, b.portLogErr = false, nil
-	if s.Trap.Enable || s.Scan.Enable {
-		if _, err := b.run(ctx, b.createPortSets(), b.ipset, "restore", "-exist"); err != nil {
-			b.portLogErr = err
-		} else {
-			plan.portLog = true
-		}
-	}
-	if err := b.restoreChains(ctx, s, plan, iptChains); err != nil {
+	if err := b.restoreChains(ctx, plan, iptChains); err != nil {
 		return nil, nil, err
 	}
 	if _, err := b.ensureJumps(ctx); err != nil {
 		return nil, nil, err
 	}
+	if nat {
+		if err := b.writeNat(ctx, s, plan); err != nil {
+			b.redirErr = err
+			b.removeNat(ctx)
+		}
+	}
 	return members, capped, nil
+}
+
+// writeNat 写入 nat 表的自有链并确保 PREROUTING 中有跳转。
+func (b *iptBackend) writeNat(ctx context.Context, s Settings, plan iptPlan) error {
+	if err := b.restoreNat(ctx, s, plan); err != nil {
+		return err
+	}
+	saved, err := b.saveTable(ctx, "nat")
+	if err != nil {
+		return err
+	}
+	return b.fixNatJump(ctx, saved)
+}
+
+// removeNat 尽力删除 nat 表中的跳转与自有链（表不存在、链不存在都忽略）。
+func (b *iptBackend) removeNat(ctx context.Context) []error {
+	var errs []error
+	for _, f := range b.fams {
+		out, err := b.run(ctx, "", f.save, "-t", "nat")
+		if err != nil {
+			continue
+		}
+		chains, lines := parseSave(out)
+		for _, l := range lines {
+			if l.chain == iptNatJump[0] && l.rule == "-j "+iptNatJump[1] {
+				if _, err := b.run(ctx, "", f.bin, "-w", "-t", "nat", "-D", iptNatJump[0], "-j", iptNatJump[1]); err != nil {
+					errs = append(errs, err)
+				}
+			}
+		}
+		// 先全部清空再删除：GATELY_NAT 引用 GATELY_SCAN，GATELY_SCAN 引用 GATELY_SUS
+		var present []string
+		for _, c := range iptNatChains {
+			if chains[c] {
+				present = append(present, c)
+			}
+		}
+		for _, c := range present {
+			if _, err := b.run(ctx, "", f.bin, "-w", "-t", "nat", "-F", c); err != nil {
+				errs = append(errs, err)
+			}
+		}
+		for _, c := range present {
+			if _, err := b.run(ctx, "", f.bin, "-w", "-t", "nat", "-X", c); err != nil {
+				errs = append(errs, err)
+			}
+		}
+	}
+	return errs
+}
+
+// removeLegacy 尽力删除旧版本在 mangle 表 INPUT 中的跳转与链（诱饵端口与扫描检测曾在这里由内核直接封禁）。
+func (b *iptBackend) removeLegacy(ctx context.Context) []error {
+	var errs []error
+	saved, err := b.saveAll(ctx)
+	if err != nil {
+		return []error{err}
+	}
+	for _, f := range b.fams {
+		chains, lines := parseSave(saved[f.v6])
+		for _, l := range lines {
+			if l.chain == iptLegacyJump[0] && l.rule == "-j "+iptLegacyJump[1] {
+				if _, err := b.run(ctx, "", f.bin, "-w", "-t", "mangle", "-D", iptLegacyJump[0], "-j", iptLegacyJump[1]); err != nil {
+					errs = append(errs, err)
+				}
+			}
+		}
+		var present []string
+		for _, c := range iptLegacyChains {
+			if chains[c] {
+				present = append(present, c)
+			}
+		}
+		for _, c := range present {
+			if _, err := b.run(ctx, "", f.bin, "-w", "-t", "mangle", "-F", c); err != nil {
+				errs = append(errs, err)
+			}
+		}
+		for _, c := range present {
+			if _, err := b.run(ctx, "", f.bin, "-w", "-t", "mangle", "-X", c); err != nil {
+				errs = append(errs, err)
+			}
+		}
+	}
+	return errs
 }
 
 // saveAll 读取各地址族 mangle 表的内容（带计数）。
 func (b *iptBackend) saveAll(ctx context.Context) (map[bool]string, error) {
+	return b.saveTable(ctx, "mangle")
+}
+
+// saveTable 读取各地址族指定表的内容（带计数）。
+func (b *iptBackend) saveTable(ctx context.Context, table string) (map[bool]string, error) {
 	out := map[bool]string{}
 	for _, f := range b.fams {
-		s, err := b.run(ctx, "", f.save, "-c", "-t", "mangle")
+		s, err := b.run(ctx, "", f.save, "-c", "-t", table)
 		if err != nil {
 			return nil, err
 		}
@@ -555,7 +672,8 @@ func parseSave(out string) (chains map[string]bool, lines []iptLine) {
 	return chains, lines
 }
 
-// iptCounters 汇总各类规则的计数：丢弃的数据包按 ban / trap / scan / deny，触发次数按 trap / scan。
+// iptCounters 汇总 mangle 表中各类规则丢弃的数据包数：ban（封禁集合）与 deny（网段与永久封禁）。
+// 诱饵端口与扫描检测的触发次数由 Gately 在确认握手时累计，不来自内核计数。
 func iptCounters(lines []iptLine) (dropped, hits map[string]uint64) {
 	dropped, hits = map[string]uint64{}, map[string]uint64{}
 	for _, l := range lines {
@@ -566,10 +684,6 @@ func iptCounters(lines []iptLine) (dropped, hits map[string]uint64) {
 			dropped[kind] += l.packets
 		case l.chain == iptDeny:
 			dropped["deny"] += l.packets
-		case l.chain == iptTrap && strings.Contains(l.rule, "--add-set"):
-			hits["trap"] += l.packets
-		case l.chain == iptScanHit && strings.Contains(l.rule, "--add-set"):
-			hits["scan"] += l.packets
 		}
 	}
 	return dropped, hits
@@ -590,7 +704,7 @@ func (b *iptBackend) counters(ctx context.Context) (dropped, hits map[string]uin
 	return dropped, hits, nil
 }
 
-// chainCounters 读取指定链当前的计数（IPv4 与 IPv6 相加）。
+// chainCounters 读取 mangle 表中指定链当前的计数（IPv4 与 IPv6 相加）。
 // iptables-restore --noflush 重写一条链时会把它的计数清零，重写前读出来并入基数，界面上的累计计数不倒退。
 func (b *iptBackend) chainCounters(ctx context.Context, chains []string) (dropped, hits map[string]uint64, err error) {
 	saved, err := b.saveAll(ctx)
@@ -615,8 +729,9 @@ func (b *iptBackend) chainCounters(ctx context.Context, chains []string) (droppe
 // errIPTMissing 表示自有链不存在（被其他程序清除，例如重启网络或防火墙时清空了全部规则）
 var errIPTMissing = errors.New("iptables 规则已被清除")
 
-// check 读取计数并确认自有链仍然存在；跳转规则被挤到其他规则之后时挪回第一位，fixed 返回挪动的跳转。
-func (b *iptBackend) check(ctx context.Context) (dropped, hits map[string]uint64, fixed []string, err error) {
+// check 读取计数并确认自有链仍然存在（nat 为 true 时也检查 nat 表）；跳转规则被挤到其他规则之后时挪回第一位，
+// nat 表的跳转缺失时补上，fixed 返回挪动的跳转。
+func (b *iptBackend) check(ctx context.Context, nat bool) (dropped, hits map[string]uint64, fixed []string, err error) {
 	saved, err := b.saveAll(ctx)
 	if err != nil {
 		return nil, nil, nil, err
@@ -632,11 +747,29 @@ func (b *iptBackend) check(ctx context.Context) (dropped, hits map[string]uint64
 		d, h := iptCounters(lines)
 		dropped, hits = addCounts(dropped, d), addCounts(hits, h)
 	}
+	var natSaved map[bool]string
+	if nat {
+		natSaved, err = b.saveTable(ctx, "nat")
+		if err != nil {
+			return nil, nil, nil, err
+		}
+		for _, out := range natSaved {
+			chains, _ := parseSave(out)
+			for _, c := range iptNatChains {
+				if !chains[c] {
+					return nil, nil, nil, errIPTMissing
+				}
+			}
+		}
+	}
 	fixed, err = b.fixJumps(ctx, saved)
+	if err == nil && nat {
+		err = b.fixNatJump(ctx, natSaved)
+	}
 	return dropped, hits, fixed, err
 }
 
-// ensureJumps 读取当前规则并确保跳转规则位于内建链第一位。
+// ensureJumps 读取当前规则并确保 mangle 表的跳转规则位于内建链第一位。
 func (b *iptBackend) ensureJumps(ctx context.Context) ([]string, error) {
 	saved, err := b.saveAll(ctx)
 	if err != nil {
@@ -645,7 +778,7 @@ func (b *iptBackend) ensureJumps(ctx context.Context) ([]string, error) {
 	return b.fixJumps(ctx, saved)
 }
 
-// fixJumps 让每个内建链的第一条规则是跳到自有链：不在第一位时删除全部同样的跳转，再插入到第一位。
+// fixJumps 让 mangle 表每个内建链的第一条规则是跳到自有链：不在第一位时删除全部同样的跳转，再插入到第一位。
 func (b *iptBackend) fixJumps(ctx context.Context, saved map[bool]string) ([]string, error) {
 	var fixed []string
 	for _, f := range b.fams {
@@ -687,6 +820,32 @@ func (b *iptBackend) fixJumps(ctx context.Context, saved map[bool]string) ([]str
 	return fixed, nil
 }
 
+// fixNatJump 确保 nat 表 PREROUTING 中恰好有一条跳到 GATELY_NAT 的规则，缺失时追加到末尾。
+func (b *iptBackend) fixNatJump(ctx context.Context, saved map[bool]string) error {
+	builtin, own := iptNatJump[0], iptNatJump[1]
+	for _, f := range b.fams {
+		_, lines := parseSave(saved[f.v6])
+		count := 0
+		for _, l := range lines {
+			if l.chain == builtin && l.rule == "-j "+own {
+				count++
+			}
+		}
+		if count == 1 {
+			continue
+		}
+		for range count {
+			if _, err := b.run(ctx, "", f.bin, "-w", "-t", "nat", "-D", builtin, "-j", own); err != nil {
+				return err
+			}
+		}
+		if _, err := b.run(ctx, "", f.bin, "-w", "-t", "nat", "-A", builtin, "-j", own); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // applyIPSet 执行一批 ipset 语句（add / del），已存在或不存在的元素不报错。
 func (b *iptBackend) applyIPSet(ctx context.Context, stmts []string) error {
 	if len(stmts) == 0 {
@@ -698,72 +857,17 @@ func (b *iptBackend) applyIPSet(ctx context.Context, stmts []string) error {
 
 // writeDeny 重写各地址族的 GATELY_DENY。
 func (b *iptBackend) writeDeny(ctx context.Context, deny []netip.Prefix) error {
-	return b.restoreChains(ctx, Settings{}, iptPlan{deny: deny}, []string{iptDeny})
+	return b.restoreChains(ctx, iptPlan{deny: deny}, []string{iptDeny})
 }
 
-// kernelBans 读取诱饵端口与扫描检测集合中由内核加入的来源，键为集合名。
-func (b *iptBackend) kernelBans(ctx context.Context) (map[string][]netip.Addr, portHits, error) {
-	out := map[string][]netip.Addr{}
-	hits := newPortHits()
-	for _, f := range b.fams {
-		got := false
-		for _, kind := range []string{"trap", "scan"} {
-			name := iptSet(kind, f.v6)
-			text, err := b.run(ctx, "", b.ipset, "save", name)
-			if err != nil {
-				return nil, nil, err
-			}
-			for _, line := range strings.Split(text, "\n") {
-				fs := strings.Fields(line)
-				if len(fs) >= 3 && fs[0] == "add" && fs[1] == name {
-					if a, err := netip.ParseAddr(fs[2]); err == nil {
-						out[name] = append(out[name], a)
-						got = true
-					}
-				}
-			}
-		}
-		// 命中端口只用于封禁原因：诱饵与扫描集合里有新来源时才读取，平时每次轮询少执行一次 ipset save。
-		// 读不到时只影响封禁原因，不影响封禁本身
-		if got {
-			if text, err := b.run(ctx, "", b.ipset, "save", iptSet("port", f.v6)); err == nil {
-				parsePortSave(text, hits)
-			}
-		}
-	}
-	return out, hits, nil
-}
-
-// parsePortSave 解析 ipset save 输出的命中端口记录，行形如 add gately_port4 1.2.3.4,tcp:22 timeout 290。
-func parsePortSave(text string, hits portHits) {
-	for _, line := range strings.Split(text, "\n") {
-		fs := strings.Fields(line)
-		if len(fs) < 3 || fs[0] != "add" {
-			continue
-		}
-		addr, rest, ok := strings.Cut(fs[2], ",")
-		if !ok {
-			continue
-		}
-		_, portText, ok := strings.Cut(rest, ":")
-		if !ok {
-			continue
-		}
-		port, err := strconv.Atoi(portText)
-		a, aerr := netip.ParseAddr(addr)
-		if err != nil || aerr != nil {
-			continue
-		}
-		hits.add(a.Unmap(), port)
-	}
-}
-
-// remove 删除跳转、自有链与集合，停止或关闭同步时调用。
+// remove 删除跳转、自有链与集合（含旧版本留下的），停止或关闭同步时调用。
 func (b *iptBackend) remove(ctx context.Context) error {
 	var errs []error
+	errs = append(errs, b.removeNat(ctx)...)
+	errs = append(errs, b.removeLegacy(ctx)...)
 	saved, err := b.saveAll(ctx)
 	if err != nil {
-		return err
+		return errors.Join(append(errs, err)...)
 	}
 	for _, f := range b.fams {
 		_, lines := parseSave(saved[f.v6])
@@ -776,7 +880,7 @@ func (b *iptBackend) remove(ctx context.Context) error {
 				}
 			}
 		}
-		if _, err := b.run(ctx, renderRestore(iptChains, nil), f.restore, f.restoreArgs()...); err != nil {
+		if _, err := b.run(ctx, renderRestore("mangle", iptChains, nil), f.restore, f.restoreArgs()...); err != nil {
 			errs = append(errs, err)
 			continue
 		}
@@ -798,25 +902,34 @@ func (b *iptBackend) remove(ctx context.Context) error {
 func (b *iptBackend) text(ctx context.Context) (string, error) {
 	var sb strings.Builder
 	for _, f := range b.fams {
-		out, err := b.run(ctx, "", f.save, "-t", "mangle")
-		if err != nil {
-			return "", err
-		}
 		label := "IPv4"
 		if f.v6 {
 			label = "IPv6"
 		}
-		fmt.Fprintf(&sb, "# %s: %s -t mangle\n", label, f.save)
-		for _, line := range strings.Split(out, "\n") {
-			if strings.Contains(line, "GATELY_") {
-				sb.WriteString(line + "\n")
+		for _, table := range []string{"mangle", "nat"} {
+			out, err := b.run(ctx, "", f.save, "-t", table)
+			if err != nil {
+				if table == "nat" {
+					continue
+				}
+				return "", err
 			}
+			fmt.Fprintf(&sb, "# %s: %s -t %s\n", label, f.save, table)
+			for _, line := range strings.Split(out, "\n") {
+				if strings.Contains(line, "GATELY_") {
+					sb.WriteString(line + "\n")
+				}
+			}
+			sb.WriteString("\n")
 		}
-		sb.WriteString("\n")
 	}
 	for _, name := range b.setNames() {
 		out, err := b.run(ctx, "", b.ipset, "list", name)
 		if err != nil {
+			// 可疑来源集合只在扫描检测开启时存在，旧版本的集合升级后已删除
+			if strings.Contains(err.Error(), "does not exist") {
+				continue
+			}
 			return "", err
 		}
 		sb.WriteString(strings.TrimSpace(out) + "\n\n")
@@ -847,9 +960,21 @@ func (f *firewall) allowLocked() []netip.Prefix {
 	return allowFor(f.cfg, f.local, f.trusted)
 }
 
-// iptPlanLocked 汇总一次写入需要的白名单、网段封禁与端口。调用方持有 f.mu。
+// iptPlanLocked 汇总一次写入需要的白名单、网段封禁、端口与确认握手的监听端口。调用方持有 f.mu。
 func (f *firewall) iptPlanLocked(entries []banlist.Entry, open, trap []portRange) iptPlan {
-	return iptPlan{allow: f.allowLocked(), deny: iptDenyPrefixes(entries), open: open, trap: trap}
+	plan := iptPlan{allow: f.allowLocked(), deny: iptDenyPrefixes(entries), open: open, trap: trap}
+	if f.hs != nil {
+		plan.redir = f.hs.ports
+	}
+	return plan
+}
+
+// rewriteNatLocked 在重定向规则已写入时按当前设置、白名单与端口重写 nat 表的自有链。调用方持有 f.mu。
+func (f *firewall) rewriteNatLocked(ctx context.Context, open, trap []portRange) error {
+	if !f.redirOK {
+		return nil
+	}
+	return f.ipt.restoreNat(ctx, f.effectiveLocked(), f.iptPlanLocked(nil, open, trap))
 }
 
 // iptCurrentPortsLocked 返回最近一次写入的开放端口与诱饵端口。调用方持有 f.mu。
@@ -941,10 +1066,11 @@ func (f *firewall) rewriteIPTLocked(ctx context.Context, chains []string, write 
 	return nil
 }
 
-// pollIPTLocked 是 poll 的 iptables 版本：确认规则仍在、维护跳转位置、读取计数与内核直接封禁的地址、刷新端口。
+// pollIPTLocked 是 poll 的 iptables 版本：确认规则仍在、维护跳转位置、读取计数、刷新端口。
 // 调用方持有 f.mu，本函数返回前释放。
 func (f *firewall) pollIPTLocked(ctx context.Context) {
-	dropped, hits, fixed, err := f.ipt.check(ctx)
+	before := f.kernelTrapLocked()
+	dropped, hits, fixed, err := f.ipt.check(ctx, f.redirOK)
 	if errors.Is(err, errIPTMissing) || (err == nil && f.resync) {
 		if f.resync {
 			// 之前的增量写入（封禁集合、网段封禁或白名单）失败，完整重写一次
@@ -956,9 +1082,9 @@ func (f *firewall) pollIPTLocked(ctx context.Context) {
 		f.resync = false
 		f.status.Active = false
 		f.applyLocked(ctx, f.cfg)
-		active, onActive := f.status.Active, f.onActive
+		changed, onActive := before != f.kernelTrapLocked(), f.onActive
 		f.mu.Unlock()
-		if !active && onActive != nil {
+		if changed && onActive != nil {
 			onActive()
 		}
 		return
@@ -987,35 +1113,12 @@ func (f *firewall) pollIPTLocked(ctx context.Context) {
 		f.strictReady = true
 		f.applyLocked(ctx, f.cfg)
 		if f.status.Active {
-			f.log.Infof("IPv6 严格模式已启用：IPv6 来源连接开放端口以外的端口即被封禁")
+			f.log.Infof("IPv6 严格模式已启用：IPv6 来源连接开放端口以外的端口即交给 Gately 确认握手，完成握手即被封禁")
 		}
 	}
-	importFn, ipt := f.trustedFilterLocked(f.importFn), f.ipt
-	inbox, portLog, kerr := ipt.kernelBans(ctx)
+	changed, onActive := before != f.kernelTrapLocked(), f.onActive
 	f.mu.Unlock()
-	if kerr != nil || len(inbox) == 0 {
-		return
-	}
-	// 先写入封禁表（随后由 flush 加入封禁集合），再从内核的临时集合中删除，避免出现空档
-	var stmts []string
-	for name, addrs := range inbox {
-		source := banlist.SourceTrap
-		if strings.HasPrefix(name, "gately_scan") {
-			source = banlist.SourceScan
-		}
-		if importFn != nil {
-			importFn(source, addrs, portLog)
-		}
-		for _, a := range addrs {
-			stmts = append(stmts, fmt.Sprintf("del %s %s", name, a))
-		}
-	}
-	f.flush(ctx)
-	f.mu.Lock()
-	defer f.mu.Unlock()
-	if f.ipt == ipt {
-		if err := ipt.applyIPSet(ctx, stmts); err != nil {
-			f.log.Warnf("清理临时集合失败: %v", err)
-		}
+	if changed && onActive != nil {
+		onActive()
 	}
 }

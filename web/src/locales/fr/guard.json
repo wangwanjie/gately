@@ -176,6 +176,8 @@
     "title": "Détection de scan de ports",
     "help": "Compte combien de fois chaque source se connecte à des ports fermés de cet hôte et la bannit au-delà du seuil par minute. Seules les nouvelles connexions vers cet hôte comptent ; le trafic redirigé vers des conteneurs ou des appareils du LAN n'est pas compté.",
     "needFirewall": "Les ports pièges côté noyau et la détection de scan nécessitent une synchronisation du pare-feu active. Voir l'état ci-dessus.",
+    "needRedirect": "Le noyau ne peut pas rediriger les connexions vers Gately pour confirmer la poignée de main (nftables exige Linux 5.2 ou plus, iptables la cible REDIRECT de la table nat) : Gately écoute lui-même sur les ports leurres et la détection de scans est indisponible.",
+    "handshakeHelp": "Une connexion ne compte qu'une fois la poignée de main TCP terminée : des SYN à adresse source usurpée ne peuvent faire bannir personne. Les scans qui n'envoient que des SYN sans terminer la poignée de main (comme masscan) voient les ports ouverts, mais ne sont pas bannis.",
     "threshold": "Seuil",
     "perMinute": "par minute",
     "thresholdHelp": "Une source est bannie si elle se connecte à des ports fermés plus souvent que ce nombre par minute. Un client normal réessaie un port fermé environ 5 fois par minute ; gardez 10 ou plus.",

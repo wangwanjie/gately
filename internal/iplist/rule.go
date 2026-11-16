@@ -148,6 +148,14 @@ func (f *Filter) Reason(addr net.Addr) string {
 		}
 		return ""
 	}
+	return f.ReasonIP(a)
+}
+
+// ReasonIP 同 Reason，直接接收已解析的 IP（IPv4 映射地址应先还原），供逐包判断的 UDP 转发省去地址转换。
+func (f *Filter) ReasonIP(a netip.Addr) string {
+	if f == nil {
+		return ""
+	}
 	// 优先拒绝名单先于白名单、黑名单判断
 	if (len(f.denyPrefixes) > 0 || len(f.denySets) > 0) && Default.Match(a, f.denyPrefixes, f.denySets) {
 		return DenyList

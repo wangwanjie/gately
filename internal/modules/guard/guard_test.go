@@ -391,7 +391,8 @@ func TestBuildScript(t *testing.T) {
 		{Key: "10.20.0.0/16", Until: now.Add(time.Hour)},
 		{Key: "10.20.30.0/24", Until: now.Add(time.Hour)},
 	}
-	script, members, deny := buildScript(s, nil, entries, []portRange{{22, 22}, {443, 443}}, []portRange{{23, 23}, {5900, 5901}}, now)
+	rp := redirPorts{trap: 40001, scan: 40002}
+	script, members, deny := buildScript(s, nil, entries, []portRange{{22, 22}, {443, 443}}, []portRange{{23, 23}, {5900, 5901}}, rp, now)
 	for _, want := range []string{
 		"table inet gately {}\ndelete table inet gately\n",
 		"add element inet gately ban4 { 1.2.3.4 timeout 3601s }",
@@ -400,23 +401,65 @@ func TestBuildScript(t *testing.T) {
 		"elements = { 22, 443 }",
 		"elements = { 23, 5900-5901 }",
 		"203.0.113.0/24",
-		"add @trap4 { ip saddr timeout 7200s }",
-		"limit rate over 20/minute burst 20 packets } add @scan4 { ip saddr timeout 3600s }",
 		"ip6 saddr & ffff:ffff:ffff:ffff:: @ban6 counter drop",
 		"prerouting priority -190; policy accept;\n\t\tiif \"lo\" accept\n\t\tct direction reply accept",
+		// 集合有容量上限
+		"set ban4 {\n\t\ttype ipv4_addr\n\t\tsize 65536\n",
+		"set sus4 {\n\t\ttype ipv4_addr\n\t\tsize 65536\n\t\tflags dynamic,timeout\n\t\ttimeout 600s\n",
+		// 诱饵端口与扫描检测只重定向给 Gately 确认握手，不在内核中封禁
+		"type nat hook prerouting priority -90; policy accept;",
+		"tcp flags & (fin|syn|rst|ack) != syn accept\n\t\tfib daddr type != local accept\n\t\tip saddr @allow4 accept\n\t\tip6 saddr @allow6 accept\n",
+		"tcp dport @trap redirect to :40001\n",
+		"tcp dport @open accept\n",
+		"ip saddr @sus4 tcp dport != @open redirect to :40002\n",
+		"add @meter4 { ip saddr limit rate over 20/minute burst 20 packets } add @sus4 { ip saddr } redirect to :40002\n",
+		"add @meter6 { ip6 saddr & ffff:ffff:ffff:ffff:: limit rate over 20/minute burst 20 packets } add @sus6 { ip6 saddr & ffff:ffff:ffff:ffff:: } redirect to :40002\n",
 	} {
 		if !strings.Contains(script, want) {
 			t.Errorf("脚本缺少 %q:\n%s", want, script)
 		}
 	}
+	// 内核不再凭 SYN 把来源加入封禁集合：没有 trap / scan 集合，也没有 drop 动作的诱饵端口规则
+	for _, bad := range []string{"@trap4", "@scan4", "@scan6", "hook input", "trap-hit", "scan-hit"} {
+		if strings.Contains(script, bad) {
+			t.Errorf("脚本不应包含 %q:\n%s", bad, script)
+		}
+	}
 	if len(members) != 2 || !strings.Contains(deny, "flush set inet gately deny4") {
 		t.Fatalf("members=%v deny=%q", members, deny)
 	}
-	// 关闭诱饵端口与扫描检测时不生成 input 链
+	// 关闭诱饵端口与扫描检测、或没有确认握手的监听端口时不生成重定向链
 	s.Trap.Enable, s.Scan.Enable = false, false
-	script, _, _ = buildScript(s, nil, nil, nil, nil, now)
-	if strings.Contains(script, "hook input") {
-		t.Fatal("未启用检测时不应生成 input 链")
+	script, _, _ = buildScript(s, nil, nil, nil, nil, rp, now)
+	if strings.Contains(script, "hook prerouting priority -90") || strings.Contains(script, "set sus4") {
+		t.Fatal("未启用检测时不应生成重定向链")
+	}
+	s.Trap.Enable, s.Scan.Enable = true, true
+	script, _, _ = buildScript(s, nil, nil, nil, nil, redirPorts{}, now)
+	if strings.Contains(script, "redirect") {
+		t.Fatal("没有确认握手的监听端口时不应生成重定向规则")
+	}
+	// 只开诱饵端口时不生成扫描检测的规则与可疑来源集合
+	s.Scan.Enable = false
+	script, _, _ = buildScript(s, nil, nil, nil, []portRange{{23, 23}}, rp, now)
+	if !strings.Contains(script, "tcp dport @trap redirect to :40001") || strings.Contains(script, "@sus4") || strings.Contains(script, "@open accept") {
+		t.Fatalf("只开诱饵端口时的脚本不符:\n%s", script)
+	}
+}
+
+// 封禁集合容量有限：超出的单个来源不写入集合（只可能来自旧版本留下的超大封禁表），按封禁时间保留最新的
+func TestBuildScriptBanSetCapacity(t *testing.T) {
+	now := time.Now()
+	entries := make([]banlist.Entry, 0, nftSetSize+10)
+	for i := range nftSetSize + 10 {
+		entries = append(entries, banlist.Entry{Key: netip.AddrFrom4([4]byte{10, byte(i >> 16), byte(i >> 8), byte(i)}).String(), Until: now.Add(time.Hour)})
+	}
+	_, members, _ := buildScript(defaultSettings(), nil, entries, nil, nil, redirPorts{}, now)
+	if len(members) != nftSetSize {
+		t.Fatalf("应只写入 %d 个元素: %d", nftSetSize, len(members))
+	}
+	if _, ok := members[entries[0].Key]; !ok {
+		t.Fatal("应保留排在前面（最新）的封禁")
 	}
 }
 
@@ -459,7 +502,20 @@ func activeFirewall(t *testing.T, fake *fakeNFT) *firewall {
 	fw.nft = "nft"
 	fw.status = FirewallStatus{Enabled: true, Active: true}
 	fw.cfg = defaultSettings()
+	t.Cleanup(func() { stopHandshakeForTest(fw) })
 	return fw
+}
+
+// stopHandshakeForTest 关闭测试中写入规则时启动的确认握手监听。
+func stopHandshakeForTest(fw *firewall) {
+	fw.mu.Lock()
+	hs := fw.hs
+	fw.hs = nil
+	fw.mu.Unlock()
+	if hs != nil {
+		hs.stop()
+		hs.wait()
+	}
 }
 
 func TestFirewallFlush(t *testing.T) {
@@ -515,41 +571,27 @@ type errorString string
 
 func (e errorString) Error() string { return string(e) }
 
-func TestFirewallPollImports(t *testing.T) {
+// 轮询只读取计数：内核不再凭 SYN 把来源加入集合，即使表里还有旧版本的诱饵 / 扫描集合，其中的地址也不会被导入封禁表
+func TestFirewallPollCountsOnly(t *testing.T) {
 	cleanDefault(t)
 	fake := &fakeNFT{output: `{"nftables": [{"metainfo": {"version": "1.0.6"}},
 		{"set": {"family": "inet", "name": "trap4", "table": "gately", "type": "ipv4_addr", "elem": [{"elem": {"val": "203.0.113.50", "timeout": 3600, "expires": 3590}}]}},
 		{"set": {"family": "inet", "name": "scan6", "table": "gately", "type": "ipv6_addr", "elem": ["2001:db8:5:6::"]}},
 		{"rule": {"family": "inet", "table": "gately", "chain": "pre", "comment": "ban", "expr": [{"match": {}}, {"counter": {"packets": 7, "bytes": 420}}, {"drop": null}]}},
-		{"rule": {"family": "inet", "table": "gately", "chain": "pre", "comment": "ban", "expr": [{"counter": {"packets": 3, "bytes": 180}}, {"drop": null}]}},
-		{"rule": {"family": "inet", "table": "gately", "chain": "in", "comment": "trap-hit", "expr": [{"counter": {"packets": 1, "bytes": 60}}]}}
+		{"rule": {"family": "inet", "table": "gately", "chain": "pre", "comment": "ban", "expr": [{"counter": {"packets": 3, "bytes": 180}}, {"drop": null}]}}
 	]}`}
 	fw := activeFirewall(t, fake)
-	unsub := banlist.Default.Subscribe(fw.change)
-	defer unsub()
-	got := map[string][]netip.Addr{}
-	fw.importFn = func(source string, addrs []netip.Addr, _ portHits) {
-		got[source] = append(got[source], addrs...)
-		for _, a := range addrs {
-			banlist.Default.Ban(banlist.KeyFor(a), banlist.Options{Duration: time.Hour, Source: source})
-		}
-	}
+	imported := 0
+	fw.importFn = func(string, []netip.Addr, portHits) { imported++ }
 	fw.poll(context.Background())
-	if len(got[banlist.SourceTrap]) != 1 || got[banlist.SourceTrap][0].String() != "203.0.113.50" || len(got[banlist.SourceScan]) != 1 {
-		t.Fatalf("导入结果不符: %v", got)
+	if imported != 0 {
+		t.Fatal("内核集合中的地址未经握手确认，不应导入封禁表")
 	}
-	st := fw.snapshot()
-	if st.Dropped["ban"] != 10 || st.Hits["trap"] != 1 {
+	if st := fw.snapshot(); st.Dropped["ban"] != 10 {
 		t.Fatalf("计数不符: %+v", st)
 	}
-	all := strings.Join(fake.calls, "\n")
-	if !strings.Contains(all, "add element inet gately ban4 { 203.0.113.50 timeout") ||
-		!strings.Contains(all, "delete element inet gately trap4 { 203.0.113.50 }") ||
-		!strings.Contains(all, "delete element inet gately scan6 { 2001:db8:5:6:: }") {
-		t.Fatalf("应把内核封禁移入 ban 集合并清理临时集合:\n%s", all)
-	}
-	if !banlist.Default.Banned(netip.MustParseAddr("2001:db8:5:6::99")) {
-		t.Fatal("IPv6 扫描来源应按 /64 封禁")
+	if strings.Contains(strings.Join(fake.calls, "\n"), "delete element") {
+		t.Fatalf("不应再操作临时集合: %v", fake.calls)
 	}
 }
 
@@ -894,39 +936,39 @@ func TestBuildScriptIPv6Strict(t *testing.T) {
 	now := time.Now()
 	s := defaultSettings()
 	s.Scan = ScanSettings{Enable: true, Threshold: 20, IPv6Strict: true, BanSeconds: 7200}
-	script, _, _ := buildScript(s, nil, nil, []portRange{{443, 443}}, nil, now)
-	strict := `meta nfproto ipv6 tcp flags & (fin|syn|rst|ack) == syn tcp dport != @open add @scan6 { ip6 saddr & ffff:ffff:ffff:ffff:: timeout 7200s } counter drop comment "scan-hit"`
+	rp := redirPorts{trap: 40001, scan: 40002}
+	script, _, _ := buildScript(s, nil, nil, []portRange{{443, 443}}, nil, rp, now)
+	strict := `meta nfproto ipv6 tcp dport != @open add @sus6 { ip6 saddr & ffff:ffff:ffff:ffff:: } redirect to :40002`
 	for _, want := range []string{
 		strict,
-		"limit rate over 20/minute burst 20 packets } add @scan4 { ip saddr timeout 7200s }",
+		"add @meter4 { ip saddr limit rate over 20/minute burst 20 packets } add @sus4 { ip saddr } redirect to :40002",
 	} {
 		if !strings.Contains(script, want) {
 			t.Errorf("脚本缺少 %q:\n%s", want, script)
 		}
 	}
-	if strings.Contains(script, "@meter6 {") {
+	if strings.Contains(script, "add @meter6 {") {
 		t.Errorf("严格模式下 IPv6 不应再使用计数器:\n%s", script)
 	}
-	// 白名单地址在 input 链最前面放行，不受严格模式影响
+	// 白名单地址在重定向链最前面放行，不受严格模式影响
 	if strings.Index(script, "ip6 saddr @allow6 accept") > strings.Index(script, strict) {
 		t.Errorf("白名单放行必须在严格规则之前:\n%s", script)
 	}
 	// 关闭严格模式后恢复阈值检测
 	s.Scan.IPv6Strict = false
-	script, _, _ = buildScript(s, nil, nil, []portRange{{443, 443}}, nil, now)
+	script, _, _ = buildScript(s, nil, nil, []portRange{{443, 443}}, nil, rp, now)
 	if !strings.Contains(script, "add @meter6 { ip6 saddr & ffff:ffff:ffff:ffff:: limit rate over 20/minute") || strings.Contains(script, strict) {
 		t.Errorf("关闭严格模式应使用阈值检测:\n%s", script)
 	}
 	// 扫描检测未启用时，严格模式不生成任何规则
 	s.Scan = ScanSettings{IPv6Strict: true}
 	s.Trap.Enable = false
-	script, _, _ = buildScript(s, nil, nil, nil, nil, now)
-	if strings.Contains(script, "scan-hit") || strings.Contains(script, "hook input") {
+	script, _, _ = buildScript(s, nil, nil, nil, nil, rp, now)
+	if strings.Contains(script, "@sus6") || strings.Contains(script, "redirect") {
 		t.Errorf("未启用扫描检测时不应生成扫描规则:\n%s", script)
 	}
 }
 
-// 严格模式在规则写入后要等端口同步过才启用，读不到监听端口时一直保持阈值检测，避免把正常访客封掉
 func TestFirewallIPv6StrictArming(t *testing.T) {
 	cleanDefault(t)
 	old := listeningPortsFn
@@ -939,7 +981,7 @@ func TestFirewallIPv6StrictArming(t *testing.T) {
 	fake := &fakeNFT{output: `{"nftables": []}`}
 	fw := activeFirewall(t, fake)
 	ctx := context.Background()
-	strictRule := "tcp dport != @open add @scan6 {"
+	strictRule := "meta nfproto ipv6 tcp dport != @open add @sus6 {"
 	sawStrict := func() bool {
 		fake.mu.Lock()
 		defer fake.mu.Unlock()

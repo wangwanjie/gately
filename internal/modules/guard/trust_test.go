@@ -124,7 +124,7 @@ func TestBuildScriptTrusted(t *testing.T) {
 	s := Settings{Firewall: true}
 	s.Scan.Enable, s.Scan.Threshold = true, 20
 	allow := allowFor(s, nil, []netip.Prefix{netip.MustParsePrefix("14.19.55.154/32"), netip.MustParsePrefix("2001:db8:1:2::9/128")})
-	script, _, _ := buildScriptWith(true, s, allow, nil, []portRange{{443, 443}}, nil, time.Now())
+	script, _, _ := buildScriptWith(redirPorts{trap: 40001, scan: 40002}, s, allow, nil, []portRange{{443, 443}}, nil, time.Now())
 	for _, want := range []string{"elements = { 14.19.55.154 }", "elements = { 2001:db8:1:2::/64 }", "ip saddr @allow4 accept"} {
 		if !strings.Contains(script, want) {
 			t.Errorf("脚本缺少 %q:\n%s", want, script)
@@ -146,11 +146,10 @@ func TestFirewallTrustedSources(t *testing.T) {
 	})
 	peers := map[int]map[netip.Addr]bool{}
 	stubPeers(t, peers)
-	fake := &fakeNFT{output: `{"nftables": [{"metainfo": {"version": "1.0.6"}},
-		{"set": {"family": "inet", "name": "scan4", "table": "gately", "type": "ipv4_addr", "elem": ["14.19.55.154", "198.51.100.9"]}},
-		{"set": {"family": "inet", "name": "scan6", "table": "gately", "type": "ipv6_addr", "elem": ["2001:db8:1:2::"]}}
-	]}`}
+	fake := &fakeNFT{}
 	fw := activeFirewall(t, fake)
+	fw.cfg.Trap.Enable = true
+	fw.redirOK = true
 	ctx := context.Background()
 	home := netip.MustParseAddr("14.19.55.154")
 	v6 := netip.MustParseAddr("2001:db8:1:2::9")
@@ -170,17 +169,17 @@ func TestFirewallTrustedSources(t *testing.T) {
 		t.Fatal("可信来源不变时不应重写放行集合")
 	}
 
+	// 放行集合更新之前已经被重定向的连接：完成握手后也不计入（IPv6 按 /64）
 	var imported []netip.Addr
 	fw.importFn = func(_ string, addrs []netip.Addr, _ portHits) {
 		imported = append(imported, addrs...)
 	}
-	fw.poll(ctx)
-	if len(imported) != 1 || imported[0] != netip.MustParseAddr("198.51.100.9") {
-		t.Fatalf("只应导入非可信来源，实际 %v", imported)
+	for _, a := range []string{"14.19.55.154", "2001:db8:1:2::77", "198.51.100.9"} {
+		fw.onHandshake(hsTrap, netip.MustParseAddr(a), 23)
 	}
-	all := strings.Join(fake.calls, "\n")
-	if !strings.Contains(all, "delete element inet gately scan4 { 14.19.55.154, 198.51.100.9 }") && !strings.Contains(all, "delete element inet gately scan4 { 198.51.100.9, 14.19.55.154 }") {
-		t.Fatalf("可信来源也要从临时集合删除:\n%s", all)
+	fw.flushPending()
+	if len(imported) != 1 || imported[0] != netip.MustParseAddr("198.51.100.9") {
+		t.Fatalf("只应封禁非可信来源，实际 %v", imported)
 	}
 	if banlist.Default.Banned(home) {
 		t.Fatal("可信来源不应被封禁")
@@ -231,13 +230,14 @@ func TestFirewallIPTTrustedSources(t *testing.T) {
 	ipt.reset()
 	trustsrc.Set(owner, []trustsrc.Source{{Addr: netip.MustParseAddr("14.19.55.154"), Port: 17000, Until: time.Now().Add(time.Minute)}})
 	fw.refreshTrust(ctx)
-	calls := ipt.find("iptables-legacy-restore --noflush", ":GATELY_IN - [0:0]", "-s 14.19.55.154/32 -j RETURN")
+	calls := ipt.find("iptables-legacy-restore --noflush", "*nat", ":GATELY_NAT - [0:0]", "-s 14.19.55.154/32 -j RETURN")
 	if len(calls) != 1 || strings.Contains(calls[0], ":GATELY_PRE") {
-		t.Fatalf("应只重写 input 部分的链并放行可信来源: %v", ipt.calls)
+		t.Fatalf("应只重写 nat 表的链并放行可信来源: %v", ipt.calls)
 	}
-	if i, j := strings.Index(calls[0], "-s 14.19.55.154/32 -j RETURN"), strings.Index(calls[0], "-j GATELY_TRAP"); j >= 0 && i > j {
-		t.Fatalf("放行规则应在诱饵端口规则之前:\n%s", calls[0])
+	if i, j := strings.Index(calls[0], "-s 14.19.55.154/32 -j RETURN"), strings.Index(calls[0], "-j REDIRECT"); j < 0 || i > j {
+		t.Fatalf("放行规则应在重定向规则之前:\n%s", calls[0])
 	}
+	fw.stop()
 }
 
 // 在 Linux 上读取真实的 /proc/net/tcp{,6}：本机建立的连接能按端口找到对端地址

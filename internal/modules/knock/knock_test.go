@@ -138,7 +138,7 @@ type testEnv struct {
 }
 
 // newEnv 创建并启动模块：UDP 端口为 0（不监听），防火墙使用假后端，时钟固定。
-func newEnv(t *testing.T, rules ...Rule) *testEnv {
+func newEnv(t testing.TB, rules ...Rule) *testEnv {
 	t.Helper()
 	knockgate.Default.Clear()
 	t.Cleanup(knockgate.Default.Clear)
@@ -413,8 +413,8 @@ func TestRejectEventsRateLimited(t *testing.T) {
 	}
 }
 
-// UDP 报文的来源可以伪造：HMAC 认证失败的 UDP 包只计数，不发布可用于封禁的失败事件；
-// 通过 HMAC 认证但被规则拒绝（如时间戳过期）时才发布，并注明 via=udp。
+// UDP 报文的来源可以伪造：被拒绝的 UDP 包一律只计数、写日志，不发布可用于封禁的失败事件。
+// 通过 HMAC 认证的报文也可能是抓到后重放、再伪造来源发出的，同样不能发布（见 reject）。
 func TestUDPRejectEventsTrusted(t *testing.T) {
 	env := newEnv(t, sshRule("ssh"))
 	other := sshRule("x")
@@ -436,9 +436,23 @@ func TestUDPRejectEventsTrusted(t *testing.T) {
 	if err := env.m.handle(old, src, transportUDP, "UDP"); err == nil {
 		t.Fatal("过期报文应被拒绝")
 	}
-	waitFor(t, "HMAC 通过后被拒绝的失败事件", func() bool { return len(env.eventsOf(events.KnockFailed)) == 1 })
-	if e := env.eventsOf(events.KnockFailed)[0]; e.Fields["ip"] != src.String() || e.Fields["via"] != "udp" {
-		t.Fatalf("事件不对: %+v", e)
+	// 合法报文被重放：第一次放行，之后以伪造的受害者地址重放 5 次，都应被拒绝且不发布事件
+	pkt := env.packet(t, env.rule("r-ssh"), spa.Message{})
+	if err := env.m.handle(pkt, src, transportUDP, "UDP"); err != nil {
+		t.Fatalf("合法报文应放行: %v", err)
+	}
+	for i := range 5 {
+		env.clock.set(env.clock.now().Add(failInterval))
+		if err := env.m.handle(pkt, victim, transportUDP, "UDP"); err == nil {
+			t.Fatalf("第 %d 次重放应被拒绝", i+1)
+		}
+	}
+	time.Sleep(50 * time.Millisecond)
+	if n := len(env.eventsOf(events.KnockFailed)); n != 0 {
+		t.Fatalf("UDP 来源的拒绝不应发布失败事件，实际 %d", n)
+	}
+	if !env.hasLog("重放的报文") || !env.hasLog("时间戳") {
+		t.Fatal("通过 HMAC 认证但被拒绝的 UDP 报文仍应写日志")
 	}
 }
 
@@ -811,6 +825,73 @@ func TestPerSourceRateLimit(t *testing.T) {
 	env.m.stateMu.Unlock()
 	if n != 0 {
 		t.Fatalf("空闲的桶应被清理: %d", n)
+	}
+}
+
+// 全局令牌桶按 HMAC 校验量计费：每个报文消耗「启用的规则数 × 长度权重」个令牌。
+// 默认预算下，来自不同网段的上万个短报文（单条规则）都能进入认证，不会被每秒几百个的伪造洪水挤掉合法敲门。
+func TestGlobalBucketByHMACCost(t *testing.T) {
+	env := newEnv(t, sshRule("ssh"))
+	other := sshRule("x")
+	_ = other.Validate()
+	junk := env.packet(t, other, spa.Message{})
+	if len(junk) > hmacUnitLen {
+		t.Fatalf("测试报文应短于 %d 字节: %d", hmacUnitLen, len(junk))
+	}
+	limited := 0
+	for i := range 10000 {
+		// 每个 /24 只发 1 个，按来源限速不起作用，只看全局令牌桶
+		a := netip.AddrFrom4([4]byte{100, byte(i >> 8), byte(i), 7})
+		if i%srcCap == 0 {
+			env.m.stateMu.Lock()
+			env.m.perSrc = newSrcLimiter()
+			env.m.stateMu.Unlock()
+		}
+		if errors.Is(env.m.handle(junk, a, transportUDP, "UDP"), errLimited) {
+			limited++
+		}
+	}
+	if limited != 0 {
+		t.Fatalf("默认预算下 1 万个分散来源的短报文都应进入认证，被限速 %d 个", limited)
+	}
+
+	// 4 条规则时每个短报文消耗 4 个令牌，1500 字节的报文按 3 个长度单位再乘 3
+	env4 := newEnv(t, sshRule("a"), sshRule("b"), sshRule("c"), sshRule("d"))
+	env4.m.stateMu.Lock()
+	env4.m.bucket = tokenBucket{rate: 1, burst: 12}
+	env4.m.stateMu.Unlock()
+	for i := range 3 {
+		if err := env4.m.handle(junk, netip.AddrFrom4([4]byte{100, 1, byte(i), 1}), transportUDP, "UDP"); errors.Is(err, errLimited) {
+			t.Fatalf("第 %d 个短报文不应被限速", i+1)
+		}
+	}
+	if err := env4.m.handle(junk, netip.MustParseAddr("100.1.9.1"), transportUDP, "UDP"); !errors.Is(err, errLimited) {
+		t.Fatalf("令牌用尽后应被限速: %v", err)
+	}
+	if c := packetCost(1500, 4); c != 12 {
+		t.Fatalf("1500 字节、4 条规则的报文应消耗 12 个令牌: %v", c)
+	}
+	if c := packetCost(200, 0); c != 1 {
+		t.Fatalf("没有规则时也至少消耗 1 个令牌: %v", c)
+	}
+}
+
+// 网段数满了以后，新网段的报文不应每次都遍历全部桶：清理每秒最多一次。
+func TestSrcLimiterPruneThrottled(t *testing.T) {
+	l := newSrcLimiter()
+	now := time.Unix(1000, 0)
+	for i := range srcCap {
+		l.take(netip.AddrFrom4([4]byte{10, byte(i >> 8), byte(i), 1}), now)
+	}
+	for i := range 1000 {
+		l.take(netip.AddrFrom4([4]byte{11, byte(i >> 8), byte(i), 1}), now.Add(time.Duration(i)*time.Millisecond))
+	}
+	if l.prunes != 1 {
+		t.Fatalf("1 秒内应只清理 1 次，实际 %d 次", l.prunes)
+	}
+	l.take(netip.MustParseAddr("12.0.0.1"), now.Add(1500*time.Millisecond))
+	if l.prunes != 2 {
+		t.Fatalf("过了 1 秒应可再次清理: %d", l.prunes)
 	}
 }
 

@@ -60,3 +60,9 @@ Regeln können eine „Gruppe“ erhalten (höchstens 64 Zeichen). Die Liste zei
 Mit „Sortieren“ wechseln Sie in den Sortiermodus. Mit den Pfeilen verschieben Sie Regeln nach oben oder unten oder ganze Gruppen. Markieren Sie mehrere und ziehen Sie einen davon, um alle zusammen zu verschieben; auf einem Eintrag oder dem Kopf einer anderen Gruppe abgelegt, wechseln sie in diese Gruppe. Die Werkzeugleiste verschiebt die markierten Einträge in einem Schritt in eine Gruppe oder entfernt sie aus ihrer Gruppe, wenn der Name leer bleibt. Reihenfolge und Gruppen wirken sich nur auf die Liste aus; Änderungen starten die Weiterleitung nicht neu, offene Verbindungen bleiben bestehen.
 
 Fahren Sie über einen Gruppenkopf und klicken Sie auf den Stift, um die Gruppe umzubenennen: Alle Einträge erhalten den neuen Namen und behalten Position und Reihenfolge. Ein bereits verwendeter Name führt die beiden Gruppen nach einer Bestätigung zusammen.
+
+## Verbindungslimits und leere Verbindungen
+
+Neben „Max. Verbindungen“ begrenzt jeder TCP-Port die gleichzeitigen Verbindungen einer einzelnen Quelle (eine IPv4-Adresse oder ein IPv6-/64): standardmäßig auf die Hälfte der max. Verbindungen (128 beim Standard von 256); in einer Regel über „Max. Verbindungen pro Quelle“ oder als Standard in den globalen Einstellungen änderbar. Loopback- und private Adressen werden nicht begrenzt. Verbindungen über dem Limit werden sofort geschlossen, das Laufprotokoll vermerkt das höchstens alle 10 Sekunden.
+
+Eine TCP-Verbindung, auf der innerhalb des „Zeitlimits für erste Daten“ (globale Einstellung, standardmäßig 60 Sekunden) keine Seite Daten sendet, wird geschlossen und gibt ihren Platz frei; Protokolle, bei denen der Server zuerst sendet (SSH, FTP, MySQL), und solche, bei denen der Client zuerst sendet (HTTP, TLS), tauschen sofort Daten aus und sind nicht betroffen. Für Protokolle, bei denen beide Seiten nach dem Verbindungsaufbau lange schweigen, den Wert erhöhen (bis 3600 Sekunden).
