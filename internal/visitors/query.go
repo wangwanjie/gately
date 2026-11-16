@@ -216,9 +216,11 @@ type siteID struct {
 
 // Query 按条件查询访客列表。
 //
-// 持锁时只做两件事：取全部记录的指针，再分批复制符合基本条件的记录；封禁与国家回调、关键词匹配、
-// 汇总与排序都在锁外进行，查询不会阻塞请求的记录。查询串行执行，并发的查询依次等待，
-// 避免多个客户端同时轮询时复制出多份全部记录。
+// 持锁时只做三件事：取全部记录的指针；分批读出符合基本条件的记录用于筛选、汇总与排序的标量（以及统计范围内的按天计数）；
+// 排序分页后再为当前页生成列表项。封禁与国家回调、汇总与排序都在锁外进行，查询不会阻塞请求的记录。
+// 不再复制候选记录（1 万名访客时原先每次约 20 MB），关键词匹配在持锁读取时完成（国家代码在锁外补判）。
+// 列表项按生成时的记录内容输出：两次持锁之间访客又有新请求时，列表项可能比排序依据稍新。
+// 查询串行执行，并发的查询依次等待。
 func (s *Store) Query(q Query) Result {
 	s.queryMu.Lock()
 	defer s.queryMu.Unlock()
@@ -246,20 +248,28 @@ func (s *Store) Query(q Query) Result {
 	fromSec := time.Date(now.Year(), now.Month(), now.Day()-span+1, 0, 0, 0, 0, now.Location()).Unix()
 	kw := strings.ToLower(strings.TrimSpace(q.Q))
 
+	// hit 是一个候选访客用于筛选、汇总与排序的标量（尽量紧凑：1 万名访客时全部候选约 0.8 MB）。
+	// ref 为它在 refs 中的下标；dayOff、dayN 为它在统计范围内的按天计数在 dayBuf 中的位置
 	type hit struct {
-		addr    netip.Addr
-		v       Visitor
-		req     uint64
-		denied  uint64
-		banned  bool
-		country string
+		ref          int32
+		dayOff, dayN int32
+		user, noise  bool
+		kwMatch      bool
+		banned       bool
+		first, last  int64
+		req, denied  uint64
+		ip           string
+		country      string
 	}
 	res := Result{Items: []Item{}, Daily: []DayPoint{}, Sites: []SiteRef{}}
 	siteSeen := map[siteID]int{}
-	var cands []hit
+	// 候选数不超过记录数，一次分配到位，避免逐步扩容
+	cands := make([]hit, 0, len(refs))
+	// dayBuf 依次存放各候选访客统计范围内的按天计数（与记录中的顺序相同，从新到旧），共用一块内存
+	dayBuf := make([]Day, 0, len(refs))
 	for i := 0; i < len(refs); i += queryChunk {
 		s.mu.Lock()
-		for _, r := range refs[i:min(i+queryChunk, len(refs))] {
+		for k, r := range refs[i:min(i+queryChunk, len(refs))] {
 			v := r.v
 			// 取指针之后被删除或淘汰（之后可能又以新记录出现）的访客跳过
 			if s.m[r.addr] != v {
@@ -284,11 +294,16 @@ func (s *Store) Query(q Query) Result {
 			if !v.prefilter(&q, denied) {
 				continue
 			}
-			cands = append(cands, hit{addr: r.addr, v: v.clone(), req: req, denied: denied})
+			h := hit{ref: int32(i + k), ip: v.IP, first: v.First, last: v.Last, req: req, denied: denied,
+				user: v.hasKind("user"), noise: v.noise(), kwMatch: kw == "" || v.matches(kw, ""), dayOff: int32(len(dayBuf))}
+			for j := len(v.Days) - 1; j >= 0 && v.Days[j].D >= fromDay; j-- {
+				dayBuf = append(dayBuf, v.Days[j])
+			}
+			h.dayN = int32(len(dayBuf)) - h.dayOff
+			cands = append(cands, h)
 		}
 		s.mu.Unlock()
 	}
-	refs = nil
 
 	daily := make([]DayPoint, span)
 	for i := range daily {
@@ -297,15 +312,16 @@ func (s *Store) Query(q Query) Result {
 	hits := make([]*hit, 0, len(cands))
 	for i := range cands {
 		h := &cands[i]
-		v := &h.v
-		h.banned = q.Banned != nil && q.Banned(h.addr)
+		addr := refs[h.ref].addr
+		h.banned = q.Banned != nil && q.Banned(addr)
 		if q.Filter == FilterBanned && !h.banned {
 			continue
 		}
 		if q.Country != nil {
-			h.country = q.Country(h.addr)
+			h.country = q.Country(addr)
 		}
-		if kw != "" && !v.matches(kw, h.country) {
+		// 关键词已在持锁时与记录内的字段比对，这里补上国家代码
+		if kw != "" && !h.kwMatch && (h.country == "" || !containsFold(h.country, kw)) {
 			continue
 		}
 		hits = append(hits, h)
@@ -313,20 +329,19 @@ func (s *Store) Query(q Query) Result {
 		sm.Visitors++
 		sm.Requests += h.req
 		sm.Denied += h.denied
-		if v.hasKind("user") {
+		if h.user {
 			sm.Authed++
 		}
 		if h.banned {
 			sm.Banned++
 		}
-		if v.noise() {
+		if h.noise {
 			sm.Noise++
 		}
-		if v.First >= fromSec {
+		if h.first >= fromSec {
 			sm.New++
 		}
-		for j := len(v.Days) - 1; j >= 0 && v.Days[j].D >= fromDay; j-- {
-			d := v.Days[j]
+		for _, d := range dayBuf[h.dayOff : h.dayOff+h.dayN] {
 			if idx := int(d.D - fromDay); idx < span {
 				daily[idx].Visitors++
 				daily[idx].Requests += uint64(d.Req)
@@ -341,17 +356,17 @@ func (s *Store) Query(q Query) Result {
 		var c int
 		switch q.Sort {
 		case SortFirst:
-			c = cmp.Compare(y.v.First, x.v.First)
+			c = cmp.Compare(y.first, x.first)
 		case SortRequests:
 			c = cmp.Compare(y.req, x.req)
 		case SortDenied:
 			c = cmp.Compare(y.denied, x.denied)
 		}
 		if c == 0 {
-			c = cmp.Compare(y.v.Last, x.v.Last)
+			c = cmp.Compare(y.last, x.last)
 		}
 		if c == 0 {
-			c = strings.Compare(x.v.IP, y.v.IP)
+			c = strings.Compare(x.ip, y.ip)
 		}
 		return c
 	})
@@ -361,9 +376,14 @@ func (s *Store) Query(q Query) Result {
 		limit = 50
 	}
 	off := max(q.Offset, 0)
-	for i := off; i < len(hits) && i < off+limit; i++ {
-		h := hits[i]
-		res.Items = append(res.Items, h.v.item(h.req, h.denied, h.banned, h.country))
+	if off < len(hits) {
+		page := hits[off:min(len(hits), off+limit)]
+		// 只为当前页生成列表项（item 自行复制所需的字段）。访客在两次持锁之间被淘汰时记录不再变化，照常输出
+		s.mu.Lock()
+		for _, h := range page {
+			res.Items = append(res.Items, refs[h.ref].v.item(h.req, h.denied, h.banned, h.country))
+		}
+		s.mu.Unlock()
 	}
 	return res
 }
