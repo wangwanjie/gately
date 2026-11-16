@@ -56,6 +56,8 @@
   "networkError": "Cannot reach Gately. Check your network connection or make sure the service is still running",
   "advancedSettings": "Advanced settings",
   "advancedChanged": "({count} changed)",
+  "docs": "Docs",
+  "docsTitle": "Open the docs for this page in a new window",
   "durationDaysHours": "{d}d {h}h",
   "durationHoursMinutes": "{h}h {m}m",
   "durationMinutes": "{m} min",

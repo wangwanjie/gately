@@ -2,7 +2,7 @@
   <div>
     <!-- dialogOnly 时只提供监听与站点的编辑弹窗，供网络拓扑页原地编辑，不渲染页面本身 -->
     <template v-if="!dialogOnly">
-    <PageHeader :title="t('web.title')" :desc="t('web.desc')" :icon="Server">
+    <PageHeader :title="t('web.title')" doc="modules/web" :desc="t('web.desc')" :icon="Server">
       <el-button :icon="Workflow" @click="router.push({ name: 'webtopology' })">{{ t('webTopology.title') }}</el-button>
       <el-button v-if="listeners.length" :icon="allListenersCollapsed ? ChevronsUpDown : ChevronsDownUp" @click="setAll(listeners.map((l) => l.key), !allListenersCollapsed)">
         {{ allListenersCollapsed ? t('common.expandAll') : t('common.collapseAll') }}

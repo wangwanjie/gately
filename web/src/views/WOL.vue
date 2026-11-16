@@ -1,6 +1,6 @@
 <template>
   <div>
-    <PageHeader :title="t('wol.title')" :desc="t('wol.desc')" :icon="Power">
+    <PageHeader :title="t('wol.title')" doc="modules/tools" :desc="t('wol.desc')" :icon="Power">
       <CompactToggle v-model="compact" />
       <ListTools :gl="gl" :placeholder="t('groupSort.search')" />
       <!-- 巴法云语音控制：按钮上的圆点表示连接状态 -->

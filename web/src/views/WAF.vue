@@ -1,6 +1,6 @@
 <template>
   <div>
-    <PageHeader :title="t('waf.title')" :desc="t('waf.desc')" :icon="ShieldHalf">
+    <PageHeader :title="t('waf.title')" doc="modules/waf" :desc="t('waf.desc')" :icon="ShieldHalf">
       <CompactToggle v-model="compact" />
       <ListTools :gl="gl" :placeholder="t('groupSort.search')" />
       <el-button type="primary" :icon="Plus" @click="openEditor()">{{ t('waf.addInstance') }}</el-button>

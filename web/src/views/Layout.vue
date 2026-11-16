@@ -42,7 +42,8 @@
                 <!-- 修改密码与系统设置只对管理员开放 -->
                 <el-dropdown-item v-if="role === 'admin'" command="password" :icon="KeyRound">{{ t('layout.changePassword') }}</el-dropdown-item>
                 <el-dropdown-item v-if="role === 'admin'" command="settings" :icon="Settings">{{ t('layout.systemSettings') }}</el-dropdown-item>
-                <el-dropdown-item command="logout" :icon="LogOut" :divided="role === 'admin'">{{ t('layout.logout') }}</el-dropdown-item>
+                <el-dropdown-item command="docs" :icon="BookOpen">{{ t('common.docs') }}</el-dropdown-item>
+                <el-dropdown-item command="logout" :icon="LogOut" divided>{{ t('layout.logout') }}</el-dropdown-item>
               </el-dropdown-menu>
             </template>
           </el-dropdown>
@@ -75,7 +76,8 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { ElMessageBox } from 'element-plus'
-import { ChevronDown, ChevronRight, KeyRound, LogOut, Menu, PanelLeftClose, PanelLeftOpen, Settings } from 'lucide-vue-next'
+import { BookOpen, ChevronDown, ChevronRight, KeyRound, LogOut, Menu, PanelLeftClose, PanelLeftOpen, Settings } from 'lucide-vue-next'
+import { docsUrl } from '../docsUrl'
 import { api } from '../api'
 import { bannerLevel, fixTarget, SEC_SNOOZE_KEY, SEC_SNOOZE_MS, snoozeKey } from '../security'
 import { loadSecurity, securityStatus as secStatus } from '../composables/useSecurity'
@@ -155,7 +157,17 @@ async function onCommand(cmd: string) {
     router.push({ path: '/settings', query: { tab: 'account' } })
   } else if (cmd === 'settings') {
     router.push('/settings')
+  } else if (cmd === 'docs') {
+    // 官网文档：当前页面有对应的模块文档时打开它，否则打开文档首页
+    window.open(docsUrl(locale.value, '/docs/' + (pageDoc() || 'guide/quick-start')), '_blank', 'noopener')
   }
+}
+
+// pageDoc 返回当前页面对应的文档路径（读取页头上的文档链接），没有时为空
+function pageDoc(): string {
+  const a = document.querySelector<HTMLAnchorElement>('.page-head-doc')
+  const m = a?.href.match(/\/docs\/(.+)$/)
+  return m ? m[1] : ''
 }
 
 // 顶部提醒区（默认密码、版本更新）高度变化时写入 CSS 变量；margin 由 flow-root 包含在内

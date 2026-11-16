@@ -1,6 +1,6 @@
 <template>
   <div>
-    <PageHeader :title="t('frp.title')" :desc="t('frp.desc')" :icon="Waypoints">
+    <PageHeader :title="t('frp.title')" doc="modules/tunnels#frp" :desc="t('frp.desc')" :icon="Waypoints">
       <ResetConfigButton base="/api/frp" :desc="t('components.resetConfig.frp')" @done="onReset" />
       <el-button :icon="FileUp" @click="openImport">{{ t('frp.importConfig') }}</el-button>
     </PageHeader>

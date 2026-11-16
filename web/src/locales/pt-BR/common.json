@@ -56,6 +56,8 @@
   "networkError": "Não foi possível conectar ao Gately. Verifique a rede ou se o serviço ainda está em execução",
   "advancedSettings": "Configurações avançadas",
   "advancedChanged": "({count} alterados)",
+  "docs": "Documentação",
+  "docsTitle": "Abrir a documentação desta página em uma nova janela",
   "durationDaysHours": "{d}d {h}h",
   "durationHoursMinutes": "{h}h {m}min",
   "durationMinutes": "{m} min",

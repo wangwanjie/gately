@@ -56,6 +56,8 @@
   "networkError": "无法连接到 Gately，请检查网络，或确认服务仍在运行",
   "advancedSettings": "高级设置",
   "advancedChanged": "（{count} 项已修改）",
+  "docs": "文档",
+  "docsTitle": "在新窗口打开本页的使用文档",
   "durationDaysHours": "{d} 天 {h} 小时",
   "durationHoursMinutes": "{h} 小时 {m} 分",
   "durationMinutes": "{m} 分钟",

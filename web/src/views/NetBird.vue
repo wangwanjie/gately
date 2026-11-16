@@ -1,6 +1,6 @@
 <template>
   <div>
-    <PageHeader title="NetBird" :desc="t('netbird.desc')" :icon="Bird">
+    <PageHeader title="NetBird" doc="modules/tunnels#netbird" :desc="t('netbird.desc')" :icon="Bird">
       <ResetConfigButton v-if="!isReadonly" base="/api/netbird" :desc="t('components.resetConfig.netbird')" @done="onReset" />
     </PageHeader>
 

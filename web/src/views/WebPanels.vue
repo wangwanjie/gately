@@ -1,7 +1,7 @@
 <template>
   <!-- 导航面板：面板库的管理页面。Web 服务中类型为“导航面板”的站点引用这里的面板，在站点根路径输出汇总页面 -->
   <div class="panels-page">
-    <PageHeader :title="t('panels.title')" :desc="t('panels.desc')" :icon="LayoutGrid">
+    <PageHeader :title="t('panels.title')" doc="modules/web#nav-panel" :desc="t('panels.desc')" :icon="LayoutGrid">
       <el-button :icon="RefreshCw" :loading="loading" @click="load">{{ t('common.refresh') }}</el-button>
       <el-button v-if="!isReadonly && !notFound" type="primary" :icon="Plus" data-test="panel-add" @click="openEditor()">{{ t('panels.add') }}</el-button>
     </PageHeader>

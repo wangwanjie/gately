@@ -1,6 +1,6 @@
 <template>
   <div>
-    <PageHeader :title="t('storage.title')" :desc="t('storage.desc')" :icon="HardDrive">
+    <PageHeader :title="t('storage.title')" doc="modules/tools" :desc="t('storage.desc')" :icon="HardDrive">
       <CompactToggle v-model="compact" />
       <ListTools :gl="gl" :placeholder="t('groupSort.search')" />
       <el-button type="primary" :icon="Plus" @click="openEditor()">{{ t('storage.addMount') }}</el-button>

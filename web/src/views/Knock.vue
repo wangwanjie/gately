@@ -1,6 +1,6 @@
 <template>
   <div>
-    <PageHeader :title="t('knock.title')" :desc="t('knock.desc')" :icon="KeyRound">
+    <PageHeader :title="t('knock.title')" doc="modules/knock" :desc="t('knock.desc')" :icon="KeyRound">
       <CompactToggle v-model="compact" />
       <ListTools :gl="gl" :placeholder="t('groupSort.search')" />
       <el-button :icon="Settings2" @click="openSettings">{{ t('knock.settings.button') }}</el-button>

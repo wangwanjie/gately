@@ -1,6 +1,6 @@
 <template>
   <div>
-    <PageHeader :title="t('ssl.title')" :desc="t('ssl.desc')" :icon="ShieldCheck">
+    <PageHeader :title="t('ssl.title')" doc="modules/ssl" :desc="t('ssl.desc')" :icon="ShieldCheck">
       <CompactToggle v-model="compact" />
       <ListTools :gl="gl" :placeholder="t('ssl.filterPlaceholder')" />
       <el-button :icon="SlidersHorizontal" @click="openSettings">{{ t('ssl.settingsTitle') }}</el-button>

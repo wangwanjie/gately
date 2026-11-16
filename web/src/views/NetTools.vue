@@ -1,6 +1,6 @@
 <template>
   <div>
-    <PageHeader :title="t('netTools.title')" :desc="t('netTools.desc')" :icon="Activity">
+    <PageHeader :title="t('netTools.title')" doc="modules/nettools" :desc="t('netTools.desc')" :icon="Activity">
       <el-button :icon="ShieldBan" @click="openSettings">{{ t('netTools.denyList') }}</el-button>
     </PageHeader>
 

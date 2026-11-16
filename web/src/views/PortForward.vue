@@ -1,6 +1,6 @@
 <template>
   <div>
-    <PageHeader :title="t('portForward.title')" :desc="t('portForward.desc')" :icon="ArrowLeftRight">
+    <PageHeader :title="t('portForward.title')" doc="modules/portforward" :desc="t('portForward.desc')" :icon="ArrowLeftRight">
       <CompactToggle v-model="compact" />
       <ListTools :gl="gl" :placeholder="t('portForward.filterPlaceholder')" />
       <el-button :icon="SlidersHorizontal" @click="openSettings">{{ t('portForward.globalSettings') }}</el-button>

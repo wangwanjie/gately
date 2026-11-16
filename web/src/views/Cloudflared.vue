@@ -1,6 +1,6 @@
 <template>
   <div>
-    <PageHeader :title="t('cloudflared.title')" :desc="t('cloudflared.desc')" :icon="Cloud">
+    <PageHeader :title="t('cloudflared.title')" doc="modules/tunnels" :desc="t('cloudflared.desc')" :icon="Cloud">
       <CompactToggle v-model="compact" />
       <ListTools :gl="gl" :placeholder="t('groupSort.search')" />
       <ResetConfigButton base="/api/cloudflared" :desc="t('components.resetConfig.cloudflared')" @done="onReset" />

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <PageHeader :title="t('notify.title')" :desc="t('notify.desc')" :icon="Bell">
+    <PageHeader :title="t('notify.title')" doc="modules/notify" :desc="t('notify.desc')" :icon="Bell">
       <el-button :icon="SlidersHorizontal" @click="openSettings">{{ t('notify.settings') }}</el-button>
       <el-button :icon="Plus" @click="openRule()">{{ t('notify.addRule') }}</el-button>
       <el-button type="primary" :icon="Plus" @click="openChannel()">{{ t('notify.addChannel') }}</el-button>

@@ -1,7 +1,7 @@
 <template>
   <!-- 访客审计：按访客地址汇总全部站点的访问，数据来自 GET /api/webservice/visitors -->
   <div class="visitors-page">
-    <PageHeader :title="t('visitors.title')" :desc="t('visitors.desc')" :icon="Footprints">
+    <PageHeader :title="t('visitors.title')" doc="modules/web#visitor-audit" :desc="t('visitors.desc')" :icon="Footprints">
       <el-radio-group v-model="days" size="small" class="range" @change="reload">
         <el-radio-button v-for="r in ranges" :key="r.value" :value="r.value">{{ r.label }}</el-radio-button>
       </el-radio-group>

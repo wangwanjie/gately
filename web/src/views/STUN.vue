@@ -1,6 +1,6 @@
 <template>
   <div>
-    <PageHeader :title="t('stun.title')" :desc="t('stun.desc')" :icon="Radar">
+    <PageHeader :title="t('stun.title')" doc="modules/stun" :desc="t('stun.desc')" :icon="Radar">
       <CompactToggle v-model="compact" />
       <ListTools :gl="gl" :placeholder="t('groupSort.search')" />
       <el-button :icon="SlidersHorizontal" @click="openSettings">{{ t('stun.globalSettings') }}</el-button>
