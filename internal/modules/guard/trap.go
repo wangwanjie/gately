@@ -17,8 +17,8 @@ import (
 // maxUserTrapPorts 是用户态诱饵端口的数量上限，避免填写大范围时占用过多套接字
 const maxUserTrapPorts = 64
 
-// userTrap 在防火墙不可用时由 Gately 自己监听诱饵端口：完成握手的连接即被封禁。
-// 只发 SYN 不完成握手的扫描（如 masscan、nmap -sS）无法在用户态发现，需要防火墙规则。
+// userTrap 在防火墙不可用（或内核不支持重定向）时由 Gately 自己监听诱饵端口：完成握手的连接即被封禁。
+// 防火墙规则生效时诱饵端口的连接由内核重定向给 Gately 确认握手（见 handshake.go），同样只封禁完成握手的来源。
 type userTrap struct {
 	cancel context.CancelFunc
 	wg     sync.WaitGroup
@@ -79,14 +79,15 @@ func (t *userTrap) listening() []int {
 	return append([]int{}, t.ports...)
 }
 
-// applyTrapLocked 按当前状态启停用户态诱饵端口：防火墙规则生效时由内核处理，不再监听。调用方需持有 m.mu。
+// applyTrapLocked 按当前状态启停用户态诱饵端口：防火墙的重定向规则生效时由内核交给 Gately 确认，不再直接监听。调用方需持有 m.mu。
 func (m *Module) applyTrapLocked() {
 	if m.trap != nil {
 		m.trap.stop()
 		m.trap = nil
+		m.fw.setOwnPorts(nil)
 	}
 	s := m.cfg.Settings
-	if !m.started || !s.Trap.Enable || m.fw.active() {
+	if !m.started || !s.Trap.Enable || m.fw.kernelTrap() {
 		return
 	}
 	ranges, _ := parsePorts(s.Trap.Ports)
@@ -105,4 +106,6 @@ func (m *Module) applyTrapLocked() {
 		}
 		m.ban(a, s.Trap.BanSeconds, fmt.Sprintf("连接诱饵端口 %d", port), banlist.SourceTrap, "诱饵端口")
 	})
+	// 这些端口是 Gately 自己的监听，防火墙读取监听端口时不把它们当成对外服务
+	m.fw.setOwnPorts(m.trap.listening())
 }

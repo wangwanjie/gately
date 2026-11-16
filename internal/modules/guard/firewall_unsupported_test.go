@@ -24,6 +24,7 @@ func inactiveFirewall(t *testing.T, fake *fakeNFT) (*firewall, *logbuf.Buffer) {
 	fw.run = fake.run
 	fw.nft = "nft"
 	fw.status.Version = "nftables v1.1.1"
+	t.Cleanup(func() { stopHandshakeForTest(fw) })
 	return fw, buf
 }
 

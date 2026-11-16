@@ -408,7 +408,7 @@ func (m *Module) Start(ctx context.Context) error {
 	m.unsub = append(m.unsub, func() { webprobe.SetHandler(nil) })
 	// TLS 握手失败处理函数只在有规则时注册（见 refreshTLSLocked），没有规则时 Web 服务连分类都不做
 	m.unsub = append(m.unsub, func() { webprobe.SetTLSHandler(nil) })
-	m.fw.start(m.ctx, s, m.local, m.importKernelBans, m.onFirewallActive)
+	m.fw.start(m.ctx, s, m.local, m.importPortBans, m.onFirewallActive)
 	m.applyTrapLocked()
 	for _, j := range m.cfg.Jails {
 		m.startJailLocked(j)
@@ -496,7 +496,7 @@ func (m *Module) localSnapshotLocked() []netip.Prefix {
 	return append([]netip.Prefix{}, m.local...)
 }
 
-// onFirewallActive 在防火墙规则生效状态变化时调用：生效后由内核处理诱饵端口，不再由 Gately 监听。
+// onFirewallActive 在防火墙规则生效状态或重定向是否可用变化时调用：重定向生效后诱饵端口由内核交给 Gately 确认，不再直接监听。
 func (m *Module) onFirewallActive() {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -560,14 +560,14 @@ func (m *Module) ban(a netip.Addr, sec int, reason, source, jailName string) {
 	})
 }
 
-// kernelBanReasonMaxPorts 为封禁原因中最多列出的端口数
-const kernelBanReasonMaxPorts = 8
+// portBanReasonMaxPorts 为封禁原因中最多列出的端口数
+const portBanReasonMaxPorts = 8
 
-// kernelBanReason 生成内核规则封禁的原因，ports 为该来源最近命中的端口（升序，可能为空）。
-func kernelBanReason(source string, ports []int) string {
+// portBanReason 生成诱饵端口与扫描检测封禁的原因，ports 为该来源命中的端口（升序，可能为空）。
+func portBanReason(source string, ports []int) string {
 	shown := ports
-	if len(shown) > kernelBanReasonMaxPorts {
-		shown = shown[:kernelBanReasonMaxPorts]
+	if len(shown) > portBanReasonMaxPorts {
+		shown = shown[:portBanReasonMaxPorts]
 	}
 	texts := make([]string, 0, len(shown))
 	for _, p := range shown {
@@ -590,9 +590,9 @@ func kernelBanReason(source string, ports []int) string {
 	return fmt.Sprintf("连接诱饵端口 %s", list)
 }
 
-// importKernelBans 接收防火墙中由诱饵端口或扫描检测规则直接加入的地址，写入封禁表（按设置递增时长）。
-// ports 为内核记录的各来源最近命中的端口，写入封禁原因，方便事后判断是真实扫描还是自家设备误触。
-func (m *Module) importKernelBans(source string, addrs []netip.Addr, ports portHits) {
+// importPortBans 接收防火墙经握手确认的诱饵端口与扫描检测来源，写入封禁表（按设置递增时长）。
+// ports 为各来源命中的端口，写入封禁原因，方便事后判断是真实扫描还是自家设备误触。
+func (m *Module) importPortBans(source string, addrs []netip.Addr, ports portHits) {
 	s := m.cur()
 	sec, name := s.Trap.BanSeconds, "诱饵端口"
 	if source == banlist.SourceScan {
@@ -600,9 +600,9 @@ func (m *Module) importKernelBans(source string, addrs []netip.Addr, ports portH
 	}
 	var keys []string
 	// base 为不含端口的原因，用于批量通知的标题；detail 为单个地址的原因（含命中的端口）
-	base, detail := kernelBanReason(source, nil), ""
+	base, detail := portBanReason(source, nil), ""
 	for _, a := range addrs {
-		reason := kernelBanReason(source, ports[banlist.KeyFor(a)])
+		reason := portBanReason(source, ports[banlist.KeyFor(a)])
 		e, added, err := banlist.Default.Ban(banlist.KeyFor(a), s.banOptions(sec, reason, source))
 		if err != nil || !added {
 			continue
