@@ -2846,6 +2846,7 @@
   "自定义回调": "Callback personalizado",
   "自定义域名 %q 格式错误": "domínio personalizado %q inválido",
   "自定义状态目录 %s 位于 %s 中，%s 未删除": "O diretório de estado personalizado %s fica dentro de %s, então %s não foi excluído",
+  "自定义规则使用了 @validateSchema 操作符，当前版本为减小程序体积没有包含它，请删除或改写用到它的规则": "Uma regra personalizada usa o operador @validateSchema, que esta versão não inclui para reduzir o tamanho do programa. Remova ou reescreva as regras que o usam",
   "自定义错误页面 %s 不可用，已改用默认样式: %v": "A página de erro personalizada %s não está disponível; o estilo padrão será usado: %v",
   "自定义错误页面不存在": "A página de erro personalizada não existe",
   "自定义错误页面仍被 %s 引用，请先修改这些站点的错误页设置": "A página de erro personalizada ainda é usada por %s. Altere primeiro as configurações de página de erro desses sites",

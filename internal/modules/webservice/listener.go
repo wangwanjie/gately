@@ -294,11 +294,12 @@ func buildSiteTable(cfg Listener, log *logbuf.Logger, auth *authenticator, waf W
 	build := func(s Site) (*siteHandler, error) {
 		s.scope = cfg.Key + "/" + s.Key
 		s.oauth = origins
-		h, err := newSiteHandler(s, log, auth, waf)
+		o := old[s.Key]
+		h, err := buildSiteHandler(s, log, auth, waf, o)
 		if err != nil {
 			return nil, err
 		}
-		if o := old[s.Key]; o != nil {
+		if o != nil {
 			h.inherit(o)
 		}
 		h.listener = cfg.Key
@@ -415,12 +416,22 @@ func startTable(t *siteTable, parent context.Context) {
 }
 
 // retire 停止旧站点表的后台任务，并关闭其空闲的后端连接；正在进行的请求不受影响。
-func (t *siteTable) retire() {
+// next 为替换它的新站点表（监听停止时为 nil）：新站点表沿用的连接池（后端连接设置未变的站点）保留空闲连接，
+// 改一个站点不会让其余站点的后端连接全部重建。
+func (t *siteTable) retire(next *siteTable) {
 	if t.cancel != nil {
 		t.cancel()
 	}
+	keep := map[*http.Transport]bool{}
+	if next != nil {
+		for _, s := range next.all() {
+			for _, kt := range s.transports {
+				keep[kt.tr] = true
+			}
+		}
+	}
 	for _, s := range t.all() {
-		s.closeIdle()
+		s.closeIdleExcept(keep)
 	}
 }
 
@@ -441,7 +452,7 @@ func (l *listenerRunner) reload(cfg Listener, waf WAFProvider) error {
 	startTable(t, l.baseCtx)
 	l.cfg = cfg
 	l.table.Store(t)
-	prev.retire()
+	prev.retire(t)
 	l.log.Infof("站点配置已更新（%d 个站点），监听未中断", len(t.sites))
 	return nil
 }
@@ -681,7 +692,7 @@ func (l *listenerRunner) stop() {
 	}
 	// Shutdown 不管理已劫持的连接；取消请求上下文后反向代理会关闭升级后的连接
 	l.cancel()
-	l.current().retire()
+	l.current().retire(nil)
 }
 
 // ctxKeyConn 在请求上下文中保存接入的连接（可能经过 TLS 与协议嗅探的包装）。

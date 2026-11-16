@@ -165,8 +165,9 @@ type connTracker struct {
 		m  map[uint64]*activeReq
 	}
 	histMu sync.Mutex
-	// hist 为环形缓冲，next 为下一个写入位置，full 表示已写满一圈
-	hist   [connHistorySize]ConnView
+	// hist 为环形缓冲（约 52 KB），next 为下一个写入位置，full 表示已写满一圈。
+	// 首条历史写入时才分配：大多数站点只有短请求，永远不会产生历史记录
+	hist   []ConnView
 	next   int
 	full   bool
 	closed atomic.Int64
@@ -183,6 +184,13 @@ func newConnTracker() *connTracker {
 // begin 登记一个请求，返回带取消能力的请求与登记项。w 为服务器交给处理器的原始 ResponseWriter。
 // 调用方必须在请求结束后调用 end。
 func (t *connTracker) begin(w http.ResponseWriter, r *http.Request, client netip.AddrPort) (*http.Request, *activeReq) {
+	ctx, a := t.beginCtx(w, r, client)
+	return r.WithContext(ctx), a
+}
+
+// beginCtx 与 begin 相同，但只返回带取消能力与登记项的上下文，不复制请求：
+// 调用方还要往上下文里放其他值时，最后只用 WithContext 复制一次请求（每次复制约 250 字节）。
+func (t *connTracker) beginCtx(w http.ResponseWriter, r *http.Request, client netip.AddrPort) (context.Context, *activeReq) {
 	ctx, cancel := context.WithCancelCause(r.Context())
 	a := &activeReq{
 		id:     connSeq.Add(1),
@@ -203,7 +211,7 @@ func (t *connTracker) begin(w http.ResponseWriter, r *http.Request, client netip
 	s.mu.Lock()
 	s.m[a.id] = a
 	s.mu.Unlock()
-	return r.WithContext(context.WithValue(ctx, ctxKeyActiveReq{}, a)), a
+	return context.WithValue(ctx, ctxKeyActiveReq{}, a), a
 }
 
 // end 注销请求；持续时间达到阈值或被断开的请求写入历史记录。
@@ -228,6 +236,9 @@ func (t *connTracker) end(a *activeReq) {
 		v.Result = "closed"
 	}
 	t.histMu.Lock()
+	if t.hist == nil {
+		t.hist = make([]ConnView, connHistorySize)
+	}
 	t.hist[t.next] = v
 	t.next = (t.next + 1) % connHistorySize
 	if t.next == 0 {
@@ -324,6 +335,7 @@ func (t *connTracker) snapshot(q string, now time.Time) ConnsView {
 		}
 	}
 	t.histMu.Lock()
+	// 未分配时 next 为 0、full 为 false，下面的循环不会访问 hist
 	n := t.next
 	if t.full {
 		n = connHistorySize

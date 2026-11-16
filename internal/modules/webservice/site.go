@@ -92,12 +92,15 @@ type siteHandler struct {
 	userRoutes []*userRouteHandler
 	// fwd 为外部转发认证，未启用时为 nil
 	fwd *forwardAuther
-	// idleClosers 关闭各反向代理的空闲后端连接，站点被替换时调用
-	idleClosers []func()
-	limiter     *limiter
-	cache       *respCache
-	rewrites    []compiledRewrite
-	metrics     *siteMetrics
+	// transports 为站点各反向代理使用的后端连接池及其连接设置（按创建顺序），
+	// 站点被替换时新处理器据此沿用设置未变的连接池，旧站点表只关闭不再使用的连接池的空闲连接
+	transports []keyedTransport
+	// reuse 为构建期间可沿用的旧连接池（来自被替换的同 key 站点），按连接设置分组、按出现顺序取用；构建完成后清空
+	reuse    map[transportKey][]*http.Transport
+	limiter  *limiter
+	cache    *respCache
+	rewrites []compiledRewrite
+	metrics  *siteMetrics
 	// rules 为预编译的路径规则（最长前缀在前），countries 为国家过滤集合
 	rules     []compiledRule
 	countries map[string]bool
@@ -175,7 +178,24 @@ func (h *siteHandler) reqLog(r *http.Request) *logbuf.Logger {
 }
 
 func newSiteHandler(s Site, log *logbuf.Logger, auth *authenticator, waf WAFProvider) (*siteHandler, error) {
-	h := &siteHandler{site: s, stats: &SiteStats{}, log: log, auth: auth, metrics: newSiteMetrics(), conns: newConnTracker()}
+	return buildSiteHandler(s, log, auth, waf, nil)
+}
+
+// buildSiteHandler 编译站点。old 为被替换的同 key 站点处理器（热更新时），可为 nil：
+// 非 nil 时直接沿用它的请求统计、分钟曲线与连接登记表，不再先分配新的再丢弃；
+// 连接设置未变的后端沿用它的连接池，已建立的空闲后端连接继续复用。后端转发统计由 inherit 按地址对应沿用。
+func buildSiteHandler(s Site, log *logbuf.Logger, auth *authenticator, waf WAFProvider, old *siteHandler) (*siteHandler, error) {
+	h := &siteHandler{site: s, log: log, auth: auth}
+	if old != nil {
+		h.stats, h.metrics, h.conns = old.stats, old.metrics, old.conns
+		h.reuse = old.transportsByKey()
+	} else {
+		h.stats, h.metrics, h.conns = &SiteStats{}, newSiteMetrics(), newConnTracker()
+	}
+	// 构建结束（成功或失败）后不再需要旧连接池的索引，避免一直引用
+	defer func() {
+		h.reuse = nil
+	}()
 	// 断开连接的站点在 ServeHTTP 中直接断开，其余设置都不生效（保存时也不校验），不再编译重写、名单等规则；
 	// 保留一个只会断开的处理器，以防其他调用路径意外写出响应
 	if s.Type == TypeClose {
@@ -338,19 +358,73 @@ func (h *siteHandler) startBackground(ctx context.Context) {
 	}
 }
 
-// closeIdle 关闭站点各反向代理的空闲后端连接。
-func (h *siteHandler) closeIdle() {
-	for _, f := range h.idleClosers {
-		f()
+// transportKey 为决定一个后端连接池行为的全部设置（见 newTransport）：两次构建中这些设置相同的后端可以沿用同一个连接池。
+// 拨号目标由 scheme 与 host 决定；h2c 为实际生效的明文 HTTP/2（协议升级另备的 HTTP/1.1 连接池为 false）。
+type transportKey struct {
+	scheme, host string
+	timeouts     BackendTimeouts
+	insecure     bool
+	sendProxy    bool
+	disableKA    bool
+	h2c          bool
+}
+
+// keyedTransport 是一个后端连接池与它的连接设置。
+type keyedTransport struct {
+	key transportKey
+	tr  *http.Transport
+}
+
+func newTransportKey(s Site, up *upstream) transportKey {
+	return transportKey{
+		scheme: up.url.Scheme, host: up.url.Host, timeouts: s.Timeouts, insecure: s.InsecureSkipVerify,
+		sendProxy: s.SendProxyProtocol, disableKA: s.DisableKeepAlives, h2c: s.UpstreamH2C && up.url.Scheme == "http",
 	}
 }
 
-// inherit 在热更新站点时沿用旧处理器的统计数据，避免修改配置后计数与分钟曲线清零。
+// transportFor 返回后端 up 使用的连接池：有可沿用的旧连接池时取出（同一设置出现多次时按顺序一一对应），否则新建。
+func (h *siteHandler) transportFor(s Site, up *upstream) *http.Transport {
+	k := newTransportKey(s, up)
+	var tr *http.Transport
+	if list := h.reuse[k]; len(list) > 0 {
+		tr = list[0]
+		h.reuse[k] = list[1:]
+	} else {
+		tr = newTransport(s, up)
+	}
+	h.transports = append(h.transports, keyedTransport{key: k, tr: tr})
+	return tr
+}
+
+// transportsByKey 按连接设置分组返回站点的连接池，供替换它的新处理器沿用。返回新建的表，不修改 h。
+func (h *siteHandler) transportsByKey() map[transportKey][]*http.Transport {
+	if len(h.transports) == 0 {
+		return nil
+	}
+	out := map[transportKey][]*http.Transport{}
+	for _, kt := range h.transports {
+		out[kt.key] = append(out[kt.key], kt.tr)
+	}
+	return out
+}
+
+// closeIdle 关闭站点各反向代理的空闲后端连接。
+func (h *siteHandler) closeIdle() {
+	h.closeIdleExcept(nil)
+}
+
+// closeIdleExcept 关闭站点各反向代理的空闲后端连接；keep 中的连接池仍被新站点表使用，跳过。
+func (h *siteHandler) closeIdleExcept(keep map[*http.Transport]bool) {
+	for _, kt := range h.transports {
+		if !keep[kt.tr] {
+			kt.tr.CloseIdleConnections()
+		}
+	}
+}
+
+// inherit 在热更新站点时沿用旧处理器的后端转发统计，避免修改配置后累计数与速率清零。
+// 请求统计、分钟曲线与连接登记表已在 buildSiteHandler 中直接沿用。
 func (h *siteHandler) inherit(old *siteHandler) {
-	h.stats = old.stats
-	h.metrics = old.metrics
-	// 进行中的请求仍由旧处理器服务，沿用登记表才能继续列出并断开它们
-	h.conns = old.conns
 	// 同一分流下地址相同的后端沿用转发统计，修改其他设置后累计数与速率不清零。
 	// 同一组里同一地址写了多次（如一条普通、一条备用）时按出现顺序一一对应，不合并成一份统计
 	key := func(p *pool, u *upstream, seen map[string]int) string {
@@ -374,6 +448,18 @@ func (h *siteHandler) inherit(old *siteHandler) {
 		}
 	}
 }
+
+// proxyFlushInterval 为反向代理转发带 Content-Length 的响应时的刷新间隔。
+//
+// 标准库对 text/event-stream 与长度未知（分块传输、gRPC、HTTP/1.0 读到关闭为止）的响应总是写一块刷一块，
+// 不受这里影响；协议升级（WebSocket）后是双向直接拷贝，也不经过刷新逻辑。这里只决定定长响应：
+//   - 原先的 -1 让每个定长响应都立即起一个协程单独刷出响应头，之后每次写出都再刷一次，
+//     小响应因此多出两次系统调用和若干分配（剖析中约占代理路径 12% 的 CPU），响应头和响应体也被拆成两个 TCP 段；
+//   - 取 0 最省，但带 Content-Length 又先发响应头、再慢慢吐出响应体的后端（进度输出、慢速生成的下载），
+//     访客要等写满缓冲（约 4 KB）或响应结束才能看到内容；
+//   - 取 100 毫秒：在 100 毫秒内完成的响应只多一个定时器，不额外刷新，与 0 基本相同；
+//     慢速吐出的定长响应最多晚 100 毫秒送达（响应头同样在 100 毫秒内送出）。
+const proxyFlushInterval = 100 * time.Millisecond
 
 // proxyBufferPool 复用反向代理的拷贝缓冲区，避免每个请求分配 32 KB 带来的 GC 压力。
 type proxyBufferPool struct{ p sync.Pool }
@@ -536,19 +622,17 @@ func (h *siteHandler) newProxy(s Site, p *pool, strip string) http.Handler {
 	}
 	rt := &upstreamRoundTripper{trs: map[*upstream]*http.Transport{}, pool: p, target: retarget, log: h.reqLog}
 	for _, up := range p.ups {
-		tr := newTransport(s, up)
+		tr := h.transportFor(s, up)
 		rt.trs[up] = tr
-		h.idleClosers = append(h.idleClosers, tr.CloseIdleConnections)
 		if tr.Protocols != nil && !tr.Protocols.HTTP1() {
 			// 明文 HTTP/2 后端：协议升级请求另用 HTTP/1.1 连接（同一端口通常两种协议都接受，如 gRPC 服务旁的 WebSocket）
 			s1 := s
 			s1.UpstreamH2C = false
-			h1 := newTransport(s1, up)
+			h1 := h.transportFor(s1, up)
 			if rt.h1 == nil {
 				rt.h1 = map[*upstream]*http.Transport{}
 			}
 			rt.h1[up] = h1
-			h.idleClosers = append(h.idleClosers, h1.CloseIdleConnections)
 		}
 	}
 	rp := &httputil.ReverseProxy{
@@ -625,8 +709,8 @@ func (h *siteHandler) newProxy(s Site, p *pool, strip string) http.Handler {
 			}
 			writeErrorPage(h.errPage, w, r, http.StatusBadGateway, "无法连接到后端服务", "站点的后端服务没有响应，可能未启动或网络不可达。请稍后重试。")
 		},
-		// 流式响应（SSE 等）及时刷新
-		FlushInterval: -1,
+		// 见 proxyFlushInterval：SSE 与长度未知的流式响应由标准库立即刷新，定长响应最多延迟这么久送达
+		FlushInterval: proxyFlushInterval,
 	}
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		client := clientAddr(r)
@@ -942,7 +1026,7 @@ func (h *siteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// 登记到实时连接列表：断开时取消请求上下文，后续写出被丢弃，处理结束后在这里中断连接（HTTP/2、HTTP/3 重置请求流）。
 	// 注销放在最后注册的 defer 中，先于访问日志执行，历史记录与计数及时回落
-	r, ar := h.conns.begin(w, r, client)
+	ctx, ar := h.conns.beginCtx(w, r, client)
 	defer h.conns.end(ar)
 	rec.req = ar
 	// 访客空闲超时：读取请求体与写出响应时一次卡住超过设置的秒数即放弃，防止极慢的访客长期占住连接
@@ -950,7 +1034,8 @@ func (h *siteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// 处理函数返回后，仍在读取请求体的转发协程不能再设置截止时间（见 clientDeadlines）
 	defer dl.finish()
 	rec.dl = dl
-	r = r.WithContext(context.WithValue(r.Context(), ctxKeyClientDeadlines{}, dl))
+	// 登记项与访客超时一起放进上下文，只复制一次请求
+	r = r.WithContext(context.WithValue(ctx, ctxKeyClientDeadlines{}, dl))
 	if r.Body != nil && r.Body != http.NoBody {
 		r.Body = &idleBody{ReadCloser: &trackedBody{ReadCloser: r.Body, req: ar}, d: dl}
 	}
