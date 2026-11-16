@@ -28,6 +28,9 @@ export const siteLocales: SiteLocale[] = [
 export interface SidebarGroup {
   id: string
   slugs: string[]
+  // 仅列出该语言下实际存在页面的条目，全部缺失时整组不显示；
+  // 教程目前只有部分语言提供，其余语言不会出现指向不存在页面的链接
+  onlyExisting?: boolean
 }
 
 export const sidebarGroups: SidebarGroup[] = [
@@ -42,6 +45,18 @@ export const sidebarGroups: SidebarGroup[] = [
       'guide/cli-mcp',
       'guide/migration',
       'guide/faq'
+    ]
+  },
+  {
+    id: 'tutorials',
+    onlyExisting: true,
+    slugs: [
+      'tutorials/remote-access-without-public-ip',
+      'tutorials/one-port-443',
+      'tutorials/https-and-login-for-apps',
+      'tutorials/wildcard-cert-ddns',
+      'tutorials/migrate-from-nginx',
+      'tutorials/replace-haproxy-nginx-fail2ban'
     ]
   },
   {

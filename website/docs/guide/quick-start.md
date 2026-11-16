@@ -43,3 +43,14 @@ docker run -d --name gately --network host --cap-add NET_ADMIN \
 | 把一个端口转发到内网另一台设备 | [端口转发](/docs/modules/portforward) |
 | 用一个域名和 HTTPS 访问多个内网服务 | [SSL 证书](/docs/modules/ssl) + [Web 服务](/docs/modules/web) |
 | 异地组网 | [Tailscale / frp](/docs/modules/tunnels) |
+
+## 5. 下一步
+
+按场景一步步做的教程：
+
+- [没有公网 IPv4 怎么从外面访问 NAS](/docs/tutorials/remote-access-without-public-ip)：IPv6 + DDNS、STUN、frp、Cloudflare Tunnel 四条路线怎么选；
+- [一个 443 端口跑所有服务](/docs/tutorials/one-port-443)：HTTPS、SSH、RDP 共用一个端口；
+- [给 Jellyfin、Immich、Home Assistant、Vaultwarden 加 HTTPS 和登录](/docs/tutorials/https-and-login-for-apps)；
+- [泛域名证书与动态域名，10 分钟配好](/docs/tutorials/wildcard-cert-ddns)；
+- [从 nginx 或 Nginx Proxy Manager 迁移](/docs/tutorials/migrate-from-nginx)；
+- [云服务器上替换 haproxy + nginx + fail2ban + acme.sh](/docs/tutorials/replace-haproxy-nginx-fail2ban)。

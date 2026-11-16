@@ -15,6 +15,7 @@
   "sidebar": {
     "groups": {
       "start": "はじめに",
+      "tutorials": "チュートリアル",
       "modules": "機能モジュール",
       "security": "セキュリティ",
       "reference": "リファレンス"
@@ -28,6 +29,12 @@
       "guide/cli-mcp": "コマンドラインと MCP",
       "guide/migration": "移行ガイド",
       "guide/faq": "よくある質問",
+      "tutorials/remote-access-without-public-ip": "グローバル IPv4 なしで NAS に外部から接続",
+      "tutorials/one-port-443": "1 つの 443 ポートで全サービスを提供",
+      "tutorials/https-and-login-for-apps": "人気アプリに HTTPS とログインを追加",
+      "tutorials/wildcard-cert-ddns": "ワイルドカード証明書とダイナミック DNS",
+      "tutorials/migrate-from-nginx": "nginx / NPM からの移行",
+      "tutorials/replace-haproxy-nginx-fail2ban": "haproxy + nginx + fail2ban の置き換え",
       "modules/index": "モジュール一覧",
       "modules/ddns": "ダイナミック DNS（DDNS）",
       "modules/stun": "STUN 穿孔",
