@@ -96,7 +96,8 @@
       <el-table-column :label="t('notify.event')" min-width="200" prop="title" show-overflow-tooltip />
       <el-table-column :label="t('notify.rule')" width="140" prop="rule" show-overflow-tooltip />
       <el-table-column :label="t('notify.channel')" width="140" prop="channel" show-overflow-tooltip />
-      <el-table-column :label="t('notify.result')" width="90">
+      <!-- 结果列固定在右侧，手机上不用横向滑动就能看到是否发送成功 -->
+      <el-table-column :label="t('notify.result')" width="90" fixed="right">
         <template #default="{ row }">
           <StatusBadge v-if="row.ok" type="running" :text="t('notify.success')" />
           <StatusBadge v-else type="error" :text="t('notify.failed')" :title="row.error" />
