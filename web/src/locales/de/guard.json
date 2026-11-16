@@ -176,6 +176,8 @@
     "title": "Portscan-Erkennung",
     "help": "Zählt, wie oft jede Quelle sich zu nicht geöffneten Ports dieses Hosts verbindet, und sperrt sie, wenn der Schwellenwert pro Minute überschritten wird. Es zählen nur neue Verbindungen zu diesem Host; an Container oder LAN-Geräte weitergeleiteter Verkehr zählt nicht.",
     "needFirewall": "Köderports im Kernel und die Portscan-Erkennung erfordern eine aktive Firewall-Synchronisierung. Siehe Status oben.",
+    "needRedirect": "Der Kernel kann Verbindungen nicht zur Handshake-Bestätigung an Gately umleiten (nftables braucht Linux 5.2 oder neuer, iptables das REDIRECT-Ziel der nat-Tabelle): Gately lauscht selbst auf den Köder-Ports, die Portscan-Erkennung ist nicht verfügbar.",
+    "handshakeHelp": "Eine Verbindung zählt erst nach abgeschlossenem TCP-Handshake, SYNs mit gefälschter Absenderadresse können also niemanden sperren lassen; Scans, die nur SYNs senden und den Handshake nicht abschließen (etwa masscan), sehen die Ports offen, werden aber nicht gesperrt.",
     "threshold": "Schwellenwert",
     "perMinute": "pro Minute",
     "thresholdHelp": "Eine Quelle wird gesperrt, wenn sie sich öfter als diese Anzahl pro Minute zu geschlossenen Ports verbindet. Ein normaler Client versucht einen geschlossenen Port etwa 5-mal pro Minute erneut, daher mindestens 10 empfohlen.",

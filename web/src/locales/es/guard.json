@@ -176,6 +176,8 @@
     "title": "Detección de escaneos de puertos",
     "help": "Cuenta cuántas veces cada origen se conecta a puertos cerrados de este equipo y lo bloquea si supera el umbral por minuto. Solo cuentan las conexiones nuevas a este equipo; el tráfico reenviado a contenedores o dispositivos de la LAN no cuenta.",
     "needFirewall": "Los puertos trampa en el kernel y la detección de escaneos requieren que la sincronización con el cortafuegos esté activa. Consulta el estado arriba.",
+    "needRedirect": "El kernel no puede redirigir conexiones a Gately para confirmar el handshake (nftables requiere Linux 5.2 o posterior; iptables, el destino REDIRECT de la tabla nat): Gately escucha directamente en los puertos señuelo y la detección de escaneos no está disponible.",
+    "handshakeHelp": "Una conexión solo cuenta cuando completa el handshake TCP, así que los SYN con dirección de origen falsificada no pueden hacer que se bloquee a nadie; los escaneos que solo envían SYN sin completar el handshake (como masscan) ven los puertos abiertos, pero no se bloquean.",
     "threshold": "Umbral",
     "perMinute": "por minuto",
     "thresholdHelp": "Un origen se bloquea si se conecta a puertos cerrados más veces por minuto que este valor. Un cliente normal reintenta un puerto cerrado unas 5 veces por minuto, así que conviene no bajar de 10.",
