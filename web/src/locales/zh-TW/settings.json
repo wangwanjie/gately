@@ -189,6 +189,13 @@
   },
   "runtime": {
     "title": "執行參數",
+    "logLevel": "日誌級別",
+    "logLevelDefault": "預設（資訊及以上）",
+    "logLevelDebug": "偵錯及以上（全部）",
+    "logLevelInfo": "資訊及以上",
+    "logLevelWarn": "警告及以上",
+    "logLevelError": "僅錯誤",
+    "logLevelHelp": "只記錄所選級別及以上的執行日誌，更低級別的日誌不進入日誌頁、日誌檔與標準錯誤輸出（docker logs），儲存後立即生效。偵錯級別包含連接埠轉發、協定分流的每筆連線記錄，連線多時會明顯增加負擔；Web 服務存取日誌屬於資訊級別。選「預設」時使用環境變數 GATELY_LOG_LEVEL，未設定則為資訊及以上",
     "logLines": "日誌保留筆數",
     "logLinesHelp": "每個模組在記憶體中保留的日誌筆數，開啟日誌落盤後重新啟動時從檔案還原",
     "logPersist": "日誌落盤",

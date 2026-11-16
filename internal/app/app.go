@@ -199,6 +199,7 @@ func New(opts Options) (_ *App, err error) {
 	}
 	a.settings.normalize()
 	a.sysLogs.SetEcho(echo)
+	a.sysLogs.SetMinLevel(effectiveLogLevel(a.settings))
 	// 先按设置开启日志落盘并恢复上次的日志，后续初始化过程中的日志也能写入文件
 	a.sysLogs.Resize(a.settings.LogLines)
 	a.persistLogs(a.sysLogs, settingsName, false, a.settings)
@@ -290,6 +291,7 @@ func New(opts Options) (_ *App, err error) {
 		seen[m.ID()] = true
 		entry := &moduleEntry{mod: m, logs: logbuf.New(a.settings.LogLines, nil)}
 		entry.logs.SetEcho(echo)
+		entry.logs.SetMinLevel(effectiveLogLevel(a.settings))
 		_, access := m.(module.AccessLogger)
 		a.persistLogs(entry.logs, m.ID(), access, a.settings)
 		if hc, ok := m.(module.HTTPClientAware); ok {

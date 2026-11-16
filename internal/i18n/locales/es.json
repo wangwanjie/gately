@@ -2019,6 +2019,7 @@
   "日志目录已存在同名文件": "Ya existe un archivo con el mismo nombre que el directorio de registros",
   "日志目录必须是绝对路径": "El directorio de registros debe ser una ruta absoluta",
   "日志目录无效": "Directorio de registros no válido",
+  "日志级别无效，可选 debug、info、warn、error": "Nivel de registro no válido; elija debug, info, warn o error",
   "日本語": "日本語",
   "旧明文立即失效。": "El texto plano anterior deja de ser válido de inmediato.",
   "旧版本 %s 缺少 %s": "A la versión anterior %s le falta %s",

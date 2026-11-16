@@ -2019,6 +2019,7 @@
   "日志目录已存在同名文件": "Es existiert bereits eine Datei mit dem Namen des Protokollverzeichnisses",
   "日志目录必须是绝对路径": "Das Protokollverzeichnis muss ein absoluter Pfad sein",
   "日志目录无效": "Ungültiges Protokollverzeichnis",
+  "日志级别无效，可选 debug、info、warn、error": "Ungültige Protokollstufe; wählen Sie debug, info, warn oder error",
   "日本語": "日本語",
   "旧明文立即失效。": "Der alte Klartext wird sofort ungültig.",
   "旧版本 %s 缺少 %s": "Der früheren Version %s fehlt %s",

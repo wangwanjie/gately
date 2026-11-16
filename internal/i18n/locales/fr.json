@@ -2019,6 +2019,7 @@
   "日志目录已存在同名文件": "Un fichier portant le même nom que le répertoire des journaux existe déjà",
   "日志目录必须是绝对路径": "Le répertoire des journaux doit être un chemin absolu",
   "日志目录无效": "Répertoire des journaux invalide",
+  "日志级别无效，可选 debug、info、warn、error": "Niveau de journalisation invalide ; choisissez debug, info, warn ou error",
   "日本語": "日本語",
   "旧明文立即失效。": "L'ancien texte en clair est invalidé immédiatement.",
   "旧版本 %s 缺少 %s": "Il manque %[2]s à la version précédente %[1]s",
