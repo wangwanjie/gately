@@ -1026,7 +1026,7 @@ func (h *siteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// 登记到实时连接列表：断开时取消请求上下文，后续写出被丢弃，处理结束后在这里中断连接（HTTP/2、HTTP/3 重置请求流）。
 	// 注销放在最后注册的 defer 中，先于访问日志执行，历史记录与计数及时回落
-	r, ar := h.conns.begin(w, r, client)
+	ctx, ar := h.conns.beginCtx(w, r, client)
 	defer h.conns.end(ar)
 	rec.req = ar
 	// 访客空闲超时：读取请求体与写出响应时一次卡住超过设置的秒数即放弃，防止极慢的访客长期占住连接
@@ -1034,7 +1034,8 @@ func (h *siteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// 处理函数返回后，仍在读取请求体的转发协程不能再设置截止时间（见 clientDeadlines）
 	defer dl.finish()
 	rec.dl = dl
-	r = r.WithContext(context.WithValue(r.Context(), ctxKeyClientDeadlines{}, dl))
+	// 登记项与访客超时一起放进上下文，只复制一次请求
+	r = r.WithContext(context.WithValue(ctx, ctxKeyClientDeadlines{}, dl))
 	if r.Body != nil && r.Body != http.NoBody {
 		r.Body = &idleBody{ReadCloser: &trackedBody{ReadCloser: r.Body, req: ar}, d: dl}
 	}

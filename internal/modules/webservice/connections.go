@@ -184,6 +184,13 @@ func newConnTracker() *connTracker {
 // begin 登记一个请求，返回带取消能力的请求与登记项。w 为服务器交给处理器的原始 ResponseWriter。
 // 调用方必须在请求结束后调用 end。
 func (t *connTracker) begin(w http.ResponseWriter, r *http.Request, client netip.AddrPort) (*http.Request, *activeReq) {
+	ctx, a := t.beginCtx(w, r, client)
+	return r.WithContext(ctx), a
+}
+
+// beginCtx 与 begin 相同，但只返回带取消能力与登记项的上下文，不复制请求：
+// 调用方还要往上下文里放其他值时，最后只用 WithContext 复制一次请求（每次复制约 250 字节）。
+func (t *connTracker) beginCtx(w http.ResponseWriter, r *http.Request, client netip.AddrPort) (context.Context, *activeReq) {
 	ctx, cancel := context.WithCancelCause(r.Context())
 	a := &activeReq{
 		id:     connSeq.Add(1),
@@ -204,7 +211,7 @@ func (t *connTracker) begin(w http.ResponseWriter, r *http.Request, client netip
 	s.mu.Lock()
 	s.m[a.id] = a
 	s.mu.Unlock()
-	return r.WithContext(context.WithValue(ctx, ctxKeyActiveReq{}, a)), a
+	return context.WithValue(ctx, ctxKeyActiveReq{}, a), a
 }
 
 // end 注销请求；持续时间达到阈值或被断开的请求写入历史记录。
