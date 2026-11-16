@@ -36,6 +36,8 @@
   "defaultUdpTimeout": "默认 UDP 超时(秒)",
   "maxUdpSessions": "UDP 会话上限",
   "dialTimeout": "连接目标超时(秒)",
+  "firstDataTimeout": "首个数据超时(秒)",
+  "firstDataTimeoutHelp": "TCP 连接建立后，双方在这段时间内都没有发送数据即断开，回收只占名额的空连接。SSH、HTTP 等协议连上后立即有一方发送数据，不受影响。",
   "moduleOff": "模块已停用",
   "statusOff": "已停用",
   "statusNotRunning": "未运行",

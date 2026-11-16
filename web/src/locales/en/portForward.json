@@ -36,6 +36,8 @@
   "defaultUdpTimeout": "Default UDP timeout (s)",
   "maxUdpSessions": "UDP session limit",
   "dialTimeout": "Target dial timeout (s)",
+  "firstDataTimeout": "First data timeout (s)",
+  "firstDataTimeoutHelp": "A TCP connection on which neither side sends anything within this time is closed, freeing the slot. Protocols such as SSH and HTTP send data right after connecting and are unaffected.",
   "moduleOff": "Module disabled",
   "statusOff": "Disabled",
   "statusNotRunning": "Not running",

@@ -36,6 +36,8 @@
   "defaultUdpTimeout": "預設 UDP 逾時(秒)",
   "maxUdpSessions": "UDP 工作階段上限",
   "dialTimeout": "連線目標逾時(秒)",
+  "firstDataTimeout": "首個資料逾時(秒)",
+  "firstDataTimeoutHelp": "TCP 連線建立後，雙方在這段時間內都沒有傳送資料即中斷，回收只佔名額的空連線。SSH、HTTP 等協定連上後立即有一方傳送資料，不受影響。",
   "moduleOff": "模組已停用",
   "statusOff": "已停用",
   "statusNotRunning": "未執行",

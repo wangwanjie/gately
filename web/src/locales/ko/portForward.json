@@ -36,6 +36,8 @@
   "defaultUdpTimeout": "기본 UDP 제한 시간(초)",
   "maxUdpSessions": "UDP 세션 상한",
   "dialTimeout": "대상 연결 제한 시간(초)",
+  "firstDataTimeout": "첫 데이터 제한 시간(초)",
+  "firstDataTimeoutHelp": "TCP 연결 후 이 시간 안에 양쪽 모두 데이터를 보내지 않으면 연결을 끊어 자리만 차지하는 빈 연결을 회수합니다. SSH, HTTP 등은 연결 직후 한쪽이 데이터를 보내므로 영향이 없습니다.",
   "moduleOff": "모듈 사용 안 함",
   "statusOff": "사용 안 함",
   "statusNotRunning": "실행 중 아님",

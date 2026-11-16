@@ -143,6 +143,10 @@
         <el-form-item :label="t('portForward.defaultUdpTimeout')"><el-input-number v-model="settingsForm.defaultUDPSessionTimeout" :min="1" /></el-form-item>
         <el-form-item :label="t('portForward.maxUdpSessions')"><el-input-number v-model="settingsForm.maxUDPSessions" :min="1" /></el-form-item>
         <el-form-item :label="t('portForward.dialTimeout')"><el-input-number v-model="settingsForm.dialTimeout" :min="1" :max="60" /></el-form-item>
+        <el-form-item :label="t('portForward.firstDataTimeout')">
+          <el-input-number v-model="settingsForm.firstDataTimeout" :min="1" :max="3600" />
+          <div class="form-help">{{ t('portForward.firstDataTimeoutHelp') }}</div>
+        </el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="settingsVisible = false">{{ t('common.cancel') }}</el-button>
@@ -235,6 +239,8 @@ interface Settings {
   defaultUDPSessionTimeout: number
   maxUDPSessions: number
   dialTimeout: number
+  // TCP 连接建立后等待任一方发送数据的秒数，超时断开空连接
+  firstDataTimeout: number
 }
 
 const protocols = [

@@ -207,6 +207,13 @@ func (r *runner) handleTCP(ctx context.Context, rt *route, client net.Conn, targ
 		return
 	}
 	rt.log.Debugf("%s -> %s 已连接", client.RemoteAddr(), target.RemoteAddr())
+	// 双方都不发送数据的空连接只会占用连接名额，超时断开
+	if err := netpipe.WaitFirstData(ctx, client, target, time.Duration(rt.settings.FirstDataTimeout)*time.Second); err != nil {
+		if errors.Is(err, netpipe.ErrNoData) {
+			rt.log.Debugf("%s 连接后 %d 秒内双方都没有发送数据，已断开", client.RemoteAddr(), rt.settings.FirstDataTimeout)
+		}
+		return
+	}
 
 	in, out := netpipe.Join(ctx, client, target)
 	r.stats.BytesIn.Add(in)
@@ -335,7 +342,7 @@ func (r *runner) startUDP(ctx context.Context, network, addr string, targetPort 
 }
 
 // pumpUDP 把目标的回包发回客户端，空闲超时后关闭会话。
-// 先不带缓冲地等到目标连接可读（见 waitReadable），再从池中借缓冲读取并转发：等待回包的会话只占一个协程，不占读缓冲。
+// 先不带缓冲地等到目标连接可读（见 netpipe.WaitReadable），再从池中借缓冲读取并转发：等待回包的会话只占一个协程，不占读缓冲。
 func (r *runner) pumpUDP(pc *net.UDPConn, client netip.AddrPort, sess *udpSession, idle time.Duration, remove func()) {
 	defer r.stats.ActiveConns.Add(-1)
 	defer remove()
@@ -348,7 +355,7 @@ func (r *runner) pumpUDP(pc *net.UDPConn, client netip.AddrPort, sess *udpSessio
 		_ = sess.conn.SetReadDeadline(time.Now().Add(idle))
 		var err error
 		if raw != nil {
-			err = waitReadable(raw)
+			err = netpipe.WaitReadable(raw)
 		}
 		n := 0
 		var bp *[]byte
