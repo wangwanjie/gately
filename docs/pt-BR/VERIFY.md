@@ -1,18 +1,30 @@
 # Verificar versões
 
-Cada versão oficial do Gately vem com assinaturas e proveniência, para você confirmar que os arquivos baixados foram compilados pelo GitHub Actions deste repositório e não foram adulterados. Todas as assinaturas usam a assinatura sem chave do [Sigstore](https://www.sigstore.dev/), então não há chave privada para proteger.
+Toda versão oficial do Gately traz assinaturas e proveniência, para você confirmar que os arquivos baixados foram compilados pelo GitHub Actions deste repositório e não foram adulterados. O `checksums.txt` tem uma assinatura minisign cuja chave pública vem embutida no Gately, e a atualização online a usa para verificar os downloads; as assinaturas cosign e a proveniência de build usam a assinatura sem chave do [Sigstore](https://www.sigstore.dev/).
 
 ## Arquivos binários compactados
 
-A página da versão oferece `checksums.txt` (SHA-256 de cada arquivo compactado), `checksums.txt.sigstore.json` (a assinatura do arquivo de checksums) e um SBOM.
+A página da release fornece `checksums.txt` (SHA-256 de cada arquivo compactado), `checksums.txt.minisig` (assinatura minisign do arquivo de somas), `checksums.txt.sigstore.json` (assinatura cosign do arquivo de somas) e um SBOM. Versões publicadas antes da introdução da assinatura não têm `checksums.txt.minisig`.
 
-1. Verifique o SHA-256 do arquivo compactado:
+1. Verifique a assinatura do `checksums.txt` com o [minisign](https://jedisct1.github.io/minisign/). Chave pública das releases do Gately (ID da chave `512082B4037581F0`):
+
+```text
+RWTwgXUDtIIgUVNxL3scLhMObpyS0vKQbkCepGauqNA0/u0nQA86M50/
+```
+
+```bash
+minisign -Vm checksums.txt -P RWTwgXUDtIIgUVNxL3scLhMObpyS0vKQbkCepGauqNA0/u0nQA86M50/
+```
+
+A saída `Signature and comment signature verified` indica que a assinatura é válida; a linha `Trusted comment` mostra a versão e o horário da assinatura.
+
+2. Verifique o SHA-256 do arquivo compactado:
 
 ```bash
 sha256sum -c checksums.txt --ignore-missing
 ```
 
-2. Verifique a assinatura do `checksums.txt` com o [cosign](https://docs.sigstore.dev/cosign/installation/). A identidade de assinatura precisa ser o workflow de release deste repositório:
+3. Verifique a assinatura do `checksums.txt` com o [cosign](https://docs.sigstore.dev/cosign/installation/). A identidade de assinatura precisa ser o workflow de release deste repositório:
 
 ```bash
 cosign verify-blob checksums.txt \
@@ -21,11 +33,20 @@ cosign verify-blob checksums.txt \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com
 ```
 
-3. Você também pode verificar a proveniência de build de um único arquivo compactado com a GitHub CLI:
+4. Você também pode verificar a proveniência de build de um único arquivo compactado com a GitHub CLI:
 
 ```bash
 gh attestation verify gately_v1.0.0_linux_amd64.tar.gz --repo wangwanjie/gately
 ```
+
+## Verificação da assinatura na atualização online
+
+A atualização online das instalações binárias no Linux ("Atualizar agora") primeiro baixa `checksums.txt` e `checksums.txt.minisig`, verifica a assinatura com a chave pública embutida no programa e só então compara o SHA-256 do pacote:
+
+- Assinatura inválida, de chave desconhecida ou `checksums.txt` alterado: a atualização é recusada, a janela de atualização e o log do sistema mostram o motivo e o programa instalado permanece como está;
+- A versão não tem `checksums.txt.minisig` (publicada antes da introdução da assinatura): a atualização prossegue, e a janela de atualização e o log do sistema avisam que a versão não é assinada e que só o SHA-256 foi verificado.
+
+O programa reserva uma segunda posição de chave pública para a troca de chaves: a nova chave pública é primeiro embutida em uma versão e publicada nesta página, e só as versões seguintes são assinadas com ela, então as instalações existentes continuam atualizando. "Enviar pacote de atualização" não verifica assinaturas; confira o arquivo com os passos acima antes de enviar. As atualizações da imagem Docker contam com as assinaturas cosign da imagem descritas abaixo.
 
 ## Assinatura de código no macOS
 
