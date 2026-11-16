@@ -2643,6 +2643,7 @@
   "符号链接层级过深": "Niveau de liens symboliques trop profond",
   "第 %d 个任务": "Tâche n° %d",
   "第 %d 个监听规则": "Règle d'écoute n° %d",
+  "第 %d 个站点: %w": "Site n° %d : %w",
   "第 %d 张证书": "Certificat n° %d",
   "第 %d 条(%s)": "Élément n° %d (%s)",
   "第 %d 条按用户分流规则需要填写后端": "La règle par utilisateur %d nécessite au moins un backend",
