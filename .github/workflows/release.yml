@@ -41,8 +41,9 @@ jobs:
             os=${target%/*}; arch=${target#*/}
             out=gately_${GITHUB_REF_NAME}_${os}_${arch}
             ext=""; [ "$os" = windows ] && ext=".exe"
-            # mips 路由器大多没有硬件浮点，使用软浮点以免运行时报非法指令
-            GOOS=$os GOARCH=$arch GOMIPS=softfloat CGO_ENABLED=0 go build -trimpath -ldflags "$LDFLAGS" -o dist/gately$ext ./cmd/gately
+            # mips 路由器大多没有硬件浮点，使用软浮点以免运行时报非法指令。
+            # coraza.disabled_operators.validateSchema 去掉 WAF 用不到的 @validateSchema 及其依赖，程序约小 2.3 MB（与 Makefile、Dockerfile 一致）
+            GOOS=$os GOARCH=$arch GOMIPS=softfloat CGO_ENABLED=0 go build -trimpath -tags coraza.disabled_operators.validateSchema -ldflags "$LDFLAGS" -o dist/gately$ext ./cmd/gately
             # 飞牛 fpk 与 OpenWrt 安装包需要裸二进制，先留一份
             if [ "$os" = linux ]; then
               mkdir -p "$RUNNER_TEMP/linux-bin/$arch" && cp dist/gately "$RUNNER_TEMP/linux-bin/$arch/gately"
