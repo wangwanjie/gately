@@ -22,6 +22,8 @@ import (
 // start 列出需要真正启动的模块（其余模块只注册接口，不监听端口）。
 func fullApp(t *testing.T, dir string, prep func(), start ...string) (*App, *httptest.Server, *http.Client) {
 	t.Helper()
+	// 测试会核对接口返回的中文提示：固定服务端语言为源语言，不随运行测试的机器的 LANG 变化
+	t.Setenv("GATELY_LANG", "zh-CN")
 	if prep != nil {
 		prep()
 	}
