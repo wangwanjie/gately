@@ -48,6 +48,15 @@ type ngToken struct {
 // nginxFileMarker 是 nginx -T 输出中每个文件开头的注释。
 const nginxFileMarker = "# configuration file "
 
+// 展开 include 的限制。同一个文件可以被多次包含（fastcgi_params 这类片段在每个 location 里各包含一次很常见），
+// 所以不能禁止重复包含；但每层包含多次、层层嵌套时展开结果按指数增长，一百来个字节的输入就能耗尽内存与 CPU。
+const (
+	// nginxIncludeDepth 为 include 的最大嵌套层数
+	nginxIncludeDepth = 16
+	// nginxMaxDirectives 为展开后指令总数的上限，远高于实际的 nginx 配置（大型站点的 nginx -T 也只有几千到几万条）
+	nginxMaxDirectives = 200000
+)
+
 // parseNginx 解析 nginx 配置文本。支持 nginx -T 的输出：按“# configuration file 路径:”标记拆成多个文件分别解析，
 // 再把 include 指令替换为输出中对应文件的内容（不会读取磁盘上的文件）。
 // 多个文件时，单个文件的语法错误只跳过该文件并在 warns 中说明（nginx -T 里可能混有被当作配置的其他文件）。
@@ -113,11 +122,19 @@ func parseNginx(text string) (out []*ngDirective, warns []string, err error) {
 		prefix = path.Dir(segs[0].file)
 	}
 	included := map[string]bool{}
+	// active 为正在展开的文件（展开栈）：文件包含自己或相互包含时不再展开，nginx 遇到这种配置也无法启动；
+	// total 为已展开的指令数，超过上限即放弃；cycles 记录已提示过的循环包含
+	active := map[string]bool{}
+	total := 0
+	cycles := map[string]bool{}
 	var expand func(list []*ngDirective, depth int) []*ngDirective
 	expand = func(list []*ngDirective, depth int) []*ngDirective {
 		var res []*ngDirective
 		for _, d := range list {
-			if d.Name == "include" && !d.isBlock() && depth < 16 {
+			if total > nginxMaxDirectives {
+				return res
+			}
+			if d.Name == "include" && !d.isBlock() && depth < nginxIncludeDepth {
 				pattern := d.arg(0)
 				if !path.IsAbs(pattern) && prefix != "" {
 					pattern = path.Join(prefix, pattern)
@@ -131,13 +148,23 @@ func parseNginx(text string) (out []*ngDirective, warns []string, err error) {
 				// nginx 按文件名顺序处理通配符匹配到的文件
 				sort.Strings(matched)
 				for _, f := range matched {
+					if active[f] {
+						if !cycles[f] {
+							cycles[f] = true
+							warns = append(warns, fmt.Sprintf("%s 的 include 形成循环（%s 包含了自己），已忽略", d.where(), f))
+						}
+						continue
+					}
 					included[f] = true
+					active[f] = true
 					res = append(res, expand(parsed[f], depth+1)...)
+					delete(active, f)
 				}
 				if len(matched) > 0 {
 					continue
 				}
 			}
+			total++
 			if d.isBlock() {
 				cp := *d
 				cp.Block = expand(d.Block, depth)
@@ -147,14 +174,23 @@ func parseNginx(text string) (out []*ngDirective, warns []string, err error) {
 		}
 		return res
 	}
+	// expandFile 从文件 f 开始展开
+	expandFile := func(f string) []*ngDirective {
+		active[f] = true
+		defer delete(active, f)
+		return expand(parsed[f], 0)
+	}
 	if len(files) > 0 {
-		out = append(out, expand(parsed[files[0]], 0)...)
+		out = append(out, expandFile(files[0])...)
 		included[files[0]] = true
 		for _, f := range files[1:] {
 			if !included[f] {
-				out = append(out, expand(parsed[f], 0)...)
+				out = append(out, expandFile(f)...)
 			}
 		}
+	}
+	if total > nginxMaxDirectives {
+		return nil, nil, fmt.Errorf("include 展开后的配置超过 %d 条指令，无法导入：请检查是否有文件被层层重复包含", nginxMaxDirectives)
 	}
 	return out, warns, nil
 }
