@@ -105,6 +105,7 @@
             <el-button link type="primary" size="small" :icon="FolderPlus" @click="editing.sources.push({ path: '', name: '', readOnly: false })">{{ t('filebrowser.addSource') }}</el-button>
           </div>
           <div class="form-help">{{ t('filebrowser.sourcesHelp') }}</div>
+          <ConfigDirHint :paths="editing.sources.map((s) => s.path)" whole />
         </el-form-item>
         <el-form-item :label="t('filebrowser.authMethod')">
           <el-radio-group v-model="editing.authMethod">
@@ -161,6 +162,7 @@ import { ElMessage } from 'element-plus'
 import { CopyPlus, Download, FolderOpen, FolderPlus, Pencil, Plus, RefreshCw, Save, Terminal, Trash2, X } from 'lucide-vue-next'
 import { api } from '../api'
 import UrlLink from '../components/UrlLink.vue'
+import ConfigDirHint from '../components/ConfigDirHint.vue'
 import SecretInput from '../components/SecretInput.vue'
 import { secretOf } from '../secrets'
 import PageHeader from '../components/PageHeader.vue'
