@@ -128,13 +128,26 @@ func TestProtectAndCheck(t *testing.T) {
 	if got := Protected(filepath.Join(conf, "x")); got != conf {
 		t.Fatalf("Protected = %q，期望 %q", got, conf)
 	}
-	if err := CheckExposable(base); err == nil {
-		t.Fatal("包含配置目录的目录应被拒绝")
-	}
+	// 配置目录本身与其中的目录不能提供；包含它的目录可以提供（由 Guard 屏蔽子树），整个交给外部程序时不行
 	if err := CheckExposable(conf); err == nil {
 		t.Fatal("配置目录应被拒绝")
 	}
-	if err := CheckExposable(share); err != nil {
+	if err := CheckExposable(filepath.Join(conf, "x")); err == nil {
+		t.Fatal("配置目录内的目录应被拒绝")
+	}
+	if err := CheckExposable(base); err != nil {
+		t.Fatalf("包含配置目录的目录应能使用: %v", err)
+	}
+	if got := Contains(base); got != conf {
+		t.Fatalf("Contains(%s) = %q，期望 %q", base, got, conf)
+	}
+	if Contains(conf) != "" || Contains(share) != "" || Inside(base) != "" || Inside(filepath.Join(conf, "x")) != conf {
+		t.Fatal("Contains 与 Inside 只应判断各自的方向")
+	}
+	if err := CheckWholeDir(base); err == nil {
+		t.Fatal("交给外部程序的目录包含配置目录时应被拒绝")
+	}
+	if err := CheckExposable(share); err != nil || CheckWholeDir(share) != nil {
 		t.Fatalf("无关目录不应被拒绝: %v", err)
 	}
 	protectMu.RLock()

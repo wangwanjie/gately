@@ -1,18 +1,21 @@
 package storage
 
 import (
+	"bytes"
 	"encoding/json"
 	"io"
 	"log"
+	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
 	"testing"
 
-	"github.com/wangwanjie/gately/internal/config"
+	"github.com/wangwanjie/gately/internal/fsperm/fspermtest"
 	"github.com/wangwanjie/gately/internal/logbuf"
 	"github.com/wangwanjie/gately/internal/module"
 )
@@ -21,118 +24,210 @@ type testRouter struct{ *http.ServeMux }
 
 func (r testRouter) HandleFunc(p string, h http.HandlerFunc) { r.ServeMux.HandleFunc(p, h) }
 
-// 本地挂载点不能与配置目录重叠：新增、修改时拒绝；升级前已保存的挂载点不再提供访问。
-func TestLocalMountOutsideConfigDir(t *testing.T) {
-	base := t.TempDir()
-	conf := filepath.Join(base, "conf")
-	share := filepath.Join(base, "share")
-	for _, d := range []string{filepath.Join(conf, "history"), share} {
-		if err := os.MkdirAll(d, 0o755); err != nil {
-			t.Fatal(err)
-		}
+// storageClient 经模块接口操作挂载点。
+type storageClient struct {
+	t   *testing.T
+	mux *http.ServeMux
+}
+
+func (c storageClient) do(method, path string, body any) (int, string) {
+	c.t.Helper()
+	var rd io.Reader
+	if body != nil {
+		b, _ := json.Marshal(body)
+		rd = bytes.NewReader(b)
 	}
-	st, err := config.Open(conf)
-	if err != nil {
-		t.Fatal(err)
+	req := httptest.NewRequest(method, path, rd)
+	req.Header.Set("Content-Type", "application/json")
+	rec := httptest.NewRecorder()
+	c.mux.ServeHTTP(rec, req)
+	return rec.Code, rec.Body.String()
+}
+
+func (c storageClient) upload(key, dir, name, content string) int {
+	var buf bytes.Buffer
+	mw := multipart.NewWriter(&buf)
+	fw, _ := mw.CreateFormFile("file", name)
+	_, _ = fw.Write([]byte(content))
+	_ = mw.Close()
+	req := httptest.NewRequest("POST", "/files/"+key+"/upload?path="+url.QueryEscape(dir), &buf)
+	req.Header.Set("Content-Type", mw.FormDataContentType())
+	rec := httptest.NewRecorder()
+	c.mux.ServeHTTP(rec, req)
+	return rec.Code
+}
+
+func newStorage(t *testing.T, l fspermtest.Layout) (*Module, storageClient, *logbuf.Buffer) {
+	t.Helper()
+	logs := logbuf.New(50, log.New(io.Discard, "", 0))
+	m := New()
+	if err := m.Init(module.Env{Store: l.Store, Logs: logs}); err != nil {
+		t.Fatalf("存量配置不应让模块初始化失败: %v", err)
 	}
-	if err := os.WriteFile(filepath.Join(conf, "account.json"), []byte(`{"sessionSecret":"top-secret-value"}`), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(filepath.Join(share, "hello.txt"), []byte("hello"), 0o644); err != nil {
-		t.Fatal(err)
-	}
-	// 升级前保存的挂载点
-	if err := st.Save(ID, fileConfig{Mounts: []Mount{
-		{Key: "old1", Name: "配置", Type: TypeLocal, Enable: true, Path: conf},
-		{Key: "old2", Name: "上级", Type: TypeLocal, Enable: true, Path: base},
-		{Key: "fine", Name: "共享", Type: TypeLocal, Enable: true, Path: share},
+	t.Cleanup(func() { _ = m.Stop() })
+	mux := http.NewServeMux()
+	m.Routes(testRouter{mux})
+	return m, storageClient{t: t, mux: mux}, logs
+}
+
+// 挂载点就是配置目录或位于其中：新增、修改、复制时拒绝；升级前已保存的不再提供访问。
+func TestLocalMountInsideConfigDir(t *testing.T) {
+	l := fspermtest.New(t)
+	if err := l.Store.Save(ID, fileConfig{Mounts: []Mount{
+		{Key: "old1", Name: "配置", Type: TypeLocal, Enable: true, Path: l.Conf},
+		{Key: "old2", Name: "配置内", Type: TypeLocal, Enable: true, Path: filepath.Join(l.Conf, "history")},
+		{Key: "fine", Name: "共享", Type: TypeLocal, Enable: true, Path: l.Media},
 	}}); err != nil {
 		t.Fatal(err)
 	}
-	logs := logbuf.New(50, log.New(io.Discard, "", 0))
-	m := New()
-	if err := m.Init(module.Env{Store: st, Logs: logs}); err != nil {
-		t.Fatalf("存量配置不应让模块初始化失败: %v", err)
+	_, c, logs := newStorage(t, l)
+	if n := countLogs(logs, "配置目录重叠"); n != 2 {
+		t.Fatalf("应为两个位于配置目录中的挂载点各写一条警告，实际 %d", n)
 	}
-	defer m.Stop()
-	mux := http.NewServeMux()
-	m.Routes(testRouter{mux})
-	do := func(method, path string, body any) (int, string) {
-		var rd io.Reader
-		if body != nil {
-			b, _ := json.Marshal(body)
-			rd = strings.NewReader(string(b))
-		}
-		req := httptest.NewRequest(method, path, rd)
-		req.Header.Set("Content-Type", "application/json")
-		rec := httptest.NewRecorder()
-		mux.ServeHTTP(rec, req)
-		return rec.Code, rec.Body.String()
-	}
-
-	warned := 0
-	for _, e := range logs.Query(0, 0, 0, nil) {
-		if strings.Contains(e.Message, "配置目录重叠") {
-			warned++
-		}
-	}
-	if warned != 2 {
-		t.Fatalf("应为两个重叠的挂载点各写一条警告，实际 %d", warned)
-	}
-	for _, p := range []string{
-		"/files/old1/download?path=/account.json",
-		"/files/old1/list?path=/",
-		"/files/old2/download?path=/conf/account.json",
-		"/files/old2/list?path=/conf",
-		"/files/old2/download?path=/share/hello.txt",
-	} {
-		if code, body := do("GET", p, nil); code != 400 || strings.Contains(body, "top-secret-value") || !strings.Contains(body, "配置目录") {
+	for _, p := range []string{"/files/old1/download?path=/account.json", "/files/old1/list?path=/", "/files/old2/list?path=/"} {
+		if code, body := c.do("GET", p, nil); code != 400 || strings.Contains(body, fspermtest.Secret) || !strings.Contains(body, "配置目录") {
 			t.Fatalf("%s 应被拒绝: %d %s", p, code, body)
 		}
 	}
-	if code, body := do("POST", "/files/old1/mkdir", map[string]string{"path": "/x"}); code != 400 {
-		t.Fatalf("向重叠的挂载点写入应被拒绝: %d %s", code, body)
-	}
-	if err := m.PutFile("old1", "", "x.json", []byte("{}")); err == nil {
-		t.Fatal("备份等内部调用同样不能写入重叠的挂载点")
-	}
-	if code, body := do("GET", "/files/fine/download?path=/hello.txt", nil); code != 200 || body != "hello" {
+	if code, body := c.do("GET", "/files/fine/download?path=/hello.txt", nil); code != 200 || body != "hello" {
 		t.Fatalf("其他挂载点应照常可用: %d %s", code, body)
 	}
-
-	// 新增与修改
 	cases := map[string]string{
-		"配置目录":      conf,
-		"配置目录内":     filepath.Join(conf, "history"),
-		"包含配置目录":    base,
-		"含 .. 的写法":  filepath.Join(share, "..", "conf"),
-		"末尾带分隔符的写法": conf + string(filepath.Separator),
+		"配置目录":      l.Conf,
+		"配置目录内":     filepath.Join(l.Conf, "history"),
+		"含 .. 的写法":  filepath.Join(l.Media, "..", "1000", "docker", "gately"),
+		"末尾带分隔符的写法": l.Conf + string(filepath.Separator),
 	}
-	if runtime.GOOS != "windows" {
-		link := filepath.Join(base, "link")
-		if err := os.Symlink(conf, link); err != nil {
-			t.Fatal(err)
-		}
-		cases["指向配置目录的符号链接"] = link
-		up := filepath.Join(base, "uplink")
-		if err := os.Symlink(base, up); err != nil {
-			t.Fatal(err)
-		}
-		cases["经符号链接进入配置目录"] = filepath.Join(up, "conf", "history")
+	if l.Links {
+		cases["指向配置目录的符号链接"] = filepath.Join(l.Share, "link")
+		cases["经符号链接进入配置目录"] = filepath.Join(l.Share, "up", "gately", "history")
 	}
 	for name, p := range cases {
 		mt := map[string]any{"name": "x", "type": TypeLocal, "enable": true, "path": p}
-		if code, body := do("POST", "/mounts", mt); code != 400 || !strings.Contains(body, "配置目录") {
-			t.Errorf("新增 %s（%s）应被拒绝: %d %s", name, p, code, body)
-		}
-		if code, body := do("PUT", "/mounts/fine", mt); code != 400 || !strings.Contains(body, "配置目录") {
-			t.Errorf("把挂载点改为 %s（%s）应被拒绝: %d %s", name, p, code, body)
-		}
-		if code, body := do("POST", "/mounts/fine/copy", mt); code != 400 || !strings.Contains(body, "配置目录") {
-			t.Errorf("复制为 %s（%s）应被拒绝: %d %s", name, p, code, body)
+		for _, req := range [][2]string{{"POST", "/mounts"}, {"PUT", "/mounts/fine"}, {"POST", "/mounts/fine/copy"}} {
+			if code, body := c.do(req[0], req[1], mt); code != 400 || !strings.Contains(body, "配置目录") {
+				t.Errorf("%s %s 为 %s（%s）应被拒绝: %d %s", req[0], req[1], name, p, code, body)
+			}
 		}
 	}
-	if code, body := do("POST", "/mounts", map[string]any{"name": "ok", "type": TypeLocal, "enable": true, "path": share}); code != 200 {
-		t.Fatalf("无关目录应能新增: %d %s", code, body)
+}
+
+// 挂载点包含配置目录（整个数据盘）：可以保存、照常使用，配置目录这棵子树在文件管理中不可见、不可读写。
+func TestLocalMountContainingConfigDir(t *testing.T) {
+	l := fspermtest.New(t)
+	if err := l.Store.Save(ID, fileConfig{Mounts: []Mount{{Key: "old", Name: "整盘", Type: TypeLocal, Enable: true, Path: l.Share}}}); err != nil {
+		t.Fatal(err)
 	}
+	_, c, logs := newStorage(t, l)
+	if countLogs(logs, "配置目录已自动隐藏") != 1 || countLogs(logs, "配置目录重叠") != 0 {
+		t.Fatal("包含配置目录的存量挂载点应照常使用，并说明配置目录已自动隐藏")
+	}
+	// 新增与修改都可以保存
+	code, body := c.do("POST", "/mounts", map[string]any{"name": "vol1", "type": TypeLocal, "enable": true, "path": l.Share})
+	if code != 200 {
+		t.Fatalf("包含配置目录的目录应能挂载: %d %s", code, body)
+	}
+	if code, body := c.do("PUT", "/mounts/old", map[string]any{"name": "整盘", "type": TypeLocal, "enable": true, "path": filepath.Dir(l.Docker)}); code != 200 {
+		t.Fatalf("改为另一个包含配置目录的目录应能保存: %d %s", code, body)
+	}
+	var mt struct{ Key string }
+	_ = json.Unmarshal([]byte(body), &mt)
+	exerciseHidden(t, c, mt.Key, l)
+}
+
+// exerciseHidden 在挂载点 key（挂载 l.Share）上验证配置目录子树不可见、不可达，其余文件照常可用。
+func exerciseHidden(t *testing.T, c storageClient, key string, l fspermtest.Layout) {
+	t.Helper()
+	for p, want := range l.VisibleFiles() {
+		if code, body := c.do("GET", "/files/"+key+"/download?path="+url.QueryEscape("/"+p), nil); code != 200 || body != want {
+			t.Errorf("%s 应照常可读: %d %s", p, code, body)
+		}
+	}
+	for _, p := range l.HiddenFiles() {
+		if code, body := c.do("GET", "/files/"+key+"/download?path="+url.QueryEscape("/"+p), nil); code == 200 || strings.Contains(body, fspermtest.Secret) {
+			t.Errorf("%s 不应读到: %d %s", p, code, body)
+		}
+	}
+	for _, p := range l.HiddenDirs() {
+		if code, body := c.do("GET", "/files/"+key+"/list?path="+url.QueryEscape("/"+p), nil); code == 200 || strings.Contains(body, "account.json") {
+			t.Errorf("列出 %s 不应成功: %d %s", p, code, body)
+		}
+	}
+	for dir, names := range l.Listings() {
+		code, body := c.do("GET", "/files/"+key+"/list?path="+url.QueryEscape("/"+dir), nil)
+		if code != 200 {
+			t.Fatalf("列出 /%s 失败: %d %s", dir, code, body)
+		}
+		for name, want := range names {
+			if got := strings.Contains(body, `"name":"`+name+`"`); got != want {
+				t.Errorf("/%s 的列表中 %s 出现=%v，期望 %v: %s", dir, name, got, want, body)
+			}
+		}
+	}
+	for _, r := range l.Renames() {
+		if code, _ := c.do("POST", "/files/"+key+"/rename", map[string]string{"from": "/" + r[0], "to": "/" + r[1]}); code == 200 {
+			t.Errorf("%s → %s 应被拒绝", r[0], r[1])
+		}
+	}
+	for _, p := range l.Removals() {
+		if code, _ := c.do("DELETE", "/files/"+key+"?path="+url.QueryEscape("/"+p), nil); code == 200 {
+			t.Errorf("删除 %s 应被拒绝", p)
+		}
+	}
+	for _, p := range l.Creates() {
+		if code, _ := c.do("POST", "/files/"+key+"/mkdir", map[string]string{"path": "/" + p}); code == 200 {
+			t.Errorf("新建 %s 应被拒绝", p)
+		}
+		if code := c.upload(key, "/"+filepath.ToSlash(filepath.Dir(p)), filepath.Base(p), "x"); code == 200 {
+			t.Errorf("上传到 %s 应被拒绝", p)
+		}
+	}
+	// 普通文件的增删改照常
+	if code := c.upload(key, "/media", "new.txt", "n"); code != 200 {
+		t.Fatalf("上传普通文件应成功: %d", code)
+	}
+	if code, body := c.do("POST", "/files/"+key+"/rename", map[string]string{"from": "/media/new.txt", "to": "/1000/docker/gately-old/new.txt"}); code != 200 {
+		t.Fatalf("普通文件改名应成功: %d %s", code, body)
+	}
+	if code, body := c.do("DELETE", "/files/"+key+"?path=/1000/docker/gately-old/new.txt", nil); code != 200 {
+		t.Fatalf("删除普通文件应成功: %d %s", code, body)
+	}
+	l.Check(t)
+}
+
+// 挂载根目录同样只隐藏配置目录。
+func TestLocalMountFilesystemRoot(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("根目录写法不同")
+	}
+	l := fspermtest.New(t)
+	_, c, _ := newStorage(t, l)
+	code, body := c.do("POST", "/mounts", map[string]any{"name": "root", "type": TypeLocal, "enable": true, "path": "/"})
+	if code != 200 {
+		t.Fatalf("挂载根目录应能保存: %d %s", code, body)
+	}
+	var mt struct{ Key string }
+	_ = json.Unmarshal([]byte(body), &mt)
+	real, _ := filepath.EvalSymlinks(l.Conf)
+	for _, p := range []string{l.Conf, real} {
+		if code, body := c.do("GET", "/files/"+mt.Key+"/download?path="+url.QueryEscape(p+"/account.json"), nil); code == 200 || strings.Contains(body, fspermtest.Secret) {
+			t.Fatalf("经根目录挂载读取 %s 不应成功: %d %s", p, code, body)
+		}
+	}
+	if code, body := c.do("GET", "/files/"+mt.Key+"/download?path="+url.QueryEscape(filepath.Join(l.Media, "hello.txt")), nil); code != 200 || body != "hello" {
+		t.Fatalf("根目录挂载中的普通文件应可读: %d %s", code, body)
+	}
+	if _, err := os.Stat(l.Conf); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func countLogs(logs *logbuf.Buffer, sub string) int {
+	n := 0
+	for _, e := range logs.Query(0, 0, 0, nil) {
+		if strings.Contains(e.Message, sub) {
+			n++
+		}
+	}
+	return n
 }

@@ -11,12 +11,13 @@ import (
 	"github.com/wangwanjie/gately/internal/mountfs"
 )
 
-// 文件服务的用户目录不能与 Gately 的配置目录重叠（相同、位于其中或包含它）：配置目录里有会话签名密钥，
-// 能登录文件服务的用户读到它就能签出管理员会话。保存时用 CheckDirs 拒绝；升级前已保存的配置不经过保存时的校验，
-// 各服务在启动与登录时用 Usable 把这样的目录换成一个不存在的路径，其余目录与用户照常使用。
+// 文件服务的用户目录不能是 Gately 的配置目录或位于其中：配置目录里有会话签名密钥，能登录文件服务的用户读到它
+// 就能签出管理员会话。保存时用 CheckDirs 拒绝；升级前已保存的配置不经过保存时的校验，各服务在启动与登录时
+// 用 Usable 把这样的目录换成一个不存在的路径，其余目录与用户照常使用。
+// 包含配置目录的目录（例如整个数据盘）可以使用，配置目录这棵子树由文件访问层屏蔽（见 mountfs 与 fsperm.Guard）。
 
 // CheckDirs 校验一个用户的目录（单目录 root 或多个目录 mounts，结构与各文件服务的用户一致），
-// 有目录与 Gately 的配置目录重叠时返回错误。
+// 有目录是 Gately 的配置目录或位于其中时返回错误。
 func CheckDirs(root string, mounts []mountfs.Mount) error {
 	if len(mounts) == 0 {
 		return fsperm.CheckExposable(root)
@@ -54,7 +55,7 @@ func blockedDir() string {
 // 供调用方写日志提示用户修改。没有需要替换的目录时原样返回。
 func Usable(u User) (out User, blocked []string) {
 	if len(u.Mounts) == 0 {
-		if fsperm.Protected(u.Root) != "" {
+		if fsperm.Inside(u.Root) != "" {
 			blocked = append(blocked, u.Root)
 			u.Root = BlockedDir
 		}
@@ -62,7 +63,7 @@ func Usable(u User) (out User, blocked []string) {
 	}
 	u.Mounts = slices.Clone(u.Mounts)
 	for i := range u.Mounts {
-		if fsperm.Protected(u.Mounts[i].Path) != "" {
+		if fsperm.Inside(u.Mounts[i].Path) != "" {
 			blocked = append(blocked, u.Mounts[i].Path)
 			u.Mounts[i].Path = BlockedDir
 		}
@@ -70,10 +71,47 @@ func Usable(u User) (out User, blocked []string) {
 	return u, blocked
 }
 
+// HiddenDirs 返回用户的目录中包含 Gately 配置目录的那些（这些目录照常提供，其中的配置目录被自动隐藏），供写日志说明。
+func HiddenDirs(root string, mounts []mountfs.Mount) []string {
+	var out []string
+	dirs := []string{root}
+	if len(mounts) > 0 {
+		dirs = dirs[:0]
+		for _, mt := range mounts {
+			dirs = append(dirs, mt.Path)
+		}
+	}
+	for _, d := range dirs {
+		if fsperm.Contains(d) != "" {
+			out = append(out, d)
+		}
+	}
+	return out
+}
+
+// HiddenText 返回写入运行日志的说明：用户 name 的目录 dir 包含配置目录，配置目录已自动隐藏。
+func HiddenText(name, dir string) string {
+	return fmt.Sprintf("用户 %s 的目录 %s 包含 Gately 的配置目录，配置目录已自动隐藏，其余文件照常提供", name, dir)
+}
+
 // BlockedText 返回写入运行日志的提示：用户 name 的目录 dir 与配置目录重叠，已停止提供。
 // 三个文件服务与共享用户共用同一句话，便于按模板翻译。
 func BlockedText(name, dir string) string {
 	return fmt.Sprintf("用户 %s 的目录 %s 与 Gately 的配置目录重叠，已停止提供，请改为其他目录", name, dir)
+}
+
+// HiddenNotes 返回已保存的共享用户中包含配置目录的目录的说明（配置目录被自动隐藏），供启动时写入日志。
+func (r *Registry) HiddenNotes() []string {
+	r.mu.RLock()
+	users := clone(r.users)
+	r.mu.RUnlock()
+	var out []string
+	for _, u := range users {
+		for _, dir := range HiddenDirs(u.Root, u.Mounts) {
+			out = append(out, fmt.Sprintf("共享用户 %s 的目录 %s 包含 Gately 的配置目录，配置目录已自动隐藏，其余文件照常提供", u.Name, dir))
+		}
+	}
+	return out
 }
 
 // Blocked 返回已保存的共享用户中与配置目录重叠的目录的提示，供启动时写入日志；没有时返回空。

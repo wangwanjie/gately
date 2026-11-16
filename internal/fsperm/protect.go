@@ -13,10 +13,12 @@ import (
 // 受保护目录
 //
 // Gately 的配置目录里有管理员密码哈希、会话签名密钥、API 令牌、证书私钥和各模块的密钥。
-// 把服务器目录提供出去的功能（存储挂载、静态站点、WebDAV、FTP、SMB）一旦把它包含进去，
-// 能使用这些功能的人就能读到会话签名密钥并签出管理员会话。因此这些功能在保存配置时
-// 用 CheckExposable 拒绝与配置目录重叠的目录，在实际提供服务前再用 Protected 判断一次
-// （升级前已保存的配置不经过保存时的校验）。
+// 把服务器目录提供出去的功能（存储挂载、静态站点、WebDAV、FTP、SMB）不能让人读到它，否则能使用这些功能的人
+// 就能读到会话签名密钥并签出管理员会话。按目录与配置目录的关系分两种情况处理：
+//   - 目录就是配置目录或位于其中：保存时用 CheckExposable 拒绝；升级前已保存的，提供服务前用 Inside 判断并停止提供。
+//   - 目录包含配置目录（例如把 NAS 的整个数据盘共享出去，Gately 的数据目录就在其中）：照常提供，
+//     但配置目录这棵子树对该服务不可见、不可读写，由各服务在文件访问层经 Guard 屏蔽。
+// File Browser 等把目录直接交给外部程序的功能无法屏蔽子树，对“包含”同样拒绝，用 Protected 判断。
 
 var (
 	protectMu sync.RWMutex
@@ -40,12 +42,9 @@ func Protect(dir string) {
 	}
 }
 
-// Protected 返回与 path 重叠的受保护目录，没有时返回空串。
+// Protected 返回与 path 重叠（相同、位于其中或包含它）的受保护目录，没有时返回空串。
 func Protected(path string) string {
-	protectMu.RLock()
-	dirs := slices.Clone(protected)
-	protectMu.RUnlock()
-	for _, dir := range dirs {
+	for _, dir := range protectedDirs() {
 		if Overlap(dir, path) {
 			return dir
 		}
@@ -53,10 +52,46 @@ func Protected(path string) string {
 	return ""
 }
 
-// CheckExposable 供保存配置时校验将要对外提供的目录：path 与受保护目录重叠时返回错误。
+// Inside 返回等于 path 或包含 path 的受保护目录（即 path 就是受保护目录或位于其中），没有时返回空串。
+func Inside(path string) string {
+	for _, dir := range protectedDirs() {
+		if insideOf(dir, path) {
+			return dir
+		}
+	}
+	return ""
+}
+
+// Contains 返回位于 path 之内（不等于 path）的受保护目录，没有时返回空串：path 作为共享目录时，这棵子树需要屏蔽。
+func Contains(path string) string {
+	for _, dir := range protectedDirs() {
+		if insideOf(path, dir) && !insideOf(dir, path) {
+			return dir
+		}
+	}
+	return ""
+}
+
+func protectedDirs() []string {
+	protectMu.RLock()
+	defer protectMu.RUnlock()
+	return slices.Clone(protected)
+}
+
+// CheckExposable 供保存配置时校验将要对外提供的目录：path 就是受保护目录或位于其中时返回错误。
+// 包含受保护目录的 path 可以使用，提供服务时由 Guard 屏蔽其中的受保护目录。
 func CheckExposable(path string) error {
-	if Protected(path) != "" {
-		return fmt.Errorf("目录 %s 不能使用：它是 Gately 的配置目录、位于配置目录内或包含配置目录，配置目录保存着登录密钥", path)
+	if Inside(path) != "" {
+		return fmt.Errorf("目录 %s 不能使用：它是 Gately 的配置目录或位于配置目录内，配置目录保存着登录密钥", path)
+	}
+	return nil
+}
+
+// CheckWholeDir 供把目录整个交给外部程序的功能（File Browser）校验目录：与受保护目录重叠（含包含关系）时返回错误，
+// 这类功能无法屏蔽目录中的一部分。
+func CheckWholeDir(path string) error {
+	if dir := Protected(path); dir != "" {
+		return fmt.Errorf("目录 %s 不能使用：它与 Gately 的配置目录 %s 重叠，这里的目录由外部程序直接读取，无法隐藏其中的配置目录，请改用不包含配置目录的目录", path, dir)
 	}
 	return nil
 }
@@ -65,14 +100,19 @@ func CheckExposable(path string) error {
 // 依次按规范化后的路径、解析符号链接后的路径、文件系统中的实际对象比较，任一种判定为重叠即返回 true：
 // 指向配置目录的符号链接、大小写不同的写法（Windows 与 macOS 默认不区分大小写）、同一目录的另一个挂载位置都算重叠。
 func Overlap(a, b string) bool {
-	a, b = absClean(a), absClean(b)
-	if a == "" || b == "" {
+	return insideOf(a, b) || insideOf(b, a)
+}
+
+// insideOf 判断 p 是否等于 dir 或位于 dir 之内，比较方式同 Overlap。
+func insideOf(dir, p string) bool {
+	dir, p = absClean(dir), absClean(p)
+	if dir == "" || p == "" {
 		return false
 	}
-	if lexicalOverlap(a, b) || lexicalOverlap(resolve(a), resolve(b)) {
+	if lexicalWithin(dir, p) || lexicalWithin(resolve(dir), resolve(p)) {
 		return true
 	}
-	return sameOnPath(a, b) || sameOnPath(b, a)
+	return sameOnPath(dir, p)
 }
 
 // absClean 返回规范化的绝对路径，无法转换时返回空串。
@@ -92,10 +132,9 @@ func foldCase(p string) string {
 	return p
 }
 
-// lexicalOverlap 只按路径文本判断：相同或一方是另一方的上级目录。
-func lexicalOverlap(a, b string) bool {
-	a, b = foldCase(a), foldCase(b)
-	return within(a, b) || within(b, a)
+// lexicalWithin 只按路径文本判断 child 是否等于 parent 或位于其中。
+func lexicalWithin(parent, child string) bool {
+	return within(foldCase(parent), foldCase(child))
 }
 
 // within 判断 child 是否等于 parent 或位于 parent 之内，两者须已规范化。
