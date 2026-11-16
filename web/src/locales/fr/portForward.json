@@ -36,6 +36,8 @@
   "defaultUdpTimeout": "Délai UDP par défaut (s)",
   "maxUdpSessions": "Limite de sessions UDP",
   "dialTimeout": "Délai de connexion à la cible (s)",
+  "firstDataTimeout": "Délai des premières données (s)",
+  "firstDataTimeoutHelp": "Une connexion TCP sur laquelle aucun côté n'envoie de données dans ce délai est fermée, ce qui libère sa place. Les protocoles comme SSH et HTTP envoient des données dès la connexion et ne sont pas concernés.",
   "moduleOff": "Module désactivé",
   "statusOff": "Désactivé",
   "statusNotRunning": "Non démarré",

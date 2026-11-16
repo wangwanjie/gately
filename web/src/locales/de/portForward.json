@@ -36,6 +36,8 @@
   "defaultUdpTimeout": "Standard-UDP-Zeitlimit (s)",
   "maxUdpSessions": "UDP-Sitzungslimit",
   "dialTimeout": "Zeitlimit für Zielverbindung (s)",
+  "firstDataTimeout": "Zeitlimit für erste Daten (s)",
+  "firstDataTimeoutHelp": "Eine TCP-Verbindung, auf der innerhalb dieser Zeit keine Seite Daten sendet, wird geschlossen und gibt ihren Platz frei. Protokolle wie SSH und HTTP senden direkt nach dem Verbindungsaufbau und sind nicht betroffen.",
   "moduleOff": "Modul deaktiviert",
   "statusOff": "Deaktiviert",
   "statusNotRunning": "Läuft nicht",

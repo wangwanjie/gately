@@ -36,6 +36,8 @@
   "defaultUdpTimeout": "デフォルトの UDP タイムアウト(秒)",
   "maxUdpSessions": "UDP セッション上限",
   "dialTimeout": "転送先への接続タイムアウト(秒)",
+  "firstDataTimeout": "最初のデータのタイムアウト(秒)",
+  "firstDataTimeoutHelp": "TCP 接続後この時間内にどちらからもデータが送られない接続を切断し、枠だけを占める空の接続を回収します。SSH や HTTP などは接続直後にどちらかが送信するため影響しません。",
   "moduleOff": "モジュール無効",
   "statusOff": "無効",
   "statusNotRunning": "未実行",

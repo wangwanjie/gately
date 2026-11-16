@@ -59,7 +59,16 @@ type Settings struct {
 	MaxUDPSessions           int `json:"maxUDPSessions"`
 	// DialTimeout 是连接目标的超时（秒）
 	DialTimeout int `json:"dialTimeout"`
+	// FirstDataTimeout 是 TCP 连接建立后等待任一方发送数据的最长时间（秒），超时仍没有任何数据的空连接被断开，
+	// 0 表示默认 60 秒。正常协议总有一方在连接后立即发言，只建立连接不发数据的连接只会占用名额
+	FirstDataTimeout int `json:"firstDataTimeout"`
 }
+
+// 连接参数的默认值与上限
+const (
+	defaultFirstDataTimeout = 60
+	maxFirstDataTimeout     = 3600
+)
 
 // fileConfig 是 portforward.json 的结构。
 type fileConfig struct {
@@ -74,6 +83,7 @@ func defaultSettings() Settings {
 		DefaultUDPSessionTimeout: 60,
 		MaxUDPSessions:           1024,
 		DialTimeout:              5,
+		FirstDataTimeout:         defaultFirstDataTimeout,
 	}
 }
 
@@ -95,6 +105,10 @@ func (s *Settings) normalize() {
 	if s.DefaultMaxConnsPerSource < 0 {
 		s.DefaultMaxConnsPerSource = 0
 	}
+	if s.FirstDataTimeout <= 0 {
+		s.FirstDataTimeout = d.FirstDataTimeout
+	}
+	s.FirstDataTimeout = min(s.FirstDataTimeout, maxFirstDataTimeout)
 }
 
 // Validate 校验规则并清理输入中的空白。
