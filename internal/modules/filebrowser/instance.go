@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/wangwanjie/gately/internal/crud"
+	"github.com/wangwanjie/gately/internal/fsperm"
 )
 
 // 登录方式。
@@ -206,7 +207,8 @@ func (i *Instance) externalURL() string {
 	return u.Scheme + "://" + u.Host
 }
 
-// validateSources 校验共享目录：至少一个、绝对路径、名称不重复。
+// validateSources 校验共享目录：至少一个、绝对路径、名称不重复，且与 Gately 的配置目录不重叠。
+// 共享目录由 File Browser 进程直接读取，无法像内置的文件服务那样隐藏其中的配置目录，所以包含配置目录的目录同样拒绝。
 func (i *Instance) validateSources() error {
 	if len(i.Sources) == 0 {
 		return errors.New("请至少添加一个共享目录")
@@ -219,6 +221,9 @@ func (i *Instance) validateSources() error {
 			return fmt.Errorf("共享目录 %q 必须是绝对路径", s.Path)
 		}
 		s.Path = filepath.Clean(s.Path)
+		if err := fsperm.CheckWholeDir(s.Path); err != nil {
+			return err
+		}
 		s.Name = strings.TrimSpace(s.Name)
 		if s.Name == "" {
 			s.Name = filepath.Base(s.Path)

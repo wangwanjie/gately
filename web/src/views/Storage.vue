@@ -105,6 +105,7 @@
         </el-form-item>
         <el-form-item v-if="editing.type === 'local'" :label="t('storage.dir')">
           <el-input v-model="editing.path" class="mono" placeholder="/data/share" />
+          <ConfigDirHint :paths="[editing.path]" />
         </el-form-item>
         <template v-else>
           <el-form-item :label="t('storage.url')">
@@ -141,6 +142,7 @@ import { useI18n } from 'vue-i18n'
 import { Cloud, CopyPlus, Download, File, Folder, FolderOpen, FolderPlus, HardDrive, Pencil, Plus, RefreshCw, Server, Trash2, Upload } from 'lucide-vue-next'
 import { api } from '../api'
 import SecretInput from '../components/SecretInput.vue'
+import ConfigDirHint from '../components/ConfigDirHint.vue'
 import { secretOf } from '../secrets'
 import PageHeader from '../components/PageHeader.vue'
 import ListPager from '../components/ListPager.vue'

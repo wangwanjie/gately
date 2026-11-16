@@ -4,10 +4,12 @@
 package logbuf
 
 import (
-	"fmt"
+	"bytes"
+	"encoding/json"
 	"log"
 	"sort"
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -19,6 +21,30 @@ const (
 	LevelError = "error"
 )
 
+// 日志级别的顺序，用于按最低级别决定是否记录；lvOther 为未知级别，总是记录
+const (
+	lvDebug int32 = iota
+	lvInfo
+	lvWarn
+	lvError
+	lvOther
+)
+
+// levelNum 返回级别的顺序。
+func levelNum(level string) int32 {
+	switch level {
+	case LevelDebug:
+		return lvDebug
+	case LevelInfo:
+		return lvInfo
+	case LevelWarn:
+		return lvWarn
+	case LevelError:
+		return lvError
+	}
+	return lvOther
+}
+
 // Entry 是一条日志。Seq 单调递增，前端用它做增量拉取。
 type Entry struct {
 	Seq     uint64    `json:"seq"`
@@ -28,19 +54,29 @@ type Entry struct {
 	Message string    `json:"message"`
 	// Fields 为可选的结构化字段（客户端 IP、域名、状态码等），用于按字段过滤
 	Fields Fields `json:"fields,omitempty"`
+	// Format、Args 为生成 Message 的格式串与各参数在其中的长度，只有经 Logger 的 Infof 等方法写入、
+	// 仍在内存缓冲里的日志才有：按语言翻译时据此直接查到译文模板并切出参数。不写入日志文件，从文件读回的日志没有这两项
+	Format string  `json:"-"`
+	Args   ArgLens `json:"-"`
 }
 
 // Buffer 是固定容量的环形缓冲，写满后覆盖最旧的日志。
 type Buffer struct {
-	mu      sync.Mutex
+	mu sync.Mutex
+	// entries 按写入量增长到 size 条，之后作为环形缓冲覆盖最旧的日志：大多数模块的日志远少于上限，不必一开始就占满
 	entries []Entry
-	start   int // 最旧一条在 entries 中的下标
-	count   int
+	size    int
+	start   int // 最旧一条在 entries 中的下标；未写满时为 0
+	count   int // 已有的日志条数，与 len(entries) 相同
 	nextSeq uint64
-	// echo 不为 nil 时同时输出到标准日志，便于 docker logs 查看
-	echo *log.Logger
-	// sink 不为 nil 时日志同时写入文件，见 Persist
-	sink *fileSink
+	// minLevel 为记录的最低级别（lvDebug 等），低于它的日志直接丢弃：不进缓冲、不落盘、不回显
+	minLevel atomic.Int32
+	// echo 不为 nil 时同时输出到标准日志（同步写）；async 不为 nil 时异步回显到标准错误输出，便于 docker logs 查看
+	echo  *log.Logger
+	async *Echo
+	// sink 不为 nil 时日志同时写入文件，见 Persist；persisting 与它同步变化，写日志时不加锁就能知道是否需要序列化
+	sink       *fileSink
+	persisting atomic.Bool
 	// sources 为出现过的来源标签（不含空串），供日志页的来源下拉列出全部来源，见 Sources。
 	// 开启落盘时同时保存到文件，重启后保留；数量受 maxSources 限制
 	sources map[string]struct{}
@@ -50,12 +86,35 @@ type Buffer struct {
 // 上限只是防止异常情况下无限增长
 const maxSources = 1000
 
-// New 创建容量为 size 的缓冲。
+// New 创建容量为 size 的缓冲。echo 不为 nil 时每条日志同步写到这个标准日志器；
+// 正式运行使用异步回显，见 SetEcho。
 func New(size int, echo *log.Logger) *Buffer {
 	if size <= 0 {
 		size = 500
 	}
-	return &Buffer{entries: make([]Entry, size), nextSeq: 1, echo: echo, sources: map[string]struct{}{}}
+	return &Buffer{size: size, nextSeq: 1, echo: echo, sources: map[string]struct{}{}}
+}
+
+// SetEcho 设置异步回显：每条日志同时交给 e 写到标准错误输出。应在开始写日志之前调用。
+func (b *Buffer) SetEcho(e *Echo) {
+	b.mu.Lock()
+	b.async = e
+	b.mu.Unlock()
+}
+
+// SetMinLevel 设置记录的最低级别（debug、info、warn、error），低于它的日志直接丢弃。
+// 新建的缓冲记录全部级别；无法识别的值同样按记录全部处理。
+func (b *Buffer) SetMinLevel(level string) {
+	n := levelNum(level)
+	if n == lvOther {
+		n = lvDebug
+	}
+	b.minLevel.Store(n)
+}
+
+// Enabled 判断 level 级别的日志当前是否会被记录。拼装日志内容开销较大时，可以先用它判断。
+func (b *Buffer) Enabled(level string) bool {
+	return levelNum(level) >= b.minLevel.Load()
 }
 
 // Add 追加一条日志。
@@ -70,35 +129,98 @@ func (b *Buffer) AddFields(level, source, msg string, fields Fields) {
 
 // addAt 以指定时间追加一条日志，测试用它模拟跨天写入。
 func (b *Buffer) addAt(t time.Time, level, source, msg string, fields Fields) {
+	b.add(Entry{Time: t, Level: level, Source: source, Message: msg, Fields: fields})
+}
+
+// lineEncoder 把一条日志序列化为一行 JSON，缓冲区随对象池复用。
+type lineEncoder struct {
+	buf bytes.Buffer
+	enc *json.Encoder
+	// e 为正在序列化的日志：放在可复用的对象里，不必为每条日志单独分配
+	e Entry
+}
+
+var lineEncoders = sync.Pool{New: func() any {
+	le := &lineEncoder{}
+	le.enc = json.NewEncoder(&le.buf)
+	return le
+}}
+
+// lineEncoderKeep 以上的缓冲区不放回对象池，避免个别超长日志让池里长期留着大块内存
+const lineEncoderKeep = 16 << 10
+
+// encodeLine 把 e 序列化为一行 JSON（序号写成 0），失败时返回 nil。
+func encodeLine(e Entry) *lineEncoder {
+	le := lineEncoders.Get().(*lineEncoder)
+	le.buf.Reset()
+	le.e = e
+	le.e.Seq = 0
+	err := le.enc.Encode(&le.e)
+	// 不留着对消息与字段表的引用
+	le.e = Entry{}
+	if err != nil {
+		lineEncoders.Put(le)
+		return nil
+	}
+	return le
+}
+
+// add 追加一条日志，序号由缓冲分配（e.Seq 被忽略）。
+func (b *Buffer) add(e Entry) {
+	if levelNum(e.Level) < b.minLevel.Load() {
+		return
+	}
+	// 落盘的 JSON 在加锁之前序列化（序号先写 0，加锁后再填入真正的序号）：
+	// 序列化是写一条日志里最耗时的一步，放在锁内会让高并发下所有写日志的协程排队
+	var le *lineEncoder
+	if b.persisting.Load() {
+		le = encodeLine(e)
+	}
 	b.mu.Lock()
-	e := Entry{Seq: b.nextSeq, Time: t, Level: level, Source: source, Message: msg, Fields: fields}
+	e.Seq = b.nextSeq
 	b.nextSeq++
-	idx := (b.start + b.count) % len(b.entries)
-	b.entries[idx] = e
-	if b.count < len(b.entries) {
+	if len(b.entries) < b.size {
+		if len(b.entries) == cap(b.entries) {
+			// 按需扩容，但不超过容量上限
+			next := make([]Entry, len(b.entries), min(max(16, 2*len(b.entries)), b.size))
+			copy(next, b.entries)
+			b.entries = next
+		}
+		b.entries = append(b.entries, e)
 		b.count++
 	} else {
+		b.entries[b.start] = e
 		b.start = (b.start + 1) % len(b.entries)
 	}
 	// 第一次出现的来源记下来；map 查找很快，不影响写入性能
-	if source != "" {
-		if _, ok := b.sources[source]; !ok && len(b.sources) < maxSources {
-			b.sources[source] = struct{}{}
+	if e.Source != "" {
+		if _, ok := b.sources[e.Source]; !ok && len(b.sources) < maxSources {
+			b.sources[e.Source] = struct{}{}
 			if b.sink != nil {
-				b.sink.addSource(source)
+				b.sink.addSource(e.Source)
 			}
 		}
 	}
 	// 在锁内交给落盘，保证文件中的顺序与序号一致
 	if b.sink != nil {
-		b.sink.add(e)
+		if le == nil || !b.sink.addEncoded(e.Seq, e.Time, le.buf.Bytes()) {
+			// 写入前一刻才开启落盘，或预先序列化的内容不是预期的形状：在锁内序列化
+			b.sink.add(e)
+		}
 	}
+	echo, async := b.echo, b.async
 	b.mu.Unlock()
-	if b.echo != nil {
-		if source != "" {
-			b.echo.Printf("[%s] [%s] %s", level, source, msg)
+	if le != nil && le.buf.Cap() <= lineEncoderKeep {
+		lineEncoders.Put(le)
+	}
+	if async != nil {
+		async.entry(&e)
+	}
+	if echo != nil {
+		if e.Source != "" {
+			echo.Printf("[%s] [%s] %s", e.Level, e.Source, e.Message)
 		} else {
-			b.echo.Printf("[%s] %s", level, msg)
+			echo.Printf("[%s] %s", e.Level, e.Message)
 		}
 	}
 }
@@ -132,6 +254,13 @@ func (b *Buffer) Range(after, before uint64, limit int) []Entry {
 	return out
 }
 
+// Cap 返回缓冲的容量上限（条数）。
+func (b *Buffer) Cap() int {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	return b.size
+}
+
 // at 返回从最旧一条起第 i 条日志，调用方需持有锁。
 func (b *Buffer) at(i int) Entry {
 	return b.entries[(b.start+i)%len(b.entries)]
@@ -154,6 +283,8 @@ func (b *Buffer) Sources() []string {
 // 记录的来源一并清空：日志已经删除，再列出这些来源也查不到内容。
 func (b *Buffer) Clear() {
 	b.mu.Lock()
+	// 连同底层数组一起释放，清空后不再占着旧日志的内存
+	b.entries = nil
 	b.start = 0
 	b.count = 0
 	b.sources = map[string]struct{}{}
@@ -197,29 +328,49 @@ func (l *Logger) Source() string {
 	return l.source
 }
 
+// Enabled 判断 level 级别的日志当前是否会被记录，见 Buffer.Enabled。
+func (l *Logger) Enabled(level string) bool {
+	return l.buf.Enabled(level)
+}
+
 // Log 以指定级别写入一条已格式化的日志，供托管外部进程的输出使用。
 func (l *Logger) Log(level, msg string) {
 	l.buf.AddFields(level, l.source, msg, l.fields)
 }
 
-// Debugf 写入调试日志。
+// Debugf 写入调试日志。调试级别未开启时（默认）在格式化之前直接返回。
 func (l *Logger) Debugf(format string, args ...any) {
-	l.buf.AddFields(LevelDebug, l.source, fmt.Sprintf(format, args...), l.fields)
+	if l.buf.minLevel.Load() > lvDebug {
+		return
+	}
+	l.logf(LevelDebug, format, args)
 }
 
 // Infof 写入普通日志。
 func (l *Logger) Infof(format string, args ...any) {
-	l.buf.AddFields(LevelInfo, l.source, fmt.Sprintf(format, args...), l.fields)
+	if l.buf.minLevel.Load() > lvInfo {
+		return
+	}
+	l.logf(LevelInfo, format, args)
 }
 
 // Warnf 写入警告日志。
 func (l *Logger) Warnf(format string, args ...any) {
-	l.buf.AddFields(LevelWarn, l.source, fmt.Sprintf(format, args...), l.fields)
+	if l.buf.minLevel.Load() > lvWarn {
+		return
+	}
+	l.logf(LevelWarn, format, args)
 }
 
 // Errorf 写入错误日志。
 func (l *Logger) Errorf(format string, args ...any) {
-	l.buf.AddFields(LevelError, l.source, fmt.Sprintf(format, args...), l.fields)
+	l.logf(LevelError, format, args)
+}
+
+// logf 格式化并写入一条日志，同时记下格式串与各参数的位置，供按语言翻译时使用。
+func (l *Logger) logf(level, format string, args []any) {
+	msg, lens := render(format, args)
+	l.buf.add(Entry{Time: time.Now(), Level: level, Source: l.source, Message: msg, Fields: l.fields, Format: format, Args: lens})
 }
 
 // Resize 修改缓冲容量，保留最新的日志。
@@ -229,13 +380,13 @@ func (b *Buffer) Resize(size int) {
 	}
 	b.mu.Lock()
 	defer b.mu.Unlock()
-	if size == len(b.entries) {
+	if size == b.size {
 		return
 	}
 	keep := min(b.count, size)
-	next := make([]Entry, size)
+	next := make([]Entry, keep)
 	for i := 0; i < keep; i++ {
 		next[i] = b.entries[(b.start+b.count-keep+i)%len(b.entries)]
 	}
-	b.entries, b.start, b.count = next, 0, keep
+	b.entries, b.size, b.start, b.count = next, size, 0, keep
 }

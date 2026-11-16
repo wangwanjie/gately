@@ -185,7 +185,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/tailscale/instances/{key}/restart` | `tailscale:write` | 重启 Tailscale 实例 |
 | POST | `/api/tailscale/instances/{key}/logout` | `tailscale:write` | 退出 Tailscale 实例的登录 |
 | GET | `/api/tailscale/settings` | `tailscale:read` | 读取 Tailscale 程序设置 |
-| PUT | `/api/tailscale/settings` | `tailscale:write` | 保存 Tailscale 程序设置 |
+| PUT | `/api/tailscale/settings` | 仅登录会话 | 保存 Tailscale 程序设置 |
 | GET | `/api/tailscale/install` | `tailscale:read` | 查看托管程序的安装信息与进度 |
 | POST | `/api/tailscale/install` | `tailscale:write` | 在线安装或更新托管程序 |
 | POST | `/api/tailscale/install/check` | `tailscale:write` | 检查托管程序的更新 |
@@ -218,7 +218,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/netbird/instances/{key}/restart` | `netbird:write` | 重启 NetBird 实例 |
 | POST | `/api/netbird/instances/{key}/logout` | `netbird:write` | 退出 NetBird 实例的登录 |
 | GET | `/api/netbird/settings` | `netbird:read` | 读取 NetBird 程序设置 |
-| PUT | `/api/netbird/settings` | `netbird:write` | 保存 NetBird 程序设置 |
+| PUT | `/api/netbird/settings` | 仅登录会话 | 保存 NetBird 程序设置 |
 | GET | `/api/netbird/install` | `netbird:read` | 查看托管程序的安装信息与进度 |
 | POST | `/api/netbird/install` | `netbird:write` | 在线安装或更新托管程序 |
 | POST | `/api/netbird/install/check` | `netbird:write` | 检查托管程序的更新 |
@@ -250,7 +250,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/easytier/instances/{key}/status` | `easytier:read` | 查看 EasyTier 实例的运行状态 |
 | POST | `/api/easytier/instances/{key}/restart` | `easytier:write` | 重启 EasyTier 实例 |
 | GET | `/api/easytier/settings` | `easytier:read` | 读取 EasyTier 程序设置 |
-| PUT | `/api/easytier/settings` | `easytier:write` | 保存 EasyTier 程序设置 |
+| PUT | `/api/easytier/settings` | 仅登录会话 | 保存 EasyTier 程序设置 |
 | GET | `/api/easytier/install` | `easytier:read` | 查看托管程序的安装信息与进度 |
 | POST | `/api/easytier/install` | `easytier:write` | 在线安装或更新托管程序 |
 | POST | `/api/easytier/install/check` | `easytier:write` | 检查托管程序的更新 |
@@ -918,7 +918,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/backup/targets-delete` | `backup:write` | 批量删除备份目的地 |
 | GET | `/api/backup/settings` | `backup:read` | 备份设置 |
 | PUT | `/api/backup/settings` | `backup:write` | 修改备份设置（口令传占位符表示保持不变） |
-| GET | `/api/backup/secrets` | `backup:write` | 查看密钥明文 |
+| GET | `/api/backup/secrets` | 仅登录会话 | 查看密钥明文 |
 | POST | `/api/backup/run` | `backup:write` | 立即备份一次 |
 | GET | `/api/backup/status` | `backup:read` | 最近一次备份结果与下次执行时间 |
 | GET | `/api/backup/mounts` | `backup:read` | 可作为备份目的地的存储挂载点 |
@@ -1357,6 +1357,9 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `key` | string |
 | `name` | string |
 | `protocol` | string |
+| `quicKeepalivePeriod` | integer |
+| `quicMaxIdleTimeout` | integer |
+| `quicMaxIncomingStreams` | integer |
 | `remark` | string |
 | `serverAddr` | string |
 | `serverPort` | integer |
@@ -1377,6 +1380,9 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 字段 | 类型 |
 | --- | --- |
 | `protocol` | string |
+| `quicKeepalivePeriod` | integer |
+| `quicMaxIdleTimeout` | integer |
+| `quicMaxIncomingStreams` | integer |
 | `serverAddr` | string |
 | `serverPort` | integer |
 | `token` | string |
@@ -1429,6 +1435,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 字段 | 类型 |
 | --- | --- |
 | `allowPorts` | string |
+| `autoFirewall` | boolean |
 | `bindAddr` | string |
 | `bindPort` | integer |
 | `dashboardAddr` | string |
@@ -1442,9 +1449,14 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `ipList` | 数组 of string |
 | `ipMode` | string |
 | `ipSets` | 数组 of string |
+| `kcpBindPort` | integer |
 | `key` | string |
 | `name` | string |
 | `proxyBindAddr` | string |
+| `quicBindPort` | integer |
+| `quicKeepalivePeriod` | integer |
+| `quicMaxIdleTimeout` | integer |
+| `quicMaxIncomingStreams` | integer |
 | `remark` | string |
 | `subdomainHost` | string |
 | `token` | string |
@@ -1456,6 +1468,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 字段 | 类型 |
 | --- | --- |
 | `allowPorts` | string |
+| `autoFirewall` | boolean |
 | `bindAddr` | string |
 | `bindPort` | integer |
 | `dashboardAddr` | string |
@@ -1467,7 +1480,12 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `ipList` | 数组 of string |
 | `ipMode` | string |
 | `ipSets` | 数组 of string |
+| `kcpBindPort` | integer |
 | `proxyBindAddr` | string |
+| `quicBindPort` | integer |
+| `quicKeepalivePeriod` | integer |
+| `quicMaxIdleTimeout` | integer |
+| `quicMaxIncomingStreams` | integer |
 | `subdomainHost` | string |
 | `token` | string |
 | `vhostHttpPort` | integer |
@@ -2707,7 +2725,17 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 
 | 字段 | 类型 |
 | --- | --- |
+| `background` | string |
+| `bgBlur` | integer |
+| `bgDim` | integer |
+| `defaultEngine` | integer |
+| `description` | string |
 | `enable` | boolean |
+| `engines` | 数组 of `webservice.PanelEngine` |
+| `favicon` | string |
+| `footer` | string |
+| `footerUrl` | string |
+| `hideFooter` | boolean |
 | `icon` | string |
 | `key` | string |
 | `lanCidrs` | 数组 of string |
@@ -2716,10 +2744,18 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `remark` | string |
 | `skin` | string |
 | `subtitle` | string |
+| `tabTitle` | string |
 | `theme` | string |
 | `title` | string |
 
 ### webservice.PanelAlt
+
+| 字段 | 类型 |
+| --- | --- |
+| `name` | string |
+| `url` | string |
+
+### webservice.PanelEngine
 
 | 字段 | 类型 |
 | --- | --- |
@@ -2742,14 +2778,18 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 字段 | 类型 |
 | --- | --- |
 | `alts` | 数组 of `webservice.PanelAlt` |
+| `authOnly` | boolean |
 | `color` | string |
 | `description` | string |
 | `group` | string |
 | `hide` | boolean |
+| `hideDesc` | boolean |
+| `hideName` | boolean |
 | `icon` | string |
 | `lanUrl` | string |
 | `name` | string |
 | `sameTab` | boolean |
+| `size` | string |
 | `url` | string |
 
 ### webservice.PanelPreview

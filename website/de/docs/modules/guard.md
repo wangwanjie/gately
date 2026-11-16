@@ -5,7 +5,7 @@ Einbruchschutz im Stil von fail2ban: Gately erkennt Brute-Force-Versuche in Prot
 ## Funktionen
 
 - **Protokollregeln**: lesen Protokolldateien, das systemd-Journal, Befehlsausgaben (etwa `logread -f` unter OpenWrt) oder Docker-Container-Protokolle, finden Fehlschläge per regulärem Ausdruck und sperren eine IP, die die Anzahl im Zeitfenster erreicht. Vorlagen gibt es für SSH, Dropbear, Nginx, Vaultwarden, Home Assistant, Proxmox VE und weitere; im Editor lassen sich Beispielzeilen einfügen, um die Filter zu testen;
-- **Gately-Ereignisse**: fehlgeschlagene Anmeldungen an der Oberfläche und WAF-Blockierungen und abgelehnte [Port-Knocking](/de/docs/modules/knock)-Knocks können ebenfalls eine Regel speisen, ganz ohne regulären Ausdruck;
+- **Gately-Ereignisse**: fehlgeschlagene Anmeldungen an der Oberfläche, WAF-Blockierungen, abgelehnte [Port-Knocking](/de/docs/modules/knock)-Knocks und fehlgeschlagene Anmeldungen bei WebDAV / FTP / SMB können ebenfalls eine Regel speisen, ganz ohne regulären Ausdruck;
 - **Web-Pfadsondierung**: zählt direkt die vom Webdienst verarbeiteten Anfragen nach Listener, Pfad und Statuscode, ganz ohne Protokolle; Quellen, die Köderpfade wie `/.env` oder `/.git` abfragen oder immer wieder unbekannte Domains scannen, werden gesperrt;
 - **TLS-Handshake-Fehler**: zählt Handshake-Fehler auf den HTTPS-Listenern des Webdienstes nach Fehlertyp (Abbruch mitten im Handshake, Zurücksetzen, Zeitüberschreitung, kein TLS oder Protokollfehler, nicht aushandelbar, unbekannte Domain u. a.), Listener und Anzahl; fängt Scans ab, die im Handshake abbrechen und nie eine HTTP-Anfrage senden;
 - **Köderports**: Köder auf Ports, die dieser Host nicht nutzt (standardmäßig 23, 135, 1433, 3389, 5900, 6379 und weitere). Jede Quelle, die sich verbindet, wird gesperrt;
@@ -62,7 +62,7 @@ Ohne diese Berechtigung gelten Sperren weiterhin für Gatelys eigene Dienste. Um
 | systemd-Journal | Diensteinheiten wie `ssh.service` | Gelesen über `journalctl -f` |
 | Befehlsausgabe | Ein Befehl wie `logread -f` | Wird nach dem Beenden neu gestartet |
 | Docker-Container | Containername | Gelesen über die Docker-Verbindung des Docker-Moduls |
-| Gately-Ereignis | Fehlgeschlagene Anmeldung / WAF-Blockierung / abgelehnter Knock | Ereignisse enthalten die Quell-IP, kein Filter nötig |
+| Gately-Ereignis | Fehlgeschlagene Anmeldung / WAF-Blockierung / abgelehnter Knock / fehlgeschlagene Anmeldung bei Dateidiensten | Ereignisse enthalten die Quell-IP, kein Filter nötig |
 | Web-Pfadsondierung | Listener (optional) und Pfadregeln | Zählt Anfragen des Webdienstes, siehe unten |
 | TLS-Handshake-Fehler | Listener (optional) und Fehlertypen | Zählt Handshake-Fehler auf den HTTPS-Listenern des Webdienstes, siehe unten |
 
@@ -73,6 +73,8 @@ Failed password for (?:invalid user )?\S* ?from <HOST>
 ```
 
 Zeilen, die einer „Ausnahme“ entsprechen, werden nicht gezählt. Zeitfenster, Anzahl der Fehlschläge und Sperrdauer werden pro Regel eingestellt; die Dauer kann Standard, benutzerdefiniert oder dauerhaft sein.
+
+Die Quelle „Gately-Ereignis“ enthält die Vorlage „Fehlgeschlagene Anmeldungen bei Dateidiensten“ (Voreinstellung `gately-files`). Fehlgeschlagene Anmeldungen bei WebDAV, FTP und SMB sowie nach zu vielen Fehlversuchen abgelehnte Versuche werden pro Quell-IP gezählt; standardmäßig sperren 10 Treffer in 10 Minuten die Quelle, mit der Standard-Sperrdauer. Eine Quelle wird höchstens alle 5 Sekunden einmal gezählt, ein Client, der mehrere Anfragen sendet oder mit falschem Passwort wiederholt, zählt also nur einmal. Die Quelladresse stammt aus der TCP-Verbindung (WebDAV wertet weitergeleitete Header nur aus, wenn ein vertrauenswürdiger Proxy konfiguriert ist). Anfragen ohne Zugangsdaten werden nicht gezählt (WebDAV, das auf die 401-Aufforderung wartet, und die anonyme SMB-Probe des Windows-Explorers).
 
 ## Web-Pfadsondierung
 

@@ -64,17 +64,40 @@ func NewRedactor(configDir string) *Redactor {
 }
 
 var (
-	reURL      = regexp.MustCompile(`(?i)\b([a-z][a-z0-9+.-]{1,15})://[^\s"'<>]+`)
-	reEmail    = regexp.MustCompile(`[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}`)
-	reMAC      = regexp.MustCompile(`(?i)\b(?:[0-9a-f]{2}[:-]){5}[0-9a-f]{2}\b`)
-	reKV       = regexp.MustCompile(`(?i)\b(password|passwd|pwd|passphrase|secret|token|apikey|api_key|access_key|authorization|cookie|credential)s?\b(["']?\s*[:=]\s*)("[^"]*"|'[^']*'|\S+)`)
-	reBearer   = regexp.MustCompile(`(?i)\bbearer\s+\S+`)
+	reURL   = regexp.MustCompile(`(?i)\b([a-z][a-z0-9+.-]{1,15})://[^\s"'<>]+`)
+	reEmail = regexp.MustCompile(`[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}`)
+	reMAC   = regexp.MustCompile(`(?i)\b(?:[0-9a-f]{2}[:-]){5}[0-9a-f]{2}\b`)
+	// reKV 匹配“名称 分隔符 值”形式的密钥：名称是含有密钥关键词的标识符（client_secret、X-Api-Key、TS_AUTHKEY、
+	// networkSecret 等，关键词前后可以有其他字符），分隔符为冒号或等号。名称后缀不含点号，tokens.json: … 这样的文件名不算
+	reKV = regexp.MustCompile(`(?i)([A-Za-z0-9_.-]*(?:` + secretWords + `)[A-Za-z0-9_-]*)(["']?\s*[:=]\s*)("[^"]*"|'[^']*'|\S+)`)
+	// reHeaderLine 匹配 Authorization、Cookie 一类请求头从值开始到行尾的全部内容：
+	// Authorization 的值是“方案 凭据”两段，Cookie 是分号分隔的多段，只替换第一段会把后面的凭据留下
+	reHeaderLine = regexp.MustCompile(`(?i)\b((?:proxy-)?authorization|(?:set-)?cookie)\b(\s*[:=]\s*)([^\s"'][^\r\n]*)`)
+	// reFlag 匹配以空白分隔取值的命令行参数，例如 --auth-key tskey-…、--password hunter2；名称同样按关键词判断
+	reFlag   = regexp.MustCompile(`(?i)(^|\s)(--?[a-z][a-z0-9_-]*)(\s+)([^\s-]\S*)`)
+	reBearer = regexp.MustCompile(`(?i)\bbearer\s+\S+`)
+	// reBasic 匹配 Basic、Digest 等认证方案后面的凭据（不在 Authorization 请求头里时，如日志中的片段）
+	reBasic    = regexp.MustCompile(`(?i)\b(basic|digest|negotiate|ntlm)(\s+)([A-Za-z0-9+/._~-]{8,}={0,2})`)
 	reIPv4     = regexp.MustCompile(`\b\d{1,3}(?:\.\d{1,3}){3}\b`)
 	reIPv6     = regexp.MustCompile(`[0-9A-Fa-f:.]*:[0-9A-Fa-f:.]*:[0-9A-Fa-f:.]*(?:%[A-Za-z0-9]+)?`)
 	reDomain   = regexp.MustCompile(`\b(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,24}\b`)
 	reLongTok  = regexp.MustCompile(`\b[A-Za-z0-9_-]{32,}\b`)
 	reUserPath = regexp.MustCompile(`(?i)(/Users/|/home/|[A-Za-z]:\\Users\\)[^/\\\s]+`)
 )
+
+// secretWords 是名称中表明“值是密钥”的关键词（正则片段）。
+const secretWords = `password|passwd|pwd|passphrase|secret|token|api[-_]?key|access[-_]?key|auth[-_]?key|private[-_]?key|setup[-_]?key|consumer[-_]?key|authorization|cookie|credential|signature`
+
+// reFlagName 判断命令行参数名是否表明其值是密钥；参数名里单独的 key 也算（--key、--ssh-key）。
+var reFlagName = regexp.MustCompile(`(?i)` + secretWords + `|key`)
+
+// credentialLike 判断认证方案后面的一段是否像凭据：含有数字、大写字母或 Base64 符号。
+// 全小写的普通单词（basic authentication 里的 authentication）不算。
+func credentialLike(s string) bool {
+	return strings.ContainsFunc(s, func(r rune) bool {
+		return r >= '0' && r <= '9' || r >= 'A' && r <= 'Z' || r == '+' || r == '/' || r == '='
+	})
+}
 
 // fileExts 是常见文件扩展名，形如 main.go 的片段不应被当作域名。
 var fileExts = map[string]bool{
@@ -150,8 +173,23 @@ func (r *Redactor) Text(s string) string {
 		return strings.ToLower(scheme) + "://<url>"
 	})
 	s = reEmail.ReplaceAllString(s, "<email>")
+	s = reHeaderLine.ReplaceAllString(s, "${1}${2}"+Redacted)
 	s = reBearer.ReplaceAllString(s, "Bearer "+Redacted)
+	s = reBasic.ReplaceAllStringFunc(s, func(m string) string {
+		sub := reBasic.FindStringSubmatch(m)
+		if !credentialLike(sub[3]) {
+			return m
+		}
+		return sub[1] + sub[2] + Redacted
+	})
 	s = reKV.ReplaceAllString(s, "${1}${2}"+Redacted)
+	s = reFlag.ReplaceAllStringFunc(s, func(m string) string {
+		sub := reFlag.FindStringSubmatch(m)
+		if !reFlagName.MatchString(sub[2]) {
+			return m
+		}
+		return sub[1] + sub[2] + sub[3] + Redacted
+	})
 	s = reMAC.ReplaceAllString(s, "<mac>")
 	s = reIPv6.ReplaceAllStringFunc(s, func(m string) string {
 		cand := m

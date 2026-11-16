@@ -19,3 +19,12 @@ services:
       # - ../nginx/config/ssl/lucky:/data/nginx/config/ssl/lucky
     environment:
       - TZ=Asia/Shanghai
+      # 运行日志的最低级别（debug、info、warn、error），默认 info；设置页里选了具体级别时以设置为准
+      # - GATELY_LOG_LEVEL=info
+    # 限制容器日志（docker logs）占用的磁盘：默认的 json-file 驱动不设上限，日志会一直增长。
+    # 这里每个文件最多 10 MB、保留 3 个；Gately 自己的运行日志另存在配置目录的 logs/ 下，有各自的上限
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

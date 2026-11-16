@@ -5,7 +5,7 @@ fail2ban-style intrusion prevention: Gately finds brute-force attempts in logs, 
 ## Capabilities
 
 - **Log jails**: read log files, the systemd journal, command output (such as `logread -f` on OpenWrt) or Docker container logs, find failures with regular expressions and ban an IP that reaches the count within the time window. Templates are included for SSH, Dropbear, Nginx, Vaultwarden, Home Assistant, Proxmox VE and more, and you can paste sample lines into the editor to test the filters;
-- **Gately events**: failed admin console logins, WAF blocks and rejected [port knocks](/en/docs/modules/knock) can also feed a jail, no regular expression needed;
+- **Gately events**: failed admin console logins, WAF blocks, rejected [port knocks](/en/docs/modules/knock) and failed WebDAV / FTP / SMB sign-ins can also feed a jail, no regular expression needed;
 - **Web path probing**: counts requests handled by the web service by listener, path and status code, without reading logs; sources that request decoy paths such as `/.env` or `/.git`, or keep scanning unknown domains, are banned;
 - **TLS handshake failures**: counts handshake failures on the web service HTTPS listeners by failure type (dropped mid-handshake, reset, timeout, not TLS or protocol error, cannot negotiate, unknown domain and more), listener and number of times, catching scans that drop during the handshake and never send an HTTP request;
 - **Trap ports**: traps on ports this host does not use (23, 135, 1433, 3389, 5900, 6379 and others by default). Any source that connects is banned;
@@ -62,7 +62,7 @@ Without it, bans still apply to Gately's own services. To read host logs, mount 
 | systemd journal | Service units such as `ssh.service` | Read through `journalctl -f` |
 | Command output | One command such as `logread -f` | Restarted when it exits |
 | Docker container | Container name | Read through the Docker connection of the Docker module |
-| Gately event | Admin login failure / WAF block / port knock rejected | Events carry the source IP, no filter needed |
+| Gately event | Admin login failure / WAF block / port knock rejected / file service sign-in failure | Events carry the source IP, no filter needed |
 | Web path probing | Listeners (optional) and path rules | Counts web service requests, see below |
 | TLS handshake failures | Listeners (optional) and failure types | Counts handshake failures on web service HTTPS listeners, see below |
 
@@ -73,6 +73,8 @@ Failed password for (?:invalid user )?\S* ?from <HOST>
 ```
 
 Lines matching an "Ignore" expression are not counted. The time window, failure count and ban duration are set per jail; the duration can be the default, custom or permanent.
+
+The Gately event source includes the built-in template "File service sign-in failures" (preset `gately-files`). Failed WebDAV, FTP and SMB sign-ins, and attempts refused after too many failures, are counted per source IP; by default 10 within 10 minutes bans the source, with the default ban duration. A source is counted at most once every 5 seconds, so a client that sends several requests or retries with a wrong password counts once. The source address comes from the TCP connection (WebDAV honors forwarded headers only when a trusted proxy is configured). Requests without credentials are not counted (WebDAV waiting for the 401 challenge, Windows Explorer's anonymous SMB probe).
 
 ## Web path probing
 

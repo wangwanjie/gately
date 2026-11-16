@@ -661,6 +661,13 @@ func WithScopeCheck(ctx context.Context, check func(need string) bool) context.C
 	return context.WithValue(ctx, scopeKey{}, check)
 }
 
+// IsToken 判断当前请求是否以 API 令牌认证（而不是登录会话）。
+// 少数设置只允许登录会话修改，例如备份加密口令，接口据此拒绝令牌的修改。
+func IsToken(ctx context.Context) bool {
+	_, ok := ctx.Value(scopeKey{}).(func(string) bool)
+	return ok
+}
+
 // Allowed 判断当前请求的身份是否具备权限 need（格式同 API 令牌权限，如 "docker:write"），
 // 用于在同一接口内按权限决定是否返回敏感字段。API 令牌按自身权限判定；
 // 登录会话中管理员具备全部权限、只读账号只具备读权限；上下文中没有身份时一律视为无权限。

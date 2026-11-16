@@ -775,6 +775,15 @@
           "protocol": {
             "type": "string"
           },
+          "quicKeepalivePeriod": {
+            "type": "integer"
+          },
+          "quicMaxIdleTimeout": {
+            "type": "integer"
+          },
+          "quicMaxIncomingStreams": {
+            "type": "integer"
+          },
           "remark": {
             "type": "string"
           },
@@ -814,6 +823,15 @@
         "properties": {
           "protocol": {
             "type": "string"
+          },
+          "quicKeepalivePeriod": {
+            "type": "integer"
+          },
+          "quicMaxIdleTimeout": {
+            "type": "integer"
+          },
+          "quicMaxIncomingStreams": {
+            "type": "integer"
           },
           "serverAddr": {
             "type": "string"
@@ -940,6 +958,9 @@
           "allowPorts": {
             "type": "string"
           },
+          "autoFirewall": {
+            "type": "boolean"
+          },
           "bindAddr": {
             "type": "string"
           },
@@ -991,6 +1012,9 @@
             },
             "type": "array"
           },
+          "kcpBindPort": {
+            "type": "integer"
+          },
           "key": {
             "type": "string"
           },
@@ -999,6 +1023,18 @@
           },
           "proxyBindAddr": {
             "type": "string"
+          },
+          "quicBindPort": {
+            "type": "integer"
+          },
+          "quicKeepalivePeriod": {
+            "type": "integer"
+          },
+          "quicMaxIdleTimeout": {
+            "type": "integer"
+          },
+          "quicMaxIncomingStreams": {
+            "type": "integer"
           },
           "remark": {
             "type": "string"
@@ -1022,6 +1058,9 @@
         "properties": {
           "allowPorts": {
             "type": "string"
+          },
+          "autoFirewall": {
+            "type": "boolean"
           },
           "bindAddr": {
             "type": "string"
@@ -1068,8 +1107,23 @@
             },
             "type": "array"
           },
+          "kcpBindPort": {
+            "type": "integer"
+          },
           "proxyBindAddr": {
             "type": "string"
+          },
+          "quicBindPort": {
+            "type": "integer"
+          },
+          "quicKeepalivePeriod": {
+            "type": "integer"
+          },
+          "quicMaxIdleTimeout": {
+            "type": "integer"
+          },
+          "quicMaxIncomingStreams": {
+            "type": "integer"
           },
           "subdomainHost": {
             "type": "string"
@@ -4062,7 +4116,40 @@
       },
       "webservice.Panel": {
         "properties": {
+          "background": {
+            "type": "string"
+          },
+          "bgBlur": {
+            "type": "integer"
+          },
+          "bgDim": {
+            "type": "integer"
+          },
+          "defaultEngine": {
+            "type": "integer"
+          },
+          "description": {
+            "type": "string"
+          },
           "enable": {
+            "type": "boolean"
+          },
+          "engines": {
+            "items": {
+              "$ref": "#/components/schemas/webservice.PanelEngine"
+            },
+            "type": "array"
+          },
+          "favicon": {
+            "type": "string"
+          },
+          "footer": {
+            "type": "string"
+          },
+          "footerUrl": {
+            "type": "string"
+          },
+          "hideFooter": {
             "type": "boolean"
           },
           "icon": {
@@ -4095,6 +4182,9 @@
           "subtitle": {
             "type": "string"
           },
+          "tabTitle": {
+            "type": "string"
+          },
           "theme": {
             "type": "string"
           },
@@ -4105,6 +4195,17 @@
         "type": "object"
       },
       "webservice.PanelAlt": {
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.PanelEngine": {
         "properties": {
           "name": {
             "type": "string"
@@ -4146,6 +4247,9 @@
             },
             "type": "array"
           },
+          "authOnly": {
+            "type": "boolean"
+          },
           "color": {
             "type": "string"
           },
@@ -4156,6 +4260,12 @@
             "type": "string"
           },
           "hide": {
+            "type": "boolean"
+          },
+          "hideDesc": {
+            "type": "boolean"
+          },
+          "hideName": {
             "type": "boolean"
           },
           "icon": {
@@ -4169,6 +4279,9 @@
           },
           "sameTab": {
             "type": "boolean"
+          },
+          "size": {
+            "type": "string"
           },
           "url": {
             "type": "string"
@@ -7567,7 +7680,7 @@
     },
     "/api/backup/secrets": {
       "get": {
-        "description": "Требуемое разрешение: `backup:write`.",
+        "description": "**Доступно только для сессий входа; API-токены не имеют доступа к этому эндпоинту.**",
         "responses": {
           "200": {
             "content": {
@@ -7613,17 +7726,12 @@
             "description": "У токена нет необходимого права"
           }
         },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
         "summary": "Показать секреты открытым текстом",
         "tags": [
           "Резервная копия конфигурации"
         ],
-        "x-required-scope": "backup:write",
-        "x-token-allowed": true
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
       }
     },
     "/api/backup/settings": {
@@ -19367,7 +19475,7 @@
         "x-token-allowed": true
       },
       "put": {
-        "description": "Тело запроса `{\"corePath\": \"\"}`. Если пусто, easytier-core ищется сначала в каталоге bin конфигурации, затем в PATH; `installProxy` изменяется только через API установки. После смены пути перезапустите включённые экземпляры.\n\nТребуемое разрешение: `easytier:write`.",
+        "description": "Тело запроса `{\"corePath\": \"\"}`. Если пусто, easytier-core ищется сначала в каталоге bin конфигурации, затем в PATH; `installProxy` изменяется только через API установки. После смены пути перезапустите включённые экземпляры.\n\n**Доступно только для сессий входа; API-токены не имеют доступа к этому эндпоинту.**",
         "requestBody": {
           "content": {
             "application/json": {
@@ -19412,17 +19520,12 @@
             "description": "У токена нет необходимого права"
           }
         },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
         "summary": "Сохранить настройки программы EasyTier",
         "tags": [
           "Сеть EasyTier"
         ],
-        "x-required-scope": "easytier:write",
-        "x-token-allowed": true
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
       }
     },
     "/api/easytier/status": {
@@ -31014,7 +31117,7 @@
         "x-token-allowed": true
       },
       "put": {
-        "description": "Тело `{\"netbirdPath\": \"\"}`; если пусто, программа ищется в каталоге bin каталога конфигурации, затем в PATH. `installProxy` изменяется только через эндпоинты установки. При изменении пути включённые экземпляры перезапускаются.\n\nТребуемое разрешение: `netbird:write`.",
+        "description": "Тело `{\"netbirdPath\": \"\"}`; если пусто, программа ищется в каталоге bin каталога конфигурации, затем в PATH. `installProxy` изменяется только через эндпоинты установки. При изменении пути включённые экземпляры перезапускаются.\n\n**Доступно только для сессий входа; API-токены не имеют доступа к этому эндпоинту.**",
         "requestBody": {
           "content": {
             "application/json": {
@@ -31059,17 +31162,12 @@
             "description": "У токена нет необходимого права"
           }
         },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
         "summary": "Сохранить настройки программы NetBird",
         "tags": [
           "Сеть NetBird"
         ],
-        "x-required-scope": "netbird:write",
-        "x-token-allowed": true
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
       }
     },
     "/api/netbird/status": {
@@ -45968,7 +46066,7 @@
         "x-token-allowed": true
       },
       "put": {
-        "description": "Тело запроса `{\"tailscaledPath\": \"\", \"tailscalePath\": \"\"}`; если пусто, программы ищутся в bin каталога конфигурации, затем в PATH. `installProxy` меняется только через API установки. При изменении пути включённые экземпляры перезапускаются.\n\nТребуемое разрешение: `tailscale:write`.",
+        "description": "Тело запроса `{\"tailscaledPath\": \"\", \"tailscalePath\": \"\"}`; если пусто, программы ищутся в bin каталога конфигурации, затем в PATH. `installProxy` меняется только через API установки. При изменении пути включённые экземпляры перезапускаются.\n\n**Доступно только для сессий входа; API-токены не имеют доступа к этому эндпоинту.**",
         "requestBody": {
           "content": {
             "application/json": {
@@ -46013,17 +46111,12 @@
             "description": "У токена нет необходимого права"
           }
         },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
         "summary": "Сохранить настройки программы Tailscale",
         "tags": [
           "Сеть Tailscale"
         ],
-        "x-required-scope": "tailscale:write",
-        "x-token-allowed": true
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
       }
     },
     "/api/tailscale/status": {

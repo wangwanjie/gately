@@ -108,6 +108,9 @@
                   <el-tooltip v-if="d.canExec" :content="t('apiTokens.execTip')" placement="top">
                     <el-tag size="small" type="warning" effect="light">{{ t('apiTokens.execTag') }}</el-tag>
                   </el-tooltip>
+                  <el-tooltip v-if="d.canFiles" :content="t('apiTokens.filesTip')" placement="top">
+                    <el-tag size="small" type="warning" effect="light">{{ t('apiTokens.filesTag') }}</el-tag>
+                  </el-tooltip>
                 </div>
                 <el-radio-group v-model="levels[d.id]" size="small" class="perm-radio">
                   <el-radio-button value="none">{{ t('common.none') }}</el-radio-button>
@@ -118,6 +121,9 @@
             </div>
             <el-alert v-if="execGranted.length" type="warning" :closable="false" show-icon class="exec-warn">
               {{ t('apiTokens.execWarn', { modules: execGranted.join(t('apiTokens.listSep')) }) }}
+            </el-alert>
+            <el-alert v-if="filesGranted.length" type="warning" :closable="false" show-icon class="exec-warn">
+              {{ t('apiTokens.filesWarn', { modules: filesGranted.join(t('apiTokens.listSep')) }) }}
             </el-alert>
             <div class="form-help">{{ t('apiTokens.permHelp') }}</div>
           </div>
@@ -278,6 +284,9 @@ const levels = reactive<Record<string, Level>>({})
 
 // 已授予写权限、且写权限可以执行命令的模块标题
 const execGranted = computed(() => domains.value.filter((d) => d.canExec && levels[d.id] === 'write').map((d) => d.title))
+
+// 已授予写权限、且写权限可以读取或修改服务器文件的模块标题
+const filesGranted = computed(() => domains.value.filter((d) => d.canFiles && levels[d.id] === 'write').map((d) => d.title))
 
 const grantedCount = computed(() => domains.value.filter((d) => (levels[d.id] ?? 'none') !== 'none').length)
 

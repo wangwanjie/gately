@@ -12,6 +12,7 @@ import (
 	"io"
 	"os"
 	"regexp"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -159,14 +160,21 @@ func ServerLang() string {
 type catalog struct {
 	exact map[string]string
 	tmpls []*tmpl
+	// byKey 按格式串查模板：已知日志的格式串时一次查表即可得到译文模板，见 TrFormat
+	byKey map[string]*tmpl
 	// segs 是可用于句中替换的固定片段（按长度降序），覆盖“前缀 + 动态内容”这类拼接出来的文案
 	segs []string
+	// tmplIdx、segIdx 把模板与片段挂在各自“最少见的字符”下：一句话只需要尝试它包含的字符对应的那几个，
+	// 不必把上千个模板和片段逐个做子串查找；tmplAny 为没有固定片段、任何句子都要尝试的模板
+	tmplIdx map[rune][]int32
+	tmplAny []int32
+	segIdx  map[rune][]int32
 	// cache 缓存已翻译结果，日志轮询会反复翻译同一批文案
-	cacheMu sync.Mutex
-	cache   map[string]string
+	cache genCache
 }
 
 type tmpl struct {
+	key  string
 	re   *regexp.Regexp
 	out  string
 	nlit int
@@ -174,6 +182,17 @@ type tmpl struct {
 	lead bool
 	// must 是模板中最长的固定片段，用于在跑正则前快速排除不相关的句子
 	must string
+	// lits 为格式串被动词隔开的固定片段（比动词多一个）：已知一句话由这个格式串生成、
+	// 又知道各参数的长度时，直接按位置切出参数，不用跑正则，见 cut
+	lits []string
+	// parts 为预先解析好的译文：固定文本与参数序号交替，见 fill
+	parts []fillPart
+}
+
+// fillPart 是译文模板的一段：lit 为固定文本，arg >= 0 时其后接第 arg 个参数。
+type fillPart struct {
+	lit string
+	arg int
 }
 
 // verbRe 匹配格式动词；%% 先于动词被消费，因此“%% packet”不会被误判为动词。
@@ -236,7 +255,7 @@ func CompressLocale(data []byte) []byte {
 }
 
 func buildCatalog(m map[string]string) *catalog {
-	c := &catalog{exact: map[string]string{}}
+	c := &catalog{exact: map[string]string{}, byKey: map[string]*tmpl{}}
 	for k, v := range m {
 		if v == "" {
 			continue
@@ -250,12 +269,14 @@ func buildCatalog(m map[string]string) *catalog {
 		nlit := 0
 		must := ""
 		prev := 0
+		t := &tmpl{key: k, out: v}
 		for _, loc := range locs {
 			lit := strings.ReplaceAll(k[prev:loc[0]], "%%", "%")
 			nlit += len([]rune(lit))
 			if len(lit) > len(must) {
 				must = lit
 			}
+			t.lits = append(t.lits, lit)
 			sb.WriteString(regexp.QuoteMeta(lit))
 			verb := k[loc[1]-1]
 			switch {
@@ -274,12 +295,16 @@ func buildCatalog(m map[string]string) *catalog {
 		if len(tail) > len(must) {
 			must = tail
 		}
+		t.lits = append(t.lits, tail)
 		sb.WriteString(regexp.QuoteMeta(tail))
 		re, err := regexp.Compile("(?s)" + sb.String())
 		if err != nil {
 			continue
 		}
-		c.tmpls = append(c.tmpls, &tmpl{re: re, out: v, nlit: nlit, must: must, lead: locs[0][0] == 0})
+		t.re, t.nlit, t.must, t.lead = re, nlit, must, locs[0][0] == 0
+		t.parts = parseFill(v)
+		c.tmpls = append(c.tmpls, t)
+		c.byKey[k] = t
 		// 模板同时保留一份精确匹配，避免格式串本身被当作普通文本时漏翻
 		c.exact[k] = v
 	}
@@ -288,25 +313,122 @@ func buildCatalog(m map[string]string) *catalog {
 			c.segs = append(c.segs, k)
 		}
 	}
-	sort.Slice(c.segs, func(i, j int) bool { return len(c.segs[i]) > len(c.segs[j]) })
-	c.cache = map[string]string{}
+	// 长度相同时按内容排序：译文表来自 map，不加这一条每次启动的顺序都不同，同一句话的翻译结果可能随之变化
+	sort.Slice(c.segs, func(i, j int) bool {
+		if len(c.segs[i]) != len(c.segs[j]) {
+			return len(c.segs[i]) > len(c.segs[j])
+		}
+		return c.segs[i] < c.segs[j]
+	})
 	// 字面量更长的模板优先，避免短模板抢先匹配
-	sort.Slice(c.tmpls, func(i, j int) bool { return c.tmpls[i].nlit > c.tmpls[j].nlit })
+	sort.Slice(c.tmpls, func(i, j int) bool {
+		if c.tmpls[i].nlit != c.tmpls[j].nlit {
+			return c.tmpls[i].nlit > c.tmpls[j].nlit
+		}
+		return c.tmpls[i].key < c.tmpls[j].key
+	})
+	c.buildIndex()
 	return c
 }
 
-// fill 把捕获的参数代入译文模板，支持 %% 与 %[n]x 形式的显式序号。
-func (t *tmpl) fill(lang string, args []string) string {
-	var sb strings.Builder
-	out := t.out
+// buildIndex 建立模板与片段的字符索引：每个模式挂在它包含的、在全部模式中出现最少的那个字符下。
+// 句子里没有这个字符，就一定不包含这个模式；常见字（如“失败”）下只挂很少的模式，候选集合因此很小。
+func (c *catalog) buildIndex() {
+	freq := map[rune]int{}
+	count := func(p string) {
+		seen := map[rune]bool{}
+		for _, r := range p {
+			if !seen[r] {
+				seen[r] = true
+				freq[r]++
+			}
+		}
+	}
+	for _, t := range c.tmpls {
+		count(t.must)
+	}
+	for _, k := range c.segs {
+		count(k)
+	}
+	rarest := func(p string) rune {
+		best, n := rune(-1), 0
+		for _, r := range p {
+			if best < 0 || freq[r] < n {
+				best, n = r, freq[r]
+			}
+		}
+		return best
+	}
+	c.tmplIdx, c.segIdx = map[rune][]int32{}, map[rune][]int32{}
+	for i, t := range c.tmpls {
+		if t.must == "" {
+			c.tmplAny = append(c.tmplAny, int32(i))
+			continue
+		}
+		r := rarest(t.must)
+		c.tmplIdx[r] = append(c.tmplIdx[r], int32(i))
+	}
+	for i, k := range c.segs {
+		r := rarest(k)
+		c.segIdx[r] = append(c.segIdx[r], int32(i))
+	}
+}
+
+// candidates 返回下标不小于 from、且可能出现在 s 中的模式（升序）：s 含有该模式的索引字符，或模式属于 always。
+// 结果追加到 out[:0]。每个模式只挂在一个字符下，各字符的列表互不相交，合并后无需去重。
+func candidates(idx map[rune][]int32, always []int32, s string, from int32, out []int32) []int32 {
+	out = out[:0]
+	for _, i := range always {
+		if i >= from {
+			out = append(out, i)
+		}
+	}
+	// 同一个字符只查一次：ASCII 与常用汉字用位图去重，其余字符（全角标点等）很少，线性查找即可
+	var ascii [2]uint64
+	var han [(hanHi - hanLo + 64) / 64]uint64
+	var otherBuf [16]rune
+	other := otherBuf[:0]
+	for _, r := range s {
+		switch {
+		case r < 128:
+			if ascii[r>>6]&(1<<(r&63)) != 0 {
+				continue
+			}
+			ascii[r>>6] |= 1 << (r & 63)
+		case r >= hanLo && r <= hanHi:
+			o := r - hanLo
+			if han[o>>6]&(1<<(o&63)) != 0 {
+				continue
+			}
+			han[o>>6] |= 1 << (o & 63)
+		default:
+			if slices.Contains(other, r) {
+				continue
+			}
+			other = append(other, r)
+		}
+		for _, i := range idx[r] {
+			if i >= from {
+				out = append(out, i)
+			}
+		}
+	}
+	slices.Sort(out)
+	return out
+}
+
+// parseFill 把译文模板解析为固定文本与参数序号，支持 %% 与 %[n]x 形式的显式序号。
+func parseFill(out string) []fillPart {
+	var parts []fillPart
+	var lit strings.Builder
 	next := 0
 	prev := 0
 	for _, loc := range verbRe.FindAllStringIndex(out, -1) {
-		sb.WriteString(out[prev:loc[0]])
+		lit.WriteString(out[prev:loc[0]])
 		prev = loc[1]
 		spec := out[loc[0]:loc[1]]
 		if spec == "%%" {
-			sb.WriteByte('%')
+			lit.WriteByte('%')
 			continue
 		}
 		idx := next
@@ -317,11 +439,31 @@ func (t *tmpl) fill(lang string, args []string) string {
 		} else {
 			next++
 		}
-		if idx >= 0 && idx < len(args) {
-			sb.WriteString(args[idx])
+		// 序号无效的动词不输出任何内容，但仍要断开，保证固定文本的顺序
+		parts = append(parts, fillPart{lit: lit.String(), arg: max(idx, -1)})
+		lit.Reset()
+	}
+	lit.WriteString(out[prev:])
+	return append(parts, fillPart{lit: lit.String(), arg: -1})
+}
+
+// fill 把参数代入译文模板。
+func (t *tmpl) fill(args []string) string {
+	n := 0
+	for _, p := range t.parts {
+		n += len(p.lit)
+		if p.arg >= 0 && p.arg < len(args) {
+			n += len(args[p.arg])
 		}
 	}
-	sb.WriteString(out[prev:])
+	var sb strings.Builder
+	sb.Grow(n)
+	for _, p := range t.parts {
+		sb.WriteString(p.lit)
+		if p.arg >= 0 && p.arg < len(args) {
+			sb.WriteString(args[p.arg])
+		}
+	}
 	return sb.String()
 }
 
@@ -353,9 +495,25 @@ func TrExact(lang, s string) string {
 	return s
 }
 
-func hasHan(s string) bool {
-	for _, r := range s {
-		if r >= 0x4e00 && r <= 0x9fff {
+// 源码文案里的汉字范围（CJK 统一表意文字基本区），UTF-8 编码为 E4 B8 80 ~ E9 BF BF
+const (
+	hanLo = 0x4e00
+	hanHi = 0x9fff
+)
+
+// hasHan 判断 s 是否含有汉字。汉字的 UTF-8 首字节只可能是 0xE4~0xE9，先按字节找到候选位置再解码确认，
+// 纯 ASCII 的内容（访问日志、配置数据）不必逐个字符解码。
+func hasHan[T string | []byte](s T) bool {
+	for i := 0; i+2 < len(s); i++ {
+		if b := s[i]; b < 0xe4 || b > 0xe9 {
+			continue
+		}
+		// 首字节之后必须是两个后续字节（10xxxxxx），否则不是合法的三字节编码
+		if s[i+1]&0xc0 != 0x80 || s[i+2]&0xc0 != 0x80 {
+			continue
+		}
+		r := rune(s[i]&0x0f)<<12 | rune(s[i+1]&0x3f)<<6 | rune(s[i+2]&0x3f)
+		if r >= hanLo && r <= hanHi {
 			return true
 		}
 	}
@@ -375,23 +533,16 @@ func (c *catalog) translate(lang, s string, depth int) string {
 	if v, ok := c.exact[s]; ok {
 		return v
 	}
-	if depth == 0 {
-		c.cacheMu.Lock()
-		v, ok := c.cache[s]
-		c.cacheMu.Unlock()
-		if ok {
-			return v
-		}
-		out := c.translateSlow(lang, s, depth)
-		c.cacheMu.Lock()
-		if len(c.cache) >= 8192 {
-			c.cache = map[string]string{}
-		}
-		c.cache[s] = out
-		c.cacheMu.Unlock()
-		return out
+	// 整句与第一层参数（如“失败: <内层错误>”里的内层错误）走缓存；更深的嵌套很少见，直接计算
+	if depth > 1 {
+		return c.translateSlow(lang, s, depth)
 	}
-	return c.translateSlow(lang, s, depth)
+	if v, ok := c.cache.get(s); ok {
+		return v
+	}
+	out := c.translateSlow(lang, s, depth)
+	c.cache.put(s, out)
+	return out
 }
 
 func (c *catalog) translateSlow(lang, s string, depth int) string {
@@ -401,8 +552,12 @@ func (c *catalog) translateSlow(lang, s string, depth int) string {
 	if depth > 4 {
 		return s
 	}
-	// 先尝试整句匹配，再对句中出现的已知模板逐段替换（如“加载失败: <内层错误>”）
-	for i, t := range c.tmpls {
+	var buf [48]int32
+	// 先尝试整句匹配，再对句中出现的已知模板逐段替换（如“加载失败: <内层错误>”）。
+	// 只尝试固定片段可能出现在句中的模板，顺序与逐个尝试全部模板相同
+	cands := candidates(c.tmplIdx, c.tmplAny, s, 0, buf[:0])
+	for ci, i := range cands {
+		t := c.tmpls[i]
 		if t.must != "" && !strings.Contains(s, t.must) {
 			continue
 		}
@@ -410,41 +565,52 @@ func (c *catalog) translateSlow(lang, s string, depth int) string {
 			// 句中还出现了更具体的模板时改走逐段替换：带前缀的日志行（“[warn] [auth] 来自 x 的登录失败: ...”）
 			// 会被“%s失败: %v”这类通用模板整句匹配，前缀连同具体句子落进参数里而无法翻译。
 			// 只有以动词开头的模板会把前缀吞进参数；以字面量开头的模板已锚定句首，整句匹配更准确
-			if t.lead && c.longerInside(s, i) {
+			if t.lead && c.longerInside(s, cands[:ci], t.nlit) {
 				break
 			}
-			return t.fill(lang, c.capture(lang, s, m, depth))
+			return t.fill(c.capture(lang, s, m, depth))
 		}
 	}
 	out := s
-	for _, t := range c.tmpls {
+	for ci := 0; ci < len(cands); ci++ {
 		if !hasHan(out) {
 			break
 		}
+		t := c.tmpls[cands[ci]]
 		if t.must != "" && !strings.Contains(out, t.must) {
 			continue
 		}
 		cur := out
 		out = replaceAllIndex(t, cur, func(m []int) string {
-			return t.fill(lang, c.capture(lang, cur, m, depth))
+			return t.fill(c.capture(lang, cur, m, depth))
 		})
+		if out != cur {
+			// 替换进来的译文可能带来新的字符，后面的模板按新内容重新筛选
+			cands = candidates(c.tmplIdx, c.tmplAny, out, cands[ci]+1, cands[:0])
+			ci = -1
+		}
 	}
 	// 最后替换拼接出来的固定前缀/片段
-	for _, k := range c.segs {
+	segs := candidates(c.segIdx, nil, out, 0, cands[:0])
+	for ci := 0; ci < len(segs); ci++ {
 		if !hasHan(out) {
 			break
 		}
+		k := c.segs[segs[ci]]
 		if strings.Contains(out, k) {
 			out = strings.ReplaceAll(out, k, c.exact[k])
+			segs = candidates(c.segIdx, nil, out, segs[ci]+1, segs[:0])
+			ci = -1
 		}
 	}
 	return out
 }
 
-// longerInside 判断字面量比 tmpls[i] 更多的模板是否出现在句中（tmpls 已按字面量长度降序排列）。
-func (c *catalog) longerInside(s string, i int) bool {
-	for _, t := range c.tmpls[:i] {
-		if t.nlit <= c.tmpls[i].nlit {
+// longerInside 判断字面量比 nlit 更多的模板是否出现在句中；before 为排在当前模板之前的候选（按字面量长度降序）。
+func (c *catalog) longerInside(s string, before []int32, nlit int) bool {
+	for _, i := range before {
+		t := c.tmpls[i]
+		if t.nlit <= nlit {
 			break
 		}
 		if t.must != "" && !strings.Contains(s, t.must) {

@@ -23,7 +23,7 @@ func TestTextRedaction(t *testing.T) {
 		{"请求 https://dav.example.com/path?token=abc", "请求 https://<url>"},
 		{"连接 unix:///var/run/docker.sock", "连接 unix:///var/run/docker.sock"},
 		{"password=hunter2 ok", "password=<redacted> ok"},
-		{"Authorization: Bearer abcdef", "Authorization: <redacted> <redacted>"},
+		{"Authorization: Bearer abcdef", "Authorization: <redacted>"},
 		{"mac aa:bb:cc:dd:ee:ff", "mac <mac>"},
 		{"密钥 " + strings.Repeat("a1B2", 10), "密钥 <secret>"},
 		{"时间 10:30:45 正常", "时间 10:30:45 正常"},
@@ -192,6 +192,62 @@ func TestHostnameWithDashReplaced(t *testing.T) {
 	for _, c := range cases {
 		if got := r.Text(c.in); got != c.want {
 			t.Errorf("Text(%q) = %q，应为 %q", c.in, got, c.want)
+		}
+	}
+}
+
+// 自由文本里各种写法的凭据都要去掉：请求头的全部内容、带前后缀的密钥名称、以空白分隔取值的命令行参数。
+func TestTextRedactsCredentialForms(t *testing.T) {
+	r := NewRedactor("")
+	leaks := []string{
+		// Authorization 的值是“方案 凭据”两段，Cookie 是多段
+		"请求头 Authorization: Basic dXNlcjpodW50ZXIy",
+		"Proxy-Authorization: Digest username=\"bob\", response=\"6629fae49393a05397450978507c4ef1\"",
+		"curl -H 'Authorization: Basic dXNlcjpodW50ZXIy' https://x.example/",
+		"Cookie: sid=s3ssion-value; theme=dark; token=tok-value-1",
+		"Set-Cookie: gately_token=eyJhbGciOi.payload.sig; Path=/; HttpOnly",
+		"认证失败 basic dXNlcjpodW50ZXIy",
+		// 关键词前后带其他字符的名称
+		"ET_NETWORK_SECRET=et-secret-value",
+		"client_secret: cs-value-9",
+		"X-Api-Key: xk-value-7",
+		"TS_AUTHKEY=tskey-auth-kABC123",
+		`{"networkSecret":"ns-value-5","accessKeyId":"AKIAIOSFODNN7EXAMPLE"}`,
+		"private_key=pk-value-3",
+		// 以空白分隔取值的命令行参数
+		"启动参数 --auth-key tskey-auth-kDEF456 --hostname nas",
+		"netbird up --setup-key 1B2C3D4E-setup-value",
+		"frpc --token frp-token-value -c frpc.toml",
+		"mysql --password hunter2-db",
+		"命令 --api-key=ak-value-1 --secret sk-value-2",
+		"ssh -key /root/.ssh/id_ed25519_private",
+	}
+	secrets := []string{
+		"dXNlcjpodW50ZXIy", "6629fae49393a05397450978507c4ef1", "s3ssion-value", "tok-value-1", "eyJhbGciOi", "payload.sig",
+		"et-secret-value", "cs-value-9", "xk-value-7", "tskey-auth-kABC123", "ns-value-5", "AKIAIOSFODNN7EXAMPLE", "pk-value-3",
+		"tskey-auth-kDEF456", "1B2C3D4E-setup-value", "frp-token-value", "hunter2-db", "ak-value-1", "sk-value-2", "id_ed25519_private",
+	}
+	for _, in := range leaks {
+		got := r.Text(in)
+		for _, s := range secrets {
+			if strings.Contains(got, s) {
+				t.Errorf("Text(%q) = %q，仍含 %q", in, got, s)
+			}
+		}
+	}
+	// 不是凭据的内容保留，诊断信息不被无谓地抹掉
+	keeps := []struct{ in, want string }{
+		{"读取 tokens.json: permission denied", "读取 tokens.json: permission denied"},
+		{"basic authentication failed", "basic authentication failed"},
+		{"启动参数 --hostname nas --port 8080", "启动参数 --hostname nas --port 8080"},
+		{"--keepalive 30 --no-tun", "--keepalive 30 --no-tun"},
+		{"frpc --token frp-token-value -c frpc.toml", "frpc --token <redacted> -c frpc.toml"},
+		{"password=hunter2 ok", "password=<redacted> ok"},
+		{"--secret --verbose", "--secret --verbose"},
+	}
+	for _, c := range keeps {
+		if got := r.Text(c.in); got != c.want {
+			t.Errorf("Text(%q) = %q，期望 %q", c.in, got, c.want)
 		}
 	}
 }

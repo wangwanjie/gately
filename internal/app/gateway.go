@@ -18,6 +18,7 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -113,11 +114,14 @@ func (a *App) gatewayHandler(prefix string, next http.Handler) http.Handler {
 		r2.RemoteAddr = gatewayClientAddr(r)
 		r2.Header.Del("X-Real-IP")
 		r2.Header.Del("X-Forwarded-For")
-		// 网关转发时 Host 不带端口，而浏览器的 Origin 带端口；主机名一致时以 Origin 为准，跨源校验与 Passkey 才能通过
-		if origin := r.Header.Get("Origin"); origin != "" {
-			if o, err := url.Parse(origin); err == nil && o.Host != "" && strings.EqualFold(hostOnly(o.Host), hostOnly(r.Host)) {
-				r2.Host = o.Host
-			}
+		// 网关转发时 Host 不带端口，而浏览器的 Origin 带端口：只有确认 Origin 就是管理界面所在的页面来源时才以它为准
+		// （跨源校验与 Passkey 才能通过）。只比主机名是不够的：同一台 NAS 上其他端口的页面主机名相同，
+		// 浏览器会带上会话 Cookie（Cookie 不区分端口），见 gatewayOriginHost
+		if host, present, trusted := a.gatewayOriginHost(r, r2.URL.Path); trusted {
+			r2.Host = host
+		} else if present && originGuarded(r) {
+			httpx.Error(w, http.StatusForbidden, "拒绝跨源请求")
+			return
 		}
 		r2 = r2.WithContext(context.WithValue(r.Context(), gatewayKey{}, prefix))
 		// 审计日志标注经由飞牛网关，提示客户端地址未经核实
@@ -132,6 +136,150 @@ func (a *App) gatewayHandler(prefix string, next http.Handler) http.Handler {
 		}
 		next.ServeHTTP(out, r2)
 	})
+}
+
+// ---- 页面来源确认 ----
+//
+// 经网关访问时 Gately 不知道浏览器地址栏里的端口，无法像直接访问那样拿 Origin 与 Host 逐字比较。
+// 这里改为确认“这个 Origin 的页面就是管理界面自己”，依据有两种：
+//   - 浏览器写入的 Sec-Fetch-Site: same-origin。这个请求头页面脚本无法伪造，同主机其他端口的页面发来的请求
+//     是 same-site，其他站点是 cross-site；
+//   - 之前确认过的来源。不带 Sec-Fetch-Site 的请求（部分浏览器的 WebSocket 握手、较旧的浏览器）按此判断。
+//     来源在两种情况下记为已确认：带着管理员会话且浏览器标明 same-origin 的请求，以及管理员用密码或 Passkey 登录成功的请求。
+//
+// 已确认的来源保存在配置目录，重启后仍然有效（已打开的终端页面重连时不必先做一次别的操作）。
+
+// gatewayOriginsName 是保存已确认来源的配置名；maxGatewayOrigins 为保留的数量上限，超出时丢弃最早的。
+const (
+	gatewayOriginsName = "gateway_origins"
+	maxGatewayOrigins  = 16
+)
+
+// gatewayOrigins 是经网关访问时已确认的页面来源（scheme://host[:port]，小写）。
+type gatewayOrigins struct {
+	mu     sync.Mutex
+	loaded bool
+	list   []string
+}
+
+type gatewayOriginsFile struct {
+	Origins []string `json:"origins"`
+}
+
+// originKey 把 Origin 请求头规范成 scheme://host[:port]（小写）；不是 http/https 来源时返回空串。
+func originKey(origin string) (key string, u *url.URL) {
+	u, err := url.Parse(origin)
+	if err != nil || u.Host == "" || (u.Scheme != "http" && u.Scheme != "https") {
+		return "", nil
+	}
+	return strings.ToLower(u.Scheme + "://" + u.Host), u
+}
+
+func (a *App) loadGatewayOriginsLocked() {
+	if a.gwOrigins.loaded {
+		return
+	}
+	a.gwOrigins.loaded = true
+	var f gatewayOriginsFile
+	if _, err := a.store.Load(gatewayOriginsName, &f); err != nil {
+		a.sysLogs.Add(logbuf.LevelWarn, "gateway", "读取已确认的网关页面来源失败: "+err.Error())
+		return
+	}
+	for _, o := range f.Origins {
+		if key, _ := originKey(o); key != "" && len(a.gwOrigins.list) < maxGatewayOrigins {
+			a.gwOrigins.list = append(a.gwOrigins.list, key)
+		}
+	}
+}
+
+// gatewayOriginKnown 判断来源是否已确认。
+func (a *App) gatewayOriginKnown(key string) bool {
+	a.gwOrigins.mu.Lock()
+	defer a.gwOrigins.mu.Unlock()
+	a.loadGatewayOriginsLocked()
+	for _, o := range a.gwOrigins.list {
+		if o == key {
+			return true
+		}
+	}
+	return false
+}
+
+// learnGatewayOrigin 把来源记为已确认并保存。
+func (a *App) learnGatewayOrigin(key string) {
+	if key == "" {
+		return
+	}
+	a.gwOrigins.mu.Lock()
+	defer a.gwOrigins.mu.Unlock()
+	a.loadGatewayOriginsLocked()
+	for _, o := range a.gwOrigins.list {
+		if o == key {
+			return
+		}
+	}
+	a.gwOrigins.list = append(a.gwOrigins.list, key)
+	if n := len(a.gwOrigins.list); n > maxGatewayOrigins {
+		a.gwOrigins.list = a.gwOrigins.list[n-maxGatewayOrigins:]
+	}
+	if err := a.store.Save(gatewayOriginsName, gatewayOriginsFile{Origins: a.gwOrigins.list}); err != nil {
+		a.sysLogs.Add(logbuf.LevelWarn, "gateway", "保存已确认的网关页面来源失败: "+err.Error())
+	}
+}
+
+// learnGatewayLoginOrigin 在管理员用密码或 Passkey 登录成功后调用：请求经网关而来时把它的 Origin 记为已确认。
+// 能完成登录说明页面拿到了管理员密码或通过了 Passkey 的来源校验，不会是别的端口上的页面。
+// 只读账号登录、凭飞牛登录态登录（POST /api/login/fnos，不需要任何凭据）都不能据此确认来源。
+func (a *App) learnGatewayLoginOrigin(r *http.Request) {
+	if _, viaGateway := gatewayPrefix(r); !viaGateway {
+		return
+	}
+	if key, u := originKey(r.Header.Get("Origin")); key != "" && strings.EqualFold(u.Host, r.Host) {
+		a.learnGatewayOrigin(key)
+	}
+}
+
+// originGuarded 判断请求是否需要确认页面来源：修改状态的请求与 WebSocket 握手。
+// 其余 GET 请求即使来自别的页面，浏览器也不会把响应交给它（没有跨源许可）。
+func originGuarded(r *http.Request) bool {
+	switch r.Method {
+	case http.MethodGet, http.MethodHead, http.MethodOptions:
+		return strings.EqualFold(r.Header.Get("Upgrade"), "websocket")
+	}
+	return true
+}
+
+// gatewayOriginHost 检查网关转发来的请求的 Origin：present 表示请求带有 Origin，trusted 表示已确认它就是管理界面
+// 所在的页面来源，此时 host 为该来源的主机与端口，调用方用它替换不带端口的 Host。path 为去掉网关前缀后的路径。
+func (a *App) gatewayOriginHost(r *http.Request, path string) (host string, present, trusted bool) {
+	origin := r.Header.Get("Origin")
+	if origin == "" {
+		return "", false, false
+	}
+	key, u := originKey(origin)
+	if key == "" || !strings.EqualFold(hostOnly(u.Host), hostOnly(r.Host)) {
+		return "", true, false
+	}
+	switch strings.ToLower(strings.TrimSpace(r.Header.Get("Sec-Fetch-Site"))) {
+	case "same-origin":
+		// 带着管理员会话时把来源记下来，之后不带 Sec-Fetch-Site 的请求（如 WebSocket 握手）按它判断。
+		// 只认管理员会话：只读账号的持有者可以不经浏览器自己构造请求头，不能让他替别的端口“确认”来源
+		if id, ok := a.auth.Identify(auth.TokenFromRequest(r)); ok && id.Role == auth.RoleAdmin {
+			a.learnGatewayOrigin(key)
+		}
+		return u.Host, true, true
+	case "same-site", "cross-site":
+		// 浏览器已标明请求来自别的来源，包括同主机的其他端口
+		return "", true, false
+	}
+	if a.gatewayOriginKnown(key) {
+		return u.Host, true, true
+	}
+	// 没有 Sec-Fetch-Site 的浏览器首次登录：登录与退出接口本身不依赖已有会话，放行后由登录成功确认来源
+	if path == "/api/logout" || path == "/api/login" || strings.HasPrefix(path, "/api/login/") {
+		return u.Host, true, true
+	}
+	return "", true, false
 }
 
 // gatewayClientAddr 依次从 X-Real-IP、X-Forwarded-For 最右侧取得客户端地址，返回 host:port 形式；取不到时为空。
@@ -248,6 +396,42 @@ func injectBase(index []byte, prefix string) []byte {
 	return []byte(strings.Replace(string(index), "<head>", meta, 1))
 }
 
+// ---- 登录限流的来源 ----
+
+// gatewayLimitPrefix 是经统一网关登录时限流键的前缀，后接飞牛用户名。
+const gatewayLimitPrefix = "fnOS:"
+
+// loginSource 返回登录限流与 Passkey 挑战配额使用的来源键，以及客户端地址 ip 是否可信。
+//
+// 直接访问时来源就是客户端地址。经统一网关访问时客户端地址不可信：浏览器直连网关时它是空的，所有人会落进同一个限流桶，
+// 几次错误密码就能把管理员也挡在外面；前面有反向代理时它取自 X-Real-IP，而这个请求头在直连时可以由客户端随意填写，
+// 轮换它就能绕过按地址的锁定。网关转发的请求都已通过飞牛的登录校验，并带有飞牛用户名（X-Trim-Username，见 gatewaySSOUser），
+// 因此改按飞牛用户限流：一个飞牛用户只能耗尽自己的额度。
+// 地址不可信时，登录失败事件也不带地址（见 authFailedFields），入侵防护不会据此封禁一个可以伪造的地址。
+func (a *App) loginSource(r *http.Request, ip string) (key string, ipTrusted bool) {
+	if _, viaGateway := gatewayPrefix(r); !viaGateway {
+		return ip, true
+	}
+	if user := clipActor(strings.TrimSpace(r.Header.Get("X-Trim-Username"))); user != "" {
+		return gatewayLimitPrefix + user, false
+	}
+	return ip, false
+}
+
+// loginSourceKnown 判断登录来源是否不计入“陌生来源”的全局失败预算：曾成功登录过的地址，以及按飞牛用户限流的来源。
+// 全局预算防的是轮换大量地址的爆破；飞牛用户不能凭空增加，各自的失败次数上限已经足够。
+func (a *App) loginSourceKnown(src string) bool {
+	return strings.HasPrefix(src, gatewayLimitPrefix) || a.loginIPs.IsKnown(src)
+}
+
+// authFailedFields 返回登录失败事件的字段：客户端地址可信时带上 ip，供入侵防护按地址计数与封禁。
+func authFailedFields(ip string, ipTrusted bool) map[string]string {
+	if !ipTrusted {
+		return map[string]string{}
+	}
+	return map[string]string{"ip": ip}
+}
+
 // ---- 飞牛登录态自动登录 ----
 
 // gatewaySSOUser 返回可凭飞牛登录态登录的飞牛用户名：请求须经统一网关、已开启该功能，且网关标明是飞牛管理员。
@@ -292,7 +476,7 @@ func (a *App) issueGatewaySession(w http.ResponseWriter, r *http.Request, user s
 	http.SetCookie(w, &http.Cookie{
 		Name: auth.CookieName, Value: token, Path: "/", Expires: exp, HttpOnly: true, SameSite: http.SameSiteStrictMode,
 		// 网关以 HTTPS 对外提供时，Cookie 只经 HTTPS 发送
-		Secure: r.TLS != nil || strings.EqualFold(r.Header.Get("X-Forwarded-Proto"), "https"),
+		Secure: cookieSecure(r),
 	})
 	ip := httpx.ClientIP(r)
 	// 整页跳转带的是浏览器自身的语言，不代表界面语言，不在这里记录；进入管理界面后由前端上报

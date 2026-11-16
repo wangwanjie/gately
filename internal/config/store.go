@@ -12,6 +12,8 @@ import (
 	"path/filepath"
 	"regexp"
 	"sync"
+
+	"github.com/wangwanjie/gately/internal/fsperm"
 )
 
 // 模块名只允许小写字母、数字、下划线和短横线，防止路径穿越。
@@ -25,11 +27,13 @@ type Store struct {
 	history *historyConfig
 }
 
-// Open 打开（必要时创建）配置目录。
+// Open 打开（必要时创建）配置目录，并把它登记为受保护目录：目录里有会话签名密钥、令牌与私钥，
+// 存储挂载、静态站点与文件服务据此拒绝把它（或包含它的目录）提供出去，见 fsperm.Protect。
 func Open(dir string) (*Store, error) {
 	if err := os.MkdirAll(dir, 0o700); err != nil {
 		return nil, fmt.Errorf("创建配置目录失败: %w", err)
 	}
+	fsperm.Protect(dir)
 	return &Store{dir: dir}, nil
 }
 

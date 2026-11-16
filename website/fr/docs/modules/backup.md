@@ -79,7 +79,7 @@ Lorsqu'une phrase secrète est définie, les sauvegardes sont chiffrées ainsi :
 - Chiffrement : AES-256-GCM, avec un nonce aléatoire de 12 octets.
 - Format de fichier : le magic `GATELYBK1`, le sel, le nonce et le texte chiffré concaténés dans cet ordre. Le magic sert aussi de données authentifiées additionnelles pour GCM.
 
-La phrase secrète est stockée uniquement dans `backup.json` du répertoire de configuration. Si la phrase secrète est perdue, la sauvegarde ne peut pas être déchiffrée.
+La phrase secrète est stockée uniquement dans `backup.json` du répertoire de configuration. Si la phrase secrète est perdue, la sauvegarde ne peut pas être déchiffrée. La phrase secrète ne peut être consultée et modifiée qu'après connexion à l'interface d'administration ; les jetons d'API ne peuvent ni la lire, ni la modifier, ni l'effacer, mais les autres réglages de sauvegarde restent modifiables avec un jeton.
 
 ::: warning Remarque
 Lorsque `backup.json` et les fichiers de sauvegarde se trouvent sur la même machine, la protection par phrase secrète apporte peu. Écrivez les sauvegardes chiffrées sur un montage situé sur un autre appareil, et notez la phrase secrète séparément.

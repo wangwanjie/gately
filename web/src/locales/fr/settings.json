@@ -189,6 +189,13 @@
   },
   "runtime": {
     "title": "Paramètres d'exécution",
+    "logLevel": "Niveau de journalisation",
+    "logLevelDefault": "Par défaut (info et supérieur)",
+    "logLevelDebug": "Débogage et supérieur (tout)",
+    "logLevelInfo": "Info et supérieur",
+    "logLevelWarn": "Avertissement et supérieur",
+    "logLevelError": "Erreurs uniquement",
+    "logLevelHelp": "Seuls les journaux d'exécution du niveau sélectionné ou supérieur sont enregistrés ; les niveaux inférieurs n'atteignent ni les pages de journaux, ni les fichiers journaux, ni la sortie d'erreur standard (docker logs). S'applique dès l'enregistrement. Le niveau débogage inclut une ligne par connexion pour la redirection de ports et le routage par protocole, ce qui ajoute une charge sensible lorsque les connexions sont nombreuses ; les journaux d'accès des services Web sont de niveau info. « Par défaut » utilise la variable d'environnement GATELY_LOG_LEVEL, ou info et supérieur si elle n'est pas définie",
     "logLines": "Lignes de journal conservées",
     "logLinesHelp": "Nombre de lignes de journal que chaque module conserve en mémoire ; avec la persistance activée, elles sont restaurées depuis le disque après un redémarrage",
     "logPersist": "Conserver les journaux sur disque",
