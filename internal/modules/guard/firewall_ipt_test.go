@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/netip"
 	"slices"
+	"strconv"
 	"strings"
 	"sync"
 	"testing"
@@ -13,11 +14,12 @@ import (
 	"github.com/wangwanjie/gately/internal/logbuf"
 )
 
-// fakeIPT 模拟 iptables-legacy / ipset 命令：记录调用，按地址族返回 iptables-save 的输出。
+// fakeIPT 模拟 iptables-legacy / ipset 命令：记录调用，按地址族与表返回 iptables-save 的输出。
 type fakeIPT struct {
 	mu    sync.Mutex
 	calls []string
-	// save 为各地址族 iptables-save -c -t mangle 的输出，键为 restore 命令名中的 iptables / ip6tables
+	// save 为各地址族 iptables-save -c -t mangle 的输出，键为命令名中的 iptables / ip6tables；
+	// nat 表的输出键为 "iptables nat" / "ip6tables nat"，没有时视为 nat 表为空
 	save map[string]string
 	// ipsetSave 为 ipset save <集合> 的输出
 	ipsetSave map[string]string
@@ -35,7 +37,14 @@ func (f *fakeIPT) run(_ context.Context, stdin, bin string, args ...string) (str
 	}
 	switch {
 	case strings.HasSuffix(bin, "-save"):
-		return f.save[strings.TrimSuffix(bin, "-legacy-save")], nil
+		key := strings.TrimSuffix(bin, "-legacy-save")
+		if slices.Contains(args, "nat") {
+			if out, ok := f.save[key+" nat"]; ok {
+				return out, nil
+			}
+			return "*nat\n:PREROUTING ACCEPT [0:0]\nCOMMIT\n", nil
+		}
+		return f.save[key], nil
 	case bin == "ipset" && len(args) == 2 && args[0] == "save":
 		return f.ipsetSave[args[1]], nil
 	}
@@ -80,7 +89,7 @@ func newFakeIPTBackend(fake *fakeIPT) *iptBackend {
 	}
 }
 
-// goodSave 返回规则已正确写入时 iptables-save 的输出：自有链齐全，跳转在第一位。
+// goodSave 返回规则已正确写入时 mangle 表 iptables-save 的输出：自有链齐全，跳转在第一位。
 func goodSave(extraPre string) string {
 	var b strings.Builder
 	b.WriteString("*mangle\n:PREROUTING ACCEPT [0:0]\n:INPUT ACCEPT [0:0]\n")
@@ -88,14 +97,29 @@ func goodSave(extraPre string) string {
 		b.WriteString(":" + c + " - [0:0]\n")
 	}
 	b.WriteString(extraPre)
-	b.WriteString("[1:60] -A PREROUTING -j GATELY_PRE\n[0:0] -A INPUT -j GATELY_IN\n")
+	b.WriteString("[1:60] -A PREROUTING -j GATELY_PRE\n")
 	b.WriteString("[7:420] -A GATELY_PRE -m set --match-set gately_ban4 src -j DROP\n")
-	b.WriteString("[2:120] -A GATELY_PRE -m set --match-set gately_trap4 src -j DROP\n")
 	b.WriteString("[3:180] -A GATELY_DENY -s 198.51.100.0/24 -j DROP\n")
-	b.WriteString("[4:240] -A GATELY_TRAP -j SET --add-set gately_trap4 src --exist --timeout 3600\n")
-	b.WriteString("[5:300] -A GATELY_SCANHIT -j SET --add-set gately_scan4 src --exist --timeout 3600\n")
 	b.WriteString("COMMIT\n")
 	return b.String()
+}
+
+// goodNat 返回重定向规则已写入时 nat 表 iptables-save 的输出：自有链齐全，跳转在 Docker 之后。
+func goodNat() string {
+	var b strings.Builder
+	b.WriteString("*nat\n:PREROUTING ACCEPT [0:0]\n:DOCKER - [0:0]\n")
+	for _, c := range iptNatChains {
+		b.WriteString(":" + c + " - [0:0]\n")
+	}
+	b.WriteString("[9:540] -A PREROUTING -m addrtype --dst-type LOCAL -j DOCKER\n[4:240] -A PREROUTING -j GATELY_NAT\nCOMMIT\n")
+	return b.String()
+}
+
+// legacySave 返回旧版本写入的 mangle 表：INPUT 跳到 GATELY_IN，诱饵端口与扫描检测在内核中直接封禁。
+func legacySave() string {
+	return "*mangle\n:PREROUTING ACCEPT [0:0]\n:INPUT ACCEPT [0:0]\n:GATELY_PRE - [0:0]\n:GATELY_DENY - [0:0]\n:GATELY_IN - [0:0]\n:GATELY_TRAP - [0:0]\n:GATELY_SCAN - [0:0]\n:GATELY_SCANHIT - [0:0]\n" +
+		"[1:60] -A PREROUTING -j GATELY_PRE\n[0:0] -A INPUT -j GATELY_IN\n[2:120] -A GATELY_PRE -m set --match-set gately_trap4 src -j DROP\n" +
+		"[4:240] -A GATELY_TRAP -j SET --add-set gately_trap4 src --exist --timeout 3600\nCOMMIT\n"
 }
 
 func TestMultiportChunks(t *testing.T) {
@@ -131,64 +155,89 @@ func TestIPTRules(t *testing.T) {
 	deny := []netip.Prefix{netip.MustParsePrefix("198.51.100.0/24"), netip.MustParsePrefix("2001:db8::/32")}
 	open := []portRange{{22, 22}, {8000, 8100}}
 	trap := []portRange{{23, 23}}
+	rp := redirPorts{trap: 40001, scan: 40002}
 
-	r4 := iptRules(s, false, allow, deny, open, trap, true)
+	// mangle 表只丢弃封禁集合与网段封禁
+	r4 := iptRules(false, deny)
 	pre := strings.Join(r4[iptPre], "\n")
-	for _, want := range []string{"-A GATELY_PRE -i lo -j RETURN", "--ctdir REPLY -j RETURN", "--match-set gately_ban4 src -j DROP", "--match-set gately_scan4 src -j DROP", "-A GATELY_PRE -j GATELY_DENY"} {
+	for _, want := range []string{"-A GATELY_PRE -i lo -j RETURN", "--ctdir REPLY -j RETURN", "--match-set gately_ban4 src -j DROP", "-A GATELY_PRE -j GATELY_DENY"} {
 		if !strings.Contains(pre, want) {
 			t.Errorf("GATELY_PRE 缺少 %q:\n%s", want, pre)
 		}
 	}
+	if strings.Contains(pre, "trap") || strings.Contains(pre, "scan") {
+		t.Errorf("内核不应凭 SYN 丢弃诱饵或扫描来源:\n%s", pre)
+	}
 	if !slices.Equal(r4[iptDeny], []string{"-A GATELY_DENY -s 198.51.100.0/24 -j DROP"}) {
 		t.Errorf("IPv4 网段封禁不符: %v", r4[iptDeny])
 	}
-	in := strings.Join(r4[iptIn], "\n")
-	for _, want := range []string{"-s 10.0.0.0/8 -j RETURN", "--syn -m multiport --dports 23 -j GATELY_TRAP", "-p tcp --syn -j GATELY_SCAN"} {
-		if !strings.Contains(in, want) {
-			t.Errorf("GATELY_IN 缺少 %q:\n%s", want, in)
+	if !slices.Equal(iptRules(true, deny)[iptDeny], []string{"-A GATELY_DENY -s 2001:db8::/32 -j DROP"}) {
+		t.Errorf("IPv6 网段封禁不符")
+	}
+
+	// nat 表把诱饵端口与可疑来源的新连接重定向给 Gately 确认握手
+	n4 := iptNatRules(s, false, allow, open, trap, rp)
+	nat := strings.Join(n4[iptNat], "\n")
+	for _, want := range []string{"-A GATELY_NAT -i lo -j RETURN", "! -p tcp -j RETURN", "-p tcp ! --syn -j RETURN", "-m addrtype ! --dst-type LOCAL -j RETURN",
+		"-s 10.0.0.0/8 -j RETURN", "-p tcp -m multiport --dports 23 -j REDIRECT --to-ports 40001", "-p tcp -j GATELY_SCAN"} {
+		if !strings.Contains(nat, want) {
+			t.Errorf("GATELY_NAT 缺少 %q:\n%s", want, nat)
 		}
 	}
-	if strings.Contains(in, "fd00::") {
+	if strings.Contains(nat, "fd00::") {
 		t.Error("IPv4 链不应包含 IPv6 白名单")
 	}
-	if !strings.Contains(strings.Join(r4[iptTrap], "\n"), "--add-set gately_trap4 src --exist --timeout 600") {
-		t.Errorf("诱饵端口应按自身封禁时长加入集合: %v", r4[iptTrap])
+	if strings.Index(nat, "-s 10.0.0.0/8 -j RETURN") > strings.Index(nat, "REDIRECT") {
+		t.Errorf("白名单放行应在重定向之前:\n%s", nat)
 	}
-	scan := strings.Join(r4[iptScan], "\n")
-	if !strings.Contains(scan, "--dports 22,8000:8100 -j RETURN") || !strings.Contains(scan, "--hitcount 255 -j GATELY_SCANHIT") {
-		t.Errorf("扫描检测应先放行开放端口，阈值超过上限时按 255:\n%s", scan)
+	scan := strings.Join(n4[iptScan], "\n")
+	for _, want := range []string{"--dports 22,8000:8100 -j RETURN", "-m set --match-set gately_sus4 src -j REDIRECT --to-ports 40002", "--hitcount 255 -j GATELY_SUS"} {
+		if !strings.Contains(scan, want) {
+			t.Errorf("GATELY_SCAN 缺少 %q（阈值超过上限时按 255）:\n%s", want, scan)
+		}
+	}
+	sus := strings.Join(n4[iptSus], "\n")
+	if !strings.Contains(sus, "-j SET --add-set gately_sus4 src --exist --timeout 600") || !strings.Contains(sus, "-p tcp -j REDIRECT --to-ports 40002") {
+		t.Errorf("GATELY_SUS 应加入可疑来源集合并重定向:\n%s", sus)
+	}
+	if strings.Contains(nat+scan+sus, "DROP") {
+		t.Error("nat 表不应丢弃任何连接")
 	}
 
-	// IPv6：按 /64 计数；严格模式直接封禁
-	r6 := iptRules(s, true, allow, deny, open, trap, true)
-	if !strings.Contains(strings.Join(r6[iptScan], "\n"), "--mask "+v6Mask) {
-		t.Errorf("IPv6 计数应按 /64: %v", r6[iptScan])
-	}
-	if !slices.Equal(r6[iptDeny], []string{"-A GATELY_DENY -s 2001:db8::/32 -j DROP"}) {
-		t.Errorf("IPv6 网段封禁不符: %v", r6[iptDeny])
+	// IPv6：按 /64 计数；严格模式第一次即成为可疑来源
+	n6 := iptNatRules(s, true, allow, open, trap, rp)
+	if !strings.Contains(strings.Join(n6[iptScan], "\n"), "--mask "+v6Mask) || !strings.Contains(strings.Join(n6[iptNat], "\n"), "-s fd00::/8 -j RETURN") {
+		t.Errorf("IPv6 计数应按 /64: %v", n6)
 	}
 	s.Scan.IPv6Strict = true
-	r6 = iptRules(s, true, allow, deny, open, trap, true)
-	last := r6[iptScan][len(r6[iptScan])-1]
-	if last != "-A GATELY_SCAN -j GATELY_SCANHIT" || strings.Contains(strings.Join(r6[iptScan], "\n"), "recent") {
-		t.Errorf("严格模式应直接封禁: %v", r6[iptScan])
+	n6 = iptNatRules(s, true, allow, open, trap, rp)
+	last := n6[iptScan][len(n6[iptScan])-1]
+	if last != "-A GATELY_SCAN -j GATELY_SUS" || strings.Contains(strings.Join(n6[iptScan], "\n"), "recent") {
+		t.Errorf("严格模式应直接成为可疑来源: %v", n6[iptScan])
 	}
 
-	// 诱饵端口与扫描检测都关闭时没有 input 部分的规则
+	// 诱饵端口与扫描检测都关闭、或没有确认握手的监听端口时没有 nat 规则
 	s.Trap.Enable, s.Scan.Enable = false, false
-	if r := iptRules(s, false, allow, deny, open, trap, true); len(r[iptIn]) != 0 || len(r[iptScan]) != 0 {
-		t.Errorf("功能关闭时不应生成 input 规则: %v", r)
+	if r := iptNatRules(s, false, allow, open, trap, rp); len(r) != 0 {
+		t.Errorf("功能关闭时不应生成 nat 规则: %v", r)
+	}
+	s.Trap.Enable = true
+	if r := iptNatRules(s, false, allow, open, trap, redirPorts{}); len(r) != 0 {
+		t.Errorf("没有监听端口时不应生成 nat 规则: %v", r)
 	}
 	// 声明的链会被清空：只重写 GATELY_DENY 时只声明它
-	text := renderRestore([]string{iptDeny}, r4)
+	text := renderRestore("mangle", []string{iptDeny}, r4)
 	if strings.Contains(text, ":GATELY_PRE") || !strings.HasPrefix(text, "*mangle\n:GATELY_DENY - [0:0]\n") || !strings.HasSuffix(text, "COMMIT\n") {
 		t.Errorf("restore 内容不符:\n%s", text)
+	}
+	if text := renderRestore("nat", iptNatChains, n4); !strings.HasPrefix(text, "*nat\n:GATELY_NAT - [0:0]\n:GATELY_SCAN - [0:0]\n:GATELY_SUS - [0:0]\n") {
+		t.Errorf("nat 表 restore 内容不符:\n%s", text)
 	}
 }
 
 func TestIPTCountersAndJumps(t *testing.T) {
 	chains, lines := parseSave(goodSave(""))
-	if !chains[iptScanHit] || !chains["PREROUTING"] {
+	if !chains[iptDeny] || !chains["PREROUTING"] {
 		t.Fatalf("应识别声明的链: %v", chains)
 	}
 	_, padded := parseSave("[      5:       292] -A GATELY_DENY -s 192.168.18.8/32 -j DROP\n")
@@ -196,7 +245,7 @@ func TestIPTCountersAndJumps(t *testing.T) {
 		t.Fatalf("应解析补了空格的计数: %+v", padded)
 	}
 	d, h := iptCounters(lines)
-	if d["ban"] != 7 || d["trap"] != 2 || d["deny"] != 3 || h["trap"] != 4 || h["scan"] != 5 {
+	if d["ban"] != 7 || d["deny"] != 3 || len(h) != 0 {
 		t.Fatalf("计数不符: %v %v", d, h)
 	}
 
@@ -224,8 +273,19 @@ func TestIPTCountersAndJumps(t *testing.T) {
 	fake = &fakeIPT{save: map[string]string{"iptables": "*mangle\n:PREROUTING ACCEPT [0:0]\nCOMMIT\n", "ip6tables": goodSave("")}}
 	b = newFakeIPTBackend(fake)
 	fixed, _ = b.ensureJumps(context.Background())
-	if len(fixed) != 0 || len(fake.find("-I PREROUTING 1 -j GATELY_PRE")) != 1 || len(fake.find("-I INPUT 1 -j GATELY_IN")) != 1 || len(fake.find(" -D ")) != 0 {
+	if len(fixed) != 0 || len(fake.find("-I PREROUTING 1 -j GATELY_PRE")) != 1 || len(fake.find(" -D ")) != 0 {
 		t.Fatalf("缺失的跳转应直接插入: %v %v", fixed, fake.calls)
+	}
+
+	// nat 表：跳转只要求存在，缺失时追加到末尾（排在 Docker 之后），重复时删掉后追加一条
+	fake = &fakeIPT{}
+	b = newFakeIPTBackend(fake)
+	err = b.fixNatJump(context.Background(), map[bool]string{false: goodNat(), true: "*nat\n:PREROUTING ACCEPT [0:0]\n-A PREROUTING -j GATELY_NAT\n-A PREROUTING -j GATELY_NAT\nCOMMIT\n"})
+	if err != nil || len(fake.find("iptables-legacy -w -t nat")) != 0 {
+		t.Fatalf("IPv4 的 nat 跳转已存在，不应改动: %v %v", err, fake.calls)
+	}
+	if len(fake.find("ip6tables-legacy -w -t nat -D PREROUTING -j GATELY_NAT")) != 2 || len(fake.find("ip6tables-legacy -w -t nat -A PREROUTING -j GATELY_NAT")) != 1 {
+		t.Fatalf("重复的 nat 跳转应删掉后追加一条: %v", fake.calls)
 	}
 }
 
@@ -235,6 +295,7 @@ func iptFirewall(t *testing.T, fake *fakeIPT) (*firewall, *logbuf.Buffer) {
 	buf := logbuf.New(200, nil)
 	fw := newFirewall(buf.Logger("fw"))
 	fw.ipt = newFakeIPTBackend(fake)
+	t.Cleanup(func() { stopHandshakeForTest(fw) })
 	return fw, buf
 }
 
@@ -374,8 +435,11 @@ func TestFirewallIPTFlushAndStop(t *testing.T) {
 	}
 
 	ipt.reset()
+	ipt.mu.Lock()
+	ipt.save["iptables nat"] = goodNat()
+	ipt.mu.Unlock()
 	fw.stop()
-	for _, want := range []string{"-D PREROUTING -j GATELY_PRE", "-D INPUT -j GATELY_IN", "-X GATELY_SCANHIT", "ipset destroy gately_ban6"} {
+	for _, want := range []string{"-t mangle -D PREROUTING -j GATELY_PRE", "-t mangle -X GATELY_DENY", "-t nat -D PREROUTING -j GATELY_NAT", "-t nat -X GATELY_SUS", "ipset destroy gately_ban6", "ipset destroy gately_sus4"} {
 		if len(ipt.find(want)) == 0 {
 			t.Errorf("停止时应执行 %q: %v", want, ipt.calls)
 		}
@@ -385,21 +449,14 @@ func TestFirewallIPTFlushAndStop(t *testing.T) {
 	}
 }
 
-// 轮询：自有链被外部清除时重写；导入内核加入诱饵集合的来源并从集合删除
-func TestFirewallIPTPoll(t *testing.T) {
+// 开启诱饵端口与扫描检测：nat 表写入指向确认握手端口的重定向，跳转追加在 PREROUTING 末尾；
+// 轮询不再从集合导入来源；mangle 或 nat 的自有链被外部清除时完整重写
+func TestFirewallIPTPollAndRedirect(t *testing.T) {
 	cleanDefault(t)
-	ipt := &fakeIPT{
-		save:      map[string]string{"iptables": goodSave(""), "ip6tables": goodSave("")},
-		ipsetSave: map[string]string{"gately_trap4": "create gately_trap4 hash:ip family inet timeout 0\nadd gately_trap4 192.0.2.7 timeout 3590\n"},
-	}
+	ipt := &fakeIPT{save: map[string]string{"iptables": goodSave(""), "ip6tables": goodSave("")}}
 	fw, buf := iptFirewall(t, ipt)
-	var imported []string
-	fw.importFn = func(source string, addrs []netip.Addr, _ portHits) {
-		for _, a := range addrs {
-			imported = append(imported, source+":"+a.String())
-			banlist.Default.Ban(a.String(), banlist.Options{Duration: time.Hour, Source: source})
-		}
-	}
+	imported := 0
+	fw.importFn = func(string, []netip.Addr, portHits) { imported++ }
 	unsub := banlist.Default.Subscribe(fw.change)
 	defer unsub()
 	old := listeningPortsFn
@@ -409,23 +466,54 @@ func TestFirewallIPTPoll(t *testing.T) {
 	s := defaultSettings()
 	s.Firewall = true
 	s.Trap.Enable, s.Trap.Ports = true, "23"
+	s.Scan.Enable = true
 	fw.apply(ctx, s)
+	defer fw.stop()
+	st := fw.snapshot()
+	if !st.Active || !st.Redirect || !fw.kernelTrap() {
+		t.Fatalf("应生效且重定向可用: %+v", st)
+	}
+	fw.mu.Lock()
+	ports := fw.hs.ports
+	fw.mu.Unlock()
+	natRestore := ipt.find("iptables-legacy-restore --noflush", "*nat", ":GATELY_NAT - [0:0]")
+	if len(natRestore) != 1 || !strings.Contains(natRestore[0], "--dports 23 -j REDIRECT --to-ports "+strconv.Itoa(ports.trap)) ||
+		!strings.Contains(natRestore[0], "-j REDIRECT --to-ports "+strconv.Itoa(ports.scan)) {
+		t.Fatalf("nat 表应写入指向确认握手端口 %+v 的重定向: %v", ports, ipt.calls)
+	}
+	if len(ipt.find("iptables-legacy -w -t nat -A PREROUTING -j GATELY_NAT")) != 1 {
+		t.Fatalf("nat 跳转应追加到 PREROUTING 末尾: %v", ipt.calls)
+	}
+	if len(ipt.find("create gately_sus4 hash:ip family inet timeout 600 maxelem 65536")) != 1 || len(ipt.find("create gately_sus6 hash:ip family inet6 netmask 64 timeout 600 maxelem 65536")) != 1 {
+		t.Fatalf("应创建有容量上限的可疑来源集合: %v", ipt.calls)
+	}
 
+	ipt.mu.Lock()
+	ipt.save["iptables nat"], ipt.save["ip6tables nat"] = goodNat(), goodNat()
+	ipt.mu.Unlock()
 	ipt.reset()
 	fw.poll(ctx)
-	if !slices.Equal(imported, []string{"trap:192.0.2.7"}) {
-		t.Fatalf("应导入诱饵集合中的来源: %v", imported)
+	if imported != 0 || len(ipt.find("ipset save")) != 0 {
+		t.Fatalf("轮询不应再从集合导入来源: %d %v", imported, ipt.calls)
 	}
-	if len(ipt.find("ipset restore -exist", "add gately_ban4 192.0.2.7")) != 1 || len(ipt.find("ipset restore -exist", "del gately_trap4 192.0.2.7")) != 1 {
-		t.Fatalf("应写入封禁集合并从诱饵集合删除: %v", ipt.calls)
-	}
-	if st := fw.snapshot(); st.Dropped["ban"] != 14 || st.Hits["trap"] != 8 {
+	if st := fw.snapshot(); st.Dropped["ban"] != 14 {
 		t.Fatalf("计数应为 IPv4 与 IPv6 之和: %+v", st)
 	}
 
-	// 自有链被清除：重新写入
-	ipt.ipsetSave = nil
+	// nat 表的自有链被清除：重新写入
+	ipt.mu.Lock()
+	delete(ipt.save, "iptables nat")
+	ipt.mu.Unlock()
+	ipt.reset()
+	fw.poll(ctx)
+	if len(ipt.find("ipset restore -exist", "create gately_ban4")) != 1 || len(ipt.find("*nat", ":GATELY_SUS - [0:0]")) == 0 {
+		t.Fatalf("nat 链被清除后应重新写入: %v", ipt.calls)
+	}
+	// mangle 的自有链被清除：重新写入
+	ipt.mu.Lock()
+	ipt.save["iptables nat"] = goodNat()
 	ipt.save["iptables"] = "*mangle\n:PREROUTING ACCEPT [0:0]\nCOMMIT\n"
+	ipt.mu.Unlock()
 	ipt.reset()
 	fw.poll(ctx)
 	if len(ipt.find("ipset restore -exist", "create gately_ban4")) != 1 {
@@ -433,6 +521,56 @@ func TestFirewallIPTPoll(t *testing.T) {
 	}
 	if !strings.Contains(strings.Join(logsAt(buf, "warn"), "\n"), "已被外部清除") {
 		t.Error("应记录规则被外部清除")
+	}
+}
+
+// 内核缺少 nat 表的 REDIRECT 目标（如精简内核）时只写 mangle 部分：封禁照常生效，诱饵端口交回 Gately 直接监听
+func TestIPTRedirectFallback(t *testing.T) {
+	cleanDefault(t)
+	ipt := &fakeIPT{save: map[string]string{"iptables": goodSave(""), "ip6tables": goodSave("")}}
+	fw, buf := iptFirewall(t, ipt)
+	// nat 表的 restore 失败
+	b := fw.ipt
+	orig := b.run
+	b.run = func(ctx context.Context, stdin, bin string, args ...string) (string, error) {
+		if strings.HasPrefix(stdin, "*nat") {
+			return "", errorString("iptables-restore v1.8.10 (legacy): Couldn't load target `REDIRECT':No such file or directory")
+		}
+		return orig(ctx, stdin, bin, args...)
+	}
+	s := defaultSettings()
+	s.Firewall = true
+	s.Trap.Enable, s.Trap.Ports = true, "23"
+	fw.apply(context.Background(), s)
+	defer fw.stop()
+	st := fw.snapshot()
+	if !st.Active || st.Redirect || fw.kernelTrap() {
+		t.Fatalf("缺少 REDIRECT 时封禁应生效、重定向不可用: %+v", st)
+	}
+	if !strings.Contains(strings.Join(logsAt(buf, "warn"), "\n"), "REDIRECT") {
+		t.Errorf("应提示缺少重定向: %v", logsAt(buf, "warn"))
+	}
+}
+
+// 升级：旧版本在 mangle INPUT 中的跳转、链与诱饵 / 扫描 / 端口集合在重建时清理
+func TestIPTLegacyCleanup(t *testing.T) {
+	cleanDefault(t)
+	ipt := &fakeIPT{save: map[string]string{"iptables": legacySave(), "ip6tables": goodSave("")}}
+	fw, _ := iptFirewall(t, ipt)
+	s := defaultSettings()
+	s.Firewall = true
+	fw.apply(context.Background(), s)
+	if !fw.snapshot().Active {
+		t.Fatal("应生效")
+	}
+	for _, want := range []string{"iptables-legacy -w -t mangle -D INPUT -j GATELY_IN", "iptables-legacy -w -t mangle -F GATELY_SCANHIT", "iptables-legacy -w -t mangle -X GATELY_IN",
+		"iptables-legacy -w -t mangle -X GATELY_TRAP", "ipset destroy gately_trap4", "ipset destroy gately_scan6", "ipset destroy gately_port4"} {
+		if len(ipt.find(want)) == 0 {
+			t.Errorf("应清理旧版本的 %q: %v", want, ipt.calls)
+		}
+	}
+	if len(ipt.find("ip6tables-legacy -w -t mangle -X GATELY_IN")) != 0 {
+		t.Error("IPv6 没有旧链，不应删除")
 	}
 }
 
@@ -458,15 +596,16 @@ func TestFirewallIPTRefreshPorts(t *testing.T) {
 	fw.mu.Lock()
 	fw.refreshPortsLocked(ctx)
 	fw.mu.Unlock()
-	calls := ipt.find("iptables-legacy-restore --noflush", ":GATELY_IN - [0:0]")
-	if len(calls) != 1 || strings.Contains(calls[0], ":GATELY_PRE") || !strings.Contains(calls[0], "--dports 23 -j GATELY_TRAP") || !strings.Contains(calls[0], "--dports 22,2323 -j RETURN") {
-		t.Fatalf("应只重写 input 部分的链: %v", ipt.calls)
+	calls := ipt.find("iptables-legacy-restore --noflush", "*nat", ":GATELY_NAT - [0:0]")
+	if len(calls) != 1 || len(ipt.find("*mangle")) != 0 || !strings.Contains(calls[0], "--dports 23 -j REDIRECT") || strings.Contains(calls[0], "--dports 23,2323") || !strings.Contains(calls[0], "--dports 22,2323 -j RETURN") {
+		t.Fatalf("应只重写 nat 表的链: %v", ipt.calls)
 	}
 	ipt.reset()
 	fw.setLocal(ctx, []netip.Prefix{netip.MustParsePrefix("2001:db8:5::/64")})
-	if len(ipt.find("ip6tables-legacy-restore --noflush", "-s 2001:db8:5::/64 -j RETURN", "--dports 23 -j GATELY_TRAP")) != 1 {
-		t.Fatalf("白名单变化应重写 input 链并保留当前端口: %v", ipt.calls)
+	if len(ipt.find("ip6tables-legacy-restore --noflush", "*nat", "-s 2001:db8:5::/64 -j RETURN", "--dports 23 -j REDIRECT")) != 1 {
+		t.Fatalf("白名单变化应重写 nat 链并保留当前端口: %v", ipt.calls)
 	}
+	fw.stop()
 }
 
 // 集合被其他规则引用、无法销毁时清空后沿用，不让整次写入失败
@@ -474,7 +613,7 @@ func TestIPTRebuildSetInUse(t *testing.T) {
 	cleanDefault(t)
 	ipt := &fakeIPT{save: map[string]string{"iptables": goodSave(""), "ip6tables": goodSave("")}}
 	ipt.fail = func(bin string, args []string) error {
-		if bin == "ipset" && len(args) == 2 && args[0] == "destroy" && args[1] == "gately_trap6" {
+		if bin == "ipset" && len(args) == 2 && args[0] == "destroy" && args[1] == "gately_ban6" {
 			return errorString("ipset v7.24: Set cannot be destroyed: it is in use by a kernel component")
 		}
 		return nil
@@ -486,13 +625,12 @@ func TestIPTRebuildSetInUse(t *testing.T) {
 	if st := fw.snapshot(); !st.Active {
 		t.Fatalf("集合被占用时应清空后继续: %+v", st)
 	}
-	if len(ipt.find("ipset restore -exist", "create gately_trap6 hash:ip family inet6 netmask 64 timeout 0", "flush gately_trap6")) != 1 {
+	if len(ipt.find("ipset restore -exist", "create gately_ban6 hash:ip family inet6 netmask 64 timeout 0", "flush gately_ban6")) != 1 {
 		t.Fatalf("应创建并清空被占用的集合: %v", ipt.calls)
 	}
 }
 
-// 剩余时间超过 ipset 上限（约 24.8 天）的封禁按上限写入，临近到期时由对账按剩余时间重新写入；
-// 诱饵端口与扫描检测的 SET 超时同样不超过上限，集合容量放大到 iptMaxElem
+// 剩余时间超过 ipset 上限（约 24.8 天）的封禁按上限写入，临近到期时由对账按剩余时间重新写入；集合容量为 iptMaxElem
 func TestIPTLongBanCapped(t *testing.T) {
 	cleanDefault(t)
 	banlist.Default.Ban("203.0.113.9", banlist.Options{Duration: 30 * 24 * time.Hour})
@@ -501,7 +639,6 @@ func TestIPTLongBanCapped(t *testing.T) {
 	fw, _ := iptFirewall(t, ipt)
 	s := defaultSettings()
 	s.Firewall = true
-	s.Trap.Enable, s.Trap.BanSeconds = true, 365*24*3600
 	fw.apply(context.Background(), s)
 	if st := fw.snapshot(); !st.Active {
 		t.Fatalf("应生效: %+v", st)
@@ -510,16 +647,13 @@ func TestIPTLongBanCapped(t *testing.T) {
 	if len(restore) != 1 {
 		t.Fatalf("应写入集合: %v", ipt.calls)
 	}
-	for _, want := range []string{"add gately_ban4 203.0.113.9 timeout 2147483\n", "maxelem 1048576"} {
+	for _, want := range []string{"add gately_ban4 203.0.113.9 timeout 2147483\n", "maxelem 65536"} {
 		if !strings.Contains(restore[0], want) {
 			t.Fatalf("ipset 内容缺少 %q:\n%s", want, restore[0])
 		}
 	}
 	if strings.Contains(restore[0], "203.0.113.10 timeout 2147483") {
 		t.Fatalf("短期封禁不应按上限写入:\n%s", restore[0])
-	}
-	if len(ipt.find("-restore --noflush", "--add-set gately_trap4 src --exist --timeout 2147483")) == 0 {
-		t.Fatalf("诱饵端口的 SET 超时应不超过上限: %v", ipt.calls)
 	}
 	fw.mu.Lock()
 	exp, ok := fw.capped[banlist.KeyFor(netip.MustParseAddr("203.0.113.9"))]
@@ -699,7 +833,7 @@ func TestIPTPartialRewriteKeepsCounts(t *testing.T) {
 			out = append(out, ":"+c+" - [0:0]")
 		}
 		return out
-	}(), "\n") + "\n[0:0] -A PREROUTING -j GATELY_PRE\n[0:0] -A INPUT -j GATELY_IN\nCOMMIT\n"}}
+	}(), "\n") + "\n[0:0] -A PREROUTING -j GATELY_PRE\nCOMMIT\n"}}
 	fw, _ := iptFirewall(t, ipt)
 	s := defaultSettings()
 	s.Firewall = true
@@ -721,7 +855,7 @@ func TestIPTPartialRewriteKeepsCounts(t *testing.T) {
 	fw.mu.Lock()
 	fw.pollIPTLocked(context.Background())
 	st := fw.snapshot()
-	if st.Dropped["deny"] != 3 || st.Dropped["ban"] != 7 || st.Hits["trap"] != 4 {
+	if st.Dropped["deny"] != 3 || st.Dropped["ban"] != 7 {
 		t.Fatalf("网段封禁的计数应保留且其他计数不重复累加: dropped=%v hits=%v", st.Dropped, st.Hits)
 	}
 }
