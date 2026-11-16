@@ -374,7 +374,7 @@ const advCount = computed(() => {
   return [
     r.autoFirewall,
     r.maxConnections > 0,
-    r.maxConnsPerSource > 0,
+    (r.maxConnsPerSource ?? 0) > 0,
     r.udpSessionTimeout > 0,
     !!r.proxyProtocol,
     !!r.ipMode || !!r.ipDenyList?.length || !!r.ipDenySets?.length || !!r.knock,
