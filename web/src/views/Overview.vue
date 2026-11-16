@@ -655,7 +655,7 @@ onBeforeUnmount(() => {
 .net-peak {
   margin-top: 10px;
   font-size: 12px;
-  color: var(--el-text-color-placeholder);
+  color: var(--el-text-color-secondary);
   font-variant-numeric: tabular-nums;
 }
 .gauge-head {
@@ -732,7 +732,7 @@ onBeforeUnmount(() => {
 .disk-note {
   margin: 8px 0 16px;
   font-size: 12px;
-  color: var(--el-text-color-placeholder);
+  color: var(--el-text-color-secondary);
 }
 .net-rates {
   display: flex;
@@ -767,7 +767,7 @@ onBeforeUnmount(() => {
 }
 .net-sub {
   font-size: 12px;
-  color: var(--el-text-color-placeholder);
+  color: var(--el-text-color-secondary);
 }
 
 /* ---------- 网卡与服务 ---------- */
@@ -841,7 +841,7 @@ onBeforeUnmount(() => {
 }
 .iface-mac {
   font-size: 12px;
-  color: var(--el-text-color-placeholder);
+  color: var(--el-text-color-secondary);
 }
 .iface-rate {
   margin-left: auto;
@@ -892,7 +892,7 @@ onBeforeUnmount(() => {
   gap: 4px 16px;
   margin-top: 8px;
   font-size: 12px;
-  color: var(--el-text-color-placeholder);
+  color: var(--el-text-color-secondary);
 }
 .services {
   flex: 1;
@@ -1003,14 +1003,15 @@ onBeforeUnmount(() => {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+/* 状态数值用加深后的状态色，12px 文字才看得清 */
 .svc-value.ok {
-  color: var(--el-color-success);
+  color: var(--g-text-success);
 }
 .svc-value.warn {
-  color: var(--el-color-warning);
+  color: var(--g-text-warning);
 }
 .svc-value.error {
-  color: var(--el-color-danger);
+  color: var(--g-text-danger);
 }
 /* 未配置的模块：数值不用状态色，避免“0 / 0”显示成绿色的正常 */
 .service.is-idle .svc-value {
@@ -1020,7 +1021,7 @@ onBeforeUnmount(() => {
   padding: 24px 16px;
   text-align: center;
   font-size: 13px;
-  color: var(--el-text-color-placeholder);
+  color: var(--el-text-color-secondary);
 }
 
 /* ---------- 进程信息 ---------- */
