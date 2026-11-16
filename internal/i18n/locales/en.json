@@ -2019,6 +2019,7 @@
   "日志目录已存在同名文件": "A file with the same name as the log directory already exists",
   "日志目录必须是绝对路径": "Log directory must be an absolute path",
   "日志目录无效": "Invalid log directory",
+  "日志级别无效，可选 debug、info、warn、error": "Invalid log level; choose debug, info, warn or error",
   "日本語": "日本語",
   "旧明文立即失效。": "The old plaintext is invalidated immediately.",
   "旧版本 %s 缺少 %s": "Previous version %s is missing %s",

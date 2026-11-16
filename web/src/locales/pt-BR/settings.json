@@ -189,6 +189,13 @@
   },
   "runtime": {
     "title": "Parâmetros de execução",
+    "logLevel": "Nível de log",
+    "logLevelDefault": "Padrão (info e acima)",
+    "logLevelDebug": "Depuração e acima (tudo)",
+    "logLevelInfo": "Info e acima",
+    "logLevelWarn": "Aviso e acima",
+    "logLevelError": "Somente erros",
+    "logLevelHelp": "Somente os logs de execução do nível selecionado ou acima são registrados; níveis inferiores não chegam às páginas de logs, aos arquivos de log nem à saída de erro padrão (docker logs). Entra em vigor assim que é salvo. O nível de depuração inclui uma linha por conexão do encaminhamento de portas e do roteamento por protocolo, o que adiciona uma carga perceptível com muitas conexões; os logs de acesso dos serviços web são de nível info. \"Padrão\" usa a variável de ambiente GATELY_LOG_LEVEL, ou info e acima quando ela não está definida",
     "logLines": "Linhas de log retidas",
     "logLinesHelp": "Número de linhas de log que cada módulo mantém na memória; com a persistência ativada elas são restauradas do disco após reiniciar",
     "logPersist": "Salvar logs em disco",

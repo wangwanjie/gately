@@ -189,6 +189,13 @@
   },
   "runtime": {
     "title": "运行参数",
+    "logLevel": "日志级别",
+    "logLevelDefault": "默认（信息及以上）",
+    "logLevelDebug": "调试及以上（全部）",
+    "logLevelInfo": "信息及以上",
+    "logLevelWarn": "警告及以上",
+    "logLevelError": "仅错误",
+    "logLevelHelp": "只记录所选级别及以上的运行日志，更低级别的日志不进入日志页、日志文件与标准错误输出（docker logs），保存后立即生效。调试级别包含端口转发、协议分流的每条连接记录，连接多时会明显增加开销；Web 服务访问日志属于信息级别。选“默认”时使用环境变量 GATELY_LOG_LEVEL，未设置则为信息及以上",
     "logLines": "日志保留条数",
     "logLinesHelp": "每个模块在内存中保留的日志条数，开启日志落盘后重启时从文件恢复",
     "logPersist": "日志落盘",

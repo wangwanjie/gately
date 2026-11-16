@@ -2019,6 +2019,7 @@
   "日志目录已存在同名文件": "Já existe um arquivo com o mesmo nome do diretório de logs",
   "日志目录必须是绝对路径": "O diretório de logs deve ser um caminho absoluto",
   "日志目录无效": "Diretório de logs inválido",
+  "日志级别无效，可选 debug、info、warn、error": "Nível de log inválido; escolha debug, info, warn ou error",
   "日本語": "日本語",
   "旧明文立即失效。": "O texto simples antigo é invalidado imediatamente.",
   "旧版本 %s 缺少 %s": "Falta %[2]s na versão anterior %[1]s",

@@ -158,6 +158,33 @@ func translateLogEntries(lang string, entries []logbuf.Entry) {
 	}
 }
 
+// 日志级别设置：环境变量名与默认值
+const (
+	logLevelEnv     = "GATELY_LOG_LEVEL"
+	defaultLogLevel = logbuf.LevelInfo
+)
+
+// effectiveLogLevel 返回实际生效的日志级别：优先使用设置中的级别，其次是环境变量 GATELY_LOG_LEVEL，都没有时为 info。
+// 无法识别的值（手工改坏的配置文件、写错的环境变量）当作没有设置。
+func effectiveLogLevel(s Settings) string {
+	if logbuf.ValidLevel(s.LogLevel) {
+		return s.LogLevel
+	}
+	if l := strings.ToLower(strings.TrimSpace(os.Getenv(logLevelEnv))); logbuf.ValidLevel(l) {
+		return l
+	}
+	return defaultLogLevel
+}
+
+// applyLogLevel 把日志级别应用到系统日志与全部模块日志。
+func (a *App) applyLogLevel(s Settings) {
+	level := effectiveLogLevel(s)
+	a.sysLogs.SetMinLevel(level)
+	for _, e := range a.modules {
+		e.logs.SetMinLevel(level)
+	}
+}
+
 // validateLogDir 校验日志目录的格式：必须是绝对路径，不能是根目录，不能含控制字符。
 func validateLogDir(dir string) error {
 	if dir == "" {
