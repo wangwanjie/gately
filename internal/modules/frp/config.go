@@ -110,6 +110,9 @@ type ServerSettings struct {
 	// QUICTuning 为 quic 监听的调节参数，只在设置了 QUICBindPort 时生效
 	QUICTuning
 	Token string `json:"token"`
+	// AutoFirewall 为 true 时在本机防火墙放行 frps 的连接端口（TCP、KCP 与 QUIC 的 UDP）与 http / https 端口；
+	// 代理远程端口由 frpc 动态申请，不在放行范围内
+	AutoFirewall bool `json:"autoFirewall"`
 	// ProxyBindAddr 是 HTTP / HTTPS 端口与 tcp / udp 代理远程端口的监听地址，留空监听所有地址
 	ProxyBindAddr string `json:"proxyBindAddr"`
 	// VhostHTTPPort 与 VhostHTTPSPort 为 0 时不启用 http / https 代理

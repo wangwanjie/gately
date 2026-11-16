@@ -6,6 +6,8 @@ import (
 	"sort"
 	"time"
 
+	"github.com/wangwanjie/gately/internal/fwopen"
+	"github.com/wangwanjie/gately/internal/logbuf"
 	"github.com/wangwanjie/gately/internal/openports"
 	"github.com/wangwanjie/gately/internal/trustsrc"
 )
@@ -84,6 +86,45 @@ func (m *Module) publishServerPorts(key string, s ServerSettings, running bool) 
 	}
 	m.armLearn(key, s)
 	openports.Set(serverOwner(key), openports.Entry{Ranges: serverOpenRanges(s)})
+	m.syncServerFirewall(key, s)
+}
+
+// serverFirewallPorts 返回 frps 需要放行的端口：连接端口（TCP）、KCP 与 QUIC 的 UDP 端口按 bindAddr 监听，
+// http / https 端口按代理监听地址监听（未填写代理监听地址且指定了 bindAddr 时为所有地址，与生成的配置一致）。
+// 只监听回环地址的端口无需放行。代理远程端口由 frpc 动态申请，不在放行范围内。
+func serverFirewallPorts(s ServerSettings) []fwopen.Port {
+	proxyHost := s.ProxyBindAddr
+	var out []fwopen.Port
+	out = append(out, fwopen.ForListen("tcp", s.BindAddr, []int{s.BindPort})...)
+	if s.KCPBindPort != 0 {
+		out = append(out, fwopen.ForListen("udp", s.BindAddr, []int{s.KCPBindPort})...)
+	}
+	if s.QUICBindPort != 0 {
+		out = append(out, fwopen.ForListen("udp", s.BindAddr, []int{s.QUICBindPort})...)
+	}
+	var web []int
+	for _, p := range []int{s.VhostHTTPPort, s.VhostHTTPSPort} {
+		if p != 0 {
+			web = append(web, p)
+		}
+	}
+	return append(out, fwopen.ForListen("tcp", proxyHost, web)...)
+}
+
+// syncServerFirewall 按实例的自动放行开关登记或撤销防火墙放行；实例停止或未开启时撤销。
+func (m *Module) syncServerFirewall(key string, s ServerSettings) {
+	if m.fw == nil {
+		return
+	}
+	if !s.AutoFirewall {
+		m.fw.Want(key, nil, nil)
+		return
+	}
+	var log *logbuf.Logger
+	if m.logs != nil {
+		log = m.logs.Logger("frps")
+	}
+	m.fw.Want(key, serverFirewallPorts(s), log)
 }
 
 // armLearn 允许实例 key 学习代理端口，在启动 frps 之前调用，避免 frpc 抢在登记之前申请的端口被漏掉。
@@ -122,6 +163,9 @@ func (m *Module) armLearn(key string, s ServerSettings) {
 // clearServerPorts 撤销 frps 实例登记的全部端口，并忘记它的代理端口。
 // 在 learnMu 内删除状态并撤销登记：停止时仍在处理的 NewProxy 请求拿到锁后找不到状态，不会把端口重新登记回去。
 func (m *Module) clearServerPorts(key string) {
+	if m.fw != nil {
+		m.fw.Want(key, nil, nil)
+	}
 	openports.Clear(serverOwner(key))
 	m.learnMu.Lock()
 	delete(m.learned, key)

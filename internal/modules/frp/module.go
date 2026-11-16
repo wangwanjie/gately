@@ -16,6 +16,7 @@ import (
 	"github.com/wangwanjie/gately/internal/config"
 	"github.com/wangwanjie/gately/internal/crud"
 	"github.com/wangwanjie/gately/internal/fsperm"
+	"github.com/wangwanjie/gately/internal/fwopen"
 	"github.com/wangwanjie/gately/internal/httpx"
 	"github.com/wangwanjie/gately/internal/iplist"
 	"github.com/wangwanjie/gately/internal/logbuf"
@@ -62,6 +63,8 @@ type Module struct {
 	// httpClient 返回下载程序使用的 HTTP 客户端，由框架按“更新代理”设置注入
 	httpClient func() *http.Client
 	install    *binstall.Installer
+	// fw 为 frps 自动放行防火墙的登记，key 为 frps 实例 key
+	fw *fwopen.Group
 	// accessState 为 frps 登录的来源 IP 访问控制（插件端点、规则快照与拒绝计数）
 	accessState
 }
@@ -73,6 +76,7 @@ func New() *Module {
 		servers:    map[string]*instRuntime{},
 		bins:       map[string]*binInfo{binClient: {}, binServer: {}},
 		httpClient: func() *http.Client { return outbound.DefaultClient() },
+		fw:         fwopen.NewGroup("frps"),
 	}
 }
 
@@ -93,6 +97,7 @@ func (m *Module) Title() string { return "frp 内网穿透" }
 func (m *Module) Init(env module.Env) error {
 	m.store, m.logs = env.Store, env.Logs
 	m.install = m.newInstaller()
+	fwopen.Setup(m.store.Dir())
 	if _, err := m.store.Load(ID, &m.cfg); err != nil {
 		return err
 	}
@@ -245,6 +250,10 @@ func (m *Module) Stop() error {
 	}
 	for _, key := range serverKeys {
 		m.clearServerPorts(key)
+	}
+	// 同步撤销自动放行，进程退出前关闭端口
+	if m.fw != nil {
+		m.fw.ClearAll()
 	}
 	// frps 全部停止后再关闭登录检查端点
 	if gate != nil {
@@ -540,6 +549,10 @@ type ServerView struct {
 	InstanceState
 	// Rejected 为 Gately 启动以来被拒绝的 frpc 登录次数（封禁或不满足来源 IP 访问控制）
 	Rejected uint64 `json:"rejected"`
+	// Firewall 为自动放行防火墙的结果说明，未开启或实例未运行时为空
+	Firewall string `json:"firewall,omitempty"`
+	// FirewallFailed 表示自动放行有端口放行失败（例如没有权限），界面据此提示
+	FirewallFailed bool `json:"firewallFailed,omitempty"`
 }
 
 func stateOf(runs map[string]*instRuntime, key string) InstanceState {
@@ -563,6 +576,13 @@ func (m *Module) clientView(c *Client) ClientView {
 func (m *Module) serverView(s *Server) ServerView {
 	v := ServerView{Server: *s, InstanceState: stateOf(m.servers, s.Key), Rejected: m.rejectedCount(s.Key)}
 	v.Token, v.DashboardPwd = crud.Mask(v.Token), crud.Mask(v.DashboardPwd)
+	if s.AutoFirewall && m.fw != nil {
+		v.Firewall = m.fw.Status(s.Key)
+		v.FirewallFailed = m.fw.Failed(s.Key)
+		if v.Firewall == "" && len(serverFirewallPorts(s.ServerSettings)) == 0 && fwopen.IsLoopback(s.BindAddr) {
+			v.Firewall = fwopen.LoopbackNote
+		}
+	}
 	return v
 }
 

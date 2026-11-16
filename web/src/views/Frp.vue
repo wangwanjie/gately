@@ -128,6 +128,9 @@
                   <template #title>{{ s.name }}</template>
                   <template #sub><span class="mono">{{ hostPort(s.bindAddr, s.bindPort) }}</span><template v-if="s.remark"> · {{ s.remark }}</template></template>
                   <template #status><StatusBadge v-bind="instanceBadge(s)" /></template>
+                  <Field v-if="s.enable && s.autoFirewall && s.firewall" :label="t('common.firewallTag')" wide>
+                    <span class="fw-status" :class="{ 'is-failed': s.firewallFailed }">{{ s.firewall }}</span>
+                  </Field>
                   <Field v-if="s.kcpBindPort" label="KCP" mono>{{ s.kcpBindPort }}/udp</Field>
                   <Field v-if="s.quicBindPort" label="QUIC" mono>{{ s.quicBindPort }}/udp</Field>
                   <Field v-if="s.vhostHttpPort" :label="t('frp.httpPort')" mono>{{ s.vhostHttpPort }}</Field>
@@ -287,6 +290,10 @@
         <el-form-item :label="t('frp.subdomainHost')"><el-input v-model="editingServer.subdomainHost" :placeholder="t('frp.subdomainHostPlaceholder')" /></el-form-item>
         <el-form-item :label="t('frp.allowPorts')">
           <el-input v-model="editingServer.allowPorts" :placeholder="t('frp.allowPortsPlaceholder')" class="mono" />
+        </el-form-item>
+        <el-form-item :label="t('common.autoFirewall')">
+          <el-switch v-model="editingServer.autoFirewall" />
+          <div class="form-help">{{ t('frp.autoFirewallHelp') }}</div>
         </el-form-item>
         <el-form-item :label="t('frp.ipAccess')">
           <el-radio-group v-model="editingServer.ipMode">
@@ -488,6 +495,8 @@ interface ServerSettings {
   quicKeepalivePeriod: number
   quicMaxIdleTimeout: number
   quicMaxIncomingStreams: number
+  // autoFirewall 为 true 时在本机防火墙放行连接端口与 http / https 端口
+  autoFirewall: boolean
   token: string
   proxyBindAddr: string
   vhostHttpPort: number
@@ -540,7 +549,7 @@ interface InstanceState {
 }
 type ClientView = Client & InstanceState & { key: string }
 // rejected 为 Gately 启动以来被拒绝的 frpc 登录次数
-type ServerView = Server & InstanceState & { key: string; rejected?: number }
+type ServerView = Server & InstanceState & { key: string; rejected?: number; firewall?: string; firewallFailed?: boolean }
 interface BinaryView {
   binary: string
   version: string
@@ -731,6 +740,7 @@ function emptyServer(): Server {
     quicKeepalivePeriod: 0,
     quicMaxIdleTimeout: 0,
     quicMaxIncomingStreams: 0,
+    autoFirewall: false,
     token: '',
     proxyBindAddr: '',
     vhostHttpPort: 0,
@@ -839,6 +849,7 @@ function pickServer(v: Server): Server {
   out.quicKeepalivePeriod = out.quicKeepalivePeriod ?? 0
   out.quicMaxIdleTimeout = out.quicMaxIdleTimeout ?? 0
   out.quicMaxIncomingStreams = out.quicMaxIncomingStreams ?? 0
+  out.autoFirewall = out.autoFirewall ?? false
   // 后端空名单返回 null，编辑时统一为数组
   out.ipList = out.ipList ?? []
   out.ipSets = out.ipSets ?? []
@@ -1102,7 +1113,12 @@ onMounted(() => {
 </script>
 
 <style scoped>
-
+.fw-status {
+  overflow-wrap: anywhere;
+}
+.fw-status.is-failed {
+  color: var(--el-color-warning);
+}
 .block-gap {
   margin-bottom: 16px;
 }

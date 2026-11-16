@@ -38,6 +38,7 @@
   "quicMaxStreams": "QUIC 最大ストリーム数",
   "quicDefaultHint": "0 は既定値 {n}",
   "quicTuningHelp": "キープアライブ間隔はアイドル切断時間より短くしてください。ストリーム数を減らすと 1 つの QUIC 接続が使うリソースを制限できます。frpc と frps で別々に設定します",
+  "autoFirewallHelp": "ローカルのファイアウォールで frps の接続ポート（TCP）、KCP / QUIC の UDP ポート、http / https ポートを許可します。バインドアドレスを指定した場合はそのアドレス宛のみ許可し、127.0.0.1 のみで待ち受ける場合は不要です。インスタンスの無効化・削除時に取り消します。frpc が要求するプロキシのリモートポートは対象外で、必要なら手動で許可してください",
   "tokenServerPlaceholder": "設定を強く推奨します。frpc でも同じトークンが必要です",
   "proxyBindAddr": "プロキシ待ち受けアドレス",
   "proxyBindAddrHelp": "HTTP / HTTPS ポートと tcp / udp プロキシのリモートポートの待ち受けアドレスです",
