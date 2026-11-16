@@ -951,9 +951,9 @@ const failInterval = 5 * time.Second
 
 // reject 统计一次被拒绝的敲门；同一来源每 failInterval 最多记录一条日志、发布一个失败事件（供入侵防护计数封禁）。
 //
-// 失败事件会被入侵防护用来封禁事件中的地址，所以只为可信的来源发布：经 TCP（协议分流）发来的报文来源经过握手，
-// 照常发布；UDP 报文的来源地址可以伪造，只有通过 HMAC 认证（r 不为空，报文出自持有密钥的客户端）但被规则拒绝时
-// 才发布。HMAC 认证失败的 UDP 包任何人都能以任意来源地址发出，若发布事件，攻击者可以借入侵防护封禁任意 IP。
+// 失败事件会被入侵防护用来封禁事件中的地址，所以只为来源不可伪造的报文发布：经 TCP（协议分流）发来的报文来源经过握手，
+// 照常发布；UDP 报文的来源地址可以伪造，一律只写日志、不发布。HMAC 认证失败的 UDP 包任何人都能以任意来源地址发出；
+// 通过 HMAC 认证的 UDP 包也可能是抓到的合法报文被重放、再伪造来源发出的，发布事件同样会让攻击者借入侵防护封禁任意 IP。
 // HMAC 认证失败的报文不逐条记录日志，由 flushInvalid 每分钟汇总一条。
 func (m *Module) reject(r *compiledRule, src netip.Addr, transport, via, reason string) {
 	now := m.now()
@@ -994,6 +994,10 @@ func (m *Module) reject(r *compiledRule, src netip.Addr, transport, via, reason 
 	}
 	if r != nil {
 		m.logs.Logger(name).Warnf("拒绝来自 %s 的敲门（经 %s）：%s", src, via, reason)
+	}
+	if transport != transportTCP {
+		// UDP 来源可以伪造（含重放的合法报文），只写日志，不发布供入侵防护计数的事件
+		return
 	}
 	events.Publish(events.Event{
 		Type:    events.KnockFailed,
