@@ -160,6 +160,8 @@ func ServerLang() string {
 type catalog struct {
 	exact map[string]string
 	tmpls []*tmpl
+	// byKey 按格式串查模板：已知日志的格式串时一次查表即可得到译文模板，见 TrFormat
+	byKey map[string]*tmpl
 	// segs 是可用于句中替换的固定片段（按长度降序），覆盖“前缀 + 动态内容”这类拼接出来的文案
 	segs []string
 	// tmplIdx、segIdx 把模板与片段挂在各自“最少见的字符”下：一句话只需要尝试它包含的字符对应的那几个，
@@ -180,6 +182,9 @@ type tmpl struct {
 	lead bool
 	// must 是模板中最长的固定片段，用于在跑正则前快速排除不相关的句子
 	must string
+	// lits 为格式串被动词隔开的固定片段（比动词多一个）：已知一句话由这个格式串生成、
+	// 又知道各参数的长度时，直接按位置切出参数，不用跑正则，见 cut
+	lits []string
 	// parts 为预先解析好的译文：固定文本与参数序号交替，见 fill
 	parts []fillPart
 }
@@ -250,7 +255,7 @@ func CompressLocale(data []byte) []byte {
 }
 
 func buildCatalog(m map[string]string) *catalog {
-	c := &catalog{exact: map[string]string{}}
+	c := &catalog{exact: map[string]string{}, byKey: map[string]*tmpl{}}
 	for k, v := range m {
 		if v == "" {
 			continue
@@ -271,6 +276,7 @@ func buildCatalog(m map[string]string) *catalog {
 			if len(lit) > len(must) {
 				must = lit
 			}
+			t.lits = append(t.lits, lit)
 			sb.WriteString(regexp.QuoteMeta(lit))
 			verb := k[loc[1]-1]
 			switch {
@@ -289,6 +295,7 @@ func buildCatalog(m map[string]string) *catalog {
 		if len(tail) > len(must) {
 			must = tail
 		}
+		t.lits = append(t.lits, tail)
 		sb.WriteString(regexp.QuoteMeta(tail))
 		re, err := regexp.Compile("(?s)" + sb.String())
 		if err != nil {
@@ -297,6 +304,7 @@ func buildCatalog(m map[string]string) *catalog {
 		t.re, t.nlit, t.must, t.lead = re, nlit, must, locs[0][0] == 0
 		t.parts = parseFill(v)
 		c.tmpls = append(c.tmpls, t)
+		c.byKey[k] = t
 		// 模板同时保留一份精确匹配，避免格式串本身被当作普通文本时漏翻
 		c.exact[k] = v
 	}
