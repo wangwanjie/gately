@@ -413,8 +413,8 @@ func TestRejectEventsRateLimited(t *testing.T) {
 	}
 }
 
-// UDP 报文的来源可以伪造：HMAC 认证失败的 UDP 包只计数，不发布可用于封禁的失败事件；
-// 通过 HMAC 认证但被规则拒绝（如时间戳过期）时才发布，并注明 via=udp。
+// UDP 报文的来源可以伪造：被拒绝的 UDP 包一律只计数、写日志，不发布可用于封禁的失败事件。
+// 通过 HMAC 认证的报文也可能是抓到后重放、再伪造来源发出的，同样不能发布（见 reject）。
 func TestUDPRejectEventsTrusted(t *testing.T) {
 	env := newEnv(t, sshRule("ssh"))
 	other := sshRule("x")
@@ -436,9 +436,23 @@ func TestUDPRejectEventsTrusted(t *testing.T) {
 	if err := env.m.handle(old, src, transportUDP, "UDP"); err == nil {
 		t.Fatal("过期报文应被拒绝")
 	}
-	waitFor(t, "HMAC 通过后被拒绝的失败事件", func() bool { return len(env.eventsOf(events.KnockFailed)) == 1 })
-	if e := env.eventsOf(events.KnockFailed)[0]; e.Fields["ip"] != src.String() || e.Fields["via"] != "udp" {
-		t.Fatalf("事件不对: %+v", e)
+	// 合法报文被重放：第一次放行，之后以伪造的受害者地址重放 5 次，都应被拒绝且不发布事件
+	pkt := env.packet(t, env.rule("r-ssh"), spa.Message{})
+	if err := env.m.handle(pkt, src, transportUDP, "UDP"); err != nil {
+		t.Fatalf("合法报文应放行: %v", err)
+	}
+	for i := range 5 {
+		env.clock.set(env.clock.now().Add(failInterval))
+		if err := env.m.handle(pkt, victim, transportUDP, "UDP"); err == nil {
+			t.Fatalf("第 %d 次重放应被拒绝", i+1)
+		}
+	}
+	time.Sleep(50 * time.Millisecond)
+	if n := len(env.eventsOf(events.KnockFailed)); n != 0 {
+		t.Fatalf("UDP 来源的拒绝不应发布失败事件，实际 %d", n)
+	}
+	if !env.hasLog("重放的报文") || !env.hasLog("时间戳") {
+		t.Fatal("通过 HMAC 认证但被拒绝的 UDP 报文仍应写日志")
 	}
 }
 
