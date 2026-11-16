@@ -87,6 +87,7 @@
   "basicAuth": "Basic 認証",
   "users": "ユーザー",
   "usersPlaceholder": "1 行に 1 つ ユーザー名:パスワード（パスワードは bcrypt ハッシュも可）",
+  "usersHelp": "パスワードは保存時に bcrypt ハッシュに変換され、元のパスワードは後から確認できません。保存済みのパスワードは ******** と表示されます。そのままにするか「ユーザー名:」だけを書くと変更されません。変更するときは ******** を新しいパスワードに置き換えてください",
   "thirdParty": "外部ログイン",
   "oauthUsersPlaceholder": "1 行に 1 つ、許可する ID を プロバイダー識別子:アカウント の形式で指定（例: github:octocat、google:me{'@'}gmail.com、qq:openid）。行末に # でメモを付けられます。github:* は任意の GitHub アカウントを許可",
   "providerHelp": "プロバイダーは先に「全体設定」で設定してください",

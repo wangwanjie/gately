@@ -21,6 +21,13 @@ import (
 	"github.com/wangwanjie/gately/internal/mountfs"
 )
 
+// idClient 在 fakeClient 之上补上会话编号：共享用户登录时服务端按编号登记会话。
+type idClient struct {
+	fakeClient
+}
+
+func (c *idClient) ID() uint32 { return 1 }
+
 // 用户目录不能与配置目录重叠：保存时拒绝；升级前已保存的配置照常启动，但这个目录不再提供任何内容。
 func TestUserDirsOutsideConfigDir(t *testing.T) {
 	base := t.TempDir()
@@ -69,7 +76,7 @@ func TestUserDirsOutsideConfigDir(t *testing.T) {
 	// login 以用户身份登录并返回其文件系统
 	login := func(user, pass string) afero.Fs {
 		t.Helper()
-		drv, err := m.drv.AuthUser(&fakeClient{}, user, pass)
+		drv, err := m.drv.AuthUser(&idClient{}, user, pass)
 		if err != nil {
 			t.Fatalf("%s 登录失败: %v", user, err)
 		}

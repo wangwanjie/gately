@@ -15,8 +15,9 @@ interface Release {
   assets: Asset[]
 }
 
-const { theme, lang } = useData()
-const d = computed(() => theme.value.download)
+const { frontmatter, lang } = useData()
+// 文案由 config.mts 的 transformPageData 按页面语言注入
+const d = computed(() => frontmatter.value.siteText.download)
 const REPO = 'wangwanjie/gately'
 const release = ref<Release | null>(null)
 const loading = ref(true)

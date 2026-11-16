@@ -1,8 +1,7 @@
 // 最先执行：经统一网关访问时给站内请求补上路径前缀
 import './basePath'
 import { createApp } from 'vue'
-import ElementPlus from 'element-plus'
-import 'element-plus/dist/index.css'
+import { installElement } from './element'
 import 'element-plus/theme-chalk/dark/css-vars.css'
 import App from './App.vue'
 import router from './router'
@@ -29,5 +28,7 @@ initTheme()
 setupI18n().then(() => {
   // 对话框、确认框、抽屉打开时，滚动不穿透到下方页面
   installModalScrollGuard()
-  createApp(App).use(i18n).use(router).use(ElementPlus).mount('#app')
+  const app = createApp(App).use(i18n).use(router)
+  installElement(app)
+  app.mount('#app')
 })

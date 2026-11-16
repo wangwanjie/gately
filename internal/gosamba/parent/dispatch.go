@@ -1,4 +1,4 @@
-// Gately 修改：按用户解析共享、签名校验改用 Session.verifySigned、签名密钥经 signingKey() 加锁读取（见 parent/gately.go）；仅在 Linux 与 macOS 编译（构建约束）。
+// Gately 修改：按用户解析共享、签名校验改用 Session.verifySigned、签名密钥经 signingKey() 加锁读取（见 parent/gately.go）；仅在 Linux 与 macOS 编译（构建约束）；客户端给出的偏移与长度改用 bounds 包在 uint64 中判断边界；CHANGE_NOTIFY 协程中的 panic 只断开本连接。
 
 //go:build linux || darwin
 
@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"math"
 	"os"
 	"path/filepath"
 	"strings"
@@ -27,6 +28,8 @@ import (
 	"github.com/wangwanjie/gately/internal/gosamba/smb2"
 	"github.com/wangwanjie/gately/internal/gosamba/transport"
 	"github.com/wangwanjie/gately/internal/gosamba/vfs"
+
+	"github.com/wangwanjie/gately/internal/gosamba/bounds"
 )
 
 // Dispatcher routes post-auth SMB2 commands to per-command handlers.
@@ -1649,10 +1652,8 @@ func (d *Dispatcher) handleRead(rw io.ReadWriter, hdr smb2.Header, body []byte, 
 			d.respondError(rw, hdr, smb2.StatusEndOfFile, sess)
 			return true
 		}
-		n := int(req.Length)
-		if n > len(open.pipeOut) {
-			n = len(open.pipeOut)
-		}
+		// 先在 uint64 中与队列长度比较再转换，32 位平台上 int(req.Length) 可能变成负数
+		n := bounds.Clamp(uint64(req.Length), len(open.pipeOut))
 		out := open.pipeOut[:n]
 		open.pipeOut = open.pipeOut[n:]
 		d.respondSuccess(rw, hdr, sess, smb2.EncodeReadResponse(smb2.ReadResponse{Data: out}))
@@ -1666,10 +1667,8 @@ func (d *Dispatcher) handleRead(rw io.ReadWriter, hdr smb2.Header, body []byte, 
 			return true
 		}
 		off := int(req.Offset)
-		end := off + int(req.Length)
-		if end > len(open.streamBuf) || end < off {
-			end = len(open.streamBuf)
-		}
+		// 读取长度超出流末尾时截到末尾；在 uint64 中计算，32 位平台上不会溢出为负数
+		end := off + bounds.Clamp(uint64(req.Length), len(open.streamBuf)-off)
 		d.respondSuccess(rw, hdr, sess, smb2.EncodeReadResponse(smb2.ReadResponse{Data: open.streamBuf[off:end]}))
 		return true
 	}
@@ -2017,11 +2016,13 @@ func (d *Dispatcher) handleSetInfo(rw io.ReadWriter, hdr smb2.Header, body []byt
 		}
 		replace := req.Buffer[0] != 0
 		nameLen := binary.LittleEndian.Uint32(req.Buffer[16:])
-		if 20+int(nameLen) > len(req.Buffer) {
+		// 文件名长度来自客户端，在 uint64 中确认不越过缓冲区再切片
+		nameStart, nameEnd, ok := bounds.Span(20, uint64(nameLen), len(req.Buffer))
+		if !ok {
 			d.respondError(rw, hdr, smb2.StatusInvalidParameter, sess)
 			return true
 		}
-		newName := decodeUTF16LE(req.Buffer[20 : 20+nameLen])
+		newName := decodeUTF16LE(req.Buffer[nameStart:nameEnd])
 		// Use normalization-insensitive resolution for the rename destination so
 		// that lookups across NFC/NFD boundaries work. For a new name (doesn't
 		// exist yet), it falls through to the requested name unchanged.
@@ -2494,7 +2495,7 @@ func (d *Dispatcher) handleQueryDirectory(rw io.ReadWriter, hdr smb2.Header, bod
 	useAAPL := d.Conn != nil && d.Conn.AAPLReadDirAttr &&
 		open.Tree != nil && open.Tree.Share.Path != "" &&
 		req.FileInformationClass == smb2.InfoFileIdBothDirectoryInformation
-	buf, consumed, encoded, err := encodeDirEntriesLimited(open, int(req.OutputBufferLength), req.FileInformationClass, limit, useAAPL)
+	buf, consumed, encoded, err := encodeDirEntriesLimited(open, bounds.Clamp(uint64(req.OutputBufferLength), math.MaxInt32), req.FileInformationClass, limit, useAAPL)
 	if err != nil {
 		if errors.Is(err, errUnsupportedDirInfoClass) {
 			d.respondError(rw, hdr, smb2.StatusInvalidInfoClass, sess)
@@ -3708,9 +3709,14 @@ func (d *Dispatcher) handleChangeNotify(rw io.ReadWriter, hdr smb2.Header, body 
 	}
 
 	go func() {
+		// Gately 新增：panic 时断开连接（客户端会重新连接并重新注册监视），不让 panic 结束整个进程
+		defer recoverConnPanic(d.Log, "change-notify", d.killConn)
 		defer w.Close()
 		defer d.unregisterNotify(hdr.MessageID)
-		go w.Watch()
+		go func() {
+			defer recoverConnPanic(d.Log, "change-notify-watch", d.killConn)
+			w.Watch()
+		}()
 
 		var entries []smb2.NotifyEntry
 		cancelled := false

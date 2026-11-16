@@ -198,3 +198,71 @@ func TestStaticGzipOnly(t *testing.T) {
 		t.Fatalf("不存在的文件应返回 ErrNotExist: %v", err)
 	}
 }
+
+// 根目录的图标类静态资源文件名不带哈希，给一天的缓存以免每次打开页面都重新取；
+// 首页、manifest 与其他文件保持原样，带哈希的 assets 仍是一年 immutable。
+func TestStaticIconCacheControl(t *testing.T) {
+	web := fstest.MapFS{
+		"index.html":            {Data: []byte(`<!doctype html><html><head></head><body></body></html>`)},
+		"favicon.ico":           {Data: []byte("ico")},
+		"favicon.svg":           {Data: []byte("<svg xmlns=\"http://www.w3.org/2000/svg\"/>")},
+		"icon-192.png":          {Data: []byte("png")},
+		"icon-512.png":          {Data: []byte("png")},
+		"icon-maskable-512.png": {Data: []byte("png")},
+		"apple-touch-icon.png":  {Data: []byte("png")},
+		"manifest.webmanifest":  {Data: []byte(`{"icons":[]}`)},
+		"robots.txt":            {Data: []byte("User-agent: *")},
+		"assets/a.js":           {Data: []byte("console.log(1)")},
+	}
+	a, err := New(Options{ConfigDir: t.TempDir(), Web: web, Modules: []module.Module{portforward.New()}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	srv := httptest.NewServer(a.Handler())
+	defer srv.Close()
+
+	cacheControl := func(method, path string) string {
+		req, _ := http.NewRequest(method, srv.URL+path, nil)
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer resp.Body.Close()
+		_, _ = io.Copy(io.Discard, resp.Body)
+		if resp.StatusCode != http.StatusOK {
+			t.Fatalf("%s %s 状态 %d", method, path, resp.StatusCode)
+		}
+		return resp.Header.Get("Cache-Control")
+	}
+
+	const day = "private, max-age=86400"
+	for _, name := range []string{"favicon.ico", "favicon.svg", "icon-192.png", "icon-512.png", "icon-maskable-512.png", "apple-touch-icon.png"} {
+		if got := cacheControl(http.MethodGet, "/"+name); got != day {
+			t.Errorf("GET /%s 的 Cache-Control = %q，期望 %q", name, got, day)
+		}
+	}
+	// HEAD 与带签名参数的请求（开启安全入口后页面里的图标地址带 ?k=）同样适用
+	if got := cacheControl(http.MethodHead, "/favicon.ico"); got != day {
+		t.Errorf("HEAD /favicon.ico 的 Cache-Control = %q，期望 %q", got, day)
+	}
+	if got := cacheControl(http.MethodGet, "/favicon.ico?k=abc"); got != day {
+		t.Errorf("带签名参数的 /favicon.ico 的 Cache-Control = %q，期望 %q", got, day)
+	}
+
+	// 首页（含未知路径回退）必须每次校验
+	for _, p := range []string{"/", "/index.html", "/overview"} {
+		if got := cacheControl(http.MethodGet, p); got != "no-cache" {
+			t.Errorf("GET %s 的 Cache-Control = %q，期望 no-cache", p, got)
+		}
+	}
+	// manifest 与其他非图标文件不加缓存头
+	for _, p := range []string{"/manifest.webmanifest", "/robots.txt"} {
+		if got := cacheControl(http.MethodGet, p); got != "" {
+			t.Errorf("GET %s 的 Cache-Control = %q，期望为空", p, got)
+		}
+	}
+	// 带哈希的构建产物保持一年 immutable
+	if got := cacheControl(http.MethodGet, "/assets/a.js"); got != "public, max-age=31536000, immutable" {
+		t.Errorf("GET /assets/a.js 的 Cache-Control = %q", got)
+	}
+}

@@ -87,6 +87,7 @@
   "basicAuth": "기본 인증",
   "users": "사용자",
   "usersPlaceholder": "한 줄에 사용자 이름:비밀번호 하나씩 (비밀번호는 bcrypt 해시 가능)",
+  "usersHelp": "비밀번호는 저장할 때 bcrypt 해시로 바뀌며 이후에는 원래 비밀번호를 볼 수 없습니다. 저장된 비밀번호는 ********로 표시됩니다. 그대로 두거나 「사용자 이름:」만 쓰면 바뀌지 않고, 바꾸려면 ********를 새 비밀번호로 바꾸세요",
   "thirdParty": "소셜 로그인",
   "oauthUsersPlaceholder": "한 줄에 허용할 ID 하나씩: 제공자 식별자:계정. 예: github:octocat, google:me{'@'}gmail.com, qq:openid. 줄 끝에 # 뒤로 메모를 쓸 수 있으며, github:* 는 모든 GitHub 계정을 뜻합니다",
   "providerHelp": "제공자는 먼저 「전역 설정」에서 설정해야 합니다",

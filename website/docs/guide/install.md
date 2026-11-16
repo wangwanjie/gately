@@ -7,9 +7,10 @@
 ```bash
 docker run -d --name gately --network host --cap-add NET_ADMIN \
   -v ./gately-data:/etc/gately \
-  -v /var/run/docker.sock:/var/run/docker.sock \
   ghcr.io/wangwanjie/gately:latest
 ```
+
+需要 Docker 管理时，在命令里加上 `-v /var/run/docker.sock:/var/run/docker.sock`。
 
 ### Docker Compose
 
@@ -27,8 +28,8 @@ services:
     volumes:
       # 配置目录（明文 JSON，可纳入 git 备份；ssl.json 中含证书私钥）
       - ./data:/etc/gately
-      # Docker 管理（不需要可删除）
-      - /var/run/docker.sock:/var/run/docker.sock
+      # Docker 管理：需要时取消下一行的注释
+      # - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - TZ=Asia/Shanghai
 ```

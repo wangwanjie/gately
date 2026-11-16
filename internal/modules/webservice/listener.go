@@ -290,8 +290,10 @@ func buildSiteTable(cfg Listener, log *logbuf.Logger, auth *authenticator, waf W
 	if auth != nil {
 		t.missPage = newErrorPager(cfg.Default, auth.errPages)
 	}
+	origins := newOAuthOrigins(cfg, log)
 	build := func(s Site) (*siteHandler, error) {
 		s.scope = cfg.Key + "/" + s.Key
+		s.oauth = origins
 		h, err := newSiteHandler(s, log, auth, waf)
 		if err != nil {
 			return nil, err

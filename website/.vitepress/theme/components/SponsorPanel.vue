@@ -3,8 +3,9 @@ import { computed, ref } from 'vue'
 import { useData } from 'vitepress'
 import { copyText } from '../clipboard'
 
-const { theme, lang } = useData()
-const s = computed(() => theme.value.sponsor)
+const { frontmatter, lang } = useData()
+// 文案由 config.mts 的 transformPageData 按页面语言注入
+const s = computed(() => frontmatter.value.siteText.sponsor)
 
 // 收款渠道集中在这里维护，各语言页面共用；换码或换地址只改这一处
 const AFDIAN = 'https://ifdian.net/a/gately'
