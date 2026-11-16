@@ -221,6 +221,7 @@ func (a *App) handlePasskeyLoginFinish(w http.ResponseWriter, r *http.Request) {
 	events.Publish(events.Event{Type: events.LoginSuccessful, Source: "管理后台", Level: events.LevelInfo,
 		Title: "管理后台登录成功", Message: fmt.Sprintf("%s 从 %s 登录", user, ip), Fields: map[string]string{"ip": ip, "user": user}})
 	a.noteLoginIP(ip, user, "Passkey")
+	a.learnGatewayLoginOrigin(r)
 	http.SetCookie(w, &http.Cookie{
 		Name: auth.CookieName, Value: token, Path: "/", Expires: exp,
 		HttpOnly: true, SameSite: http.SameSiteStrictMode, Secure: r.TLS != nil,
