@@ -17,6 +17,7 @@ Each user can map to one directory, or mount several directories:
 
 - **Single directory**: set `root` and `readOnly`. After login, the root is that directory.
 - **Multiple directories**: click "Mount multiple directories" in the UI, or fill in several entries in `mounts`. Each entry has `name` (display name, cannot contain `/`, unique within one user), `path` (an absolute path) and `readOnly`. After login, the root lists the directories by name. The root itself is not writable, and files cannot be moved between different directories.
+- Directories (`root` and the `path` of `mounts`) cannot be Gately's configuration directory, a directory inside it or a directory containing it: the configuration directory holds the sign-in keys, and a file service user who can read it can become an administrator. Such directories saved before the upgrade no longer serve any content while other directories and users keep working, and the run log asks you to change them. The same applies to [shared users](#shared-users), local directories of storage mounts and directories of static sites in Web Services.
 
 **Login throttling**: WebDAV, FTP and SMB limit wrong passwords per source address. After 10 failures within 15 minutes, every login from that source is refused until the window ends (WebDAV returns `429`, FTP and SMB return a login failure, and SMB also writes "too many failed logins, refused" to the run log), even with the correct password. A successful login does not reset the count, and IPv6 sources are counted per /64. When WebDAV sits behind a local reverse proxy such as the Gately web service, the visitor address passed by the proxy is used.
 
@@ -122,7 +123,7 @@ Add mounts under "Storage Mounts" in the "File Services" group, and manage files
 | --- | --- |
 | `name`, `remark`, `enable` | Name, remark and enable switch |
 | `type` | `local` (local directory), `webdav` (remote WebDAV) or `smb` (SMB share) |
-| `path` | Local directory, must be an existing absolute path (used by `local`) |
+| `path` | Local directory, must be an existing absolute path (used by `local`); it cannot be Gately's configuration directory, a directory inside it or a directory containing it |
 | `url`, `username`, `password` | Remote address and account; the password is masked in the UI (used by `webdav` and `smb`). A WebDAV address starts with `http://` or `https://`; an SMB address looks like `smb://host[:port]/share[/subdir]`, SMB2/3 is supported and an empty username connects as guest |
 | `skipVerify` | Skip HTTPS certificate verification (used by `webdav`) |
 | `domain` | Domain or workgroup for SMB authentication, usually empty (used by `smb`) |

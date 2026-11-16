@@ -60,6 +60,9 @@ The permission an endpoint needs is determined by its path and method:
 - The legacy endpoints `PUT /api/webdav/shared-users`, `PUT /api/ftp/shared-users` and `PUT /api/smb/shared-users` all modify the single list of shared users used by the three services, so they require `webdav:write`, `ftp:write` and `smb:write` together; the newer `/api/fileusers` endpoint uses the `fileusers` scope.
 - `GET /api/session` and `GET /api/openapi.json` accept any valid token.
 - Write access to the following modules can run commands on the server, which equals command execution as the Gately process user: `ddns` (command IP source), `cron` (scheduled tasks), `guard` (command log source), `stun` (rule scripts), `ssl` (mapping scripts and local deploy commands), `webterminal`, `docker` (exec in containers and Compose), `frp`, `filebrowser` and `cloudflared` (custom program paths). These modules are marked "Runs commands" when you create a token; grant them only to scripts you fully trust. When a token calls the Lucky import (`import:write`), imported items are always disabled; `enable=1` only applies to signed-in sessions.
+- Write access to `tailscale` and `netbird` can add startup arguments and environment variables to the daemons (for example to turn on their built-in SSH server), so these modules are marked "Runs commands" as well.
+- Write access to the following modules can read or modify files on the server: `storage` (mount any directory and use the file manager), `webservice` (serve any directory as a static site), `webdav`, `ftp`, `smb`, `fileusers` (share any directory with a user you create) and `backup` (write configuration backups holding every secret to a storage mount). These modules are marked "Reads and writes files" when you create a token. All of these features refuse Gately's own configuration directory, but other files are not restricted; when Gately runs as root, being able to overwrite system files equals full control of the server, so grant them only to scripts you fully trust.
+- When a token calls the Lucky import, the global settings and the third-party sign-in identity table (`lucky_base`, `lucky_thirdPartyAuthManager`) are not imported; sign in to the admin UI to import these two.
 
 ### Operations tokens cannot perform
 
@@ -73,6 +76,8 @@ The following endpoints accept login sessions only, and any token access returns
 - Configuration backup download and restore: `/api/system/backup`, `/api/system/restore`
 - Local backup file download: `/api/backup/local`
 - Web Terminal security settings: `/api/webterminal/security`
+- Paths of managed programs: `PUT /api/easytier/settings`, `PUT /api/tailscale/settings`, `PUT /api/netbird/settings`
+- Backup passphrase: `GET /api/backup/secrets`; when a token calls `PUT /api/backup/settings` the passphrase must stay unchanged (send `********`), and changing or clearing it returns 403
 - Login and logout: `/api/login`, `/api/logout`
 
 A request with insufficient permissions returns `token lacks permission <permission>` and records a warning in the system logs, including the token name, source IP and the rejected endpoint.

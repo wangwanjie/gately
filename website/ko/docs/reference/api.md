@@ -60,6 +60,9 @@ curl -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/status
 - 기존 엔드포인트 `PUT /api/webdav/shared-users`, `PUT /api/ftp/shared-users`, `PUT /api/smb/shared-users`는 세 서비스가 함께 쓰는 하나의 공유 사용자 목록을 수정하므로 `webdav:write`, `ftp:write`, `smb:write`가 모두 필요합니다. 새 엔드포인트 `/api/fileusers`는 `fileusers` 도메인의 권한을 사용합니다.
 - `GET /api/session`과 `GET /api/openapi.json`은 유효한 토큰이면 무엇이든 받아들입니다.
 - 다음 모듈의 쓰기 권한으로 서버에서 명령을 실행할 수 있으며, Gately 프로세스 사용자로 명령을 실행하는 것과 같습니다: `ddns`(명령으로 IP 가져오기), `cron`(예약 작업), `guard`(명령 로그 소스), `stun`(규칙 스크립트), `ssl`(매핑 스크립트와 로컬 배포 명령), `webterminal`, `docker`(컨테이너 내 실행과 Compose), `frp`, `filebrowser`, `cloudflared`(프로그램 경로 지정 가능). 토큰을 만들 때 이 모듈에는 「명령 실행 가능」 표시가 붙습니다. 완전히 신뢰하는 스크립트에만 부여하세요. 토큰으로 Lucky 가져오기(`import:write`)를 호출하면 항목은 항상 비활성 상태로 가져오며, `enable=1`은 로그인 세션에서만 적용됩니다.
+- `tailscale`과 `netbird`의 쓰기 권한으로는 데몬에 시작 인수와 환경 변수를 추가할 수 있어(예: 내장 SSH 서버 켜기) 이 모듈에도 "명령 실행 가능" 표시가 붙습니다.
+- 다음 모듈의 쓰기 권한으로는 서버의 파일을 읽거나 수정할 수 있습니다: `storage`(임의의 디렉터리를 마운트해 파일 관리에서 읽기/쓰기), `webservice`(임의의 디렉터리를 정적 사이트로 제공), `webdav`, `ftp`, `smb`, `fileusers`(임의의 디렉터리를 직접 만든 사용자에게 공유), `backup`(모든 키가 담긴 설정 백업을 스토리지 마운트에 기록). 토큰을 만들 때 이 모듈에는 "파일 읽기/쓰기 가능" 표시가 붙습니다. 이 기능들은 모두 Gately 자체의 설정 디렉터리를 거부하지만 그 밖의 파일은 제한되지 않습니다. Gately가 root로 실행 중이라면 시스템 파일을 덮어쓸 수 있다는 것은 서버를 완전히 제어하는 것과 같으므로 완전히 신뢰하는 스크립트에만 부여하세요.
+- 토큰으로 Lucky 가져오기를 호출하면 전역 설정과 서드파티 로그인 ID 표(`lucky_base`, `lucky_thirdPartyAuthManager`)는 가져오지 않습니다. 이 두 가지는 관리 화면에 로그인해서 가져오세요.
 
 ### 토큰으로 할 수 없는 작업
 
@@ -73,6 +76,8 @@ curl -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/status
 - 설정 백업 다운로드와 복원: `/api/system/backup`, `/api/system/restore`
 - 로컬 백업 파일 다운로드: `/api/backup/local`
 - 웹 터미널 보안 설정: `/api/webterminal/security`
+- 관리 대상 프로그램의 경로: `PUT /api/easytier/settings`, `PUT /api/tailscale/settings`, `PUT /api/netbird/settings`
+- 백업 암호화 암호문: `GET /api/backup/secrets`. 토큰으로 `PUT /api/backup/settings`를 호출할 때는 암호문을 그대로 두어야 하며(`********` 전송), 변경하거나 지우면 403이 반환됩니다
 - 로그인과 로그아웃: `/api/login`, `/api/logout`
 
 권한이 부족한 요청에는 `토큰에 권한이 없습니다 <권한>`을 반환하고, 시스템 로그에 토큰 이름, 출처 IP, 거부된 엔드포인트를 담은 경고를 한 건 기록합니다.

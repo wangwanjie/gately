@@ -60,6 +60,9 @@ curl -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/status
 - 旧接口 `PUT /api/webdav/shared-users`、`PUT /api/ftp/shared-users`、`PUT /api/smb/shared-users` 修改的是三个服务共用的同一份共享用户，需要同时具备 `webdav:write`、`ftp:write`、`smb:write`；新接口 `/api/fileusers` 使用 `fileusers` 域的权限。
 - `GET /api/session` 与 `GET /api/openapi.json` 接受任意有效令牌。
 - 以下模块的写权限可以在服务器上执行命令，等同于 Gately 进程用户的命令执行权限：`ddns`（命令取 IP）、`cron`（定时任务）、`guard`（命令日志源）、`stun`（规则脚本）、`ssl`（映射脚本与本机部署命令）、`webterminal`、`docker`（容器内执行与 Compose）、`frp`、`filebrowser`、`cloudflared`（可指定程序路径）。新建令牌时这些模块带有「可执行命令」标记，只授予完全信任的脚本。令牌调用 Lucky 导入（`import:write`）时条目一律导入为停用状态，`enable=1` 只对登录会话生效。
+- `tailscale` 与 `netbird` 的写权限可以给守护进程追加启动参数与环境变量（例如开启它们自带的 SSH 服务），同样带有「可执行命令」标记。
+- 以下模块的写权限可以读取或修改服务器上的文件：`storage`（挂载任意目录后在文件管理中读写）、`webservice`（把任意目录设为静态站点）、`webdav`、`ftp`、`smb`、`fileusers`（把任意目录共享给自己创建的用户）、`backup`（把含全部密钥的配置备份写到存储挂载点）。新建令牌时这些模块带有「可读写文件」标记。这些功能都拒绝 Gately 自己的配置目录，其余文件不受限制；Gately 以 root 运行时，能改写系统文件就等同于完全控制服务器，只授予完全信任的脚本。
+- 令牌调用 Lucky 导入时不导入全局设置与第三方登录身份表（`lucky_base`、`lucky_thirdPartyAuthManager`），这两项需要登录管理界面后导入。
 
 ### 令牌禁止的操作
 
@@ -73,6 +76,8 @@ curl -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/status
 - 配置备份下载与恢复：`/api/system/backup`、`/api/system/restore`
 - 本地备份文件下载：`/api/backup/local`
 - Web 终端安全设置：`/api/webterminal/security`
+- 托管程序的路径：`PUT /api/easytier/settings`、`PUT /api/tailscale/settings`、`PUT /api/netbird/settings`
+- 备份加密口令：`GET /api/backup/secrets`；令牌调用 `PUT /api/backup/settings` 时口令须保持不变（传 `********`），修改或清空口令返回 403
 - 登录与登出：`/api/login`、`/api/logout`
 
 权限不足的请求返回 `令牌缺少权限 <权限>`，并在系统日志中记录一条警告，包含令牌名称、来源 IP 与被拒绝的接口。
