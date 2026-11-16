@@ -402,6 +402,7 @@ func (a *App) Handler() http.Handler {
 	rec.add("POST /api/system/onboarding/dismiss", a.handleOnboardingDismiss, "")
 	rec.add("POST /api/system/onboarding/scenes", a.handleOnboardingScenes, "")
 	rec.add("POST /api/system/onboarding/done", a.handleOnboardingDone, "")
+	rec.add("POST /api/system/probe", a.handleProbe, "")
 	for _, e := range a.modules {
 		prefix := "/api/" + e.mod.ID()
 		if !e.enabled {

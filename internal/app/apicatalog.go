@@ -288,6 +288,7 @@ var apiCatalog = map[string]epDoc{
 	"POST /api/system/onboarding/dismiss":                {Summary: "完成或关闭首次启动引导", Desc: "仅登录会话可用。之后不再显示「开始使用」清单，也不再询问使用场景。"},
 	"POST /api/system/onboarding/scenes":                 {Summary: "记录选择的使用场景", Desc: "仅登录会话可用。body 为 `{\"scenes\": [...]}`，可选 `web`、`forward`、`ddns`、`mesh`、`files`、`vps`、`all`，为空表示跳过选择。只记录选择并结束场景选择，功能模块开关通过 `PUT /api/system/settings` 的 `disabledModules` 保存。", Body: true},
 	"POST /api/system/onboarding/done":                   {Summary: "把「开始使用」清单项标记为完成", Desc: "仅登录会话可用。body 为 `{\"item\": \"check\"}`，用于无法从配置判断是否完成的项目（如网络自检）。", Body: true},
+	"POST /api/system/probe":                             {Summary: "测试后端地址是否可达", Desc: "仅管理员登录会话可用（只读账号与 API 令牌不能调用）。body 为 `{\"target\": \"http://192.168.1.10:8123\"}`：`http(s)://` 地址向根路径发一次不跟随跳转的 HEAD 请求，`主机:端口` 只测试 TCP 连接，5 秒超时。返回 `reachable`、`status`（HTTP 状态码）、`insecure`（https 后端证书无法通过校验、跳过校验后可连接）、`reason`（不可达的类别：refused、timeout、dns、tls、protocol、unreachable、error）与 `elapsedMs`，不返回响应头和响应体。", Body: true},
 	"GET /api/system/backup":                             {Summary: "下载配置备份", Desc: "备份含全部密钥。"},
 	"GET /api/system/diagnostics":                        {Summary: "导出脱敏诊断包", Desc: "`logs=0` 不含日志，`preview=1` 返回各文件内容的 JSON。"},
 	"POST /api/system/restore":                           {Summary: "从备份恢复配置", Desc: "以 multipart/form-data 上传，字段名 `file`；加密备份需同时提交 `password`；`keepAccount=1` 保留当前管理员账号与凭据（忽略备份中的 account.json、tokens.json 与系统设置里的第三方登录，备份可不含 account.json）。恢复账号文件时换用新的会话密钥，恢复前签发的登录会话全部失效。仍使用默认密码时拒绝，需先修改管理员密码。"},
