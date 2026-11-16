@@ -185,7 +185,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | POST | `/api/tailscale/instances/{key}/restart` | `tailscale:write` | Reiniciar una instancia de Tailscale |
 | POST | `/api/tailscale/instances/{key}/logout` | `tailscale:write` | Cerrar la sesión de una instancia de Tailscale |
 | GET | `/api/tailscale/settings` | `tailscale:read` | Leer la configuración del programa Tailscale |
-| PUT | `/api/tailscale/settings` | `tailscale:write` | Guardar la configuración del programa Tailscale |
+| PUT | `/api/tailscale/settings` | Solo sesión iniciada | Guardar la configuración del programa Tailscale |
 | GET | `/api/tailscale/install` | `tailscale:read` | Ver la información de instalación y el progreso de un programa gestionado |
 | POST | `/api/tailscale/install` | `tailscale:write` | Instalar o actualizar en línea un programa gestionado |
 | POST | `/api/tailscale/install/check` | `tailscale:write` | Buscar actualizaciones de un programa gestionado |
@@ -218,7 +218,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | POST | `/api/netbird/instances/{key}/restart` | `netbird:write` | Reiniciar una instancia de NetBird |
 | POST | `/api/netbird/instances/{key}/logout` | `netbird:write` | Cerrar sesión en una instancia de NetBird |
 | GET | `/api/netbird/settings` | `netbird:read` | Leer los ajustes del programa NetBird |
-| PUT | `/api/netbird/settings` | `netbird:write` | Guardar los ajustes del programa NetBird |
+| PUT | `/api/netbird/settings` | Solo sesión iniciada | Guardar los ajustes del programa NetBird |
 | GET | `/api/netbird/install` | `netbird:read` | Ver la información de instalación y el progreso de un programa gestionado |
 | POST | `/api/netbird/install` | `netbird:write` | Instalar o actualizar en línea un programa gestionado |
 | POST | `/api/netbird/install/check` | `netbird:write` | Buscar actualizaciones de un programa gestionado |
@@ -250,7 +250,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | GET | `/api/easytier/instances/{key}/status` | `easytier:read` | Ver el estado de ejecución de una instancia de EasyTier |
 | POST | `/api/easytier/instances/{key}/restart` | `easytier:write` | Reiniciar una instancia de EasyTier |
 | GET | `/api/easytier/settings` | `easytier:read` | Leer la configuración del programa EasyTier |
-| PUT | `/api/easytier/settings` | `easytier:write` | Guardar la configuración del programa EasyTier |
+| PUT | `/api/easytier/settings` | Solo sesión iniciada | Guardar la configuración del programa EasyTier |
 | GET | `/api/easytier/install` | `easytier:read` | Ver la información de instalación y el progreso de un programa gestionado |
 | POST | `/api/easytier/install` | `easytier:write` | Instalar o actualizar en línea un programa gestionado |
 | POST | `/api/easytier/install/check` | `easytier:write` | Buscar actualizaciones de un programa gestionado |
@@ -918,7 +918,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | POST | `/api/backup/targets-delete` | `backup:write` | Eliminar en lote: Destino de copia de seguridad |
 | GET | `/api/backup/settings` | `backup:read` | Ajustes de copia de seguridad |
 | PUT | `/api/backup/settings` | `backup:write` | Modificar los ajustes de copia de seguridad (enviar el marcador de posición como contraseña para conservarla) |
-| GET | `/api/backup/secrets` | `backup:write` | Ver secretos en texto plano |
+| GET | `/api/backup/secrets` | Solo sesión iniciada | Ver secretos en texto plano |
 | POST | `/api/backup/run` | `backup:write` | Hacer una copia de seguridad ahora |
 | GET | `/api/backup/status` | `backup:read` | Resultado de la última copia de seguridad y hora de la próxima ejecución |
 | GET | `/api/backup/mounts` | `backup:read` | Puntos de montaje de almacenamiento que pueden usarse como destino de copia de seguridad |
@@ -1357,6 +1357,9 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `key` | string |
 | `name` | string |
 | `protocol` | string |
+| `quicKeepalivePeriod` | integer |
+| `quicMaxIdleTimeout` | integer |
+| `quicMaxIncomingStreams` | integer |
 | `remark` | string |
 | `serverAddr` | string |
 | `serverPort` | integer |
@@ -1377,6 +1380,9 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | Campo | Tipo |
 | --- | --- |
 | `protocol` | string |
+| `quicKeepalivePeriod` | integer |
+| `quicMaxIdleTimeout` | integer |
+| `quicMaxIncomingStreams` | integer |
 | `serverAddr` | string |
 | `serverPort` | integer |
 | `token` | string |
@@ -1429,6 +1435,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | Campo | Tipo |
 | --- | --- |
 | `allowPorts` | string |
+| `autoFirewall` | boolean |
 | `bindAddr` | string |
 | `bindPort` | integer |
 | `dashboardAddr` | string |
@@ -1442,9 +1449,14 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `ipList` | Lista de string |
 | `ipMode` | string |
 | `ipSets` | Lista de string |
+| `kcpBindPort` | integer |
 | `key` | string |
 | `name` | string |
 | `proxyBindAddr` | string |
+| `quicBindPort` | integer |
+| `quicKeepalivePeriod` | integer |
+| `quicMaxIdleTimeout` | integer |
+| `quicMaxIncomingStreams` | integer |
 | `remark` | string |
 | `subdomainHost` | string |
 | `token` | string |
@@ -1456,6 +1468,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | Campo | Tipo |
 | --- | --- |
 | `allowPorts` | string |
+| `autoFirewall` | boolean |
 | `bindAddr` | string |
 | `bindPort` | integer |
 | `dashboardAddr` | string |
@@ -1467,7 +1480,12 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `ipList` | Lista de string |
 | `ipMode` | string |
 | `ipSets` | Lista de string |
+| `kcpBindPort` | integer |
 | `proxyBindAddr` | string |
+| `quicBindPort` | integer |
+| `quicKeepalivePeriod` | integer |
+| `quicMaxIdleTimeout` | integer |
+| `quicMaxIncomingStreams` | integer |
 | `subdomainHost` | string |
 | `token` | string |
 | `vhostHttpPort` | integer |
@@ -2707,7 +2725,17 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 
 | Campo | Tipo |
 | --- | --- |
+| `background` | string |
+| `bgBlur` | integer |
+| `bgDim` | integer |
+| `defaultEngine` | integer |
+| `description` | string |
 | `enable` | boolean |
+| `engines` | Lista de `webservice.PanelEngine` |
+| `favicon` | string |
+| `footer` | string |
+| `footerUrl` | string |
+| `hideFooter` | boolean |
 | `icon` | string |
 | `key` | string |
 | `lanCidrs` | Lista de string |
@@ -2716,10 +2744,18 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `remark` | string |
 | `skin` | string |
 | `subtitle` | string |
+| `tabTitle` | string |
 | `theme` | string |
 | `title` | string |
 
 ### webservice.PanelAlt
+
+| Campo | Tipo |
+| --- | --- |
+| `name` | string |
+| `url` | string |
+
+### webservice.PanelEngine
 
 | Campo | Tipo |
 | --- | --- |
@@ -2742,14 +2778,18 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | Campo | Tipo |
 | --- | --- |
 | `alts` | Lista de `webservice.PanelAlt` |
+| `authOnly` | boolean |
 | `color` | string |
 | `description` | string |
 | `group` | string |
 | `hide` | boolean |
+| `hideDesc` | boolean |
+| `hideName` | boolean |
 | `icon` | string |
 | `lanUrl` | string |
 | `name` | string |
 | `sameTab` | boolean |
+| `size` | string |
 | `url` | string |
 
 ### webservice.PanelPreview

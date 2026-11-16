@@ -185,7 +185,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/tailscale/instances/{key}/restart` | `tailscale:write` | Tailscale インスタンスを再起動 |
 | POST | `/api/tailscale/instances/{key}/logout` | `tailscale:write` | Tailscale インスタンスをログアウト |
 | GET | `/api/tailscale/settings` | `tailscale:read` | Tailscale のプログラム設定を取得 |
-| PUT | `/api/tailscale/settings` | `tailscale:write` | Tailscale のプログラム設定を保存 |
+| PUT | `/api/tailscale/settings` | ログインセッションのみ | Tailscale のプログラム設定を保存 |
 | GET | `/api/tailscale/install` | `tailscale:read` | 管理プログラムのインストール情報と進捗を表示 |
 | POST | `/api/tailscale/install` | `tailscale:write` | 管理プログラムをオンラインでインストールまたは更新 |
 | POST | `/api/tailscale/install/check` | `tailscale:write` | 管理プログラムの更新を確認 |
@@ -218,7 +218,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/netbird/instances/{key}/restart` | `netbird:write` | NetBird インスタンスを再起動 |
 | POST | `/api/netbird/instances/{key}/logout` | `netbird:write` | NetBird インスタンスからログアウト |
 | GET | `/api/netbird/settings` | `netbird:read` | NetBird のプログラム設定を読み取る |
-| PUT | `/api/netbird/settings` | `netbird:write` | NetBird のプログラム設定を保存 |
+| PUT | `/api/netbird/settings` | ログインセッションのみ | NetBird のプログラム設定を保存 |
 | GET | `/api/netbird/install` | `netbird:read` | 管理プログラムのインストール情報と進捗を表示 |
 | POST | `/api/netbird/install` | `netbird:write` | 管理プログラムをオンラインでインストールまたは更新 |
 | POST | `/api/netbird/install/check` | `netbird:write` | 管理プログラムの更新を確認 |
@@ -250,7 +250,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/easytier/instances/{key}/status` | `easytier:read` | EasyTier インスタンスの実行状態を表示 |
 | POST | `/api/easytier/instances/{key}/restart` | `easytier:write` | EasyTier インスタンスを再起動 |
 | GET | `/api/easytier/settings` | `easytier:read` | EasyTier プログラム設定を読み取る |
-| PUT | `/api/easytier/settings` | `easytier:write` | EasyTier プログラム設定を保存 |
+| PUT | `/api/easytier/settings` | ログインセッションのみ | EasyTier プログラム設定を保存 |
 | GET | `/api/easytier/install` | `easytier:read` | 管理プログラムのインストール情報と進捗を表示 |
 | POST | `/api/easytier/install` | `easytier:write` | 管理プログラムをオンラインでインストールまたは更新 |
 | POST | `/api/easytier/install/check` | `easytier:write` | 管理プログラムの更新を確認 |
@@ -918,7 +918,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/backup/targets-delete` | `backup:write` | バックアップ先 の一括削除 |
 | GET | `/api/backup/settings` | `backup:read` | バックアップ設定 |
 | PUT | `/api/backup/settings` | `backup:write` | バックアップ設定を変更（パスフレーズにプレースホルダーを渡すと変更なし） |
-| GET | `/api/backup/secrets` | `backup:write` | シークレットを平文で表示 |
+| GET | `/api/backup/secrets` | ログインセッションのみ | シークレットを平文で表示 |
 | POST | `/api/backup/run` | `backup:write` | 今すぐバックアップを 1 回実行 |
 | GET | `/api/backup/status` | `backup:read` | 直近のバックアップ結果と次回実行時刻 |
 | GET | `/api/backup/mounts` | `backup:read` | バックアップ先として使用できるストレージのマウントポイント |
@@ -1357,6 +1357,9 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `key` | string |
 | `name` | string |
 | `protocol` | string |
+| `quicKeepalivePeriod` | integer |
+| `quicMaxIdleTimeout` | integer |
+| `quicMaxIncomingStreams` | integer |
 | `remark` | string |
 | `serverAddr` | string |
 | `serverPort` | integer |
@@ -1377,6 +1380,9 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | フィールド | 型 |
 | --- | --- |
 | `protocol` | string |
+| `quicKeepalivePeriod` | integer |
+| `quicMaxIdleTimeout` | integer |
+| `quicMaxIncomingStreams` | integer |
 | `serverAddr` | string |
 | `serverPort` | integer |
 | `token` | string |
@@ -1429,6 +1435,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | フィールド | 型 |
 | --- | --- |
 | `allowPorts` | string |
+| `autoFirewall` | boolean |
 | `bindAddr` | string |
 | `bindPort` | integer |
 | `dashboardAddr` | string |
@@ -1442,9 +1449,14 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `ipList` | 配列 of string |
 | `ipMode` | string |
 | `ipSets` | 配列 of string |
+| `kcpBindPort` | integer |
 | `key` | string |
 | `name` | string |
 | `proxyBindAddr` | string |
+| `quicBindPort` | integer |
+| `quicKeepalivePeriod` | integer |
+| `quicMaxIdleTimeout` | integer |
+| `quicMaxIncomingStreams` | integer |
 | `remark` | string |
 | `subdomainHost` | string |
 | `token` | string |
@@ -1456,6 +1468,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | フィールド | 型 |
 | --- | --- |
 | `allowPorts` | string |
+| `autoFirewall` | boolean |
 | `bindAddr` | string |
 | `bindPort` | integer |
 | `dashboardAddr` | string |
@@ -1467,7 +1480,12 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `ipList` | 配列 of string |
 | `ipMode` | string |
 | `ipSets` | 配列 of string |
+| `kcpBindPort` | integer |
 | `proxyBindAddr` | string |
+| `quicBindPort` | integer |
+| `quicKeepalivePeriod` | integer |
+| `quicMaxIdleTimeout` | integer |
+| `quicMaxIncomingStreams` | integer |
 | `subdomainHost` | string |
 | `token` | string |
 | `vhostHttpPort` | integer |
@@ -2707,7 +2725,17 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 
 | フィールド | 型 |
 | --- | --- |
+| `background` | string |
+| `bgBlur` | integer |
+| `bgDim` | integer |
+| `defaultEngine` | integer |
+| `description` | string |
 | `enable` | boolean |
+| `engines` | 配列 of `webservice.PanelEngine` |
+| `favicon` | string |
+| `footer` | string |
+| `footerUrl` | string |
+| `hideFooter` | boolean |
 | `icon` | string |
 | `key` | string |
 | `lanCidrs` | 配列 of string |
@@ -2716,10 +2744,18 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `remark` | string |
 | `skin` | string |
 | `subtitle` | string |
+| `tabTitle` | string |
 | `theme` | string |
 | `title` | string |
 
 ### webservice.PanelAlt
+
+| フィールド | 型 |
+| --- | --- |
+| `name` | string |
+| `url` | string |
+
+### webservice.PanelEngine
 
 | フィールド | 型 |
 | --- | --- |
@@ -2742,14 +2778,18 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | フィールド | 型 |
 | --- | --- |
 | `alts` | 配列 of `webservice.PanelAlt` |
+| `authOnly` | boolean |
 | `color` | string |
 | `description` | string |
 | `group` | string |
 | `hide` | boolean |
+| `hideDesc` | boolean |
+| `hideName` | boolean |
 | `icon` | string |
 | `lanUrl` | string |
 | `name` | string |
 | `sameTab` | boolean |
+| `size` | string |
 | `url` | string |
 
 ### webservice.PanelPreview
