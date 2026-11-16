@@ -168,8 +168,7 @@ type catalog struct {
 	tmplAny []int32
 	segIdx  map[rune][]int32
 	// cache 缓存已翻译结果，日志轮询会反复翻译同一批文案
-	cacheMu sync.Mutex
-	cache   map[string]string
+	cache genCache
 }
 
 type tmpl struct {
@@ -320,7 +319,6 @@ func buildCatalog(m map[string]string) *catalog {
 		}
 		return c.tmpls[i].key < c.tmpls[j].key
 	})
-	c.cache = map[string]string{}
 	c.buildIndex()
 	return c
 }
@@ -527,23 +525,16 @@ func (c *catalog) translate(lang, s string, depth int) string {
 	if v, ok := c.exact[s]; ok {
 		return v
 	}
-	if depth == 0 {
-		c.cacheMu.Lock()
-		v, ok := c.cache[s]
-		c.cacheMu.Unlock()
-		if ok {
-			return v
-		}
-		out := c.translateSlow(lang, s, depth)
-		c.cacheMu.Lock()
-		if len(c.cache) >= 8192 {
-			c.cache = map[string]string{}
-		}
-		c.cache[s] = out
-		c.cacheMu.Unlock()
-		return out
+	// 整句与第一层参数（如“失败: <内层错误>”里的内层错误）走缓存；更深的嵌套很少见，直接计算
+	if depth > 1 {
+		return c.translateSlow(lang, s, depth)
 	}
-	return c.translateSlow(lang, s, depth)
+	if v, ok := c.cache.get(s); ok {
+		return v
+	}
+	out := c.translateSlow(lang, s, depth)
+	c.cache.put(s, out)
+	return out
 }
 
 func (c *catalog) translateSlow(lang, s string, depth int) string {
