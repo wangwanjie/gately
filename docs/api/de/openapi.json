@@ -1247,6 +1247,9 @@
           "reason": {
             "type": "string"
           },
+          "redirect": {
+            "type": "boolean"
+          },
           "trapPorts": {
             "type": "string"
           },
@@ -2492,6 +2495,9 @@
           "maxConnections": {
             "type": "integer"
           },
+          "maxConnsPerSource": {
+            "type": "integer"
+          },
           "mode": {
             "type": "string"
           },
@@ -2641,6 +2647,9 @@
             "type": "string"
           },
           "maxConnections": {
+            "type": "integer"
+          },
+          "maxConnsPerSource": {
             "type": "integer"
           },
           "name": {
@@ -3347,6 +3356,9 @@
           },
           "paranoia": {
             "type": "integer"
+          },
+          "regexPrefilter": {
+            "type": "boolean"
           },
           "remark": {
             "type": "string"
@@ -44081,7 +44093,7 @@
     },
     "/api/system/upgrade": {
       "post": {
-        "description": "Nur mit Sitzung (Administrator) und nur für Linux-Binärinstallationen. Lädt das Release-Paket für diese Plattform im Hintergrund, prüft die SHA-256 gegen checksums.txt, startet die neue Binärdatei testweise, ersetzt die ausführbare Datei und startet neu. Die vorherige Version bleibt als `\u003cDateiname\u003e.old` im selben Verzeichnis erhalten. Gibt sofort 202 zurück; den Fortschritt liefert `GET /api/system/upgrade/status`. Benutzerdefinierte Builds erhalten 409: Das Online-Upgrade lädt die Vollversion herunter. Erzeuge daher auf https://build.gately.cn eine neue Version mit denselben Optionen und aktualisiere über den Upload-Endpunkt.\n\n**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",
+        "description": "Nur mit Sitzung (Administrator) und nur für Linux-Binärinstallationen. Lädt das Release-Paket für diese Plattform im Hintergrund, prüft die minisign-Signatur von checksums.txt (checksums.txt.minisig) mit dem eingebauten öffentlichen Schlüssel (eine ungültige Signatur lehnt das Upgrade ab; Versionen vor Einführung der Signatur haben diese Datei nicht und werden trotzdem aktualisiert), prüft die SHA-256 gegen checksums.txt, startet die neue Binärdatei testweise, ersetzt die ausführbare Datei und startet neu. Die vorherige Version bleibt als `\u003cDateiname\u003e.old` im selben Verzeichnis erhalten. Gibt sofort 202 zurück; den Fortschritt liefert `GET /api/system/upgrade/status`. Benutzerdefinierte Builds erhalten 409: Das Online-Upgrade lädt die Vollversion herunter. Erzeuge daher auf https://build.gately.cn eine neue Version mit denselben Optionen und aktualisiere über den Upload-Endpunkt.\n\n**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",
         "responses": {
           "200": {
             "description": "Erfolgreich"
@@ -44173,7 +44185,7 @@
     },
     "/api/system/upgrade/status": {
       "get": {
-        "description": "Nur mit Sitzung. `state` durchläuft `checking`, `downloading`, `verifying`, `installing` und `restarting`; bei einem Fehler ist es `failed` und `error` nennt den Grund, nach einem Abbruch `canceled`. `downloaded` / `total` sind die bisher geladenen und die gesamten Bytes des Upgrade-Pakets.\n\n**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",
+        "description": "Nur mit Sitzung. `state` durchläuft `checking`, `downloading`, `verifying`, `installing` und `restarting`; bei einem Fehler ist es `failed` und `error` nennt den Grund, nach einem Abbruch `canceled`. `downloaded` / `total` sind die bisher geladenen und die gesamten Bytes des Upgrade-Pakets. `unsigned` ist true, wenn die Version keine Signatur hat und nur ihr SHA-256 geprüft wurde.\n\n**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",
         "responses": {
           "200": {
             "description": "Erfolgreich"

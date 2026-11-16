@@ -1540,6 +1540,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `hits` | Mapa de integer |
 | `openPorts` | integer |
 | `reason` | string |
+| `redirect` | boolean |
 | `trapPorts` | string |
 | `trapSkipped` | Array de integer |
 | `version` | string |
@@ -2068,6 +2069,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `listenAddress` | string |
 | `listenPorts` | string |
 | `maxConnections` | integer |
+| `maxConnsPerSource` | integer |
 | `mode` | string |
 | `name` | string |
 | `protocols` | Array de string |
@@ -2119,6 +2121,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `listenAddress` | string |
 | `listenPorts` | string |
 | `maxConnections` | integer |
+| `maxConnsPerSource` | integer |
 | `name` | string |
 | `protocols` | Array de string |
 | `proxyProtocol` | string |
@@ -2384,6 +2387,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `name` | string |
 | `outboundThreshold` | integer |
 | `paranoia` | integer |
+| `regexPrefilter` | boolean |
 | `remark` | string |
 | `ruleSets` | Array de `waf.RuleSet` |
 | `safeline` | `waf.SafeLine` |

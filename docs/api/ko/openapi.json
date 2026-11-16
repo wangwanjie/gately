@@ -1247,6 +1247,9 @@
           "reason": {
             "type": "string"
           },
+          "redirect": {
+            "type": "boolean"
+          },
           "trapPorts": {
             "type": "string"
           },
@@ -2492,6 +2495,9 @@
           "maxConnections": {
             "type": "integer"
           },
+          "maxConnsPerSource": {
+            "type": "integer"
+          },
           "mode": {
             "type": "string"
           },
@@ -2641,6 +2647,9 @@
             "type": "string"
           },
           "maxConnections": {
+            "type": "integer"
+          },
+          "maxConnsPerSource": {
             "type": "integer"
           },
           "name": {
@@ -3347,6 +3356,9 @@
           },
           "paranoia": {
             "type": "integer"
+          },
+          "regexPrefilter": {
+            "type": "boolean"
           },
           "remark": {
             "type": "string"
@@ -44081,7 +44093,7 @@
     },
     "/api/system/upgrade": {
       "post": {
-        "description": "로그인 세션(관리자)에서만 사용할 수 있으며 Linux 바이너리 설치만 지원합니다. 이 플랫폼용 릴리스 패키지를 백그라운드에서 내려받아 checksums.txt의 SHA-256을 대조하고 새 바이너리를 시험 실행한 뒤 실행 파일을 교체하고 재시작합니다. 이전 버전은 같은 디렉터리에 `\u003c파일 이름\u003e.old`로 보관됩니다. 즉시 202를 반환하며 진행 상황은 `GET /api/system/upgrade/status`로 확인합니다. 사용자 지정 빌드는 409를 반환합니다. 온라인 업그레이드는 전체 버전을 내려받으므로 https://build.gately.cn에서 같은 옵션으로 새 버전을 생성한 뒤 업로드 API로 업그레이드하세요.\n\n**로그인 세션에서만 사용할 수 있으며, API 토큰으로는 이 엔드포인트에 접근할 수 없습니다.**",
+        "description": "로그인 세션(관리자)에서만 사용할 수 있으며 Linux 바이너리 설치만 지원합니다. 이 플랫폼용 릴리스 패키지를 백그라운드에서 내려받아 내장된 공개 키로 checksums.txt의 minisign 서명(checksums.txt.minisig)을 검증한 뒤(서명이 올바르지 않으면 업그레이드를 거부하고, 서명 도입 전 버전이라 이 파일이 없으면 그대로 진행) checksums.txt의 SHA-256을 대조하고 새 바이너리를 시험 실행한 뒤 실행 파일을 교체하고 재시작합니다. 이전 버전은 같은 디렉터리에 `\u003c파일 이름\u003e.old`로 보관됩니다. 즉시 202를 반환하며 진행 상황은 `GET /api/system/upgrade/status`로 확인합니다. 사용자 지정 빌드는 409를 반환합니다. 온라인 업그레이드는 전체 버전을 내려받으므로 https://build.gately.cn에서 같은 옵션으로 새 버전을 생성한 뒤 업로드 API로 업그레이드하세요.\n\n**로그인 세션에서만 사용할 수 있으며, API 토큰으로는 이 엔드포인트에 접근할 수 없습니다.**",
         "responses": {
           "200": {
             "description": "성공"
@@ -44173,7 +44185,7 @@
     },
     "/api/system/upgrade/status": {
       "get": {
-        "description": "로그인 세션에서만 사용할 수 있습니다. `state`는 `checking`, `downloading`, `verifying`, `installing`, `restarting` 순서로 진행되며, 실패하면 `failed`가 되고 `error`에 이유가 담기며, 취소되면 `canceled`입니다. `downloaded` / `total`은 업그레이드 패키지의 다운로드된 바이트 수와 전체 바이트 수입니다.\n\n**로그인 세션에서만 사용할 수 있으며, API 토큰으로는 이 엔드포인트에 접근할 수 없습니다.**",
+        "description": "로그인 세션에서만 사용할 수 있습니다. `state`는 `checking`, `downloading`, `verifying`, `installing`, `restarting` 순서로 진행되며, 실패하면 `failed`가 되고 `error`에 이유가 담기며, 취소되면 `canceled`입니다. `downloaded` / `total`은 업그레이드 패키지의 다운로드된 바이트 수와 전체 바이트 수입니다. `unsigned`가 true이면 해당 버전에 릴리스 서명이 없어 SHA-256만 대조했다는 뜻입니다.\n\n**로그인 세션에서만 사용할 수 있으며, API 토큰으로는 이 엔드포인트에 접근할 수 없습니다.**",
         "responses": {
           "200": {
             "description": "성공"

@@ -1540,6 +1540,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `hits` | Table de correspondance de integer |
 | `openPorts` | integer |
 | `reason` | string |
+| `redirect` | boolean |
 | `trapPorts` | string |
 | `trapSkipped` | Tableau de integer |
 | `version` | string |
@@ -2068,6 +2069,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `listenAddress` | string |
 | `listenPorts` | string |
 | `maxConnections` | integer |
+| `maxConnsPerSource` | integer |
 | `mode` | string |
 | `name` | string |
 | `protocols` | Tableau de string |
@@ -2119,6 +2121,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `listenAddress` | string |
 | `listenPorts` | string |
 | `maxConnections` | integer |
+| `maxConnsPerSource` | integer |
 | `name` | string |
 | `protocols` | Tableau de string |
 | `proxyProtocol` | string |
@@ -2384,6 +2387,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `name` | string |
 | `outboundThreshold` | integer |
 | `paranoia` | integer |
+| `regexPrefilter` | boolean |
 | `remark` | string |
 | `ruleSets` | Tableau de `waf.RuleSet` |
 | `safeline` | `waf.SafeLine` |
