@@ -74,7 +74,11 @@ func TestUDPIdleSessionsHoldNoBuffer(t *testing.T) {
 	}
 	deadline := time.Now().Add(10 * time.Second)
 	for r.stats.ActiveConns.Load() < clients && time.Now().Before(deadline) {
-		time.Sleep(20 * time.Millisecond)
+		time.Sleep(200 * time.Millisecond)
+		// 瞬间涌入的数据报可能超出监听套接字的接收缓冲被内核丢弃（Linux 默认缓冲较小），补发一次；已有会话的补发不新建会话
+		for _, c := range conns {
+			_, _ = c.Write([]byte("0123456789abcdef0123456789abcdef"))
+		}
 	}
 	if n := r.stats.ActiveConns.Load(); n != clients {
 		t.Fatalf("应建立 %d 个会话，实际 %d", clients, n)
