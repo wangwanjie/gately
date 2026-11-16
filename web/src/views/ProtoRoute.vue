@@ -149,6 +149,12 @@
                   <el-option label="PROXY v2" value="v2" />
                 </el-select>
               </div>
+              <TargetHint
+                v-if="rt.protocol !== 'spa'"
+                :lines="splitList(rt.targetsText)"
+                :ports="rt.targetPort ? String(rt.targetPort) : ''"
+                @split="(v) => ((rt.targetsText = v.hosts.join(', ')), (rt.targetPort = v.port))"
+              />
               <div v-if="rt.protocol !== 'spa' && (moduleBuilt('knock') || rt.knock)" class="route-knock">
                 <span class="route-knock-label">{{ t('protoRoute.routeKnock') }}</span>
                 <KnockSelect v-model="rt.knock" size="small" />
@@ -161,6 +167,11 @@
         </el-form-item>
         <el-form-item :label="t('protoRoute.defaultTarget')">
           <el-input v-model="targetsText" type="textarea" :rows="2" :placeholder="t('protoRoute.defaultTargetPlaceholder')" />
+          <TargetHint
+            :lines="targetsText.split(/[\n,]/)"
+            :ports="editing.targetPorts"
+            @split="(v) => ((targetsText = v.hosts.join('\n')), (editing.targetPorts = String(v.port)))"
+          />
         </el-form-item>
         <el-form-item :label="t('protoRoute.targetPorts')">
           <el-input v-model="editing.targetPorts" :placeholder="t('protoRoute.targetPortsPlaceholder')" />
@@ -238,6 +249,7 @@ import Field from '../components/Field.vue'
 import StatusBadge, { type StatusType } from '../components/StatusBadge.vue'
 import LogCard from '../components/LogCard.vue'
 import CopyHint from '../components/CopyHint.vue'
+import TargetHint from '../components/TargetHint.vue'
 import { createItem, uniqueName, type CopySource } from '../copyDraft'
 import { useFormLayout } from '../composables/useIsMobile'
 import { usePolling } from '../composables/usePolling'

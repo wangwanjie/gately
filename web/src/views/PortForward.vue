@@ -90,6 +90,7 @@
         </el-form-item>
         <el-form-item :label="t('portForward.targetAddress')" required>
           <el-input v-model="targetsText" type="textarea" :rows="2" :placeholder="t('portForward.targetAddressPlaceholder')" />
+          <TargetHint :lines="targetLines" :ports="editing.targetPorts" @split="splitTargets" />
         </el-form-item>
         <el-form-item :label="t('portForward.targetPorts')">
           <el-input v-model="editing.targetPorts" :placeholder="t('portForward.targetPortsPlaceholder')" />
@@ -167,6 +168,7 @@ import Field from '../components/Field.vue'
 import StatusBadge, { type StatusType } from '../components/StatusBadge.vue'
 import LogCard from '../components/LogCard.vue'
 import CopyHint from '../components/CopyHint.vue'
+import TargetHint from '../components/TargetHint.vue'
 import { createItem, uniqueName, type CopySource } from '../copyDraft'
 import { useFormLayout } from '../composables/useIsMobile'
 import { usePolling } from '../composables/usePolling'
@@ -351,11 +353,22 @@ function openEditor(row?: RuleView, copy = false) {
   editorVisible.value = true
 }
 
-async function save() {
-  editing.value.targetAddresses = targetsText.value
+// targetLines 为目标地址输入框按行（或逗号）拆开的地址
+const targetLines = computed(() =>
+  targetsText.value
     .split(/[\n,]/)
     .map((s) => s.trim())
-    .filter(Boolean)
+    .filter(Boolean),
+)
+
+// splitTargets 把写成「主机:端口」的目标地址拆开：主机留在目标地址，端口填到目标端口
+function splitTargets(v: { hosts: string[]; port: number }) {
+  targetsText.value = v.hosts.join('\n')
+  editing.value.targetPorts = String(v.port)
+}
+
+async function save() {
+  editing.value.targetAddresses = targetLines.value
   saving.value = true
   try {
     const { key, ...body } = editing.value
