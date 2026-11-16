@@ -10,6 +10,7 @@ import (
 
 	"github.com/wangwanjie/gately/internal/crud"
 	"github.com/wangwanjie/gately/internal/iplist"
+	"github.com/wangwanjie/gately/internal/l4proxy"
 	"github.com/wangwanjie/gately/internal/webhook"
 )
 
@@ -216,7 +217,15 @@ func (r *Rule) Validate() error {
 			return errors.New("不使用内置转发时通道本地端口不能为 0")
 		}
 	} else {
-		r.TargetAddresses = cleanList(r.TargetAddresses)
+		// 目标地址写成「主机:端口」时把端口拆到目标端口；与已填的目标端口冲突时拒绝
+		targets, port, err := l4proxy.SplitTargets(r.TargetAddresses)
+		if err != nil {
+			return err
+		}
+		if r.TargetPort, err = l4proxy.MergeTargetPort(r.TargetPort, port); err != nil {
+			return err
+		}
+		r.TargetAddresses = targets
 		if len(r.TargetAddresses) == 0 || r.TargetPort == 0 {
 			return errors.New("请填写转发目标地址和端口")
 		}
