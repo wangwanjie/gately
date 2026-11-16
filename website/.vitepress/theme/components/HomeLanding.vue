@@ -11,8 +11,9 @@ import {
 } from 'lucide-vue-next'
 
 // 所有文案来自当前语言包（.vitepress/i18n/<语言>.json 的 home 节点），图标按顺序与条目一一对应
-const { theme, localeIndex } = useData()
-const h = computed(() => theme.value.home)
+const { frontmatter, localeIndex } = useData()
+// 文案由 config.mts 的 transformPageData 按页面语言注入
+const h = computed(() => frontmatter.value.siteText.home)
 const prefix = computed(() => (localeIndex.value === 'root' ? '' : `/${localeIndex.value}`))
 const link = (path: string) => withBase(`${prefix.value}${path}`)
 
