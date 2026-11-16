@@ -298,6 +298,14 @@ const { t } = useI18n()
     padding: 6px 8px 6px 12px;
   }
 }
+/* 手机上点击区域至少 40px（视觉大小不变，用内边距与负外边距扩大可点范围） */
+@media (max-width: 767.98px) {
+  .entity-toggle {
+    width: 40px;
+    height: 40px;
+    margin: -8px -8px -8px -10px;
+  }
+}
 </style>
 
 <!-- 插槽里的开关不带本组件的 scoped 标记，这几条规则不能写在 scoped 样式里 -->

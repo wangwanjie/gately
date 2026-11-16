@@ -314,8 +314,8 @@ onMounted(async () => {
   text-overflow: ellipsis;
 }
 .icon-btn {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   border-radius: 8px;
   border: none;
   background: transparent;
@@ -333,7 +333,7 @@ onMounted(async () => {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  height: 36px;
+  height: 40px;
   padding: 0 8px 0 4px;
   border-radius: 18px;
   border: 1px solid var(--g-border);

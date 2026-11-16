@@ -80,4 +80,13 @@ function copy() {
     opacity: 1;
   }
 }
+/* 手机上点击区域至少 40px（视觉大小不变，用内边距与负外边距扩大可点范围） */
+@media (max-width: 767.98px) {
+  .url-link-copy {
+    min-width: 40px;
+    min-height: 40px;
+    justify-content: center;
+    margin: -12px -8px;
+  }
+}
 </style>

@@ -440,3 +440,21 @@ html.theme-vt *::after {
 .el-message-box {
   overscroll-behavior: contain;
 }
+
+/* 手机上的点击目标至少 40px 高（Apple 建议 44pt，Material 48dp）：普通按钮、小按钮与图标按钮统一加高，图标按钮同时加宽；
+   相邻的文字按钮之间留出间距，避免误点到旁边的删除。链接样式的按钮在正文里，不加高 */
+@media (max-width: 767.98px) {
+  .el-button:not(.is-link) {
+    min-height: 40px;
+  }
+  .el-button:not(.is-link):not(.is-circle).el-button--small {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  .el-button.is-text:not(.is-link) {
+    min-width: 40px;
+  }
+  .el-button.is-text + .el-button.is-text {
+    margin-left: 4px;
+  }
+}
