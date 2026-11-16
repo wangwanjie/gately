@@ -154,7 +154,7 @@ func (b *Buffer) PersistWith(path string, opt PersistOptions) error {
 	// 缓冲已有日志（运行中换了日志目录）时只需要文件里最大的序号，读一条即可
 	want := 1
 	if b.count == 0 {
-		want = len(b.entries)
+		want = b.size
 	}
 	var restored []Entry
 	if opt.Archive {
@@ -172,10 +172,12 @@ func (b *Buffer) PersistWith(path string, opt PersistOptions) error {
 		maxSeq = max(maxSeq, e.Seq)
 	}
 	if b.count == 0 {
-		for _, e := range restored {
-			b.entries[(b.start+b.count)%len(b.entries)] = e
-			b.count++
+		// 恢复的日志不超过 want（即容量上限）条，按时间顺序直接作为缓冲内容
+		if len(restored) > b.size {
+			restored = restored[len(restored)-b.size:]
 		}
+		b.entries = append(make([]Entry, 0, len(restored)), restored...)
+		b.start, b.count = 0, len(restored)
 	}
 	// 序号只增不减：运行中开启落盘时，文件里可能有更大的旧序号
 	if maxSeq >= b.nextSeq {
