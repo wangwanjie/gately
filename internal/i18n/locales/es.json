@@ -105,6 +105,7 @@
   "%s 有 CNAME 指向 %s，验证记录写在 %s": "%s tiene un CNAME que apunta a %s; el registro se escribe en %s",
   "%s 有新版本 %s": "Nueva versión de %s: %s",
   "%s 有新版本 %s（当前 %s）": "Nueva versión de %s: %s (actual %s)",
+  "%s 未登录的连接过多（全部来源上限 %s，单个来源上限 %s），已拒绝新连接": "%s demasiadas conexiones sin iniciar sesión (límite %s en total, %s por origen); se rechazan las conexiones nuevas",
   "%s 未解析到 SNI: %v": "%s no se obtuvo SNI: %v",
   "%s 查到的权威区域 %s 不可用，按域名推断主域名": "La zona autoritativa %[2]s encontrada para %[1]s no es utilizable; se deduce la zona a partir del nombre de dominio",
   "%s 没有有效的敲门授权，已断开": "%s no tiene una autorización de knock válida, desconectado",

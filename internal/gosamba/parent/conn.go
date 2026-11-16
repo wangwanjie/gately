@@ -1,4 +1,4 @@
-// Gately 修改：仅在 Linux 与 macOS 编译（构建约束）；客户端给出的偏移与长度改用 bounds 包在 uint64 中判断边界；连接与工作协程中的 panic 只断开本连接（见 parent/gately_recover.go）。
+// Gately 修改：仅在 Linux 与 macOS 编译（构建约束）；客户端给出的偏移与长度改用 bounds 包在 uint64 中判断边界；连接与工作协程中的 panic 只断开本连接（见 parent/gately_recover.go）；认证前的截止时间、帧大小与并发上限（见 parent/gately_preauth.go）。
 
 //go:build linux || darwin
 
@@ -93,6 +93,9 @@ type ConnOptions struct {
 
 	// AuthLimiter 为 Gately 新增：按来源地址限制认证失败次数，为空时不限流。
 	AuthLimiter AuthLimiter
+
+	// PreAuth 为 Gately 新增：认证完成前的超时、单帧上限与并发上限（见 gately_preauth.go），为空时不限制。
+	PreAuth *PreAuthLimits
 }
 
 // Bounds on per-connection concurrency.
@@ -283,6 +286,34 @@ func ServeConn(ctx context.Context, c net.Conn, log *slog.Logger, maxFrame uint3
 	// Gately 新增：读循环（含 NEGOTIATE、SESSION_SETUP 与串行执行的帧）中的 panic 只断开本连接。
 	// 这里最先登记、最后执行：后面登记的清理（排空工作池、关闭写协程、释放句柄）在 panic 时照常先执行
 	defer recoverConnPanic(log, "connection", func() { _ = c.Close() })
+
+	// Gately 新增：认证前的并发上限。名额在认证成功或连接结束时归还
+	preAuth := opts.PreAuth
+	remoteIP := remoteIPOf(c.RemoteAddr())
+	var slots *PreAuthSlots
+	if preAuth != nil {
+		slots = preAuth.Slots
+	}
+	if !slots.acquire(remoteIP) {
+		if slots.shouldLog(time.Now()) {
+			log.Warn("too many unauthenticated connections; refusing new ones", "max_total", slots.MaxTotal, "max_per_ip", slots.MaxPerIP)
+		} else {
+			log.Debug("too many unauthenticated connections; refusing new ones")
+		}
+		return
+	}
+	releaseSlot := sync.OnceFunc(func() { slots.release(remoteIP) })
+	defer releaseSlot()
+	// authed 在本连接第一次认证成功后置位，此后使用原有的空闲超时与帧大小
+	var authed atomic.Bool
+	connStart := time.Now()
+	// readLimits 返回下一次读帧的截止时间与帧大小上限
+	readLimits := func() (time.Time, uint32) {
+		if preAuth == nil || authed.Load() {
+			return time.Now().Add(idleTimeout), maxFrame
+		}
+		return preAuth.readDeadline(connStart, time.Now()), preAuth.frameLimit(maxFrame)
+	}
 	log.Info("connection opened")
 
 	// Force the socket shut when the server context is cancelled, so a read
@@ -310,14 +341,25 @@ func ServeConn(ctx context.Context, c net.Conn, log *slog.Logger, maxFrame uint3
 	br := bufio.NewReaderSize(c, 64*1024)
 	rw := &bufRW{r: br, w: c, c: c}
 
+	// Gately 修改：协商阶段同样受认证前的截止时间与帧大小限制（上游在这里不设截止时间）
+	negDeadline, negMaxFrame := readLimits()
+	if preAuth != nil {
+		_ = c.SetReadDeadline(negDeadline)
+	}
 	conn, err := Negotiate(rw, NegotiatorOptions{
 		RequireEncryption: opts.RequireEncryption,
 		RequireSigning:    opts.RequireSigning,
 		MaxIOSize:         opts.MaxIOSize,
 		ServerStartTime:   opts.ServerStartTime,
+		MaxFrame:          negMaxFrame,
 	}, log)
 	if err != nil {
-		log.Warn("negotiate failed", "err", err)
+		if isTimeout(err) {
+			// 连上后不发协商请求、超时被断开：端口扫描常见，不按警告记录
+			log.Info("negotiate timed out", "err", err)
+		} else {
+			log.Warn("negotiate failed", "err", err)
+		}
 		return
 	}
 	conn.Durable = opts.Durable
@@ -417,7 +459,7 @@ func ServeConn(ctx context.Context, c net.Conn, log *slog.Logger, maxFrame uint3
 		Index:             index,
 		Host:              host,
 		Limiter:           opts.AuthLimiter,
-		RemoteIP:          remoteIPOf(c.RemoteAddr()),
+		RemoteIP:          remoteIP,
 	}
 	dispatcher = &Dispatcher{
 		Conn:              conn,
@@ -495,6 +537,12 @@ func ServeConn(ctx context.Context, c net.Conn, log *slog.Logger, maxFrame uint3
 					log.Warn("session-setup error", "err", err)
 					return false
 				}
+				// Gately 新增：认证成功后归还认证前的名额，后续读帧使用原有的超时与帧大小。
+				// SESSION_SETUP 总在读协程上串行执行（frameNeedsSerialExecution），下一次读帧前已置位
+				if sess != nil && !authed.Load() {
+					authed.Store(true)
+					releaseSlot()
+				}
 				// Fire the post-auth hook once per resolved session (used by the
 				// privilege-drop worker). A nil hook is the default no-op path.
 				if sess != nil && opts.OnAuthenticated != nil {
@@ -523,11 +571,13 @@ func ServeConn(ctx context.Context, c net.Conn, log *slog.Logger, maxFrame uint3
 		// a partial NBSS header) pins a goroutine and its buffers indefinitely.
 		// SMB clients are chatty — real ones send at least an ECHO keepalive
 		// well inside this window — and the deadline is reset per frame.
-		_ = c.SetReadDeadline(time.Now().Add(idleTimeout))
+		// Gately 修改：认证完成前使用认证前的截止时间与帧大小上限（见 readLimits）
+		deadline, frameLimit := readLimits()
+		_ = c.SetReadDeadline(deadline)
 		if aborted.Load() {
 			return
 		}
-		frame, err := transport.ReadFrame(br, maxFrame)
+		frame, err := transport.ReadFrame(br, frameLimit)
 		if err != nil {
 			switch {
 			case aborted.Load():
@@ -535,6 +585,9 @@ func ServeConn(ctx context.Context, c net.Conn, log *slog.Logger, maxFrame uint3
 				// in the writer's queue and teardown will flush it.
 			case errors.Is(err, io.EOF) || errors.Is(err, io.ErrUnexpectedEOF):
 				log.Info("connection closed by peer")
+			case isTimeout(err) && !authed.Load():
+				// 认证前超时断开属于预期行为，不按警告记录
+				log.Info("unauthenticated connection timed out", "err", err)
 			default:
 				log.Warn("read error", "err", err)
 			}

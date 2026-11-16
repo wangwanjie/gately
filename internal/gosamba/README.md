@@ -19,6 +19,7 @@ Gately 的改动（改动过的文件开头有注明）：
 - 构建约束：`parent` 包的源文件（含测试）加上 `//go:build linux || darwin`，另有不带约束的 `parent/doc.go`，其他系统上 `go build/vet ./...` 可以通过
 - 报文边界（新增 `bounds` 包）：客户端给出的 uint32 偏移与长度（NEGOTIATE 上下文、NTLMSSP 字段、CREATE 上下文、WRITE、SET_INFO、IOCTL、QUERY_INFO、报文链 NextCommand、改名文件名长度、扩展属性链表等）一律在 uint64 中判断边界后再转换为 int，32 位平台上不会因转换为负数而越过检查。涉及 `smb2/`、`ntlm/`、`smb3/encrypt.go`、`parent/conn.go`、`parent/dispatch.go`、`parent/xattr.go`
 - 连接隔离（`parent/gately_recover.go`）：连接的读循环、工作池协程、写协程、CHANGE_NOTIFY 与阻塞锁等待协程、监听的连接处理协程都捕获 panic，记录错误日志（含调用栈）后只断开该连接，不让进程退出。涉及 `parent/conn.go`、`parent/listener.go`、`parent/writer.go`、`parent/dispatch.go`、`parent/lock.go`
+- 认证前限制（`parent/gately_preauth.go`，`ConnOptions.PreAuth`）：认证完成前（含协商阶段，上游这里不设截止时间）按每帧超时与总时限设置读截止时间，单帧上限可调小（`NegotiatorOptions.MaxFrame`），并按全局与单个来源（IPv6 按 /64）限制同时处于认证前的连接数；认证成功后恢复原有的空闲超时与帧大小。认证前的超时断开按 Info 记录。为空时与上游行为一致
 
 上游只支持 Linux 与 macOS 作为服务端，Gately 在其他系统上不编译这些包（见 `internal/modules/smb/server_other.go`）。
 
