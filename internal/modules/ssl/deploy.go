@@ -149,12 +149,12 @@ func (d *Deploy) validate(remark string) error {
 	return nil
 }
 
-// validateFileNames 校验自定义文件名；未自定义时沿用证书映射的文件名，此时备注不能为空。
+// validateFileNames 校验自定义文件名；未自定义时沿用证书映射的文件名，此时名称（remark 字段）不能为空。
 func (d *Deploy) validateFileNames(remark string) error {
 	d.CertName, d.KeyName = strings.TrimSpace(d.CertName), strings.TrimSpace(d.KeyName)
 	if d.CertName == "" && d.KeyName == "" {
 		if remark == "" {
-			return errors.New("未自定义文件名时备注不能为空（用作文件名）")
+			return errors.New("未自定义文件名时名称不能为空（用作文件名）")
 		}
 		return nil
 	}
