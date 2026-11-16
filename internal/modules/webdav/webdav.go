@@ -284,7 +284,8 @@ func newUserHandler(u User) *userHandler {
 	if len(u.Mounts) > 0 {
 		fs = mountfs.WebDAV(u.Mounts)
 	} else {
-		fs = xwebdav.Dir(u.Root)
+		// 经 os.Root 访问，指向用户目录之外的符号链接无法被跟随
+		fs = mountfs.RootDAV(u.Root)
 		if u.ReadOnly {
 			fs = mountfs.ReadOnlyDAV{FileSystem: fs}
 		}

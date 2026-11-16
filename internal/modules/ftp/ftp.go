@@ -248,7 +248,8 @@ func (d *driver) authUser(cc ftpserver.ClientContext, user, pass string) (ftpser
 	if len(u.Mounts) > 0 {
 		fs = mountfs.Afero(u.Mounts)
 	} else {
-		fs = afero.NewBasePathFs(afero.NewOsFs(), u.Root)
+		// 经 os.Root 访问，指向用户目录之外的符号链接无法被跟随；修改属主（SITE CHOWN）一律拒绝
+		fs = mountfs.RootAfero(u.Root)
 		if u.ReadOnly {
 			fs = afero.NewReadOnlyFs(fs)
 		}
