@@ -16,6 +16,7 @@ import (
 	"strings"
 	"sync"
 	"sync/atomic"
+	"unicode"
 
 	coreruleset "github.com/corazawaf/coraza-coreruleset/v4"
 	"github.com/corazawaf/coraza/v3"
@@ -483,16 +484,46 @@ func (m *Module) Middleware(key string, next http.Handler) http.Handler {
 		if rec.code >= 400 && (inner == nil || inner.code != rec.code) {
 			httpx.MarkWAFBlocked(r)
 			c.blocked.Add(1)
-			events.Publish(events.Event{
-				Type:    events.WAFBlocked,
-				Source:  c.name,
-				Level:   events.LevelWarn,
-				Title:   "WAF 拦截了请求",
-				Message: r.Method + " " + r.Host + r.URL.Path,
-				Fields:  map[string]string{"ip": r.RemoteAddr, "host": r.Host, "path": r.URL.Path},
-			})
+			events.Publish(blockedEvent(c.name, r))
 		}
 	})
+}
+
+// maxEventText 为拦截事件中域名、路径的最大字符数，超出部分截断。
+const maxEventText = 300
+
+// blockedEvent 返回 WAF 拦截事件。域名与路径来自访客，会进入通知（Webhook、各推送渠道）与日志：
+// 控制字符（换行等）换成转义形式，过长时截断；各通知渠道另按自己的格式转义。
+func blockedEvent(source string, r *http.Request) events.Event {
+	host, path := eventText(r.Host), eventText(r.URL.Path)
+	return events.Event{
+		Type:    events.WAFBlocked,
+		Source:  source,
+		Level:   events.LevelWarn,
+		Title:   "WAF 拦截了请求",
+		Message: r.Method + " " + host + path,
+		Fields:  map[string]string{"ip": r.RemoteAddr, "host": host, "path": path},
+	}
+}
+
+// eventText 把访客文本中的控制字符换成 Go 字符串转义形式（如 \n），并截断到 maxEventText 个字符。
+func eventText(s string) string {
+	var b strings.Builder
+	n := 0
+	for _, c := range s {
+		if n >= maxEventText {
+			b.WriteString("…")
+			break
+		}
+		n++
+		if unicode.IsControl(c) || c == '\u2028' || c == '\u2029' {
+			q := strconv.QuoteRune(c)
+			b.WriteString(q[1 : len(q)-1])
+			continue
+		}
+		b.WriteRune(c)
+	}
+	return b.String()
 }
 
 // blockRecorder 记录首次写出的状态码（1xx 除外），用于识别 WAF 拦截。

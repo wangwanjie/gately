@@ -6,8 +6,6 @@ import { Globe, Smartphone, Laptop, HardDrive, Boxes, House } from 'lucide-vue-n
 // 动画只用 SVG SMIL 与 CSS transform，离开视口或开启「减少动态效果」时暂停，避免空耗 CPU。
 const props = defineProps<{
   labels: { in: string; out: string; blocked: string }
-  title: string
-  rows: [string, string, string][]
 }>()
 
 // 画布坐标（viewBox 560×400）：核心居中，左右各三个节点
@@ -165,17 +163,6 @@ onBeforeUnmount(() => {
       </span>
     </div>
 
-    <!-- 运行状态面板：复用语言包里的 mockRows -->
-    <div class="panel">
-      <div class="panel-bar"><i /><i /><i /><span>{{ props.title }}</span><b class="live">LIVE</b></div>
-      <ul>
-        <li v-for="(r, i) in props.rows" :key="r[0]" :style="{ '--d': `${i * 0.35}s` }">
-          <span class="state" :class="r[2]" />
-          <strong>{{ r[0] }}</strong>
-          <em>{{ r[1] }}</em>
-        </li>
-      </ul>
-    </div>
   </div>
 </template>
 
@@ -237,38 +224,8 @@ onBeforeUnmount(() => {
   box-shadow: 0 6px 18px -8px rgba(11, 95, 79, .35);
 }
 
-.panel {
-  position: relative;
-  margin: -6px 6% 0;
-  border-radius: 14px;
-  border: 1px solid var(--vp-c-divider);
-  background: color-mix(in srgb, var(--vp-c-bg) 82%, transparent);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  box-shadow: 0 24px 50px -28px rgba(11, 95, 79, .45);
-  overflow: hidden;
-}
-.panel-bar { display: flex; align-items: center; gap: 6px; padding: 9px 14px; border-bottom: 1px solid var(--vp-c-divider); }
-.panel-bar i { width: 8px; height: 8px; border-radius: 50%; background: var(--vp-c-divider); }
-.panel-bar span { margin-left: 8px; font-size: 12px; color: var(--vp-c-text-3); font-family: var(--vp-font-family-mono); }
-.live { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; font-size: 10px; font-weight: 700; letter-spacing: .12em; color: #22c55e; }
-.live::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; animation: blink 1.6s steps(2, start) infinite; }
-@keyframes blink { 50% { opacity: .2; } }
-.panel ul { display: grid; grid-template-columns: 1fr 1fr; margin: 0; padding: 6px; list-style: none; }
-.panel li { display: grid; grid-template-columns: 10px auto 1fr; align-items: center; gap: 8px; padding: 7px 8px; font-size: 12.5px; min-width: 0; }
-.panel li strong { font-weight: 600; white-space: nowrap; }
-.panel li em { font-style: normal; color: var(--vp-c-text-3); font-size: 11.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: right; }
-.state { position: relative; width: 7px; height: 7px; border-radius: 50%; }
-.state::after { content: ''; position: absolute; inset: 0; border-radius: 50%; background: inherit; animation: ping 2.4s ease-out infinite; animation-delay: var(--d); }
-.state.ok { background: #22c55e; }
-.state.warn { background: #f59e0b; }
-
 .paused *, .paused *::before, .paused *::after { animation-play-state: paused !important; }
 @media (prefers-reduced-motion: reduce) {
   .pkt { display: none; }
-}
-@media (max-width: 600px) {
-  .panel ul { grid-template-columns: 1fr; }
-  .panel { margin: 4px 0 0; }
 }
 </style>

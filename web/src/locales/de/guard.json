@@ -90,7 +90,8 @@
   "event": {
     "authFailed": "Fehlgeschlagene Anmeldung an der Oberfläche",
     "wafBlocked": "Von der WAF blockierte Anfrage",
-    "knockFailed": "Port-Knocking abgelehnt"
+    "knockFailed": "Port-Knocking abgelehnt",
+    "fileAuthFailed": "Fehlgeschlagene Anmeldung beim Dateidienst"
   },
   "sourceHelp": {
     "file": "Liest neu angehängte Zeilen und wechselt nach einer Rotation zur neuen Datei. Ein Pfad pro Zeile.",
@@ -241,6 +242,10 @@
     "gately-knock": {
       "name": "Fehlgeschlagenes Port Knocking",
       "desc": "Quellen, die wiederholt Klopfpakete senden, deren Authentifizierung fehlschlägt, die wiederholt wurden oder nicht autorisierte Ports anfordern (dieselbe Quelle zählt höchstens alle 5 Sekunden einmal)"
+    },
+    "gately-files": {
+      "name": "Fehlgeschlagene Anmeldungen bei Dateidiensten",
+      "desc": "Quellen, deren Anmeldungen bei WebDAV, FTP oder SMB fehlschlagen oder nach zu vielen Fehlversuchen abgelehnt werden (dieselbe Quelle zählt höchstens alle 5 Sekunden einmal)"
     },
     "web-decoy": {
       "name": "Web-Köderpfade",

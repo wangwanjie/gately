@@ -1,8 +1,8 @@
 ---
 layout: page
-title: "Открытый и проверяемый набор инструментов сетевого шлюза"
-titleTemplate: "Gately"
-description: "Gately — открытый и проверяемый набор инструментов сетевого шлюза: DDNS, STUN-обход NAT, проброс портов, обратный прокси, сертификаты, WAF, Tailscale и frp."
+title: "Gately: self-hosted обратный прокси, DDNS, обход NAT и WAF в одном бинарном файле"
+titleTemplate: false
+description: "Gately — открытый self-hosted шлюз с веб-интерфейсом: обратный прокси с автоматическим HTTPS, динамический DNS, обход NAT (STUN, frp, Cloudflare Tunnel, Tailscale), WAF и блокировки в стиле fail2ban в одном бинарном файле для NAS, роутеров и серверов."
 ---
 
 <HomeLanding />

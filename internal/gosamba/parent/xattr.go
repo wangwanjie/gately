@@ -1,4 +1,4 @@
-// Gately 修改：仅在 Linux 与 macOS 编译（构建约束）。
+// Gately 修改：仅在 Linux 与 macOS 编译（构建约束）；客户端给出的偏移与长度改用 bounds 包在 uint64 中判断边界。
 
 //go:build linux || darwin
 
@@ -12,6 +12,8 @@ import (
 	"syscall"
 
 	"golang.org/x/sys/unix"
+
+	"github.com/wangwanjie/gately/internal/gosamba/bounds"
 )
 
 // adsXattrPrefix namespaces NTFS alternate-data-stream (ADS) contents stored as
@@ -382,7 +384,12 @@ func parseFullEaList(buf []byte) []eaInfo {
 		if next == 0 {
 			break
 		}
-		off += int(next)
+		// 下一项偏移来自客户端，在 uint64 中确认不越过缓冲区（32 位平台上 int 转换可能变成负数）
+		nextOff, _, ok := bounds.Span(uint64(off)+uint64(next), 0, len(buf))
+		if !ok {
+			break
+		}
+		off = nextOff
 	}
 	return out
 }

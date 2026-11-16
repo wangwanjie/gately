@@ -1,8 +1,12 @@
+// Gately 修改：报文中的偏移与长度改用 bounds 包在 uint64 中判断边界，32 位平台上不会因 int 转换为负数而越界。
+
 package smb2
 
 import (
 	"encoding/binary"
 	"fmt"
+
+	"github.com/wangwanjie/gately/internal/gosamba/bounds"
 )
 
 // Dialect identifies an SMB2/3 dialect revision.
@@ -144,7 +148,11 @@ func DecodeNegotiateRequest(body []byte) (NegotiateRequest, error) {
 	if ctxOffsetAbs < headerSize {
 		return NegotiateRequest{}, fmt.Errorf("smb2: negotiate context offset %d before body start", ctxOffsetAbs)
 	}
-	off := int(ctxOffsetAbs) - headerSize
+	// 偏移先在 uint64 中换算并确认不超出报文体，再转换为 int
+	off, _, ok := bounds.RelSpan(uint64(ctxOffsetAbs), headerSize, 0, len(body))
+	if !ok {
+		return NegotiateRequest{}, fmt.Errorf("%w: negotiate context offset %d beyond body", ErrShortBuffer, ctxOffsetAbs)
+	}
 	for i := uint16(0); i < ctxCount; i++ {
 		if off+8 > len(body) {
 			return NegotiateRequest{}, fmt.Errorf("%w: context %d header overruns body", ErrShortBuffer, i)

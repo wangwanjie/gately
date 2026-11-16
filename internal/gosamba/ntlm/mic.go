@@ -1,3 +1,5 @@
+// Gately 修改：报文中的偏移与长度改用 bounds 包在 uint64 中判断边界，32 位平台上不会因 int 转换为负数而越界。
+
 package ntlm
 
 import (
@@ -116,7 +118,8 @@ func VerifyMIC(exportedSessionKey, negotiate, challenge, authenticate []byte, mi
 // all gives nothing to measure, but it also has no NTLMv2 response and hence no
 // MsvAvFlags, so its MIC is never verified — returning len(b) there is safe.
 func AuthenticateLen(b []byte) int {
-	end := 0
+	// 在 uint64 中累计：偏移是 uint32，32 位平台上转换为 int 可能变成负数
+	var end uint64
 	// The six payload field descriptors: LmChallengeResponse,
 	// NtChallengeResponse, DomainName, UserName, Workstation,
 	// EncryptedRandomSessionKey. Each is len(2) maxlen(2) offset(4).
@@ -124,8 +127,8 @@ func AuthenticateLen(b []byte) int {
 		if len(b) < off+8 {
 			return len(b)
 		}
-		l := int(binary.LittleEndian.Uint16(b[off:]))
-		o := int(binary.LittleEndian.Uint32(b[off+4:]))
+		l := uint64(binary.LittleEndian.Uint16(b[off:]))
+		o := uint64(binary.LittleEndian.Uint32(b[off+4:]))
 		if l == 0 {
 			continue
 		}
@@ -133,8 +136,8 @@ func AuthenticateLen(b []byte) int {
 			end = o + l
 		}
 	}
-	if end == 0 || end > len(b) {
+	if end == 0 || end > uint64(len(b)) {
 		return len(b)
 	}
-	return end
+	return int(end)
 }

@@ -1,3 +1,5 @@
+// Gately 修改：OriginalMessageSize 在 uint64 中比较，32 位平台上不会因 int 转换为负数而跳过检查。
+
 package smb3
 
 import (
@@ -137,7 +139,8 @@ func DecryptTransform(cipherID uint16, key, frame []byte) ([]byte, uint64, error
 		return nil, 0, fmt.Errorf("smb3: transform flags=0x%04x (not encrypted)", flags)
 	}
 	ciphertext := frame[TransformHeaderSize:]
-	if len(ciphertext) < int(origSize) {
+	// 在 uint64 中比较：32 位平台上 int(origSize) 可能变成负数而让检查失效
+	if uint64(len(ciphertext)) < uint64(origSize) {
 		return nil, 0, ErrShortTransformBody
 	}
 

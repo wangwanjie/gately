@@ -7,9 +7,10 @@
 ```bash
 docker run -d --name gately --network host --cap-add NET_ADMIN \
   -v ./gately-data:/etc/gately \
-  -v /var/run/docker.sock:/var/run/docker.sock \
   ghcr.io/wangwanjie/gately:latest
 ```
+
+Чтобы управлять Docker из Gately, добавьте в команду `-v /var/run/docker.sock:/var/run/docker.sock`.
 
 ### Docker Compose
 
@@ -27,10 +28,10 @@ services:
     volumes:
       # Каталог конфигурации (открытый JSON, можно хранить в git; ssl.json содержит закрытые ключи сертификатов)
       - ./data:/etc/gately
-      # Управление Docker (если не нужно, удалите)
-      - /var/run/docker.sock:/var/run/docker.sock
+      # Управление Docker: при необходимости раскомментируйте следующую строку
+      # - /var/run/docker.sock:/var/run/docker.sock
     environment:
-      - TZ=Asia/Shanghai
+      - TZ=Europe/Moscow
     # Ограничивает размер журнала контейнера (docker logs); по умолчанию Docker его не ограничивает
     logging:
       options:

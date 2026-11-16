@@ -5,13 +5,12 @@
 ## 1. Запуск
 
 ```bash
-docker run -d --name gately --network host \
+docker run -d --name gately --network host --cap-add NET_ADMIN \
   -v ./gately-data:/etc/gately \
-  -v /var/run/docker.sock:/var/run/docker.sock \
   ghcr.io/wangwanjie/gately:latest
 ```
 
-Если управление Docker не нужно, монтирование `docker.sock` можно убрать. Проброс портов, STUN и веб-службы слушают порты хоста, поэтому рекомендуется `--network host`.
+Чтобы управлять Docker из Gately, добавьте в команду `-v /var/run/docker.sock:/var/run/docker.sock`. `--cap-add NET_ADMIN` позволяет защите от вторжений записывать блокировки в брандмауэр хоста. Проброс портов, STUN и веб-службы слушают порты хоста, поэтому рекомендуется `--network host`.
 
 Если GHCR работает медленно, используйте `vanjayak/gately:latest` с Docker Hub — это тот же образ.
 

@@ -142,13 +142,35 @@ type driver struct {
 	users map[string]User
 	certs CertSource
 	logs  *logbuf.Buffer
-	// throttle 按来源地址限制密码校验失败的次数，防止暴力猜测密码
-	throttle fileusers.Throttle
+	// throttle 按来源地址限制密码校验失败的次数，防止暴力猜测密码；由模块持有，重启服务后失败次数不清零
+	throttle *fileusers.Throttle
 
 	// clients 为已连接的客户端。ftpserverlib 的 Stop 只关闭监听，已登录的会话会继续使用旧的目录与权限，
 	// 因此停止或重启服务时由 closeClients 逐个断开
 	clientsMu sync.Mutex
 	clients   map[uint32]ftpserver.ClientContext
+	// sharedLogins 记录以共享用户登录的客户端及其用户名，共享用户改了密码后只断开该用户的连接
+	sharedLogins map[uint32]string
+}
+
+// closeSharedUsers 断开以 names 中的共享用户登录的客户端，返回断开的数量。
+func (d *driver) closeSharedUsers(names []string) int {
+	drop := map[string]bool{}
+	for _, n := range names {
+		drop[n] = true
+	}
+	var list []ftpserver.ClientContext
+	d.clientsMu.Lock()
+	for id, name := range d.sharedLogins {
+		if cc := d.clients[id]; cc != nil && drop[name] {
+			list = append(list, cc)
+		}
+	}
+	d.clientsMu.Unlock()
+	for _, cc := range list {
+		_ = cc.Close()
+	}
+	return len(list)
 }
 
 // closeClients 断开全部已连接的客户端。
@@ -198,16 +220,22 @@ func (d *driver) ClientConnected(cc ftpserver.ClientContext) (string, error) {
 func (d *driver) ClientDisconnected(cc ftpserver.ClientContext) {
 	d.clientsMu.Lock()
 	delete(d.clients, cc.ID())
+	delete(d.sharedLogins, cc.ID())
 	d.clientsMu.Unlock()
 }
 
 func (d *driver) AuthUser(cc ftpserver.ClientContext, user, pass string) (ftpserver.ClientDriver, error) {
 	ip := remoteIP(cc.RemoteAddr())
 	if !d.throttle.Reserve(ip) {
+		// 被限流后仍在尝试：同样报告给入侵防护
+		fileusers.ReportAuthFailure("FTP", ip, user)
 		return nil, errors.New("登录失败次数过多，请稍后再试")
 	}
 	fileUser, err := d.authUser(cc, user, pass)
 	d.throttle.Done(ip, err == nil)
+	if err != nil {
+		fileusers.ReportAuthFailure("FTP", ip, user)
+	}
 	return fileUser, err
 }
 
@@ -248,12 +276,19 @@ func (d *driver) authUser(cc ftpserver.ClientContext, user, pass string) (ftpser
 	if len(u.Mounts) > 0 {
 		fs = mountfs.Afero(u.Mounts)
 	} else {
-		fs = afero.NewBasePathFs(afero.NewOsFs(), u.Root)
+		// 经 os.Root 访问，指向用户目录之外的符号链接无法被跟随；修改属主（SITE CHOWN）一律拒绝
+		fs = mountfs.RootAfero(u.Root)
 		if u.ReadOnly {
 			fs = afero.NewReadOnlyFs(fs)
 		}
 	}
 	if shared {
+		d.clientsMu.Lock()
+		if d.sharedLogins == nil {
+			d.sharedLogins = map[uint32]string{}
+		}
+		d.sharedLogins[cc.ID()] = user
+		d.clientsMu.Unlock()
 		d.logs.Add(logbuf.LevelInfo, "", fmt.Sprintf("%s 登录（共享用户 %q）", cc.RemoteAddr(), user))
 	} else {
 		d.logs.Add(logbuf.LevelInfo, "", fmt.Sprintf("%s 登录（用户 %q）", cc.RemoteAddr(), user))
@@ -280,6 +315,10 @@ type Module struct {
 	// releaseListen 撤销控制端口在 openports 中的登记
 	releaseListen func()
 	err           string
+	// throttle 为认证失败限流，由模块持有：修改设置或共享用户后重启服务，失败次数也不清零
+	throttle fileusers.Throttle
+	// shared 为当前服务启动时（或上次只改密码时）的共享用户，用于判断之后的修改是否只改了密码
+	shared []fileusers.User
 }
 
 // New 创建模块。
@@ -301,13 +340,26 @@ func (m *Module) Init(env module.Env) error {
 	if err := fileusers.Default.Init(env.Store); err != nil {
 		return err
 	}
-	// 共享用户修改后重启服务，断开已登录的连接，避免被删除或改了密码、目录的共享用户继续使用旧会话
+	// 共享用户修改后重启服务，断开已登录的连接，避免被删除或改了目录的共享用户继续使用旧会话。
+	// 只改了密码（含共享用户自助修改密码）时不重启：只断开改了密码的用户已登录的连接，其他用户不受影响
 	fileusers.Default.Subscribe(func() {
 		m.mu.Lock()
 		defer m.mu.Unlock()
-		if m.settings.Enable && m.settings.SharedUsers && m.srv != nil {
-			m.restartLocked()
+		if !m.settings.Enable || !m.settings.SharedUsers || m.srv == nil {
+			return
 		}
+		users := fileusers.Default.List()
+		if fileusers.Shape(users) == fileusers.Shape(m.shared) {
+			changed := fileusers.PasswordChanged(m.shared, users)
+			m.shared = users
+			if len(changed) == 0 {
+				return
+			}
+			n := m.drv.closeSharedUsers(changed)
+			m.logs.Add(logbuf.LevelInfo, "", fmt.Sprintf("共享用户 %s 的密码已修改，已断开其 %d 个连接", strings.Join(changed, ", "), n))
+			return
+		}
+		m.restartLocked()
 	})
 	// 共享用户页面展示本服务的启用状态、开关与本地用户
 	fileusers.Default.AddService(ID, func() fileusers.Service {
@@ -377,7 +429,8 @@ func (m *Module) restartLocked() {
 		m.err = "证书模块不可用"
 		return
 	}
-	d := &driver{s: m.settings, users: map[string]User{}, certs: m.certs, logs: m.logs}
+	d := &driver{s: m.settings, users: map[string]User{}, certs: m.certs, logs: m.logs, throttle: &m.throttle}
+	m.shared = fileusers.Default.List()
 	for _, u := range m.settings.Users {
 		d.users[u.Name] = u
 	}

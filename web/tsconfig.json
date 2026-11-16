@@ -9,6 +9,7 @@
     "types": ["vite/client", "node"],
     "skipLibCheck": true,
     "noEmit": true,
+    "allowImportingTsExtensions": true,
     "isolatedModules": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true

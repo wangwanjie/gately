@@ -7,9 +7,10 @@
 ```bash
 docker run -d --name gately --network host --cap-add NET_ADMIN \
   -v ./gately-data:/etc/gately \
-  -v /var/run/docker.sock:/var/run/docker.sock \
   ghcr.io/wangwanjie/gately:latest
 ```
+
+需要 Docker 管理時，在指令裡加上 `-v /var/run/docker.sock:/var/run/docker.sock`。
 
 ### Docker Compose
 
@@ -27,8 +28,8 @@ services:
     volumes:
       # 設定目錄（純文字 JSON，可納入 git 備份；ssl.json 中含憑證私鑰）
       - ./data:/etc/gately
-      # Docker 管理（不需要可刪除）
-      - /var/run/docker.sock:/var/run/docker.sock
+      # Docker 管理：需要時取消下一行的註解
+      # - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - TZ=Asia/Taipei
     # 限制容器日誌（docker logs）的大小，Docker 預設不設上限

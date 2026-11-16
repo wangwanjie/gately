@@ -7,9 +7,10 @@ Imagem: `ghcr.io/wangwanjie/gately`, publicada também no Docker Hub como `vanja
 ```bash
 docker run -d --name gately --network host --cap-add NET_ADMIN \
   -v ./gately-data:/etc/gately \
-  -v /var/run/docker.sock:/var/run/docker.sock \
   ghcr.io/wangwanjie/gately:latest
 ```
+
+Para gerenciar o Docker pelo Gately, adicione `-v /var/run/docker.sock:/var/run/docker.sock` ao comando.
 
 ### Docker Compose
 
@@ -27,10 +28,10 @@ services:
     volumes:
       # Diretório de configuração (JSON em texto simples, pode ficar no git; o ssl.json contém chaves privadas de certificados)
       - ./data:/etc/gately
-      # Gerenciamento do Docker (remova se não precisar)
-      - /var/run/docker.sock:/var/run/docker.sock
+      # Gerenciamento do Docker: descomente a próxima linha se precisar
+      # - /var/run/docker.sock:/var/run/docker.sock
     environment:
-      - TZ=Asia/Shanghai
+      - TZ=America/Sao_Paulo
     # Limita o tamanho do log do contêiner (docker logs); por padrão o Docker não define limite
     logging:
       options:

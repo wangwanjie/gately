@@ -63,6 +63,12 @@ Invalid TOTP code! Server time: .* IP: <HOST>\s*$`,
 		MaxRetry: 5, FindTime: 600, BanTime: 86400,
 	},
 	{
+		// WebDAV、FTP、SMB 登录失败（含失败过多被拒绝）。同一来源每 5 秒最多计一次：客户端带着错误密码并发或自动重试时只计一次。
+		// 来源地址来自 TCP 连接（WebDAV 只在配置了可信代理时采信转发头），不会被借来封禁任意 IP
+		Preset: "gately-files", Name: "文件服务登录失败", Source: SourceEvent, Target: events.FileAuthFailed,
+		MaxRetry: 10, FindTime: 600,
+	},
+	{
 		// 正常访客不会请求这些路径，任何状态码都计数（单页应用会对任意路径返回 200），一次即封
 		Preset: "web-decoy", Name: "Web 诱饵路径", Source: SourceWeb,
 		Filter:    decoyPaths,

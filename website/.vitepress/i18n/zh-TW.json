@@ -87,44 +87,68 @@
       "text": "v0.6.6.6 發佈：導覽面板搜尋與登入可見連結、16 家新 DNS 服務商、frpc 可信來源 →",
       "link": "/zh-TW/news/v0.6.6.6"
     },
-    "titleLine1": "一站式網路閘道",
-    "titleLine2": "開源透明，開箱即用",
-    "lead": "從網域解析、內網穿透，到反向代理、HTTPS 憑證；從 WAF、入侵防護，到統一登入與檔案分享，家用網路和伺服器入口需要的能力，Gately 都整合在同一個後台。裝在 NAS、軟路由或雲端主機上，打開瀏覽器就能設定和維運。",
+    "titleLine1": "自架服務的統一入口",
+    "titleLine2": "反向代理、憑證、動態網域、穿透、WAF 與封鎖，一個程式",
+    "lead": "從公網到你家裡或伺服器上的服務，這一路要做的事 Gately 閘道都接手：網域跟著變動的 IP 走，憑證自動簽發與續期，所有服務共用一個 443 連接埠，每個站點前面可以加登入和 WAF，探測與暴力破解的位址自動封鎖。裝在 NAS、軟路由或雲端主機上，全部在瀏覽器裡設定。",
     "ctaStart": "快速開始",
     "ctaDownload": "下載",
-    "mockTitle": "gately · 總覽",
-    "mockRows": [
-      [
-        "動態網域",
-        "75 筆記錄已同步",
-        "ok"
-      ],
-      [
-        "STUN 穿透",
-        "18 條規則執行中",
-        "ok"
-      ],
-      [
-        "連接埠轉發",
-        "25 條規則執行中",
-        "ok"
-      ],
-      [
-        "Web 服務",
-        "27 個站台 · HTTPS",
-        "ok"
-      ],
-      [
-        "SSL 憑證",
-        "5 張憑證 · 自動續期",
-        "ok"
-      ],
-      [
-        "WAF 防火牆",
-        "CRS v4 · 攔截模式",
-        "warn"
+    "product": {
+      "overview": "概覽",
+      "tour": "看 2 分鐘導覽影片",
+      "close": "關閉"
+    },
+    "replaces": {
+      "title": "能取代哪些工具",
+      "desc": "你現在在用的工具，在 Gately 裡對應的模組。",
+      "note": "用不到的模組可以關閉，也可以在 <a href=\"https://build.gately.cn\" target=\"_blank\" rel=\"noreferrer\">build.gately.cn</a> 只選需要的模組產生更小的安裝包。",
+      "items": [
+        {
+          "from": "nginx、Nginx Proxy Manager",
+          "module": "Web 服務",
+          "text": "反向代理、靜態網站、重新導向、HTTP/3、按站點的存取控制；可匯入 nginx 設定"
+        },
+        {
+          "from": "acme.sh、certbot",
+          "module": "SSL 憑證",
+          "text": "DNS-01 / HTTP-01、萬用字元網域、自動續期與分發"
+        },
+        {
+          "from": "ddns-go、DDNS 指令碼",
+          "module": "動態網域",
+          "text": "35+ 服務商，IPv4 / IPv6"
+        },
+        {
+          "from": "haproxy 依 SNI 分流、sslh",
+          "module": "協定分流",
+          "text": "HTTPS、SSH、RDP 等共用一個連接埠"
+        },
+        {
+          "from": "fail2ban",
+          "module": "入侵防護",
+          "text": "日誌規則、誘餌連接埠、掃描偵測，封鎖寫入 nftables / iptables"
+        },
+        {
+          "from": "另外部署的 WAF",
+          "module": "WAF 防火牆",
+          "text": "Coraza + OWASP CRS v4，按站點開關"
+        },
+        {
+          "from": "應用前面另加的登入閘道",
+          "module": "網頁認證",
+          "text": "內建登入、兩步驟驗證、Passkey 與 OIDC 身分提供者"
+        },
+        {
+          "from": "手動維護的 frpc、cloudflared、tailscaled",
+          "module": "組網與穿透",
+          "text": "託管 frp、Cloudflare Tunnel、Tailscale、NetBird、EasyTier，含安裝、更新、回滾"
+        },
+        {
+          "from": "沒有公網 IPv4 時的各種打洞方案",
+          "module": "STUN 穿透",
+          "text": "TCP / UDP 打洞，位址變化自動同步到網域與通知"
+        }
       ]
-    ],
+    },
     "featuresTitle": "常用的網路功能，都已備好",
     "featuresDesc": "從幫家裡設定一個網域，到守好一整排網站，都在同一個介面裡完成。",
     "features": [
@@ -237,7 +261,8 @@
     "installTitle": "一分鐘裝好",
     "installDesc": "映像支援 amd64、arm64、arm/v7。啟動後造訪 <code>http://裝置IP:16680</code>，以預設帳號 <code>admin</code> 與預設密碼 <code>gately.cn</code> 登入，登入後請立即修改密碼。",
     "installTabBinary": "執行檔",
-    "installDocker": "docker run -d --name gately --network host \\\n  -v ./gately-data:/etc/gately \\\n  -v /var/run/docker.sock:/var/run/docker.sock \\\n  ghcr.io/wangwanjie/gately:latest",
+    "installDocker": "docker run -d --name gately --network host --cap-add NET_ADMIN \\\n  -v ./gately-data:/etc/gately \\\n  ghcr.io/wangwanjie/gately:latest\n\n# 需要 Docker 管理時再加上：\n#   -v /var/run/docker.sock:/var/run/docker.sock",
+    "composeDockerHint": "需要 Docker 管理時取消下一行的註解",
     "installBinary": "# 從 Releases 下載對應平台的壓縮檔並解壓縮\n./gately -c /etc/gately\n\n# 管理介面預設監聽 :16680\n# 預設帳號 admin，預設密碼 gately.cn",
     "installTabFnos": "飛牛 fnOS",
     "installFnos": "# 1. 從 Releases 下載 gately_<版本>_fnos_x86.fpk（ARM 裝置選 _arm.fpk）\n# 2. 飛牛「應用中心 → 手動安裝」，選擇檔案並完成精靈\n# 3. 點擊飛牛桌面上的 Gately 圖示，經統一閘道開啟管理介面\n\n# 預設帳號 admin，預設密碼 gately.cn",
@@ -261,7 +286,7 @@
       },
       {
         "q": "連接埠轉發、STUN 為什麼建議使用 host 網路？",
-        "a": "這些模組需要直接監聽主機的連接埠。不需要 Docker 管理時，可以移除 docker.sock 掛載。"
+        "a": "這些模組需要直接監聽主機的連接埠。--cap-add NET_ADMIN 讓入侵防護把封鎖寫入主機防火牆；需要 Docker 管理時再掛載 /var/run/docker.sock。"
       }
     ],
     "moreFaq": "更多問題 →",

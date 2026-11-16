@@ -498,7 +498,9 @@ func TestConvertLucky(t *testing.T) {
 	if a.SendProxyProtocol || !a.InsecureSkipVerify || !a.DisableKeepAlives || !a.AccessLog {
 		t.Fatalf("站点 a 映射错误: %+v", a)
 	}
-	if !b.WebAuth || len(b.Users) != 2 || b.Users[0] != "bob:pw" || b.Users[1] != "amy:x1" {
+	// 导入的明文密码与界面保存一样转为 bcrypt 哈希
+	if !b.WebAuth || len(b.Users) != 2 || !strings.HasPrefix(b.Users[0], "bob:$2") || !strings.HasPrefix(b.Users[1], "amy:$2") ||
+		!verifyUser(b.Users, "bob", "pw") || !verifyUser(b.Users, "amy", "x1") {
 		t.Fatalf("按字符存储的用户列表应还原: %+v", b.Users)
 	}
 	joined := strings.Join(warns, "\n")

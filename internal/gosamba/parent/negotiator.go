@@ -1,4 +1,4 @@
-// Gately 修改：仅在 Linux 与 macOS 编译（构建约束）。
+// Gately 修改：仅在 Linux 与 macOS 编译（构建约束）；NegotiatorOptions 新增 MaxFrame，协商帧的上限可调小。
 
 //go:build linux || darwin
 
@@ -78,6 +78,8 @@ type NegotiatorOptions struct {
 	RequireSigning    bool
 	MaxIOSize         uint32
 	ServerStartTime   uint64
+	// MaxFrame 为 Gately 新增：读取协商帧的上限，0 表示 transport.MaxFrameSize
+	MaxFrame uint32
 }
 
 // Negotiate reads one NEGOTIATE request from rw and writes the response back.
@@ -85,7 +87,11 @@ type NegotiatorOptions struct {
 // an SMB1 NEGOTIATE_PROTOCOL, reply with DialectRevision=0x02FF and loop back
 // to read the real SMB2 NEGOTIATE.
 func Negotiate(rw io.ReadWriter, opts NegotiatorOptions, log *slog.Logger) (*Connection, error) {
-	frame, err := transport.ReadFrame(rw, transport.MaxFrameSize)
+	maxFrame := opts.MaxFrame
+	if maxFrame == 0 {
+		maxFrame = transport.MaxFrameSize
+	}
+	frame, err := transport.ReadFrame(rw, maxFrame)
 	if err != nil {
 		return nil, fmt.Errorf("read negotiate frame: %w", err)
 	}
@@ -96,7 +102,7 @@ func Negotiate(rw io.ReadWriter, opts NegotiatorOptions, log *slog.Logger) (*Con
 			return nil, fmt.Errorf("write smb2 upgrade response: %w", err)
 		}
 		// The client's next frame will be a real SMB2 NEGOTIATE.
-		frame, err = transport.ReadFrame(rw, transport.MaxFrameSize)
+		frame, err = transport.ReadFrame(rw, maxFrame)
 		if err != nil {
 			return nil, fmt.Errorf("read smb2 negotiate after upgrade: %w", err)
 		}

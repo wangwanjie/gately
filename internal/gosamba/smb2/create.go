@@ -1,8 +1,12 @@
+// Gately 修改：报文中的偏移与长度改用 bounds 包在 uint64 中判断边界，32 位平台上不会因 int 转换为负数而越界。
+
 package smb2
 
 import (
 	"encoding/binary"
 	"fmt"
+
+	"github.com/wangwanjie/gately/internal/gosamba/bounds"
 )
 
 // Common DesiredAccess bits (file).
@@ -96,11 +100,11 @@ func DecodeCreateRequest(body []byte) (CreateRequest, error) {
 		r.Name = decodeUTF16LE(body[off : off+int(nameLen)])
 	}
 	if ccLen > 0 {
-		off := int(ccOffAbs) - headerSize
-		if off < 0 || off+int(ccLen) > len(body) {
+		start, end, ok := bounds.RelSpan(uint64(ccOffAbs), headerSize, uint64(ccLen), len(body))
+		if !ok {
 			return CreateRequest{}, fmt.Errorf("%w: CREATE CreateContexts out of bounds", ErrShortBuffer)
 		}
-		r.CreateContexts = append([]byte(nil), body[off:off+int(ccLen)]...)
+		r.CreateContexts = append([]byte(nil), body[start:end]...)
 	}
 	return r, nil
 }
@@ -167,17 +171,21 @@ func IterateCreateContexts(raw []byte, fn func(CreateContext) bool) {
 		if len(raw)-off < 16 {
 			return
 		}
-		next := int(binary.LittleEndian.Uint32(raw[off:]))
-		nameOff := int(binary.LittleEndian.Uint16(raw[off+4:]))
-		nameLen := int(binary.LittleEndian.Uint16(raw[off+6:]))
-		dataOff := int(binary.LittleEndian.Uint16(raw[off+10:]))
-		dataLen := int(binary.LittleEndian.Uint32(raw[off+12:]))
+		next := uint64(binary.LittleEndian.Uint32(raw[off:]))
+		nameOff := uint64(binary.LittleEndian.Uint16(raw[off+4:]))
+		nameLen := uint64(binary.LittleEndian.Uint16(raw[off+6:]))
+		dataOff := uint64(binary.LittleEndian.Uint16(raw[off+10:]))
+		dataLen := uint64(binary.LittleEndian.Uint32(raw[off+12:]))
 		var name, data []byte
-		if nameLen > 0 && off+nameOff+nameLen <= len(raw) {
-			name = raw[off+nameOff : off+nameOff+nameLen]
+		if nameLen > 0 {
+			if s, e, ok := bounds.Span(uint64(off)+nameOff, nameLen, len(raw)); ok {
+				name = raw[s:e]
+			}
 		}
-		if dataLen > 0 && off+dataOff+dataLen <= len(raw) {
-			data = raw[off+dataOff : off+dataOff+dataLen]
+		if dataLen > 0 {
+			if s, e, ok := bounds.Span(uint64(off)+dataOff, dataLen, len(raw)); ok {
+				data = raw[s:e]
+			}
 		}
 		if !fn(CreateContext{Name: name, Data: data}) {
 			return
@@ -185,7 +193,12 @@ func IterateCreateContexts(raw []byte, fn func(CreateContext) bool) {
 		if next == 0 {
 			return
 		}
-		off += next
+		// 下一项超出缓冲区时结束遍历
+		nextOff, _, ok := bounds.Span(uint64(off)+next, 0, len(raw))
+		if !ok {
+			return
+		}
+		off = nextOff
 	}
 }
 
