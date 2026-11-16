@@ -198,5 +198,12 @@
     "none": "No proxy",
     "update": "Use the global update proxy",
     "custom": "Custom proxy"
+  },
+  "targetHint": {
+    "split": "\"{addr}\" includes port {port}. Target addresses take only a host or IP; the port will be moved to the target port when you save.",
+    "splitNow": "Split now",
+    "conflict": "\"{addr}\" includes port {port}, which differs from target port {ports}, so saving will fail. Enter the port in one place only.",
+    "mixed": "Several target addresses include different ports, so saving will fail. Remove the ports from the addresses and enter the port in the target port field.",
+    "invalid": "\"{addr}\" is not a valid target address: enter only a hostname or IP (IPv6 with a port as [address]:port), without http:// or a path."
   }
 }

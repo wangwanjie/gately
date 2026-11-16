@@ -198,5 +198,12 @@
     "none": "Kein Proxy",
     "update": "Globalen Update-Proxy verwenden",
     "custom": "Eigener Proxy"
+  },
+  "targetHint": {
+    "split": "„{addr}“ enthält Port {port}. Zieladressen enthalten nur Host oder IP; beim Speichern wird der Port in den Zielport verschoben.",
+    "splitNow": "Jetzt trennen",
+    "conflict": "„{addr}“ enthält Port {port}, der vom Zielport {ports} abweicht; das Speichern schlägt fehl. Geben Sie den Port nur an einer Stelle an.",
+    "mixed": "Mehrere Zieladressen enthalten unterschiedliche Ports; das Speichern schlägt fehl. Entfernen Sie die Ports aus den Adressen und tragen Sie den Port als Zielport ein.",
+    "invalid": "„{addr}“ ist keine gültige Zieladresse: nur Hostname oder IP eingeben (IPv6 mit Port als [Adresse]:Port), ohne http:// oder Pfad."
   }
 }

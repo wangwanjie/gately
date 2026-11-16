@@ -2,7 +2,7 @@
   <div>
     <!-- dialogOnly 时只提供监听与站点的编辑弹窗，供网络拓扑页原地编辑，不渲染页面本身 -->
     <template v-if="!dialogOnly">
-    <PageHeader :title="t('web.title')" :desc="t('web.desc')" :icon="Server">
+    <PageHeader :title="t('web.title')" doc="modules/web" :desc="t('web.desc')" :icon="Server">
       <el-button :icon="Workflow" @click="router.push({ name: 'webtopology' })">{{ t('webTopology.title') }}</el-button>
       <el-button v-if="listeners.length" :icon="allListenersCollapsed ? ChevronsUpDown : ChevronsDownUp" @click="setAll(listeners.map((l) => l.key), !allListenersCollapsed)">
         {{ allListenersCollapsed ? t('common.expandAll') : t('common.collapseAll') }}
@@ -47,7 +47,9 @@
     <WebBatch ref="batchDialog" :waf-instances="wafInstances" :listeners="moveListeners" @done="onBatchDone" />
 
     <div v-loading="loading" class="card-list">
-      <el-empty v-if="!loading && !listeners.length" :description="t('web.empty')" />
+      <LoadError v-if="loadError && listeners.length" bar :error="loadError" @retry="load" />
+      <LoadError v-if="!loading && loadError && !listeners.length" :error="loadError" @retry="load" />
+      <el-empty v-else-if="!loading && !listeners.length" :description="t('web.empty')" />
       <EntityCard
         v-for="(l, li) in listeners"
         :key="l.key"
@@ -58,13 +60,13 @@
         @update:collapsed="(v: boolean) => setCollapsed(l.key, v)"
       >
         <template #lead>
-          <el-switch :model-value="l.enable" @change="(v: string | number | boolean) => toggleListener(l, Boolean(v))" />
+          <el-switch :model-value="l.enable" :aria-label="t('common.toggleItem', { name: l.name || '-' })" @change="(v: string | number | boolean) => toggleListener(l, Boolean(v))" />
         </template>
         <template #title>
           <span>{{ l.name || t('web.unnamedListener') }}</span>
           <span class="tags">
             <el-tag size="small" effect="plain" class="mono">{{ l.tls ? 'https' : 'http' }}://{{ hostPort(l) }}</el-tag>
-            <el-tag size="small" type="info">{{ networkText(l.network) }}</el-tag>
+            <el-tag v-if="listenerNetworkText(l)" size="small" type="info">{{ listenerNetworkText(l) }}</el-tag>
             <el-tag v-if="l.tls && l.plainHttp" size="small" type="info">{{ plainHttpText(l.plainHttp) }}</el-tag>
             <el-tag v-if="l.httpPort" size="small" type="info" class="mono" :title="t('web.httpPort')">{{ httpPortText(l) }}</el-tag>
             <el-tag v-if="l.acceptProxyProtocol" size="small" type="info">{{ t('web.acceptProxyTag') }}</el-tag>
@@ -81,7 +83,7 @@
           <!-- 自动放行防火墙的结果：放行失败（如没有权限）时用警告色 -->
           <div v-if="l.enable && l.autoFirewall && l.firewall" class="meta fw-status" :class="{ 'is-failed': l.firewallFailed }">{{ l.firewall }}</div>
           <div class="sites" :class="{ 'is-compact': compact, 'is-sorting': sortMode }">
-            <template v-for="item in displayItems(l)" :key="item.id">
+            <template v-for="item in visibleItems(l)" :key="item.id">
             <GroupHeader
               v-if="item.kind === 'group'"
               :name="item.name"
@@ -119,7 +121,7 @@
                   :model-value="sel.isSelected(item.id)"
                   @change="(v: string | number | boolean) => sel.setSelected([item.id], Boolean(v))"
                 />
-                <el-switch v-else :model-value="item.item.site.enable" size="small" @change="(v: string | number | boolean) => toggleSite(l, item.item, Boolean(v))" />
+                <el-switch v-else :model-value="item.item.site.enable" :aria-label="t('common.toggleItem', { name: item.item.site.name || item.item.site.domains?.[0] || '-' })" size="small" @change="(v: string | number | boolean) => toggleSite(l, item.item, Boolean(v))" />
               </div>
               <div class="site-main">
                 <div v-if="item.item.isDefault" class="site-domains"><el-tag size="small" type="warning">{{ t('web.defaultSite') }}</el-tag> <span class="meta">{{ t('web.unmatchedDomains') }}</span></div>
@@ -131,6 +133,21 @@
                   </template>
                 </div>
                 <div v-if="item.item.site.name" class="meta">{{ item.item.site.name }}</div>
+                <!-- HTTPS 站点的证书：匹配到的证书与剩余天数；缺证书、已过期或临近到期时醒目提示，并可带上域名去申请 -->
+                <div v-if="certState(l, item.item)" class="site-cert" :class="`is-${certState(l, item.item)!.kind}`" data-test="site-cert">
+                  <component :is="certState(l, item.item)!.kind === 'ok' ? ShieldCheck : ShieldAlert" :size="14" class="site-cert-icon" aria-hidden="true" />
+                  <span :title="certTitle(l, item.item)">{{ certText(certState(l, item.item)!) }}</span>
+                  <el-button
+                    v-if="certState(l, item.item)!.kind !== 'ok' && !sortMode"
+                    link
+                    type="primary"
+                    size="small"
+                    class="site-cert-action"
+                    @click="requestCert(certState(l, item.item)!)"
+                  >
+                    {{ certState(l, item.item)!.kind === 'missing' ? t('web.certRequest') : t('web.certView') }}
+                  </el-button>
+                </div>
               </div>
               <div class="site-target">
                 <el-tag size="small" effect="plain">{{ typeText(item.item.site.type) }}</el-tag>
@@ -179,12 +196,12 @@
                 <el-button v-if="!item.item.isDefault" text size="small" :icon="CopyPlus" :title="t('web.copySite')" :aria-label="t('web.copySite')" @click="openSite(l, item.item, true)">{{ t('common.duplicate') }}</el-button>
                 <el-popconfirm v-if="item.item.isDefault" :title="t('web.resetDefaultConfirm')" width="260" @confirm="resetDefaultSite(l)">
                   <template #reference>
-                    <el-button text size="small" type="danger" :icon="Trash2" :aria-label="t('common.reset')" />
+                    <el-button text size="small" type="danger" class="site-del" :icon="Trash2" :aria-label="t('common.reset')" :title="t('common.reset')" />
                   </template>
                 </el-popconfirm>
                 <el-popconfirm v-else :title="t('web.deleteSiteConfirm')" @confirm="removeSite(l, item.item)">
                   <template #reference>
-                    <el-button text size="small" type="danger" :icon="Trash2" :aria-label="t('web.deleteSite')" />
+                    <el-button text size="small" type="danger" class="site-del" :icon="Trash2" :aria-label="t('web.deleteSite')" :title="t('web.deleteSite')" />
                   </template>
                 </el-popconfirm>
               </div>
@@ -201,6 +218,7 @@
             >
               {{ t('web.dropHere') }}
             </div>
+            <ListPager v-if="!sortMode && displayItems(l).length > SITE_PAGE" :pager="sitePager(l.key)" class="site-pager" />
             <div v-if="!siteRows(l).length" class="meta empty-sites">{{ t('web.noSites') }}</div>
             <div v-else-if="!displayItems(l).length" class="meta empty-sites">{{ t('web.noMatchedSites') }}</div>
           </div>
@@ -235,75 +253,79 @@
     <el-dialog v-model="listenerVisible" :title="editingListener.key ? t('web.editListener') : t('web.addListener')" width="560px" :fullscreen="isMobile">
       <CopyHint :from="copyListenerFrom" />
       <el-alert v-if="!editingListener.key && !copyListenerFrom" :title="t('web.newListenerHint')" type="info" :closable="false" show-icon class="listener-hint" />
-      <el-form :model="editingListener" label-width="130px" :label-position="labelPosition">
+      <el-form ref="listenerForm" :model="editingListener" :rules="listenerRules" label-width="130px" :label-position="labelPosition">
         <el-form-item :label="t('common.name')"><el-input v-model="editingListener.name" /></el-form-item>
-        <el-form-item :label="t('web.network')">
-          <el-radio-group v-model="editingListener.network">
-            <el-radio-button value="tcp">{{ t('web.networkDual') }}</el-radio-button>
-            <el-radio-button value="tcp4">{{ t('web.networkIpv4') }}</el-radio-button>
-            <el-radio-button value="tcp6">{{ t('web.networkIpv6') }}</el-radio-button>
-          </el-radio-group>
-        </el-form-item>
         <el-form-item :label="t('web.listenIp')"><el-input v-model="editingListener.listenIp" :placeholder="t('web.listenIpPlaceholder')" /></el-form-item>
-        <el-form-item :label="t('web.port')" required><el-input-number v-model="editingListener.port" :min="1" :max="65535" /></el-form-item>
+        <el-form-item :label="t('web.port')" prop="port" required><el-input-number v-model="editingListener.port" :min="1" :max="65535" /></el-form-item>
         <el-form-item label="HTTPS">
           <el-switch v-model="editingListener.tls" />
           <span class="help">{{ t('web.tlsHelp') }}</span>
         </el-form-item>
-        <!-- 额外的明文 HTTP 端口：与主端口共用全部站点，HTTPS 监听常用它再开一个 80 -->
-        <el-form-item :label="t('web.httpPort')">
-          <div class="access-row">
-            <el-input-number v-model="httpPortInput" :min="1" :max="65535" :placeholder="t('web.httpPortOff')" controls-position="right" class="w-160" />
-            <el-radio-group v-if="editingListener.tls && editingListener.httpPort" v-model="editingListener.httpPortMode">
+        <el-form-item :label="t('common.enable')"><el-switch v-model="editingListener.enable" /></el-form-item>
+        <!-- 常用的是地址、端口与 HTTPS，其余收在「高级设置」里；打开已有监听时有改动的高级项会自动展开 -->
+        <AdvancedToggle v-model="listenerAdv" :count="listenerAdvCount" />
+        <div v-show="listenerAdv">
+          <el-form-item :label="t('web.network')">
+            <el-radio-group v-model="editingListener.network">
+              <el-radio-button value="tcp">{{ t('web.networkDual') }}</el-radio-button>
+              <el-radio-button value="tcp4">{{ t('web.networkIpv4') }}</el-radio-button>
+              <el-radio-button value="tcp6">{{ t('web.networkIpv6') }}</el-radio-button>
+            </el-radio-group>
+          </el-form-item>
+          <!-- 额外的明文 HTTP 端口：与主端口共用全部站点，HTTPS 监听常用它再开一个 80 -->
+          <el-form-item :label="t('web.httpPort')">
+            <div class="access-row">
+              <el-input-number v-model="httpPortInput" :min="1" :max="65535" :placeholder="t('web.httpPortOff')" controls-position="right" class="w-160" />
+              <el-radio-group v-if="editingListener.tls && editingListener.httpPort" v-model="editingListener.httpPortMode">
+                <el-radio-button value="redirect">{{ t('web.plainHttpRedirect') }}</el-radio-button>
+                <el-radio-button value="serve">{{ t('web.plainHttpServe') }}</el-radio-button>
+              </el-radio-group>
+            </div>
+            <div class="form-help">{{ editingListener.tls ? t('web.httpPortHelp') : t('web.httpPortPlainHelp') }}</div>
+            <div v-if="editingListener.httpPort && editingListener.httpPort === editingListener.port" class="form-help warn">{{ t('web.httpPortSame') }}</div>
+            <!-- 跳转端口取访问地址中的端口（后端不识别转发入口），经协议分流/端口转发访问且未填访问端口时提醒填写 -->
+            <div v-if="httpPortEntryWarn" class="form-help warn">{{ t('web.httpPortEntryWarn', { listen: editingListener.port, port: editingEntry!.port, rule: editingEntry!.rule }) }}</div>
+          </el-form-item>
+          <!-- 仅用于生成站点链接：经协议分流、端口映射或 CDN 访问时，对外的协议与端口可能与监听不同 -->
+          <el-form-item :label="t('web.accessAddr')">
+            <div class="access-row">
+              <el-select v-model="editingListener.accessScheme" class="w-120" :empty-values="[null, undefined]">
+                <el-option :label="t('web.accessSchemeAuto', { scheme: editingListener.tls ? 'https' : 'http' })" value="" />
+                <el-option label="http" value="http" />
+                <el-option label="https" value="https" />
+              </el-select>
+              <el-input-number v-model="accessPortInput" :min="1" :max="65535" :placeholder="String(editingEntry?.port || editingListener.port || '')" controls-position="right" class="w-160" />
+            </div>
+            <div class="form-help">{{ t('web.accessAddrHelp', { example: accessExample }) }}</div>
+            <div v-if="editingEntry && !editingListener.accessPort" class="form-help">{{ entryText(editingEntry) }}</div>
+          </el-form-item>
+          <el-form-item v-if="editingListener.tls" :label="t('web.minTls')">
+            <el-select v-model="editingListener.minTls" class="w-120">
+              <el-option v-for="v in ['1.0', '1.1', '1.2', '1.3']" :key="v" :label="'TLS ' + v" :value="v" />
+            </el-select>
+          </el-form-item>
+          <el-form-item v-if="editingListener.tls" :label="t('web.plainHttp')">
+            <el-radio-group v-model="editingListener.plainHttp">
+              <el-radio-button value="">{{ t('web.plainHttpOff') }}</el-radio-button>
               <el-radio-button value="redirect">{{ t('web.plainHttpRedirect') }}</el-radio-button>
               <el-radio-button value="serve">{{ t('web.plainHttpServe') }}</el-radio-button>
             </el-radio-group>
-          </div>
-          <div class="form-help">{{ editingListener.tls ? t('web.httpPortHelp') : t('web.httpPortPlainHelp') }}</div>
-          <div v-if="editingListener.httpPort && editingListener.httpPort === editingListener.port" class="form-help warn">{{ t('web.httpPortSame') }}</div>
-          <!-- 跳转端口取访问地址中的端口（后端不识别转发入口），经协议分流/端口转发访问且未填访问端口时提醒填写 -->
-          <div v-if="httpPortEntryWarn" class="form-help warn">{{ t('web.httpPortEntryWarn', { listen: editingListener.port, port: editingEntry!.port, rule: editingEntry!.rule }) }}</div>
-        </el-form-item>
-        <!-- 仅用于生成站点链接：经协议分流、端口映射或 CDN 访问时，对外的协议与端口可能与监听不同 -->
-        <el-form-item :label="t('web.accessAddr')">
-          <div class="access-row">
-            <el-select v-model="editingListener.accessScheme" class="w-120" :empty-values="[null, undefined]">
-              <el-option :label="t('web.accessSchemeAuto', { scheme: editingListener.tls ? 'https' : 'http' })" value="" />
-              <el-option label="http" value="http" />
-              <el-option label="https" value="https" />
-            </el-select>
-            <el-input-number v-model="accessPortInput" :min="1" :max="65535" :placeholder="String(editingEntry?.port || editingListener.port || '')" controls-position="right" class="w-160" />
-          </div>
-          <div class="form-help">{{ t('web.accessAddrHelp', { example: accessExample }) }}</div>
-          <div v-if="editingEntry && !editingListener.accessPort" class="form-help">{{ entryText(editingEntry) }}</div>
-        </el-form-item>
-        <el-form-item v-if="editingListener.tls" :label="t('web.minTls')">
-          <el-select v-model="editingListener.minTls" class="w-120">
-            <el-option v-for="v in ['1.0', '1.1', '1.2', '1.3']" :key="v" :label="'TLS ' + v" :value="v" />
-          </el-select>
-        </el-form-item>
-        <el-form-item v-if="editingListener.tls" :label="t('web.plainHttp')">
-          <el-radio-group v-model="editingListener.plainHttp">
-            <el-radio-button value="">{{ t('web.plainHttpOff') }}</el-radio-button>
-            <el-radio-button value="redirect">{{ t('web.plainHttpRedirect') }}</el-radio-button>
-            <el-radio-button value="serve">{{ t('web.plainHttpServe') }}</el-radio-button>
-          </el-radio-group>
-          <span class="help">{{ t('web.plainHttpHelp') }}</span>
-        </el-form-item>
-        <el-form-item v-if="editingListener.tls" label="HTTP/3">
-          <el-switch v-model="editingListener.http3" />
-          <span class="help">{{ t('web.http3Help') }}</span>
-        </el-form-item>
-        <el-form-item :label="t('web.acceptProxy')">
-          <el-switch v-model="editingListener.acceptProxyProtocol" />
-          <span class="help">{{ t('web.acceptProxyHelp') }}</span>
-        </el-form-item>
-        <el-form-item :label="t('common.autoFirewall')">
-          <el-switch v-model="editingListener.autoFirewall" />
-          <span class="help">{{ t('web.autoFirewallHelp') }}</span>
-        </el-form-item>
-        <el-form-item :label="t('common.remark')"><el-input v-model="editingListener.remark" /></el-form-item>
-        <el-form-item :label="t('common.enable')"><el-switch v-model="editingListener.enable" /></el-form-item>
+            <span class="help">{{ t('web.plainHttpHelp') }}</span>
+          </el-form-item>
+          <el-form-item v-if="editingListener.tls" label="HTTP/3">
+            <el-switch v-model="editingListener.http3" />
+            <span class="help">{{ t('web.http3Help') }}</span>
+          </el-form-item>
+          <el-form-item :label="t('web.acceptProxy')">
+            <el-switch v-model="editingListener.acceptProxyProtocol" />
+            <span class="help">{{ t('web.acceptProxyHelp') }}</span>
+          </el-form-item>
+          <el-form-item :label="t('common.autoFirewall')">
+            <el-switch v-model="editingListener.autoFirewall" />
+            <span class="help">{{ t('web.autoFirewallHelp') }}</span>
+          </el-form-item>
+          <el-form-item :label="t('common.remark')"><el-input v-model="editingListener.remark" /></el-form-item>
+        </div>
         <!-- 复制监听时可选是否带上站点；分享链接的令牌可绕过认证，不随副本复制 -->
         <el-form-item v-if="copyListenerFrom && copySiteCount" :label="t('web.copySites')">
           <el-checkbox v-model="copyListenerSites">{{ t('web.copySitesLabel', { count: copySiteCount }) }}</el-checkbox>
@@ -318,7 +340,7 @@
 
     <el-dialog v-model="siteVisible" :title="siteIsDefault ? t('web.defaultSite') : site.key ? t('web.editSite') : t('web.addSite')" width="760px" top="5vh" :fullscreen="isMobile">
       <CopyHint :from="copySiteFrom" />
-      <el-form :model="site" label-width="130px" :label-position="labelPosition">
+      <el-form ref="siteForm" :model="site" :rules="siteRules" label-width="130px" :label-position="labelPosition">
         <el-alert v-if="siteIsDefault" :title="t('web.defaultSiteHint')" type="info" :closable="false" show-icon class="listener-hint" />
         <!-- 所属监听：新建或复制时决定建在哪个监听下（例如把 HTTP 站点复制到 HTTPS 监听），编辑已有站点时改动即在保存后移到该监听；
              默认站点属于所在监听，不能移动 -->
@@ -331,7 +353,7 @@
         </el-form-item>
         <el-tabs v-model="siteTab">
           <el-tab-pane :label="t('web.tabBasic')" name="basic">
-            <el-form-item v-if="!siteIsDefault" :label="t('web.domains')" required>
+            <el-form-item v-if="!siteIsDefault" :label="t('web.domains')" prop="domains" required>
               <el-input v-model="domainsText" type="textarea" :rows="2" class="mono" :placeholder="t('web.domainsPlaceholder')" />
             </el-form-item>
             <el-form-item :label="t('common.name')"><el-input v-model="site.name" /></el-form-item>
@@ -350,7 +372,7 @@
               <!-- 断开连接类型没有安全页，“名单内放行、其余断开”需改用反向代理 + IP 访问控制 + 拒绝时断开连接（#53） -->
               <div v-if="site.type === 'close'" class="form-help">{{ t('web.typeCloseAllow') }}</div>
             </el-form-item>
-            <el-form-item v-if="site.type === 'proxy'" :label="t('web.targets')" required>
+            <el-form-item v-if="site.type === 'proxy'" :label="t('web.targets')" prop="targets" required>
               <el-input v-model="targetsText" type="textarea" :rows="2" class="mono" :placeholder="t('web.targetsPlaceholder')" />
             </el-form-item>
             <!-- 反向代理站点的后端连接选项紧跟后端地址；其他类型站点的放在安全页的按用户分流下面（#79） -->
@@ -370,7 +392,7 @@
                       />
                       <el-button text type="danger" :icon="Trash2" @click="site.locations.splice(i, 1)" />
                     </div>
-                    <!-- 去掉路径前缀：/api/zyqd/abc 发往后端为 /abc，相当于 nginx 的 proxy_pass 带 URI（#86） -->
+                    <!-- 去掉路径前缀：/api/users 发往后端为 /users，相当于 nginx 的 proxy_pass 带 URI（#86） -->
                     <el-checkbox v-model="loc.stripPrefix" class="location-strip">{{ t('web.locationStrip') }}</el-checkbox>
                     <!-- 该路径追加的请求头，与站点请求头共用预设和校验 -->
                     <HeaderEditor v-model="loc.requestHeaders" direction="request" :placeholder="t('web.locationHeadersPlaceholder')" :show-help="false" />
@@ -382,7 +404,7 @@
               </el-form-item>
             </template>
             <template v-if="site.type === 'redirect'">
-              <el-form-item :label="t('web.redirectTo')" required>
+              <el-form-item :label="t('web.redirectTo')" prop="redirectTo" required>
                 <el-input v-model="site.redirectTo" placeholder="https://example.com" />
                 <div class="form-help">{{ t('web.redirectHostHelp') }}</div>
                 <div class="form-help">{{ t('web.redirectVarsHelp') }}</div>
@@ -395,7 +417,7 @@
               </el-form-item>
             </template>
             <template v-if="site.type === 'static'">
-              <el-form-item :label="t('web.root')" required><el-input v-model="site.root" placeholder="/data/www" /><ConfigDirHint :paths="[site.root]" /></el-form-item>
+              <el-form-item :label="t('web.root')" prop="root" required><el-input v-model="site.root" placeholder="/data/www" /><ConfigDirHint :paths="[site.root]" /></el-form-item>
               <el-form-item :label="t('web.listDir')"><el-switch v-model="site.listDir" /></el-form-item>
               <el-form-item :label="t('web.cleanUrls')">
                 <el-switch v-model="site.cleanUrls" />
@@ -687,10 +709,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, effectScope, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
 import {
   ArrowUpDown,
   BarChart3,
@@ -711,13 +733,18 @@ import {
   Search,
   Server,
   Shield,
+  ShieldAlert,
   ShieldBan,
+  ShieldCheck,
   SlidersHorizontal,
   Trash2,
   Workflow,
   ArrowRightLeft,
 } from 'lucide-vue-next'
-import { api, type OAuthProvider } from '../api'
+import { api, errorText, getIfChanged, type OAuthProvider } from '../api'
+import ListPager from '../components/ListPager.vue'
+import type { Pager } from '../composables/usePager'
+import { PAGE_SIZES, pageSlice } from '../paging'
 import { moduleEnabled as navModuleEnabled } from '../nav'
 import GroupHeader from '../components/GroupHeader.vue'
 import ConfigDirHint from '../components/ConfigDirHint.vue'
@@ -728,6 +755,7 @@ import GroupInput from '../components/GroupInput.vue'
 import { useGroupRename, useSortSelect } from '../composables/useGroupSort'
 import { buildSections, displayItems as displayGroupItems, dropTarget, flatten, moveInto, moveSection, moveStep, renameSection, type GroupItem, type Section } from '../groupSort'
 import PageHeader from '../components/PageHeader.vue'
+import LoadError from '../components/LoadError.vue'
 import ModuleBanner from '../components/ModuleBanner.vue'
 import CompactToggle from '../components/CompactToggle.vue'
 import EntityCard from '../components/EntityCard.vue'
@@ -752,11 +780,15 @@ import { emptyKnockGrant, type KnockGrant } from '../siteKnock'
 import StatusBadge, { type StatusType } from '../components/StatusBadge.vue'
 import LogCard from '../components/LogCard.vue'
 import CopyHint from '../components/CopyHint.vue'
+import AdvancedToggle from '../components/AdvancedToggle.vue'
 import { createItem, uniqueName, type CopySource } from '../copyDraft'
 import UrlLink from '../components/UrlLink.vue'
 import { accessPort, accessScheme, forwardedEntry, siteLink, type ForwardEntry, type ForwardSource, type SiteLink } from '../siteUrl'
+import { listenErrorKind } from '../netaddr'
+import { certRequestDomains, siteCertState, type SiteCert, type SiteCertState } from '../siteCert'
 import { loadForwardSources } from '../forwardSources'
 import { useFormLayout } from '../composables/useIsMobile'
+import { validateForm } from '../composables/useFormValidate'
 import { useListText, splitLines } from '../composables/useListText'
 import ListInput from '../components/ListInput.vue'
 import HeaderEditor from '../components/HeaderEditor.vue'
@@ -914,6 +946,8 @@ interface ListenerView extends Listener {
   // 自动放行防火墙的结果说明与是否失败
   firewall?: string
   firewallFailed?: boolean
+  // HTTPS 监听中各站点域名匹配到的证书，键为站点 key
+  siteCerts?: Record<string, SiteCert[]>
 }
 
 interface SiteRow {
@@ -922,7 +956,9 @@ interface SiteRow {
   isDefault: boolean
 }
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
+// 列表最近一次加载失败的原因，空为成功；接口出错时列表显示错误而不是空状态
+const loadError = ref('')
 const router = useRouter()
 const route = useRoute()
 
@@ -958,6 +994,29 @@ async function loadPanels() {
 // errorPagesVisible 为自定义错误页面库对话框（从设置中打开）
 const errorPagesVisible = ref(false)
 const siteTab = ref('basic')
+// 监听与站点表单的引用与前端校验规则：必填项未填时标红并聚焦，不必等后端返回 toast
+const listenerForm = ref<FormInstance>()
+const siteForm = ref<FormInstance>()
+const listenerRules = computed<FormRules>(() => ({
+  port: [{ required: true, type: 'number', min: 1, max: 65535, message: t('web.portRequired'), trigger: 'change' }],
+}))
+// listRule 校验列表字段至少有一项（域名、后端地址为数组）
+function listRule(message: string) {
+  return {
+    trigger: 'blur',
+    validator: (_r: unknown, v: string[] | undefined, cb: (e?: Error) => void) => cb((v ?? []).some((x) => x.trim()) ? undefined : new Error(message)),
+  }
+}
+// textRule 校验文本字段非空
+function textRule(message: string) {
+  return { trigger: 'blur', validator: (_r: unknown, v: string | undefined, cb: (e?: Error) => void) => cb((v ?? '').trim() ? undefined : new Error(message)) }
+}
+const siteRules = computed<FormRules>(() => ({
+  domains: [listRule(t('web.domainsRequired'))],
+  targets: [listRule(t('web.targetsRequired'))],
+  redirectTo: [textRule(t('web.redirectToRequired'))],
+  root: [textRule(t('web.rootRequired'))],
+}))
 const site = ref<Site>(emptySite())
 const siteIsDefault = ref(false)
 let siteOwner: ListenerView | null = null
@@ -1029,8 +1088,11 @@ interface WebSettings {
 const settings = ref<WebSettings>()
 // adminPassReady 表示全局设置中已配置单点登录域或后台入口地址，站点的「后台登录免认证」依赖其一；打开站点编辑时刷新（读取失败时不提示）
 const adminPassReady = ref(true)
-// 定时刷新，标签页在后台时暂停
-const polling = usePolling(load, 5000)
+// 定时刷新，标签页在后台时暂停；编辑对话框打开时也暂停，避免列表重新渲染打断编辑。
+// 轮询带上次的 ETag，列表没变化时服务端返回 304，跳过解析与重新渲染
+const polling = usePolling(() => (listenerVisible.value || siteVisible.value || settingsVisible.value ? undefined : poll()), 5000)
+let listEtag = ''
+let listEtagLocale = ''
 
 // 按逗号（含中文逗号）或空白拆分
 // 分路径后端没有自己的 ID：按对象分配稳定的 key，删除前面的路径时，后面路径的输入框状态（如文本模式）不会串位
@@ -1342,6 +1404,15 @@ function networkText(n: string) {
   return map[n] ?? n
 }
 
+// listenerNetworkText 为监听卡片上的网络标签：填了具体监听地址时只监听该地址，地址族已由地址本身决定
+// （如 127.0.0.1 只有 IPv4），“双栈”之类的标签反而误导，返回空不显示
+function listenerNetworkText(l: Listener): string {
+  if ((l.listenIp ?? '').trim()) {
+    return ''
+  }
+  return networkText(l.network)
+}
+
 // listenerStatus 计算监听展示状态：停用的监听只显示“已停用”
 function listenerStatus(l: ListenerView): { type: StatusType; text: string; title?: string } {
   if (moduleOff.value) {
@@ -1351,12 +1422,26 @@ function listenerStatus(l: ListenerView): { type: StatusType; text: string; titl
     return { type: 'off', text: t('web.statusOff') }
   }
   if (l.error) {
-    return { type: 'error', text: l.error, title: l.error }
+    return { type: 'error', text: listenErrorText(l), title: l.error }
   }
   if (l.running) {
     return { type: 'running', text: t('common.running') }
   }
   return { type: 'warn', text: t('web.statusNotRunning') }
+}
+
+// listenErrorText 把监听失败的常见系统错误换成本地化说明（端口被占用、没有权限、本机没有该地址），其他错误显示原文
+function listenErrorText(l: Pick<ListenerView, 'error' | 'port'>): string {
+  const err = l.error ?? ''
+  switch (listenErrorKind(err)) {
+    case 'inUse':
+      return t('web.errPortInUse', { port: l.port })
+    case 'permission':
+      return t('web.errPortPermission', { port: l.port })
+    case 'addr':
+      return t('web.errListenAddr')
+  }
+  return err
 }
 
 function typeText(ty: string) {
@@ -1677,10 +1762,67 @@ async function putListener(l: Listener) {
 
 async function load() {
   try {
-    listeners.value = await api.get<ListenerView[]>('/api/webservice/listeners')
+    // 首次进入、保存后与手动刷新取完整列表，不带条件头；同时记下 ETag 供轮询使用
+    const r = await getIfChanged<ListenerView[]>('/api/webservice/listeners', '')
+    listeners.value = r.data ?? []
+    listEtag = r.etag
+    listEtagLocale = locale.value
+    loadError.value = ''
+  } catch (e) {
+    loadError.value = errorText(e)
   } finally {
     loading.value = false
   }
+}
+
+// poll 为定时刷新：界面语言没变时带上次的 ETag，304 表示没有变化
+async function poll() {
+  try {
+    const r = await getIfChanged<ListenerView[]>('/api/webservice/listeners', listEtagLocale === locale.value ? listEtag : '')
+    if (r.status !== 304 && r.data) {
+      listeners.value = r.data
+    }
+    listEtag = r.etag
+    listEtagLocale = locale.value
+    loadError.value = ''
+  } catch (e) {
+    loadError.value = errorText(e)
+  }
+}
+
+// 站点很多（单个监听超过 SITE_PAGE 个）时分页显示，只渲染当前页；排序模式需要拖动全部站点，不分页
+const SITE_PAGE = 50
+const pagerScope = effectScope(true)
+const sitePagers = new Map<string, Pager<GroupItem<SiteRow>>>()
+onBeforeUnmount(() => pagerScope.stop())
+
+// sitePager 返回监听的站点分页器；监听对象每次刷新都会替换，按 key 读取最新的
+function sitePager(key: string): Pager<GroupItem<SiteRow>> {
+  let p = sitePagers.get(key)
+  if (!p) {
+    p = pagerScope.run(() => {
+      const page = ref(1)
+      const size = ref(SITE_PAGE)
+      const items = computed(() => {
+        const l = listeners.value.find((x) => x.key === key)
+        return l ? displayItems(l) : []
+      })
+      const total = computed(() => items.value.length)
+      const rows = computed(() => pageSlice(items.value, page.value, size.value))
+      return { page, size, sizes: PAGE_SIZES, total, rows }
+    })!
+    sitePagers.set(key, p)
+  }
+  return p
+}
+
+// visibleItems 为监听卡片里实际渲染的分组标题与站点
+function visibleItems(l: ListenerView): GroupItem<SiteRow>[] {
+  const all = displayItems(l)
+  if (sortMode.value || all.length <= SITE_PAGE) {
+    return all
+  }
+  return sitePager(l.key).rows.value
 }
 
 // ---- 从拓扑页跳转编辑站点 ----
@@ -1709,8 +1851,27 @@ function withRow(lk: string, sk: string, fn: (l: ListenerView, row: SiteRow) => 
 }
 
 // openListener 打开监听编辑框：copy 为 true 时以 l 为模板新建副本，可选带上其中的站点
+// listenerAdv 为监听表单是否展开「高级设置」
+const listenerAdv = ref(false)
+// listenerAdvCount 为高级设置中与默认值不同的字段数，收起时提示
+const listenerAdvCount = computed(() => {
+  const l = editingListener.value
+  return [
+    l.network && l.network !== 'tcp',
+    !!l.httpPort,
+    !!(l.accessScheme || l.accessPort),
+    l.tls && l.minTls && l.minTls !== '1.2',
+    l.tls && !!l.plainHttp,
+    l.tls && l.http3,
+    l.acceptProxyProtocol,
+    l.autoFirewall,
+    !!l.remark?.trim(),
+  ].filter(Boolean).length
+})
+
 function openListener(l?: ListenerView, copy = false) {
   editingListener.value = l ? plain(l) : emptyListener()
+  listenerAdv.value = listenerAdvCount.value > 0
   copyListenerFrom.value = null
   copySiteCount.value = 0
   copyListenerSites.value = true
@@ -1721,6 +1882,7 @@ function openListener(l?: ListenerView, copy = false) {
     editingListener.value.name = uniqueName(l.name, listeners.value.map((x) => x.name))
   }
   listenerVisible.value = true
+  void nextTick(() => listenerForm.value?.clearValidate())
 }
 
 // hostPort 返回“监听地址:端口”，IPv6 地址加方括号，未指定地址显示 *
@@ -1740,24 +1902,33 @@ function stripShareLinks(s: Site): Site {
 }
 
 async function saveListener() {
+  if (!(await validateForm(listenerForm.value))) {
+    return
+  }
   saving.value = true
   try {
     const { key, ...body } = editingListener.value
     const from = copyListenerFrom.value
+    let saved: ListenerView
     if (key) {
-      await api.put(`/api/webservice/listeners/${key}`, body)
+      saved = await api.put<ListenerView>(`/api/webservice/listeners/${key}`, body)
     } else if (from) {
       // 副本的站点不带分享链接；不复制站点时只保留监听本身与默认站点
       body.sites = copyListenerSites.value ? (body.sites ?? []).map(stripShareLinks) : []
       if (body.default) {
         body.default = stripShareLinks(body.default)
       }
-      await createItem('/api/webservice/listeners', body, from)
+      saved = await createItem<ListenerView>('/api/webservice/listeners', body, from)
     } else {
-      await api.post('/api/webservice/listeners', body)
+      saved = await api.post<ListenerView>('/api/webservice/listeners', body)
     }
     listenerVisible.value = false
-    ElMessage.success(t('common.saved'))
+    // 配置已保存但监听没能启动（端口被占用、没有权限等）：用警告提示原因，不能只说“已保存”
+    if (saved?.enable && saved.error) {
+      ElMessage({ type: 'warning', message: t('web.savedNotRunning', { reason: listenErrorText(saved) }), duration: 8000, showClose: true })
+    } else {
+      ElMessage.success(t('common.saved'))
+    }
     emit('saved')
     await load()
   } catch (e) {
@@ -1793,6 +1964,41 @@ function statKey(row: SiteRow) {
 }
 
 // siteStat 返回站点的请求统计，监听未运行或站点未生效时为 undefined
+// certState 返回 HTTPS 站点的证书状态；HTTP 监听、默认站点与没有可检查域名的站点为 null（不显示）
+function certState(l: ListenerView, row: SiteRow): SiteCertState | null {
+  if (!l.tls || row.isDefault || !row.site.key) {
+    return null
+  }
+  return siteCertState(l.siteCerts?.[row.site.key], Date.now())
+}
+
+// certText 为站点行上的证书说明
+function certText(st: SiteCertState): string {
+  switch (st.kind) {
+    case 'missing':
+      return t('web.certMissing', { domains: st.missing.join(', ') })
+    case 'expired':
+      return t('web.certExpired')
+    case 'expiring':
+      return t('web.certExpiring', { days: Math.max(0, st.days ?? 0) })
+  }
+  return st.days === null ? t('web.certOkNoDate') : t('web.certOk', { days: st.days })
+}
+
+// certTitle 为悬停提示：逐个域名列出匹配到的证书
+function certTitle(l: ListenerView, row: SiteRow): string {
+  return (l.siteCerts?.[row.site.key ?? ''] ?? []).map((c) => `${c.domain} → ${c.name || t('web.certNone')}`).join('\n')
+}
+
+// requestCert 缺证书时带上缺少的域名打开证书页的新增表单；过期或临近到期时打开证书页查看
+function requestCert(st: SiteCertState) {
+  if (st.kind === 'missing') {
+    router.push({ name: 'ssl', query: { add: certRequestDomains(st).join(',') } })
+  } else {
+    router.push({ name: 'ssl', query: st.names.length ? { q: st.names[0] } : {} })
+  }
+}
+
 function siteStat(l: ListenerView, row: SiteRow) {
   const k = statKey(row)
   return k ? l.stats?.[k] : undefined
@@ -1837,7 +2043,7 @@ function openLogs(l: ListenerView, row: SiteRow) {
     domain: row.site.domains?.[0],
     accessLog: row.site.accessLog,
     listener: l.key,
-    listenerLabel: `${l.name || t('web.unnamedListener')} · ${hostPort(l)} · ${networkText(l.network)}`,
+    listenerLabel: [l.name || t('web.unnamedListener'), hostPort(l), listenerNetworkText(l)].filter(Boolean).join(' · '),
   })
 }
 
@@ -1907,6 +2113,8 @@ function openSite(l: ListenerView, row?: SiteRow, copy = false) {
   site.value = draft
   siteTab.value = 'basic'
   siteVisible.value = true
+  // 上次打开时的校验标红不带到这次
+  void nextTick(() => siteForm.value?.clearValidate())
   fetchSettings()
     .then((s) => {
       adminPassReady.value = !!s.ssoDomain || !!s.adminPassEntry
@@ -1958,6 +2166,10 @@ const siteMovePlainRisk = computed(() => {
 
 async function saveSite() {
   if (!siteOwner) {
+    return
+  }
+  // 必填项先在前端检查：出错的字段都在「基本」页，切过去再标红并聚焦
+  if (!(await validateForm(siteForm.value, () => void (siteTab.value = 'basic')))) {
     return
   }
   // 编辑已有站点并换了所属监听：先保存修改，再移到所选监听（新建与复制时 siteOwner 已随选择切换）
@@ -2227,7 +2439,8 @@ onMounted(async () => {
   if (props.dialogOnly) {
     return
   }
-  await prepare()
+  // 全局设置读取失败不阻止监听列表加载；列表本身失败时显示错误
+  await prepare().catch(() => undefined)
   loadIPLists()
   loadForwards()
   loadPanels()
@@ -2325,7 +2538,8 @@ onMounted(async () => {
 }
 .site {
   display: grid;
-  grid-template-columns: 40px minmax(0, 1.5fr) minmax(0, 1.8fr) minmax(0, 1.3fr) 190px auto;
+  /* 域名与后端列占主要宽度；统计列按内容宽度（最多 160px），操作列按按钮宽度 */
+  grid-template-columns: 40px minmax(0, 2fr) minmax(0, 1.7fr) minmax(0, 1.2fr) fit-content(160px) auto;
   gap: 8px 14px;
   align-items: center;
   padding: 9px 8px 9px 12px;
@@ -2386,7 +2600,43 @@ onMounted(async () => {
   min-width: 0;
 }
 .site-domains {
-  word-break: break-all;
+  /* 只在一行放不下时才断开长域名，不在任意字符处拆行 */
+  overflow-wrap: anywhere;
+}
+.site-cert {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 2px 6px;
+  margin-top: 2px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--el-text-color-secondary);
+  overflow-wrap: anywhere;
+}
+.site-cert-icon {
+  flex-shrink: 0;
+  color: var(--el-color-success);
+}
+.site-cert.is-missing,
+.site-cert.is-expired {
+  font-weight: 500;
+  color: var(--g-text-danger, var(--el-color-danger));
+}
+.site-cert.is-expiring {
+  color: var(--g-text-warning, var(--el-color-warning));
+}
+.site-cert.is-missing .site-cert-icon,
+.site-cert.is-expired .site-cert-icon {
+  color: var(--g-text-danger, var(--el-color-danger));
+}
+.site-cert.is-expiring .site-cert-icon {
+  color: var(--g-text-warning, var(--el-color-warning));
+}
+.site-cert-action {
+  height: auto;
+  padding: 0;
+  font-size: 12px;
 }
 .domain-list {
   display: flex;
@@ -2396,7 +2646,7 @@ onMounted(async () => {
 .target {
   margin-left: 6px;
   font-size: 12px;
-  word-break: break-all;
+  overflow-wrap: anywhere;
 }
 .site-opts {
   display: flex;
@@ -2418,6 +2668,14 @@ onMounted(async () => {
 }
 .site-actions :deep(.el-button + .el-button) {
   margin-left: 0;
+}
+/* 删除与其他操作隔开一点，避免误点 */
+.site-actions .site-del {
+  margin-left: 6px;
+}
+.site-pager {
+  padding: 8px 12px;
+  border-top: 1px solid var(--g-border);
 }
 .empty-sites {
   padding: 10px 12px;
@@ -2480,7 +2738,7 @@ onMounted(async () => {
   }
   /* 域名优先完整显示，名称说明只占剩余空间 */
   .sites.is-compact .site {
-    grid-template-columns: 40px minmax(0, 1.9fr) minmax(0, 1.6fr) minmax(0, 1fr) 190px auto;
+    grid-template-columns: 40px minmax(0, 2.2fr) minmax(0, 1.6fr) minmax(0, 1fr) fit-content(160px) auto;
   }
   .sites.is-compact .site-main .site-domains {
     flex: 0 1 auto;
@@ -2499,14 +2757,17 @@ onMounted(async () => {
     flex-shrink: 0;
   }
 }
-/* 中等宽度（平板、带侧栏的小屏笔记本）：操作按钮只显示图标（悬停有标题），统计列收窄，给域名列留出空间 */
-@media (min-width: 768px) and (max-width: 1439.98px) {
+/* 1680px 以下（含常见的 1440 桌面）：操作按钮只显示图标（悬停有标题），给域名与后端列留出空间；
+   带文字的按钮在中文下约 360px、英文下更宽，会把域名挤成一行几个字符 */
+@media (min-width: 768px) and (max-width: 1679.98px) {
   .site-actions :deep(.el-button > span:not(.el-icon)) {
     display: none;
   }
+}
+@media (min-width: 768px) and (max-width: 1439.98px) {
   .site,
   .sites.is-compact .site {
-    grid-template-columns: 40px minmax(0, 1.5fr) minmax(0, 1.8fr) minmax(0, 1.3fr) 130px auto;
+    grid-template-columns: 40px minmax(0, 1.8fr) minmax(0, 1.6fr) minmax(0, 1.2fr) fit-content(130px) auto;
   }
 }
 /* 更窄时改为上下排列：第一行开关、域名与操作按钮，目标、选项与统计放在下面 */

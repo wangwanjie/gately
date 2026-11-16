@@ -31,6 +31,8 @@
   "loading": "載入中",
   "abnormal": "{count} 項異常",
   "attention": "{count} 項需關注",
+  "showAttention": "查看需要關注的服務",
+  "idle": "尚未設定或未啟用",
   "allOk": "全部正常",
   "proc": {
     "version": "版本",

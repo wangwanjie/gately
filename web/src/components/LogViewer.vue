@@ -1066,11 +1066,11 @@ mark {
   border-radius: 2px;
 }
 .warn .lvl {
-  color: var(--el-color-warning);
+  color: var(--g-text-warning);
 }
 .error .lvl,
 .error {
-  color: var(--el-color-danger);
+  color: var(--g-text-danger);
 }
 .debug {
   opacity: 0.7;

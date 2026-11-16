@@ -1,17 +1,17 @@
 <template>
   <div>
-    <PageHeader :title="t('cron.title')" :desc="t('cron.desc')" :icon="CalendarClock">
+    <PageHeader :title="t('cron.title')" doc="modules/tools" :desc="t('cron.desc')" :icon="CalendarClock">
       <CompactToggle v-model="compact" />
       <ListTools :gl="gl" :placeholder="t('groupSort.search')" />
       <el-button type="primary" :icon="Plus" @click="openEditor()">{{ t('cron.addTask') }}</el-button>
     </PageHeader>
 
-    <GroupedList :gl="gl" :compact="compact" :empty-text="t('cron.empty')">
+    <GroupedList :gl="gl" :error="loadError" @retry="load" :compact="compact" :empty-text="t('cron.empty')">
       <template #item="{ it, item: tk, sorting, bind }">
         <EntityCard v-bind="bind" :off="!tk.enable" :compact="compact || sorting">
           <template #lead>
             <SortCheck v-if="sorting" :gl="gl" :id="it.id" />
-            <el-switch v-else :model-value="tk.enable" @change="(v: string | number | boolean) => toggle(tk, Boolean(v))" />
+            <el-switch v-else :model-value="tk.enable" :aria-label="t('common.toggleItem', { name: tk.name || '-' })" @change="(v: string | number | boolean) => toggle(tk, Boolean(v))" />
           </template>
           <template #title>
             <span>{{ tk.name }}</span>
@@ -103,7 +103,7 @@ import { onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
 import { CalendarClock, CopyPlus, History, Pencil, Play, Plus, Trash2 } from 'lucide-vue-next'
-import { api } from '../api'
+import { api, errorText } from '../api'
 import PageHeader from '../components/PageHeader.vue'
 import CompactToggle from '../components/CompactToggle.vue'
 import EntityCard from '../components/EntityCard.vue'
@@ -152,6 +152,8 @@ interface TaskView extends Task {
 }
 
 const { t } = useI18n()
+// 列表最近一次加载失败的原因，空为成功；接口出错时列表显示错误而不是空状态
+const loadError = ref('')
 const compact = useCompactView('cron')
 const { isMobile, labelPosition } = useFormLayout()
 const tasks = ref<TaskView[]>([])
@@ -207,7 +209,12 @@ function taskStatus(tk: TaskView): { type: StatusType; text: string } {
 }
 
 async function load() {
-  tasks.value = await api.get('/api/cron/tasks')
+  try {
+    tasks.value = await api.get('/api/cron/tasks')
+    loadError.value = ''
+  } catch (e) {
+    loadError.value = errorText(e)
+  }
 }
 
 async function preview() {

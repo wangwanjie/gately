@@ -31,6 +31,8 @@
   "loading": "読み込み中",
   "abnormal": "{count} 件の異常",
   "attention": "{count} 件の要確認",
+  "showAttention": "注意が必要なサービスを表示",
+  "idle": "未設定または無効",
   "allOk": "すべて正常",
   "proc": {
     "version": "バージョン",

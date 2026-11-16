@@ -1,6 +1,6 @@
 <template>
   <div>
-    <PageHeader :title="t('notify.title')" :desc="t('notify.desc')" :icon="Bell">
+    <PageHeader :title="t('notify.title')" doc="modules/notify" :desc="t('notify.desc')" :icon="Bell">
       <el-button :icon="SlidersHorizontal" @click="openSettings">{{ t('notify.settings') }}</el-button>
       <el-button :icon="Plus" @click="openRule()">{{ t('notify.addRule') }}</el-button>
       <el-button type="primary" :icon="Plus" @click="openChannel()">{{ t('notify.addChannel') }}</el-button>
@@ -15,12 +15,12 @@
           <CompactToggle v-model="compactChannels" size="small" />
         </div>
       </div>
-      <GroupedList :gl="glChannels" :compact="compactChannels" grid :empty-text="t('notify.noChannels')">
+      <GroupedList :gl="glChannels" :error="loadError" @retry="load" :compact="compactChannels" grid :empty-text="t('notify.noChannels')">
         <template #item="{ it, item: c, sorting, bind }">
           <EntityCard v-bind="bind" :off="!c.enable" :compact="compactChannels || sorting">
             <template #lead>
               <SortCheck v-if="sorting" :gl="glChannels" :id="it.id" />
-              <el-switch v-else :model-value="c.enable" @change="(v: string | number | boolean) => toggleChannel(c, Boolean(v))" />
+              <el-switch v-else :model-value="c.enable" :aria-label="t('common.toggleItem', { name: c.name || '-' })" @change="(v: string | number | boolean) => toggleChannel(c, Boolean(v))" />
             </template>
             <template #title>{{ c.name }}</template>
             <template #sub>{{ kindLabel(c.kind) }}</template>
@@ -53,12 +53,12 @@
           <CompactToggle v-model="compactRules" size="small" />
         </div>
       </div>
-      <GroupedList :gl="glRules" :compact="compactRules" grid :empty-text="t('notify.noRules')">
+      <GroupedList :gl="glRules" :error="loadError" @retry="load" :compact="compactRules" grid :empty-text="t('notify.noRules')">
         <template #item="{ it, item: r, sorting, bind }">
           <EntityCard v-bind="bind" :off="!r.enable" :compact="compactRules || sorting">
             <template #lead>
               <SortCheck v-if="sorting" :gl="glRules" :id="it.id" />
-              <el-switch v-else :model-value="r.enable" @change="(v: string | number | boolean) => toggleRule(r, Boolean(v))" />
+              <el-switch v-else :model-value="r.enable" :aria-label="t('common.toggleItem', { name: r.name || '-' })" @change="(v: string | number | boolean) => toggleRule(r, Boolean(v))" />
             </template>
             <template #title>{{ r.name }}</template>
             <template #sub>{{ t('notify.levelAtLeast', { level: levelLabel(r.minLevel) }) }}<span v-if="r.silence">{{ t('notify.silenceSuffix', { seconds: r.silence }) }}</span></template>
@@ -87,13 +87,17 @@
 
     <h3 class="section">{{ t('notify.recentDeliveries') }}</h3>
     <el-table :data="history" size="small" stripe :empty-text="t('notify.noDeliveries')">
+      <template v-if="loadError" #empty>
+        <LoadError compact :error="loadError" @retry="load" />
+      </template>
       <el-table-column :label="t('notify.time')" width="170">
         <template #default="{ row }">{{ new Date(row.time).toLocaleString() }}</template>
       </el-table-column>
       <el-table-column :label="t('notify.event')" min-width="200" prop="title" show-overflow-tooltip />
       <el-table-column :label="t('notify.rule')" width="140" prop="rule" show-overflow-tooltip />
       <el-table-column :label="t('notify.channel')" width="140" prop="channel" show-overflow-tooltip />
-      <el-table-column :label="t('notify.result')" width="90">
+      <!-- 结果列固定在右侧，手机上不用横向滑动就能看到是否发送成功 -->
+      <el-table-column :label="t('notify.result')" width="90" fixed="right">
         <template #default="{ row }">
           <StatusBadge v-if="row.ok" type="running" :text="t('notify.success')" />
           <StatusBadge v-else type="error" :text="t('notify.failed')" :title="row.error" />
@@ -273,7 +277,7 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import { Bell, CopyPlus, Pencil, Plus, Send, SlidersHorizontal, Trash2 } from 'lucide-vue-next'
-import { api } from '../api'
+import { api, errorText } from '../api'
 import { SECRET_MASK, secretOf } from '../secrets'
 import SecretInput from '../components/SecretInput.vue'
 import ProxyInput from '../components/ProxyInput.vue'
@@ -281,6 +285,7 @@ import { proxyLabel } from '../proxy'
 import PageHeader from '../components/PageHeader.vue'
 import EntityCard from '../components/EntityCard.vue'
 import GroupedList from '../components/GroupedList.vue'
+import LoadError from '../components/LoadError.vue'
 import GroupInput from '../components/GroupInput.vue'
 import ListTools from '../components/ListTools.vue'
 import SortCheck from '../components/SortCheck.vue'
@@ -359,6 +364,8 @@ interface DeliveryRecord {
 }
 
 const { t } = useI18n()
+// 列表最近一次加载失败的原因，空为成功；接口出错时列表显示错误而不是空状态
+const loadError = ref('')
 // 渠道类型选项：标题随界面语言变化，因此用 computed
 const kinds = computed(() => [
   { value: 'webhook', label: 'Webhook' },
@@ -532,14 +539,19 @@ async function saveSettings() {
 }
 
 async function load() {
-  const [c, r, h] = await Promise.all([
-    api.get<Channel[]>('/api/notify/channels'),
-    api.get<Rule[]>('/api/notify/rules'),
-    api.get<DeliveryRecord[]>('/api/notify/history'),
-  ])
-  channels.value = c
-  rules.value = r
-  history.value = h
+  try {
+    const [c, r, h] = await Promise.all([
+      api.get<Channel[]>('/api/notify/channels'),
+      api.get<Rule[]>('/api/notify/rules'),
+      api.get<DeliveryRecord[]>('/api/notify/history'),
+    ])
+    channels.value = c
+    rules.value = r
+    history.value = h
+    loadError.value = ''
+  } catch (e) {
+    loadError.value = errorText(e)
+  }
 }
 
 // openChannel 打开渠道编辑框：copy 为 true 时以 c 为模板新建副本，密钥沿用模板
@@ -656,7 +668,11 @@ async function test(c: Channel) {
 }
 
 onMounted(async () => {
-  eventTypes.value = await api.get('/api/notify/event-types')
+  try {
+    eventTypes.value = await api.get('/api/notify/event-types')
+  } catch {
+    // 事件类型读取失败不阻止列表加载；列表本身失败时显示错误
+  }
   await load()
   polling.start()
 })

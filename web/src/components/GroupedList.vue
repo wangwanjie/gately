@@ -16,7 +16,10 @@
     @remove="gl.batchRemove"
   />
   <div v-loading="loading" v-bind="$attrs" class="grouped-list" :class="{ 'is-sorting': sorting, 'is-compact': dense, 'is-flush': flush }">
-    <el-empty v-if="!loading && !gl.total.value" :description="emptyText" :image-size="emptyImageSize" />
+    <!-- 加载失败：没有数据时显示错误块代替空状态；已有数据（轮询偶发失败）时保留数据，顶部显示一行提示 -->
+    <LoadError v-if="error && gl.total.value" bar :error="error" @retry="emit('retry')" />
+    <LoadError v-if="!loading && error && !gl.total.value" :error="error" :compact="!!emptyImageSize && emptyImageSize < 80" @retry="emit('retry')" />
+    <el-empty v-else-if="!loading && !gl.total.value" :description="emptyText" :image-size="emptyImageSize" />
     <el-empty v-else-if="!loading && !gl.items.value.length" :description="t('groupSort.noMatched')" :image-size="60" />
     <div v-for="b in blocks" :key="b.id" class="gl-block">
       <GroupHeader
@@ -52,6 +55,7 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import GroupHeader from './GroupHeader.vue'
+import LoadError from './LoadError.vue'
 import SortToolbar from './SortToolbar.vue'
 import { useIsMobile } from '../composables/useIsMobile'
 import type { GroupedListState } from '../composables/useGroupSort'
@@ -72,9 +76,12 @@ const props = withDefaults(
     flush?: boolean
     toolbar?: boolean
     countText?: (count: number) => string
+    // error 为最近一次加载失败的原因，空为成功；页面在 load 里捕获错误后传入，并处理 retry 事件重新加载
+    error?: string
   }>(),
-  { toolbar: true },
+  { toolbar: true, error: '' },
 )
+const emit = defineEmits<{ retry: [] }>()
 
 defineSlots<{
   item(props: { it: Extract<GroupItem<T>, { kind: 'item' }>; item: T; sorting: boolean; bind: Record<string, unknown> }): unknown

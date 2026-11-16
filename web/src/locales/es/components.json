@@ -198,5 +198,12 @@
     "none": "Sin proxy",
     "update": "Usar el proxy global de actualizaciones",
     "custom": "Proxy personalizado"
+  },
+  "targetHint": {
+    "split": "\"{addr}\" incluye el puerto {port}. La dirección de destino solo lleva un host o IP; al guardar, el puerto se moverá al puerto de destino.",
+    "splitNow": "Separar ahora",
+    "conflict": "\"{addr}\" incluye el puerto {port}, distinto del puerto de destino {ports}, así que no se podrá guardar. Indica el puerto en un solo lugar.",
+    "mixed": "Varias direcciones de destino incluyen puertos distintos, así que no se podrá guardar. Quita los puertos de las direcciones e indícalo en el puerto de destino.",
+    "invalid": "\"{addr}\" no es una dirección de destino válida: introduce solo un nombre de host o IP (IPv6 con puerto como [dirección]:puerto), sin http:// ni ruta."
   }
 }

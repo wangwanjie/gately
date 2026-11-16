@@ -1,6 +1,6 @@
 <template>
   <div>
-    <PageHeader :title="t('history.title')" :desc="t('history.desc')" :icon="History">
+    <PageHeader :title="t('history.title')" doc="guide/audit" :desc="t('history.desc')" :icon="History">
       <el-button :icon="RefreshCw" :loading="loading" @click="load">{{ t('common.refresh') }}</el-button>
     </PageHeader>
 
@@ -13,13 +13,17 @@
       </div>
       <div class="g-card-body table-body">
         <el-table v-loading="loading" :data="versions" :empty-text="t('history.empty')">
+          <template v-if="loadError" #empty>
+            <LoadError compact :error="loadError" @retry="load" />
+          </template>
           <el-table-column :label="t('history.savedAt')" min-width="200">
             <template #default="{ row }">{{ new Date(row.time).toLocaleString() }}</template>
           </el-table-column>
           <el-table-column :label="t('history.size')" width="120">
             <template #default="{ row }">{{ formatSize(row.size) }}</template>
           </el-table-column>
-          <el-table-column :label="t('common.actions')" width="220" align="right">
+          <!-- 操作列固定在右侧，手机上不用横向滑动就能看到「回滚」 -->
+          <el-table-column :label="t('common.actions')" width="220" align="right" fixed="right">
             <template #default="{ row }">
               <el-button text :icon="FileDiff" @click="showDiff(row)">{{ t('history.diff') }}</el-button>
               <el-button text type="warning" :icon="Undo2" @click="restore(row)">{{ t('history.restore') }}</el-button>
@@ -51,7 +55,8 @@ import { useI18n } from 'vue-i18n'
 import { FileDiff, History, RefreshCw, Undo2 } from 'lucide-vue-next'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import PageHeader from '../components/PageHeader.vue'
-import { api } from '../api'
+import LoadError from '../components/LoadError.vue'
+import { api, errorText } from '../api'
 
 interface Version {
   id: string
@@ -69,6 +74,8 @@ interface DiffLine {
 }
 
 const { t } = useI18n()
+// 列表最近一次加载失败的原因，空为成功；接口出错时显示错误而不是空状态
+const loadError = ref('')
 const files = ref<HistoryFile[]>([])
 const current = ref('')
 const loading = ref(false)
@@ -90,8 +97,9 @@ async function load() {
     if (!files.value.some((f) => f.name === current.value)) {
       current.value = files.value[0]?.name ?? ''
     }
+    loadError.value = ''
   } catch (e) {
-    ElMessage.error((e as Error).message)
+    loadError.value = errorText(e)
   } finally {
     loading.value = false
   }

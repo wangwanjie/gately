@@ -135,10 +135,18 @@ func (r *Rule) Validate() error {
 	if r.ListenAddress != "" && net.ParseIP(r.ListenAddress) == nil {
 		return fmt.Errorf("监听地址 %q 不是有效 IP", r.ListenAddress)
 	}
+	// 目标地址写成「主机:端口」时把端口拆到目标端口；与已填的目标端口冲突时拒绝
+	targets, port, err := l4proxy.SplitTargets(r.TargetAddresses)
+	if err != nil {
+		return err
+	}
+	if r.TargetPorts, err = l4proxy.MergeTargetPorts(r.TargetPorts, port); err != nil {
+		return err
+	}
+	r.TargetAddresses = targets
 	if _, err := l4proxy.MapPorts(r.ListenPorts, r.TargetPorts); err != nil {
 		return err
 	}
-	r.TargetAddresses = l4proxy.CleanTargets(r.TargetAddresses)
 	if err := l4proxy.ValidateProxyProtocol(r.ProxyProtocol); err != nil {
 		return err
 	}
@@ -243,18 +251,43 @@ func (r *Rule) validateRoutes() error {
 			rt.TargetAddresses = []string{}
 			continue
 		}
-		rt.TargetAddresses = l4proxy.CleanTargets(rt.TargetAddresses)
+		targets, port, err := l4proxy.SplitTargets(rt.TargetAddresses)
+		if err != nil {
+			return fmt.Errorf("%s: %v", label, err)
+		}
+		rt.TargetAddresses = targets
 		if len(rt.TargetAddresses) == 0 {
 			return fmt.Errorf("%s: 至少填写一个目标地址", label)
 		}
 		if rt.TargetPort < 0 || rt.TargetPort > 65535 {
 			return fmt.Errorf("%s: 无效端口 %d", label, rt.TargetPort)
 		}
+		if rt.TargetPort, err = l4proxy.MergeTargetPort(rt.TargetPort, port); err != nil {
+			return fmt.Errorf("%s: %v", label, err)
+		}
 		if err := l4proxy.ValidateProxyProtocol(rt.ProxyProtocol); err != nil {
 			return fmt.Errorf("%s: %v", label, err)
 		}
 	}
 	return nil
+}
+
+// targetProblems 返回已保存的默认目标与启用路由里连不上的目标写法（旧版本保存的「主机:端口」等）。
+func (r *Rule) targetProblems() []string {
+	out := l4proxy.TargetProblems(r.TargetAddresses)
+	for i, rt := range r.Routes {
+		if rt.Disabled || rt.Protocol == ProtoSPA {
+			continue
+		}
+		label := rt.Name
+		if label == "" {
+			label = fmt.Sprintf("第 %d 条路由", i+1)
+		}
+		for _, p := range l4proxy.TargetProblems(rt.TargetAddresses) {
+			out = append(out, label+": "+p)
+		}
+	}
+	return out
 }
 
 // hasSPARoute 判断规则是否有启用的敲门路由。

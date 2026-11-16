@@ -15,6 +15,7 @@ import (
 	"github.com/wangwanjie/gately/internal/events"
 	"github.com/wangwanjie/gately/internal/fwopen"
 	"github.com/wangwanjie/gately/internal/iplist"
+	"github.com/wangwanjie/gately/internal/l4proxy"
 	"github.com/wangwanjie/gately/internal/logbuf"
 	"github.com/wangwanjie/gately/internal/script"
 	"github.com/wangwanjie/gately/internal/stunaddr"
@@ -76,6 +77,8 @@ type runner struct {
 	stats    counters
 	// filter 为内置转发的来源 IP 访问控制，修改名单时原地替换（见 setAccess），nil 表示不限制
 	filter atomic.Pointer[iplist.Filter]
+	// targetProblems 为已保存的转发目标里连不上的写法（旧版本保存的「主机:端口」等），启动时告警并显示在状态上
+	targetProblems []string
 	// selfCheckUntil 为 TCP 通道有效性检测窗口的截止时间（UnixNano），窗口内被名单拒绝的连接不计入拒绝次数
 	selfCheckUntil atomic.Int64
 	// selfCheckPub 为检测时连接的公网 IP（netip.Addr），经 NAT 回流的检测连接可能以它为来源
@@ -96,6 +99,9 @@ type runner struct {
 func newRunner(rule Rule, settings Settings, log *logbuf.Logger) *runner {
 	r := &runner{rule: rule, settings: settings, log: log, port: rule.LocalPort, state: RuleState{Status: StatusStopped}}
 	r.filter.Store(rule.Access.Compile())
+	if !rule.DisableForward {
+		r.targetProblems = l4proxy.TargetProblems(rule.TargetAddresses)
+	}
 	return r
 }
 
@@ -107,6 +113,9 @@ func (r *runner) setAccess(a iplist.Access) {
 }
 
 func (r *runner) start(parent context.Context) {
+	for _, p := range r.targetProblems {
+		r.log.Warnf("%s", p)
+	}
 	ctx, cancel := context.WithCancel(parent)
 	r.cancel = cancel
 	r.done = make(chan struct{})
@@ -165,6 +174,14 @@ func (r *runner) snapshot() RuleState {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	s := r.state
+	// 旧版本保存的「主机:端口」转发目标连不上：穿透成功也要在状态上显示，避免只显示正常却转发不通
+	if len(r.targetProblems) > 0 {
+		msgs := r.targetProblems
+		if s.Error != "" {
+			msgs = append([]string{s.Error}, msgs...)
+		}
+		s.Error = strings.Join(msgs, "；")
+	}
 	s.History = append([]AddrChange{}, r.state.History...)
 	s.Stats = Stats{
 		ActiveConns: r.stats.active.Load(),

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <PageHeader :title="t('wol.title')" :desc="t('wol.desc')" :icon="Power">
+    <PageHeader :title="t('wol.title')" doc="modules/tools" :desc="t('wol.desc')" :icon="Power">
       <CompactToggle v-model="compact" />
       <ListTools :gl="gl" :placeholder="t('groupSort.search')" />
       <!-- 巴法云语音控制：按钮上的圆点表示连接状态 -->
@@ -10,7 +10,7 @@
       <el-button type="primary" :icon="Plus" @click="openEditor()">{{ t('wol.addDevice') }}</el-button>
     </PageHeader>
 
-    <GroupedList :gl="gl" :compact="compact" grid :empty-text="t('wol.empty')">
+    <GroupedList :gl="gl" :error="loadError" @retry="load" :compact="compact" grid :empty-text="t('wol.empty')">
       <template #item="{ it, item: d, sorting, bind }">
         <EntityCard v-bind="bind" :compact="compact || sorting" class="wol-card">
           <template #lead>
@@ -185,7 +185,7 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import { ChevronDown, CopyPlus, Mic, Monitor, Moon, Pencil, Plug, Plus, Power, PowerOff, RotateCcw, Trash2, Zap } from 'lucide-vue-next'
-import { api } from '../api'
+import { api, errorText } from '../api'
 import { moduleBuilt } from '../nav'
 import SecretInput from '../components/SecretInput.vue'
 import HeaderEditor from '../components/HeaderEditor.vue'
@@ -256,6 +256,8 @@ interface BemfaView {
 }
 
 const { t } = useI18n()
+// 列表最近一次加载失败的原因，空为成功；接口出错时列表显示错误而不是空状态
+const loadError = ref('')
 const { isMobile, labelPosition } = useFormLayout()
 const devices = ref<Device[]>([])
 const compact = useCompactView('wol')
@@ -407,16 +409,21 @@ function connName(key: string) {
 }
 
 async function load() {
-  const [d, s, b, a] = await Promise.all([
-    api.get<Device[]>('/api/wol/devices'),
-    api.get<Record<string, string>>('/api/wol/status'),
-    api.get<BemfaView>('/api/wol/bemfa'),
-    api.get<Record<string, AgentInfo>>('/api/wol/agents'),
-  ])
-  devices.value = d.map((x) => ({ ...x, shutdownHttp: { ...emptyHTTP(), ...(x.shutdownHttp ?? {}) } }))
-  status.value = s
-  bemfa.value = b
-  agents.value = a
+  try {
+    const [d, s, b, a] = await Promise.all([
+      api.get<Device[]>('/api/wol/devices'),
+      api.get<Record<string, string>>('/api/wol/status'),
+      api.get<BemfaView>('/api/wol/bemfa'),
+      api.get<Record<string, AgentInfo>>('/api/wol/agents'),
+    ])
+    devices.value = d.map((x) => ({ ...x, shutdownHttp: { ...emptyHTTP(), ...(x.shutdownHttp ?? {}) } }))
+    status.value = s
+    bemfa.value = b
+    agents.value = a
+    loadError.value = ''
+  } catch (e) {
+    loadError.value = errorText(e)
+  }
 }
 
 async function loadTargets() {

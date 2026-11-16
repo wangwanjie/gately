@@ -1,6 +1,6 @@
 <template>
   <div>
-    <PageHeader :title="t('portForward.title')" :desc="t('portForward.desc')" :icon="ArrowLeftRight">
+    <PageHeader :title="t('portForward.title')" doc="modules/portforward" :desc="t('portForward.desc')" :icon="ArrowLeftRight">
       <CompactToggle v-model="compact" />
       <ListTools :gl="gl" :placeholder="t('portForward.filterPlaceholder')" />
       <el-button :icon="SlidersHorizontal" @click="openSettings">{{ t('portForward.globalSettings') }}</el-button>
@@ -9,7 +9,7 @@
 
     <ModuleBanner v-if="settings && !settings.enable" :title="t('portForward.moduleOffTitle')" :loading="enabling" @enable="enableModule" />
 
-    <GroupedList :gl="gl" :loading="loading" :compact="compact" :empty-text="t('portForward.empty')" :count-text="(n: number) => t('portForward.groupCount', { count: n })">
+    <GroupedList :gl="gl" :error="loadError" @retry="load" :loading="loading" :compact="compact" :empty-text="t('portForward.empty')" :count-text="(n: number) => t('portForward.groupCount', { count: n })">
       <template #item="{ it, sorting, bind }">
       <EntityCard
         v-bind="bind"
@@ -18,7 +18,7 @@
       >
         <template #lead>
           <SortCheck v-if="sorting" :gl="gl" :id="it.id" />
-          <el-switch v-else :model-value="it.item.enable" @change="(v: string | number | boolean) => toggle(it.item, Boolean(v))" />
+          <el-switch v-else :model-value="it.item.enable" :aria-label="t('common.toggleItem', { name: it.item.name || '-' })" @change="(v: string | number | boolean) => toggle(it.item, Boolean(v))" />
         </template>
         <template #title>
           <span>{{ it.item.name || t('portForward.unnamed') }}</span>
@@ -71,12 +71,12 @@
 
     <el-dialog v-model="editorVisible" :title="editing.key ? t('portForward.editRule') : t('portForward.addRule')" width="600px" :fullscreen="isMobile">
       <CopyHint :from="copyFrom" />
-      <el-form :model="editing" label-width="110px" :label-position="labelPosition">
+      <el-form ref="formRef" :model="editing" :rules="formRules" label-width="110px" :label-position="labelPosition">
         <el-form-item :label="t('common.name')">
           <el-input v-model="editing.name" :placeholder="t('portForward.namePlaceholder')" />
         </el-form-item>
         <GroupInput v-model="editing.group" :groups="gl.groupNames.value" />
-        <el-form-item :label="t('portForward.protocol')" required>
+        <el-form-item :label="t('portForward.protocol')" prop="protocols" required>
           <el-checkbox-group v-model="editing.protocols">
             <el-checkbox v-for="p in protocols" :key="p.value" :value="p.value">{{ p.label }}</el-checkbox>
           </el-checkbox-group>
@@ -85,46 +85,51 @@
         <el-form-item :label="t('portForward.listenAddress')">
           <el-input v-model="editing.listenAddress" :placeholder="t('portForward.listenAddressPlaceholder')" />
         </el-form-item>
-        <el-form-item :label="t('portForward.listenPorts')" required>
+        <el-form-item :label="t('portForward.listenPorts')" prop="listenPorts" required>
           <el-input v-model="editing.listenPorts" :placeholder="t('portForward.portsPlaceholder')" />
         </el-form-item>
-        <el-form-item :label="t('portForward.targetAddress')" required>
+        <el-form-item :label="t('portForward.targetAddress')" prop="targetAddresses" required>
           <el-input v-model="targetsText" type="textarea" :rows="2" :placeholder="t('portForward.targetAddressPlaceholder')" />
+          <TargetHint :lines="targetLines" :ports="editing.targetPorts" @split="splitTargets" />
         </el-form-item>
         <el-form-item :label="t('portForward.targetPorts')">
           <el-input v-model="editing.targetPorts" :placeholder="t('portForward.targetPortsPlaceholder')" />
         </el-form-item>
-        <el-form-item :label="t('common.autoFirewall')">
-          <el-switch v-model="editing.autoFirewall" />
-          <div class="form-help">{{ t('portForward.autoFirewallHelp') }}</div>
-        </el-form-item>
-        <el-form-item :label="t('portForward.maxConnections')">
-          <el-input-number v-model="editing.maxConnections" :min="0" :max="100000" />
-          <span class="help">{{ t('portForward.useGlobalDefault') }}</span>
-        </el-form-item>
-        <el-form-item :label="t('portForward.maxConnsPerSource')">
-          <el-input-number v-model="editing.maxConnsPerSource" :min="0" :max="100000" />
-          <span class="help">{{ t('portForward.useGlobalDefault') }}</span>
-        </el-form-item>
-        <el-form-item :label="t('portForward.udpTimeout')">
-          <el-input-number v-model="editing.udpSessionTimeout" :min="0" :max="3600" />
-          <span class="help">{{ t('portForward.useGlobalDefault') }}</span>
-        </el-form-item>
-        <el-form-item :label="t('portForward.proxyProtocol')">
-          <el-select v-model="editing.proxyProtocol" style="width: 160px" :empty-values="[null, undefined]">
-            <el-option :label="t('portForward.proxyProtocolOff')" value="" />
-            <el-option label="PROXY v1" value="v1" />
-            <el-option label="PROXY v2" value="v2" />
-          </el-select>
-          <div class="help">{{ t('portForward.proxyProtocolHelp') }}</div>
-        </el-form-item>
-        <IPAccessEditor v-model:mode="editing.ipMode" v-model:list="editing.ipList" v-model:sets="editing.ipSets" v-model:deny-list="editing.ipDenyList" v-model:deny-sets="editing.ipDenySets" v-model:knock="editing.knock" :note="t('portForward.ipAccessNote')" />
-        <el-form-item :label="t('common.remark')">
-          <el-input v-model="editing.remark" />
-        </el-form-item>
         <el-form-item :label="t('common.enable')">
           <el-switch v-model="editing.enable" />
         </el-form-item>
+        <!-- 常用的是协议、监听与目标，其余收在「高级设置」里；打开已有规则时有改动的高级项会自动展开 -->
+        <AdvancedToggle v-model="advOpen" :count="advCount" />
+        <div v-show="advOpen">
+          <el-form-item :label="t('common.autoFirewall')">
+            <el-switch v-model="editing.autoFirewall" />
+            <div class="form-help">{{ t('portForward.autoFirewallHelp') }}</div>
+          </el-form-item>
+          <el-form-item :label="t('portForward.maxConnections')">
+            <el-input-number v-model="editing.maxConnections" :min="0" :max="100000" />
+            <span class="help">{{ t('portForward.useGlobalDefault') }}</span>
+          </el-form-item>
+          <el-form-item :label="t('portForward.maxConnsPerSource')">
+            <el-input-number v-model="editing.maxConnsPerSource" :min="0" :max="100000" />
+            <span class="help">{{ t('portForward.useGlobalDefault') }}</span>
+          </el-form-item>
+          <el-form-item :label="t('portForward.udpTimeout')">
+            <el-input-number v-model="editing.udpSessionTimeout" :min="0" :max="3600" />
+            <span class="help">{{ t('portForward.useGlobalDefault') }}</span>
+          </el-form-item>
+          <el-form-item :label="t('portForward.proxyProtocol')">
+            <el-select v-model="editing.proxyProtocol" style="width: 160px" :empty-values="[null, undefined]">
+              <el-option :label="t('portForward.proxyProtocolOff')" value="" />
+              <el-option label="PROXY v1" value="v1" />
+              <el-option label="PROXY v2" value="v2" />
+            </el-select>
+            <div class="help">{{ t('portForward.proxyProtocolHelp') }}</div>
+          </el-form-item>
+          <IPAccessEditor v-model:mode="editing.ipMode" v-model:list="editing.ipList" v-model:sets="editing.ipSets" v-model:deny-list="editing.ipDenyList" v-model:deny-sets="editing.ipDenySets" v-model:knock="editing.knock" :note="t('portForward.ipAccessNote')" />
+          <el-form-item :label="t('common.remark')">
+            <el-input v-model="editing.remark" />
+          </el-form-item>
+        </div>
       </el-form>
       <template #footer>
         <el-button @click="editorVisible = false">{{ t('common.cancel') }}</el-button>
@@ -157,11 +162,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, nextTick, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ElMessage } from 'element-plus'
+import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { ArrowLeftRight, CopyPlus, Pencil, Plus, SlidersHorizontal, Trash2, TriangleAlert } from 'lucide-vue-next'
-import { api, formatBytes } from '../api'
+import { api, errorText, formatBytes } from '../api'
 import GroupedList from '../components/GroupedList.vue'
 import GroupInput from '../components/GroupInput.vue'
 import IPAccessEditor from '../components/IPAccessEditor.vue'
@@ -179,9 +184,12 @@ import Field from '../components/Field.vue'
 import StatusBadge, { type StatusType } from '../components/StatusBadge.vue'
 import LogCard from '../components/LogCard.vue'
 import CopyHint from '../components/CopyHint.vue'
+import TargetHint from '../components/TargetHint.vue'
+import AdvancedToggle from '../components/AdvancedToggle.vue'
 import { createItem, uniqueName, type CopySource } from '../copyDraft'
 import { useFormLayout } from '../composables/useIsMobile'
 import { usePolling } from '../composables/usePolling'
+import { validateForm } from '../composables/useFormValidate'
 
 interface Rule {
   key?: string
@@ -253,6 +261,8 @@ const protocols = [
 ]
 
 const { t } = useI18n()
+// 列表最近一次加载失败的原因，空为成功；接口出错时列表显示错误而不是空状态
+const loadError = ref('')
 // 读取端口敲门规则目录，卡片上显示“需要敲门”的规则名称
 useKnockRules()
 const compact = useCompactView('portforward')
@@ -336,6 +346,9 @@ function ruleStatus(r: RuleView): { type: StatusType; text: string; title?: stri
 async function load() {
   try {
     rules.value = await api.get<RuleView[]>('/api/portforward/rules')
+    loadError.value = ''
+  } catch (e) {
+    loadError.value = errorText(e)
   } finally {
     loading.value = false
   }
@@ -344,6 +357,30 @@ async function load() {
 async function loadSettings() {
   settings.value = await api.get<Settings>('/api/portforward/settings')
 }
+
+// 编辑框的前端校验：协议、监听端口与目标地址必填（目标地址的写法问题由 TargetHint 即时提示）
+const formRef = ref<FormInstance>()
+const formRules = computed<FormRules>(() => ({
+  protocols: [{ type: 'array', required: true, min: 1, message: t('portForward.protocolRequired'), trigger: 'change' }],
+  listenPorts: [{ required: true, whitespace: true, message: t('portForward.listenPortsRequired'), trigger: 'blur' }],
+  // 目标地址的输入框绑定的是文本，按拆分后的地址判断
+  targetAddresses: [{ trigger: 'blur', validator: (_r: unknown, _v: unknown, cb: (e?: Error) => void) => cb(targetLines.value.length ? undefined : new Error(t('portForward.targetRequired'))) }],
+}))
+
+// advOpen 为编辑框是否展开「高级设置」；advCount 为与默认值不同的高级字段数
+const advOpen = ref(false)
+const advCount = computed(() => {
+  const r = editing.value
+  return [
+    r.autoFirewall,
+    r.maxConnections > 0,
+    r.maxConnsPerSource > 0,
+    r.udpSessionTimeout > 0,
+    !!r.proxyProtocol,
+    !!r.ipMode || !!r.ipDenyList?.length || !!r.ipDenySets?.length || !!r.knock,
+    !!r.remark?.trim(),
+  ].filter(Boolean).length
+})
 
 // openEditor 打开编辑框：copy 为 true 时以 row 为模板新建副本
 function openEditor(row?: RuleView, copy = false) {
@@ -367,14 +404,31 @@ function openEditor(row?: RuleView, copy = false) {
     editing.value = emptyRule()
   }
   targetsText.value = (editing.value.targetAddresses ?? []).join('\n')
+  advOpen.value = advCount.value > 0
   editorVisible.value = true
+  void nextTick(() => formRef.value?.clearValidate())
+}
+
+// targetLines 为目标地址输入框按行（或逗号）拆开的地址
+const targetLines = computed(() =>
+  targetsText.value
+    .split(/[\n,]/)
+    .map((s) => s.trim())
+    .filter(Boolean),
+)
+
+// splitTargets 把写成「主机:端口」的目标地址拆开：主机留在目标地址，端口填到目标端口
+function splitTargets(v: { hosts: string[]; port: number }) {
+  targetsText.value = v.hosts.join('\n')
+  editing.value.targetPorts = String(v.port)
 }
 
 async function save() {
-  editing.value.targetAddresses = targetsText.value
-    .split(/[\n,]/)
-    .map((s) => s.trim())
-    .filter(Boolean)
+  editing.value.targetAddresses = targetLines.value
+  // 必填项先在前端检查，未填时标红并聚焦
+  if (!(await validateForm(formRef.value))) {
+    return
+  }
   saving.value = true
   try {
     const { key, ...body } = editing.value

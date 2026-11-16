@@ -1,6 +1,6 @@
 <template>
   <div>
-    <PageHeader :title="t('protoRoute.title')" :desc="t('protoRoute.desc')" :icon="Split">
+    <PageHeader :title="t('protoRoute.title')" doc="modules/protoroute" :desc="t('protoRoute.desc')" :icon="Split">
       <CompactToggle v-model="compact" />
       <ListTools :gl="gl" :placeholder="t('protoRoute.filterPlaceholder')" />
       <el-button :icon="SlidersHorizontal" @click="openSettings">{{ t('protoRoute.globalSettings') }}</el-button>
@@ -9,12 +9,12 @@
 
     <ModuleBanner v-if="settings && !settings.enable" :title="t('protoRoute.moduleOffTitle')" :loading="enabling" @enable="enableModule" />
 
-    <GroupedList :gl="gl" :loading="loading" :compact="compact" :empty-text="t('protoRoute.empty')" :count-text="(n: number) => t('protoRoute.groupCount', { count: n })">
+    <GroupedList :gl="gl" :error="loadError" @retry="load" :loading="loading" :compact="compact" :empty-text="t('protoRoute.empty')" :count-text="(n: number) => t('protoRoute.groupCount', { count: n })">
       <template #item="{ it, sorting, bind }">
         <EntityCard v-bind="bind" :compact="compact || sorting" :off="!it.item.enable || moduleOff">
           <template #lead>
             <SortCheck v-if="sorting" :gl="gl" :id="it.id" />
-            <el-switch v-else :model-value="it.item.enable" @change="(v: string | number | boolean) => toggle(it.item, Boolean(v))" />
+            <el-switch v-else :model-value="it.item.enable" :aria-label="t('common.toggleItem', { name: it.item.name || '-' })" @change="(v: string | number | boolean) => toggle(it.item, Boolean(v))" />
           </template>
           <template #title>
             <span>{{ it.item.name || t('protoRoute.unnamed') }}</span>
@@ -149,6 +149,12 @@
                   <el-option label="PROXY v2" value="v2" />
                 </el-select>
               </div>
+              <TargetHint
+                v-if="rt.protocol !== 'spa'"
+                :lines="splitList(rt.targetsText)"
+                :ports="rt.targetPort ? String(rt.targetPort) : ''"
+                @split="(v) => ((rt.targetsText = v.hosts.join(', ')), (rt.targetPort = v.port))"
+              />
               <div v-if="rt.protocol !== 'spa' && (moduleBuilt('knock') || rt.knock)" class="route-knock">
                 <span class="route-knock-label">{{ t('protoRoute.routeKnock') }}</span>
                 <KnockSelect v-model="rt.knock" size="small" />
@@ -161,6 +167,11 @@
         </el-form-item>
         <el-form-item :label="t('protoRoute.defaultTarget')">
           <el-input v-model="targetsText" type="textarea" :rows="2" :placeholder="t('protoRoute.defaultTargetPlaceholder')" />
+          <TargetHint
+            :lines="targetsText.split(/[\n,]/)"
+            :ports="editing.targetPorts"
+            @split="(v) => ((targetsText = v.hosts.join('\n')), (editing.targetPorts = String(v.port)))"
+          />
         </el-form-item>
         <el-form-item :label="t('protoRoute.targetPorts')">
           <el-input v-model="editing.targetPorts" :placeholder="t('protoRoute.targetPortsPlaceholder')" />
@@ -226,7 +237,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
 import { ArrowDown, ArrowUp, CopyPlus, Pencil, Plus, SlidersHorizontal, Split, Trash2, TriangleAlert } from 'lucide-vue-next'
-import { api, formatBytes } from '../api'
+import { api, errorText, formatBytes } from '../api'
 import GroupedList from '../components/GroupedList.vue'
 import GroupInput from '../components/GroupInput.vue'
 import IPAccessEditor from '../components/IPAccessEditor.vue'
@@ -246,6 +257,7 @@ import Field from '../components/Field.vue'
 import StatusBadge, { type StatusType } from '../components/StatusBadge.vue'
 import LogCard from '../components/LogCard.vue'
 import CopyHint from '../components/CopyHint.vue'
+import TargetHint from '../components/TargetHint.vue'
 import { createItem, uniqueName, type CopySource } from '../copyDraft'
 import { useFormLayout } from '../composables/useIsMobile'
 import { usePolling } from '../composables/usePolling'
@@ -380,6 +392,8 @@ const protocols = [
 ]
 
 const { t, te } = useI18n()
+// 列表最近一次加载失败的原因，空为成功；接口出错时列表显示错误而不是空状态
+const loadError = ref('')
 // 读取端口敲门规则目录，卡片上显示“需要敲门”的规则名称
 useKnockRules()
 const compact = useCompactView('protoroute')
@@ -572,6 +586,9 @@ function ruleStatus(r: RuleView): { type: StatusType; text: string; title?: stri
 async function load() {
   try {
     rules.value = await api.get<RuleView[]>('/api/protoroute/rules')
+    loadError.value = ''
+  } catch (e) {
+    loadError.value = errorText(e)
   } finally {
     loading.value = false
   }

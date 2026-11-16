@@ -15,6 +15,8 @@ withDefaults(defineProps<{ type?: StatusType; text?: string; title?: string }>()
 <style scoped>
 .status-badge {
   --c: var(--el-color-info);
+  /* 普通信息的文字用次要文字色，info 灰在浅底上只有约 2.8:1 */
+  --t: var(--el-text-color-secondary);
   --bg: var(--el-fill-color-light);
   display: inline-flex;
   align-items: center;
@@ -34,6 +36,8 @@ withDefaults(defineProps<{ type?: StatusType; text?: string; title?: string }>()
 .text {
   overflow: hidden;
   text-overflow: ellipsis;
+  /* 文字用加深后的状态色（--t），圆点仍用原状态色（--c）；状态色直接当 12px 文字在浅底上不够清楚 */
+  color: var(--t, var(--c));
 }
 .dot {
   width: 6px;
@@ -45,6 +49,7 @@ withDefaults(defineProps<{ type?: StatusType; text?: string; title?: string }>()
 .is-ok,
 .is-running {
   --c: var(--el-color-success);
+  --t: var(--g-text-success);
   --bg: var(--el-color-success-light-9);
 }
 .is-running .dot {
@@ -53,10 +58,12 @@ withDefaults(defineProps<{ type?: StatusType; text?: string; title?: string }>()
 }
 .is-warn {
   --c: var(--el-color-warning);
+  --t: var(--g-text-warning);
   --bg: var(--el-color-warning-light-9);
 }
 .is-error {
   --c: var(--el-color-danger);
+  --t: var(--g-text-danger);
   --bg: var(--el-color-danger-light-9);
 }
 .is-pending {

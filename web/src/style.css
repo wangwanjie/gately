@@ -195,7 +195,7 @@ a {
   color: var(--el-text-color-secondary);
 }
 .text-danger {
-  color: var(--el-color-danger);
+  color: var(--g-text-danger, var(--el-color-danger));
 }
 .text-ok {
   color: var(--el-color-success);
@@ -285,6 +285,21 @@ a {
 .el-message-box {
   /* 保留 Element 默认的 420px 宽度上限，仅在窄屏下收缩 */
   max-width: min(var(--el-messagebox-width, 420px), calc(100vw - 32px));
+}
+/* 浅色的普通信息提示框：标题与说明用常规文字色，Element 默认的 info 灰在浅底上只有约 2.8:1 */
+.el-alert--info.is-light .el-alert__title,
+.el-alert--info.is-light .el-alert__description {
+  color: var(--el-text-color-regular);
+}
+/* 状态标签的文字用加深后的状态色（见 themes.ts statusTextColors），浅底上的 12px 文字达到 4.5:1 */
+.el-tag.el-tag--success:not(.el-tag--dark) {
+  --el-tag-text-color: var(--g-text-success);
+}
+.el-tag.el-tag--warning:not(.el-tag--dark) {
+  --el-tag-text-color: var(--g-text-warning);
+}
+.el-tag.el-tag--danger:not(.el-tag--dark) {
+  --el-tag-text-color: var(--g-text-danger);
 }
 .el-tag {
   --el-tag-border-radius: 6px;
@@ -424,4 +439,22 @@ html.theme-vt *::after {
 .el-drawer__body,
 .el-message-box {
   overscroll-behavior: contain;
+}
+
+/* 手机上的点击目标至少 40px 高（Apple 建议 44pt，Material 48dp）：普通按钮、小按钮与图标按钮统一加高，图标按钮同时加宽；
+   相邻的文字按钮之间留出间距，避免误点到旁边的删除。链接样式的按钮在正文里，不加高 */
+@media (max-width: 767.98px) {
+  .el-button:not(.is-link) {
+    min-height: 40px;
+  }
+  .el-button:not(.is-link):not(.is-circle).el-button--small {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  .el-button.is-text:not(.is-link) {
+    min-width: 40px;
+  }
+  .el-button.is-text + .el-button.is-text {
+    margin-left: 4px;
+  }
 }

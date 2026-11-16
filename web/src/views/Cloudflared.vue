@@ -1,6 +1,6 @@
 <template>
   <div>
-    <PageHeader :title="t('cloudflared.title')" :desc="t('cloudflared.desc')" :icon="Cloud">
+    <PageHeader :title="t('cloudflared.title')" doc="modules/tunnels" :desc="t('cloudflared.desc')" :icon="Cloud">
       <CompactToggle v-model="compact" />
       <ListTools :gl="gl" :placeholder="t('groupSort.search')" />
       <ResetConfigButton base="/api/cloudflared" :desc="t('components.resetConfig.cloudflared')" @done="onReset" />
@@ -11,7 +11,7 @@
       <el-button size="small" type="primary" :icon="Download" @click="installer?.install()">{{ t('components.programInstall.install') }}</el-button>
     </el-alert>
 
-    <GroupedList :gl="gl" :compact="compact" grid :empty-text="t('cloudflared.empty')">
+    <GroupedList :gl="gl" :error="loadError" @retry="loadTunnels" :compact="compact" grid :empty-text="t('cloudflared.empty')">
       <template #item="{ it, item: tn, sorting, bind }">
         <EntityCard v-bind="bind" :off="!tn.enable" :compact="compact || sorting">
           <template v-if="sorting" #lead>
@@ -32,7 +32,7 @@
             <SortMoves :gl="gl" :it="it" />
           </template>
           <template v-else #actions>
-            <el-switch :model-value="tn.enable" size="small" @change="(v: boolean | string | number) => toggle(tn, Boolean(v))" />
+            <el-switch :model-value="tn.enable" :aria-label="t('common.toggleItem', { name: tn.name || '-' })" size="small" @change="(v: boolean | string | number) => toggle(tn, Boolean(v))" />
             <el-button text size="small" :icon="RefreshCw" :disabled="!tn.enable" @click="restart(tn)">{{ t('common.restart') }}</el-button>
             <el-button v-if="tn.mode === 'token'" text size="small" :icon="Route" :title="tn.apiToken ? '' : t('cloudflared.ingressNeedsApi')" @click="ingress?.open(tn.key!, tn.name)">{{ t('cloudflared.ingressButton') }}</el-button>
             <el-button text size="small" :icon="Pencil" @click="openEditor(tn)">{{ t('common.edit') }}</el-button>
@@ -120,7 +120,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
 import { Cloud, CopyPlus, Download, Pencil, Plus, RefreshCw, Route, Save, Terminal, Trash2 } from 'lucide-vue-next'
-import { api } from '../api'
+import { api, errorText } from '../api'
 import SecretInput from '../components/SecretInput.vue'
 import { secretOf } from '../secrets'
 import PageHeader from '../components/PageHeader.vue'
@@ -169,6 +169,8 @@ interface TunnelView extends Tunnel {
 }
 
 const { t } = useI18n()
+// 列表最近一次加载失败的原因，空为成功；接口出错时列表显示错误而不是空状态
+const loadError = ref('')
 const { isMobile, labelPosition } = useFormLayout()
 const tunnels = ref<TunnelView[]>([])
 const compact = useCompactView('cloudflared')
@@ -218,7 +220,9 @@ function tunnelBadge(tn: TunnelView): { type: StatusType; text: string; title?: 
 async function loadTunnels() {
   try {
     tunnels.value = await api.get<TunnelView[]>('/api/cloudflared/tunnels')
-  } catch {
+    loadError.value = ''
+  } catch (e) {
+    loadError.value = errorText(e)
     // 轮询失败时保留上一次的状态
   }
 }

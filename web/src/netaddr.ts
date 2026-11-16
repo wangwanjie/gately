@@ -58,3 +58,115 @@ export function maskProxyPassword(p: string): string {
   }
   return `${m[1]}${rest.slice(0, colon)}:***${rest.slice(at)}`
 }
+
+// TargetCheck 是转发目标地址的检查结果：
+// split 为地址里写了端口且目标端口为空（保存时端口会被拆到目标端口）；conflict 为地址里的端口与已填的目标端口不同；
+// mixed 为多个地址写了不同端口；invalid 为写法无法识别（带 http:// 或路径、多冒号又不是 IPv6、端口无效）。
+export interface TargetCheck {
+  kind: '' | 'split' | 'conflict' | 'mixed' | 'invalid'
+  // addr 为触发提示的那一行地址
+  addr: string
+  // port 为地址里写的端口
+  port: number
+  // hosts 为去掉端口后的主机列表（kind 为 split 时用于一键拆分）
+  hosts: string[]
+}
+
+// splitTarget 解析单个目标地址，返回主机与端口（没写端口时为 0），无法识别时返回 null。与后端 l4proxy.SplitTargets 规则一致。
+export function splitTarget(raw: string): { host: string; port: number } | null {
+  const t = raw.trim()
+  if (t.includes('/')) {
+    return null
+  }
+  const portOf = (p: string) => (/^\d+$/.test(p) && +p >= 1 && +p <= 65535 ? +p : -1)
+  if (t.startsWith('[')) {
+    if (t.endsWith(']')) {
+      return { host: t.slice(1, -1), port: 0 }
+    }
+    const m = /^\[([^\]]+)\]:([^:]*)$/.exec(t)
+    if (!m) {
+      return null
+    }
+    const port = portOf(m[2])
+    return port < 0 ? null : { host: m[1], port }
+  }
+  const colons = (t.match(/:/g) || []).length
+  if (colons === 0) {
+    return { host: t, port: 0 }
+  }
+  if (colons === 1) {
+    const i = t.indexOf(':')
+    const port = portOf(t.slice(i + 1))
+    if (i === 0 || port < 0) {
+      return null
+    }
+    return { host: t.slice(0, i), port }
+  }
+  // 多个冒号只能是不带方括号的 IPv6 地址（可带 %网卡）
+  return isIPv6(t) ? { host: t, port: 0 } : null
+}
+
+// isIPv6 粗略判断不带方括号的 IPv6 地址（允许 :: 缩写、内嵌 IPv4 与 %网卡后缀）。
+function isIPv6(s: string): boolean {
+  const addr = s.split('%')[0]
+  if (!/^[0-9a-fA-F:.]+$/.test(addr) || (addr.match(/::/g) || []).length > 1) {
+    return false
+  }
+  const groups = addr.split(':')
+  if (groups.length < 3 || groups.length > 8) {
+    return false
+  }
+  return groups.every((g, i) => g === '' || /^[0-9a-fA-F]{1,4}$/.test(g) || (i === groups.length - 1 && /^\d{1,3}(\.\d{1,3}){3}$/.test(g)))
+}
+
+// checkTargets 检查多行目标地址与目标端口（字符串，如 "8080"、"8080-8090"，空为未填），用于表单即时提示。
+export function checkTargets(lines: string[], targetPorts: string): TargetCheck {
+  const hosts: string[] = []
+  let port = 0
+  let addr = ''
+  for (const raw of lines) {
+    const line = raw.trim()
+    if (!line) {
+      continue
+    }
+    const r = splitTarget(line)
+    if (!r) {
+      return { kind: 'invalid', addr: line, port: 0, hosts: [] }
+    }
+    if (r.port) {
+      if (port && port !== r.port) {
+        return { kind: 'mixed', addr: line, port: r.port, hosts: [] }
+      }
+      port = r.port
+      addr = addr || line
+    }
+    hosts.push(r.host)
+  }
+  if (!port) {
+    return { kind: '', addr: '', port: 0, hosts }
+  }
+  const spec = targetPorts.trim()
+  if (!spec) {
+    return { kind: 'split', addr, port, hosts }
+  }
+  if (/^\d+$/.test(spec) && +spec === port) {
+    return { kind: '', addr: '', port, hosts }
+  }
+  return { kind: 'conflict', addr, port, hosts }
+}
+
+// listenErrorKind 识别监听失败的常见原因（系统错误为英文原文）：inUse 为端口已被占用，permission 为没有权限（如普通用户监听 1024 以下端口），
+// addr 为本机没有这个地址；其他原因返回空，界面直接显示原文
+export function listenErrorKind(err: string): '' | 'inUse' | 'permission' | 'addr' {
+  const e = err.toLowerCase()
+  if (e.includes('address already in use') || e.includes('only one usage of each socket address')) {
+    return 'inUse'
+  }
+  if (e.includes('permission denied') || e.includes('access permissions')) {
+    return 'permission'
+  }
+  if (e.includes("can't assign requested address") || e.includes('cannot assign requested address') || e.includes('requested address is not valid')) {
+    return 'addr'
+  }
+  return ''
+}

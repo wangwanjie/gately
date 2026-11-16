@@ -1,6 +1,6 @@
 <template>
   <div>
-    <PageHeader :title="t('sharedFileUsers.page.title')" :desc="t('sharedFileUsers.page.desc')" :icon="UsersRound">
+    <PageHeader :title="t('sharedFileUsers.page.title')" doc="modules/tools#shared-users" :desc="t('sharedFileUsers.page.desc')" :icon="UsersRound">
       <el-button type="primary" :icon="Save" :loading="saving" :disabled="!shared.loaded.value" @click="save">{{ t('common.save') }}</el-button>
     </PageHeader>
 
