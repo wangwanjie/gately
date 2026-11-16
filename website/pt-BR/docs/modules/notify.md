@@ -57,7 +57,7 @@ As variáveis abaixo podem ser usadas na URL da requisição e no corpo, escrita
 | `level` | Nível: `info`, `warn` ou `error` |
 | `time` | Hora no formato RFC 3339 |
 
-Campos extras que um evento carrega (como `ip` e `container`) também podem ser usados como variáveis. Se um nome colidir com a tabela acima, a tabela acima tem precedência. Os valores das variáveis na URL passam por escape de URL.
+Campos extras que um evento carrega (como `ip` e `container`) também podem ser usados como variáveis. Se um nome colidir com a tabela acima, a tabela acima tem precedência. Os valores das variáveis na URL passam por escape de URL. Quando o corpo é um objeto ou array JSON (sem Content-Type ou com um tipo JSON), os valores de variáveis dentro de strings JSON são escapados como JSON (aspas, barras invertidas, quebras de linha etc.), enquanto variáveis fora de strings e corpos em outros formatos são substituídos como estão; nos cabeçalhos, as quebras de linha são removidas dos valores.
 
 ### E-mail
 

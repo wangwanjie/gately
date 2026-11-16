@@ -57,7 +57,7 @@ Les variables suivantes peuvent être utilisées dans l'URL de la requête et da
 | `level` | Niveau : `info`, `warn` ou `error` |
 | `time` | Heure au format RFC 3339 |
 
-Les champs supplémentaires portés par un événement (comme `ip` et `container`) peuvent aussi servir de variables. Si un nom entre en collision avec le tableau ci-dessus, ce dernier est prioritaire. Les valeurs de variables dans l'URL sont échappées pour les URL.
+Les champs supplémentaires portés par un événement (comme `ip` et `container`) peuvent aussi servir de variables. Si un nom entre en collision avec le tableau ci-dessus, ce dernier est prioritaire. Les valeurs de variables dans l'URL sont échappées pour les URL. Lorsque le corps est un objet ou un tableau JSON (sans Content-Type ou avec un type JSON), les valeurs des variables placées dans des chaînes JSON sont échappées en JSON (guillemets, barres obliques inverses, retours à la ligne, etc.) ; les variables hors chaîne et les corps dans d'autres formats sont substitués tels quels. Dans les en-têtes, les retours à la ligne sont retirés des valeurs.
 
 ### E-mail
 
