@@ -111,10 +111,18 @@ func (r *Rule) Validate() error {
 	if r.ListenAddress != "" && net.ParseIP(r.ListenAddress) == nil {
 		return fmt.Errorf("监听地址 %q 不是有效 IP", r.ListenAddress)
 	}
+	// 目标地址写成「主机:端口」时把端口拆到目标端口；与已填的目标端口冲突时拒绝
+	targets, port, err := l4proxy.SplitTargets(r.TargetAddresses)
+	if err != nil {
+		return err
+	}
+	if r.TargetPorts, err = l4proxy.MergeTargetPorts(r.TargetPorts, port); err != nil {
+		return err
+	}
+	r.TargetAddresses = targets
 	if _, err := l4proxy.MapPorts(r.ListenPorts, r.TargetPorts); err != nil {
 		return err
 	}
-	r.TargetAddresses = l4proxy.CleanTargets(r.TargetAddresses)
 	if err := l4proxy.ValidateProxyProtocol(r.ProxyProtocol); err != nil {
 		return err
 	}

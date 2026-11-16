@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 	"sync"
 
 	"github.com/wangwanjie/gately/internal/config"
@@ -12,6 +13,7 @@ import (
 	"github.com/wangwanjie/gately/internal/fwopen"
 	"github.com/wangwanjie/gately/internal/httpx"
 	"github.com/wangwanjie/gately/internal/iplist"
+	"github.com/wangwanjie/gately/internal/l4proxy"
 	"github.com/wangwanjie/gately/internal/logbuf"
 	"github.com/wangwanjie/gately/internal/module"
 )
@@ -104,12 +106,28 @@ func (m *Module) startRuleLocked(rule Rule) {
 		m.fw.Want(rule.Key, nil, nil)
 		return
 	}
-	delete(m.errors, rule.Key)
-	if len(r.listenErrors) > 0 {
-		m.errors[rule.Key] = fmt.Sprintf("%d 个监听失败", len(r.listenErrors))
-	}
+	m.setRuleErrorLocked(rule, r)
 	m.runners[rule.Key] = r
 	m.syncFirewallLocked(rule, r)
+}
+
+// setRuleErrorLocked 按运行结果设置规则的错误状态：部分端口监听失败，或目标地址写法连不上。
+// 旧版本保存的「主机:端口」目标照常启动（其余目标仍可用），但记录告警并在规则状态上显示错误，避免只显示运行中却连不上。
+func (m *Module) setRuleErrorLocked(rule Rule, r *runner) {
+	var msgs []string
+	if len(r.listenErrors) > 0 {
+		msgs = append(msgs, fmt.Sprintf("%d 个监听失败", len(r.listenErrors)))
+	}
+	problems := l4proxy.TargetProblems(rule.TargetAddresses)
+	for _, p := range problems {
+		r.current().log.Warnf("%s", p)
+	}
+	msgs = append(msgs, problems...)
+	if len(msgs) == 0 {
+		delete(m.errors, rule.Key)
+		return
+	}
+	m.errors[rule.Key] = strings.Join(msgs, "；")
 }
 
 // syncFirewallLocked 按规则当前的开关登记自动放行，只放行 r 中监听成功的端口。
@@ -139,6 +157,7 @@ func (m *Module) restartLocked(key string) {
 		for _, rule := range m.cfg.Rules {
 			if rule.Key == key && rule.Enable && r.canUpdate(rule, m.cfg.Settings) {
 				r.update(rule, m.cfg.Settings, m.logs.Logger(ruleLabel(rule)))
+				m.setRuleErrorLocked(rule, r)
 				// 自动放行开关不影响监听，在热更新时同步
 				m.syncFirewallLocked(rule, r)
 				return
