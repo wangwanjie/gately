@@ -152,13 +152,14 @@
       <el-tab-pane :label="t('guard.tabs.scan')" name="scan">
         <template v-if="settings && status">
           <el-alert v-if="!status.firewall.active" type="warning" :closable="false" show-icon class="block-gap" :title="t('guard.scan.needFirewall')" />
+          <el-alert v-else-if="!status.firewall.redirect && (settings.trap.enable || settings.scan.enable)" type="warning" :closable="false" show-icon class="block-gap" :title="t('guard.scan.needRedirect')" />
           <div class="g-card">
             <div class="g-card-head">
               <div class="g-card-title"><Crosshair :size="16" />{{ t('guard.trap.title') }}</div>
               <el-button type="primary" size="small" :icon="Save" :loading="saving" @click="saveSettings">{{ t('common.save') }}</el-button>
             </div>
             <div class="g-card-body">
-              <div class="form-help top-help">{{ t('guard.trap.help') }}</div>
+              <div class="form-help top-help">{{ t('guard.trap.help') }} {{ t('guard.scan.handshakeHelp') }}</div>
               <el-form label-width="130px" :label-position="labelPosition">
                 <el-form-item :label="t('common.enable')"><el-switch v-model="settings.trap.enable" /></el-form-item>
                 <el-form-item :label="t('guard.trap.ports')">
@@ -170,7 +171,7 @@
                 </el-form-item>
                 <el-form-item v-if="settings.trap.enable" :label="t('common.status')">
                   <div class="rows">
-                    <div v-if="status.firewall.active">{{ t('guard.trap.effective', { ports: status.firewall.trapPorts || t('common.none') }) }}</div>
+                    <div v-if="status.firewall.active && status.firewall.redirect">{{ t('guard.trap.effective', { ports: status.firewall.trapPorts || t('common.none') }) }}</div>
                     <div v-else-if="status.userTrapPorts.length">{{ t('guard.trap.userspace', { ports: status.userTrapPorts.join(', ') }) }}</div>
                     <div v-if="status.firewall.trapSkipped?.length" class="text-warning">{{ t('guard.trap.skipped', { ports: status.firewall.trapSkipped.join(', ') }) }}</div>
                   </div>
@@ -185,9 +186,9 @@
               <el-button type="primary" size="small" :icon="Save" :loading="saving" @click="saveSettings">{{ t('common.save') }}</el-button>
             </div>
             <div class="g-card-body">
-              <div class="form-help top-help">{{ t('guard.scan.help') }}</div>
+              <div class="form-help top-help">{{ t('guard.scan.help') }} {{ t('guard.scan.handshakeHelp') }}</div>
               <el-form label-width="130px" :label-position="labelPosition">
-                <el-form-item :label="t('common.enable')"><el-switch v-model="settings.scan.enable" :disabled="!status.firewall.active && !settings.scan.enable" /></el-form-item>
+                <el-form-item :label="t('common.enable')"><el-switch v-model="settings.scan.enable" :disabled="!(status.firewall.active && status.firewall.redirect) && !settings.scan.enable" /></el-form-item>
                 <el-form-item :label="t('guard.scan.threshold')">
                   <el-input-number v-model="settings.scan.threshold" :min="3" :max="1000" />
                   <span class="unit">{{ t('guard.scan.perMinute') }}</span>
@@ -434,6 +435,8 @@ interface FirewallStatus {
   openPorts: number
   trapPorts: string
   trapSkipped: number[]
+  // redirect 为诱饵端口与扫描检测的重定向规则（交给 Gately 确认握手）是否已写入
+  redirect?: boolean
 }
 
 interface GuardStatus {

@@ -176,6 +176,8 @@
     "title": "Port-scan detection",
     "help": "Counts how often each source connects to ports that are not open on this host and bans it when it exceeds the threshold per minute. Only new connections to this host count; traffic forwarded to containers or LAN devices is ignored.",
     "needFirewall": "Kernel-side trap ports and port-scan detection both require firewall sync to be active. See the status above.",
+    "needRedirect": "The kernel cannot redirect connections to Gately for handshake confirmation (nftables needs Linux 5.2 or later, iptables needs the REDIRECT target in the nat table): Gately listens on the decoy ports itself and port scan detection is unavailable.",
+    "handshakeHelp": "A connection only counts after the TCP handshake completes, so SYNs with a forged source address cannot get anyone banned; scans that only send SYNs without completing the handshake (such as masscan) see the ports as open but are not banned.",
     "threshold": "Threshold",
     "perMinute": "per minute",
     "thresholdHelp": "A source is banned when it connects to closed ports more often than this per minute. A normal client retrying a closed port does so about 5 times a minute, so keep this at 10 or above.",
