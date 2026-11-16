@@ -191,7 +191,10 @@ func (a *App) handleThirdCallback(w http.ResponseWriter, r *http.Request) {
 
 // importLuckyIdentities 导入 Lucky 第三方登录管理中的身份表（lucky_thirdPartyAuthManager）。
 // 身份表保存在本地，之后导入站点与基础设置时按 Key 解析出允许的身份。
-func (a *App) importLuckyIdentities(doc luckyimport.Document, ids *thirdauth.LuckyIdentities, opts luckyimport.Options) *luckyimport.Report {
+//
+// viaToken 为 true（请求来自 API 令牌）时不记录：身份表决定之后导入的站点与管理后台允许哪些第三方账号登录，
+// 属于登录凭据的一部分，只允许登录会话导入；ids 也保持不变，同一次请求里的其他文件不会按它解析。
+func (a *App) importLuckyIdentities(doc luckyimport.Document, ids *thirdauth.LuckyIdentities, opts luckyimport.Options, viaToken bool) *luckyimport.Report {
 	raw, ok := doc["List"]
 	if _, hasConf := doc["Config"]; !ok || !hasConf {
 		return nil
@@ -201,7 +204,12 @@ func (a *App) importLuckyIdentities(doc luckyimport.Document, ids *thirdauth.Luc
 		return nil
 	}
 	rep := &luckyimport.Report{Module: "thirdauth", Title: "第三方登录身份", Found: len(list)}
+	if viaToken {
+		rep.Warnings = append(rep.Warnings, "API 令牌不能导入第三方登录身份，请登录管理界面后导入这个文件")
+		return rep
+	}
 	index := map[string]int{}
+	invalid := 0
 	for i, id := range ids.List {
 		index[id.Key] = i
 	}
@@ -216,6 +224,11 @@ func (a *App) importLuckyIdentities(doc luckyimport.Document, ids *thirdauth.Luc
 		default:
 			unsupported = append(unsupported, id.Type)
 		}
+		// 不能写成允许列表项的身份（标识为空、为通配 * 或含空白等）不记录，见 LuckyIdentity.Entry
+		if _, ok := id.Entry(); !ok {
+			invalid++
+			continue
+		}
 		if i, exists := index[id.Key]; exists {
 			ids.List[i] = id
 		} else {
@@ -226,6 +239,9 @@ func (a *App) importLuckyIdentities(doc luckyimport.Document, ids *thirdauth.Luc
 	}
 	if len(unsupported) > 0 {
 		rep.Warnings = append(rep.Warnings, "暂不支持的登录类型（仍记录身份，但无法用于登录）："+strings.Join(unsupported, "、"))
+	}
+	if invalid > 0 {
+		rep.Warnings = append(rep.Warnings, fmt.Sprintf("%d 个身份的账号标识无效（为空、为 * 或含空白字符），已忽略", invalid))
 	}
 	if hasQQ {
 		rep.Warnings = append(rep.Warnings, "QQ 的 openid 对每个 QQ 互联应用不同：换成你自己的 QQ 应用后，首次登录会提示新的账号标识，把它加入允许列表即可")
@@ -257,10 +273,12 @@ func (a *App) mergeLuckyThirdLogin(s *Settings, lb luckyBase, opts luckyimport.O
 	for _, e := range s.ThirdLogin.Allowed {
 		have[e] = true
 	}
+	var added []string
 	for _, e := range entries {
 		if !have[e] {
 			s.ThirdLogin.Allowed = append(s.ThirdLogin.Allowed, e)
 			have[e] = true
+			added = append(added, e)
 		}
 	}
 	s.ThirdLogin.SkipTOTP = s.ThirdLogin.SkipTOTP || lb.ThirdAuthLoginSkipTwoFA
@@ -269,6 +287,10 @@ func (a *App) mergeLuckyThirdLogin(s *Settings, lb luckyBase, opts luckyimport.O
 		msg += "；已沿用“第三方登录跳过两步验证”"
 	}
 	rep.Warnings = append(rep.Warnings, msg)
+	// 逐个列出新加入允许列表的身份：这些账号此后可以登录管理后台，导入他人提供的配置前应当先在预览里核对
+	if len(added) > 0 {
+		rep.Warnings = append(rep.Warnings, "新增到管理后台允许列表的第三方身份（这些账号可以登录管理后台，请核对）："+strings.Join(added, "、"))
+	}
 	if missing > 0 {
 		rep.Warnings = append(rep.Warnings, fmt.Sprintf("管理后台引用的 %d 个第三方身份在身份表中找不到，已忽略", missing))
 	}

@@ -263,9 +263,16 @@ type luckyBase struct {
 }
 
 // importLuckyBase 迁移 Lucky 的基础设置。管理端口、安全入口、管理员账号与两步验证不迁移，避免导入后无法登录。
-func (a *App) importLuckyBase(doc luckyimport.Document, opts luckyimport.Options) *luckyimport.Report {
+// viaToken 为 true（请求来自 API 令牌）时一项都不导入：这些设置（仅内网访问、DNS 服务器、登录失败上限、
+// 会话有效期、后台第三方登录的允许列表与跳过两步验证）在 /api/system/settings 下只允许登录会话修改，
+// 导入不能成为令牌绕过这条限制的途径。
+func (a *App) importLuckyBase(doc luckyimport.Document, opts luckyimport.Options, viaToken bool) *luckyimport.Report {
 	if _, ok := doc["AdminWebListenPort"]; !ok {
 		return nil
+	}
+	if viaToken {
+		return &luckyimport.Report{Module: "settings", Title: "全局设置", Found: 1,
+			Warnings: []string{"API 令牌不能导入全局设置，请登录管理界面后导入这个文件"}}
 	}
 	raw, _ := json.Marshal(doc)
 	var lb luckyBase

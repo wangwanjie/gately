@@ -988,7 +988,7 @@ func TestImportLuckyBaseDNSFormats(t *testing.T) {
 	}
 	a.logger = log.New(io.Discard, "", 0)
 	doc := luckyimport.Document{"AdminWebListenPort": json.RawMessage(`16601`), "CustomDNSList": json.RawMessage(`"114.114.114.114\ndefault\ndoh3@223.5.5.5"`)}
-	rep := a.importLuckyBase(doc, luckyimport.Options{})
+	rep := a.importLuckyBase(doc, luckyimport.Options{}, false)
 	if rep == nil {
 		t.Fatal("应识别为基础设置")
 	}
