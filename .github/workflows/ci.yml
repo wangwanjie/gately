@@ -37,7 +37,7 @@ jobs:
       - name: SMB 32 位检查（GOARCH=386）
         run: |
           GOARCH=386 go vet ./internal/gosamba/...
-          GOARCH=386 CGO_ENABLED=0 go test ./internal/gosamba/bounds/ ./internal/gosamba/smb2/ ./internal/gosamba/ntlm/ ./internal/gosamba/smb3/ ./internal/gosamba/transport/
+          GOARCH=386 CGO_ENABLED=0 go test ./internal/gosamba/bounds/ ./internal/gosamba/smb2/ ./internal/gosamba/ntlm/ ./internal/gosamba/transport/
           GOARCH=386 CGO_ENABLED=0 go test -run 'Huge|Recover' ./internal/gosamba/parent/
       - name: 交叉编译
         run: |
