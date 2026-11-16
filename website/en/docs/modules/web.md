@@ -189,6 +189,8 @@ Third-party login providers are configured in "Global settings": enter your own 
 https://auth.example.com/__gately_auth/oauth/callback
 ```
 
+After sign-in, the browser returns to the site address where sign-in started, carrying a one-time ticket, so third-party sign-in can only start from addresses that point to this instance: the domain must match a domain entered in the site (exact or wildcard). The default site and sites with the domain `*` receive any domain, and only accept domains entered in any listener's sites, the callback address's domain, domains with a certificate in the Certificates module, or the local IP the connection arrived on. When the address includes a port, it must be the listener port, the HTTP port, or the port entered in "Access address"; when visitors reach the listener on another port through router port mapping, protocol sniffing or port forwarding, enter the external port in the listener's access address. Otherwise sign-in is refused and the reason is written to the listener's runtime log.
+
 Third-party login for the management UI itself is configured separately under "Settings → Account & Security".
 
 ### Forward auth (Authelia and similar)

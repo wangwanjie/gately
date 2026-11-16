@@ -189,6 +189,8 @@ Os provedores de login de terceiros são configurados em "Configurações globai
 https://auth.example.com/__gately_auth/oauth/callback
 ```
 
+Ao concluir o login, o navegador volta ao endereço do site onde o login começou, levando um tíquete de uso único; por isso o login de terceiros só pode começar em endereços que apontem para esta instância: o domínio precisa corresponder a um domínio informado no site (exato ou curinga). O site padrão e os sites com domínio `*` recebem qualquer domínio e só aceitam domínios informados nos sites de qualquer escuta, o domínio do endereço de retorno, domínios com certificado no módulo de certificados ou o IP local em que a conexão chegou. Se o endereço tiver porta, ela precisa ser a porta da escuta, a porta HTTP ou a informada em "Endereço de acesso"; quando os visitantes chegam por outra porta via mapeamento de portas do roteador, separação por protocolo ou encaminhamento de portas, informe a porta externa no endereço de acesso da escuta. Caso contrário, o login é recusado e o motivo é registrado no log de execução da escuta.
+
 O login de terceiros da própria interface de administração é configurado separadamente em "Configurações → Conta e segurança".
 
 ### Autenticação delegada (Authelia e similares)
