@@ -7,7 +7,7 @@ import {
   Globe, RadioTower, ArrowLeftRight, ShieldCheck, Waypoints, ShieldAlert, Network, Boxes,
   Terminal, HardDrive, Clock, KeyRound, Copy, Check, Github, Eye,
   Bell, DatabaseBackup, Activity, Bot, UserCheck, ChartLine, AppWindow, LogIn, Server, ArrowRight,
-  Layers, ScrollText, History, Braces, Smartphone, Rocket, CircleCheck, ShieldBan, Split, Workflow
+  Layers, ScrollText, History, Braces, Smartphone, Rocket, CircleCheck, ShieldBan, Split, Workflow, Play, X
 } from 'lucide-vue-next'
 
 // 所有文案来自当前语言包（.vitepress/i18n/<语言>.json 的 home 节点），图标按顺序与条目一一对应
@@ -43,6 +43,42 @@ const shots = computed(() => {
   ]
 })
 const showcase = computed(() => h.value.showcase.map((s: any, i: number) => ({ ...s, shot: shots.value[i] })))
+
+// 首屏下方的产品截图：概览加三个常用模块，标签名复用功能列表里的模块名（Web 服务、动态域名、协议分流）
+const productTabs = computed(() => [
+  { key: 'overview', label: h.value.product.overview },
+  { key: 'web', label: h.value.features[4].title },
+  { key: 'ddns', label: h.value.features[0].title },
+  { key: 'protoroute', label: h.value.features[19].title }
+])
+const activeShot = ref('overview')
+const activeShotLabel = computed(() => productTabs.value.find((t) => t.key === activeShot.value)?.label ?? '')
+
+// 巡览视频只有中文与英文两版（随官网部署在 /videos/，不进 git），简繁中文用中文版，其余语言用英文版
+const tourSrc = computed(() => withBase(`/videos/gately-tour.${shotLang.value.startsWith('zh') ? 'zh' : 'en'}.mp4`))
+const tourDialog = ref<HTMLDialogElement>()
+const tourVideo = ref<HTMLVideoElement>()
+const tourOpen = ref(false)
+
+function openTour() {
+  tourOpen.value = true
+  tourDialog.value?.showModal()
+  nextTick(() => {
+    tourVideo.value?.play().catch(() => {})
+  })
+}
+
+// 关闭对话框（按钮、Esc 或点击遮罩）时暂停播放
+function onTourClose() {
+  tourOpen.value = false
+  tourVideo.value?.pause()
+}
+
+function onTourBackdrop(e: MouseEvent) {
+  if (e.target === tourDialog.value) {
+    tourDialog.value?.close()
+  }
+}
 
 // 功能按场景分组，数字是 features 数组的下标：网络接入、网站与证书、安全防护、运维工具、监控与自动化
 const groupIndexes = [[0, 1, 2, 19, 6], [4, 3, 20], [5, 18, 12, 11], [7, 8, 9, 10, 16], [13, 14, 15, 17]]
@@ -190,9 +226,50 @@ function onSpot(e: PointerEvent) {
           </div>
           <p class="meta rise" style="--d: .48s">{{ h.pill }}</p>
         </div>
-        <HeroFlow class="hero-visual rise" style="--d: .2s" :labels="h.flow" :title="h.mockTitle" :rows="h.mockRows" />
+        <HeroFlow class="hero-visual rise" style="--d: .2s" :labels="h.flow" />
+      </div>
+
+      <!-- 真实界面截图：带浏览器外框，可切换模块；右侧入口播放巡览视频 -->
+      <div class="wrap product rise" style="--d: .45s">
+        <div class="product-bar">
+          <div class="product-tabs" role="tablist">
+            <button
+              v-for="t in productTabs"
+              :key="t.key"
+              role="tab"
+              :aria-selected="activeShot === t.key"
+              :class="{ on: activeShot === t.key }"
+              @click="activeShot = t.key"
+            >
+              {{ t.label }}
+            </button>
+          </div>
+          <button class="tour-btn" @click="openTour"><Play :size="15" />{{ h.product.tour }}</button>
+        </div>
+        <div class="frame product-frame">
+          <div class="frame-bar"><i /><i /><i /><span class="frame-title">Gately · {{ activeShotLabel }}</span></div>
+          <div class="product-shot">
+            <img
+              :key="activeShot"
+              :src="withBase(`/shots/${shotLang}/ui-${activeShot}.webp`)"
+              :alt="`Gately · ${activeShotLabel}`"
+              width="1600"
+              height="1000"
+              loading="lazy"
+              decoding="async"
+            />
+          </div>
+        </div>
       </div>
     </section>
+
+    <!-- 巡览视频对话框：打开时才设置 src 并开始加载 -->
+    <dialog ref="tourDialog" class="tour" :aria-label="h.product.tour" @close="onTourClose" @click="onTourBackdrop">
+      <div class="tour-box">
+        <button class="tour-close" :aria-label="h.product.close" @click="tourDialog?.close()"><X :size="18" /></button>
+        <video ref="tourVideo" :src="tourOpen ? tourSrc : undefined" controls playsinline muted preload="none" width="1440" height="900" />
+      </div>
+    </dialog>
 
     <!-- 平台与集成滚动条带 -->
     <section class="marquee" :aria-label="h.worksWith">
@@ -392,7 +469,7 @@ function onSpot(e: PointerEvent) {
 .js [data-r].in { opacity: 1; transform: none; }
 
 /* ---- hero ---- */
-.hero { position: relative; padding: 64px 0 56px; isolation: isolate; }
+.hero { position: relative; padding: 52px 0 24px; isolation: isolate; }
 .hero-bg { position: absolute; inset: -80px 0 0; z-index: -1; overflow: hidden; pointer-events: none; }
 .grid-lines { position: absolute; inset: 0; background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px); background-size: 48px 48px; mask-image: radial-gradient(70% 60% at 50% 30%, #000 30%, transparent 75%); -webkit-mask-image: radial-gradient(70% 60% at 50% 30%, #000 30%, transparent 75%); }
 /* 极光：预渲染的径向渐变，靠 transform 缓慢漂移，不用 filter: blur */
@@ -436,6 +513,34 @@ h1 .sub { margin-top: 12px; font-size: .56em; line-height: 1.3; letter-spacing: 
 .btn:hover .arr { transform: translateX(3px); }
 .btn.ghost { background: transparent; }
 .btn.lg { padding: 14px 30px; font-size: 16px; }
+
+/* ---- 产品截图 ---- */
+.product { margin-top: 44px; }
+.product-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+.product-tabs { display: flex; gap: 6px; min-width: 0; overflow-x: auto; scrollbar-width: none; }
+.product-tabs::-webkit-scrollbar { display: none; }
+.product-tabs button { flex: none; padding: 7px 14px; border-radius: 999px; font-size: 13.5px; font-weight: 600; color: var(--vp-c-text-2); background: transparent; border: 1px solid transparent; cursor: pointer; transition: color .2s, border-color .2s, background .2s; }
+.product-tabs button:hover { color: var(--vp-c-brand-1); }
+.product-tabs button.on { color: var(--vp-c-brand-1); background: var(--vp-c-brand-soft); border-color: color-mix(in srgb, var(--vp-c-brand-1) 30%, transparent); }
+.tour-btn { flex: none; display: inline-flex; align-items: center; gap: 7px; padding: 8px 16px; border-radius: 999px; font-size: 14px; font-weight: 600; color: var(--vp-c-text-1); background: var(--vp-c-bg-soft); border: 1px solid var(--vp-c-divider); cursor: pointer; transition: color .2s, border-color .2s; }
+.tour-btn:hover { color: var(--vp-c-brand-1); border-color: var(--vp-c-brand-1); }
+.tour-btn svg { color: var(--vp-c-brand-1); }
+.product-frame { position: relative; }
+.product-frame .frame-bar { align-items: center; padding: 8px 12px; }
+.frame-title { margin-left: 10px; font-size: 12px; line-height: 1; color: var(--vp-c-text-3); font-family: var(--vp-font-family-mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* 按截图比例预留高度，图片加载前后页面不跳动 */
+.product-shot { aspect-ratio: 16 / 10; background: var(--vp-c-bg-soft); }
+.product-shot img { display: block; width: 100%; height: 100%; object-fit: cover; animation: fade .35s var(--ease) both; }
+@keyframes fade { from { opacity: 0; } }
+.dark .product-shot img { filter: brightness(.94); }
+
+/* ---- 巡览视频 ---- */
+.tour { width: min(1100px, 94vw, 144vh); max-width: none; padding: 0; border: 0; background: transparent; overflow: visible; }
+.tour::backdrop { background: rgba(3, 10, 9, .78); }
+.tour-box { position: relative; border-radius: 14px; overflow: hidden; background: #000; box-shadow: 0 40px 80px -30px rgba(0, 0, 0, .6); }
+.tour video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 10; }
+.tour-close { position: absolute; z-index: 1; top: 10px; right: 10px; display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; color: #fff; background: rgba(0, 0, 0, .55); border: 1px solid rgba(255, 255, 255, .25); cursor: pointer; }
+.tour-close:hover { background: rgba(0, 0, 0, .8); }
 
 /* ---- marquee ---- */
 .marquee { padding: 8px 0 12px; }
@@ -601,9 +706,16 @@ h1 .sub { margin-top: 12px; font-size: .56em; line-height: 1.3; letter-spacing: 
   .fnos { grid-template-columns: 1fr; padding: 32px; }
 }
 @media (max-width: 600px) {
+  /* 手机上省掉示意动画，让真实截图紧跟在按钮之后 */
+  .hero-visual { display: none; }
+  .product { margin-top: 36px; }
+  .product-bar { flex-direction: column-reverse; align-items: stretch; }
+  .hero .cta { gap: 8px; margin-top: 24px; }
+  .hero .cta .btn { padding: 10px 16px; font-size: 14px; }
+  .tour-btn { justify-content: center; }
   h1 { font-size: 28px; }
   h1 .sub { margin-top: 8px; font-size: .68em; }
-  .lead { font-size: 16px; }
+  .lead { font-size: 15px; line-height: 1.75; }
   .block { padding-top: 72px; }
   .why { grid-template-columns: 1fr; }
   .feat .card { flex-basis: 100%; }

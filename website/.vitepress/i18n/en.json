@@ -92,39 +92,11 @@
     "lead": "Gately sits at the edge of a home network or a server and handles the path from the internet to your services: it keeps your domain pointed at a changing IP, gets and renews certificates, routes every service through one port 443, puts sign-in and a WAF in front of them, and bans addresses that probe. Run it on a NAS, a router or a cloud server and configure everything in the browser.",
     "ctaStart": "Quick Start",
     "ctaDownload": "Download",
-    "mockTitle": "gately · Overview",
-    "mockRows": [
-      [
-        "Dynamic DNS",
-        "75 records in sync",
-        "ok"
-      ],
-      [
-        "STUN Traversal",
-        "18 rules running",
-        "ok"
-      ],
-      [
-        "Port Forwarding",
-        "25 rules running",
-        "ok"
-      ],
-      [
-        "Web Services",
-        "27 sites · HTTPS",
-        "ok"
-      ],
-      [
-        "SSL Certificates",
-        "5 certificates · auto-renewal",
-        "ok"
-      ],
-      [
-        "WAF Firewall",
-        "CRS v4 · blocking mode",
-        "warn"
-      ]
-    ],
+    "product": {
+      "overview": "Overview",
+      "tour": "Watch the 2-minute tour",
+      "close": "Close"
+    },
     "featuresTitle": "Everyday network tools, ready to go",
     "featuresDesc": "From pointing a domain at your home to guarding a whole row of websites, it all happens in one interface.",
     "features": [

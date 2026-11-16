@@ -92,39 +92,11 @@
     "lead": "O Gately fica na entrada da sua rede doméstica ou de um servidor e cuida do caminho da internet até os seus serviços: mantém o seu domínio apontado para um IP que muda, obtém e renova certificados, passa todos os serviços por uma única porta 443, coloca login e um WAF na frente deles e bloqueia endereços que fazem varreduras. Instale em um NAS, um roteador ou um servidor na nuvem e configure tudo pelo navegador.",
     "ctaStart": "Início rápido",
     "ctaDownload": "Download",
-    "mockTitle": "gately · Visão geral",
-    "mockRows": [
-      [
-        "DNS dinâmico",
-        "75 registros sincronizados",
-        "ok"
-      ],
-      [
-        "Travessia STUN",
-        "18 regras em execução",
-        "ok"
-      ],
-      [
-        "Redirecionamento de portas",
-        "25 regras em execução",
-        "ok"
-      ],
-      [
-        "Serviços Web",
-        "27 sites · HTTPS",
-        "ok"
-      ],
-      [
-        "Certificados SSL",
-        "5 certificados · renovação automática",
-        "ok"
-      ],
-      [
-        "Firewall WAF",
-        "CRS v4 · modo de bloqueio",
-        "warn"
-      ]
-    ],
+    "product": {
+      "overview": "Visão geral",
+      "tour": "Ver o tour de 2 minutos",
+      "close": "Fechar"
+    },
     "featuresTitle": "As ferramentas de rede do dia a dia, prontas para usar",
     "featuresDesc": "De apontar um domínio para a sua casa a proteger uma fileira inteira de sites, tudo acontece na mesma interface.",
     "features": [
