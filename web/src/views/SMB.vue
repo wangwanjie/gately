@@ -1,6 +1,6 @@
 <template>
   <div>
-    <PageHeader :title="t('smb.title')" :desc="t('smb.desc')" :icon="FolderTree">
+    <PageHeader :title="t('smb.title')" doc="modules/tools#smb" :desc="t('smb.desc')" :icon="FolderTree">
       <el-button type="primary" :icon="Save" :loading="saving" @click="save">{{ t('common.save') }}</el-button>
     </PageHeader>
 

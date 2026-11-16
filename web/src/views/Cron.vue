@@ -1,6 +1,6 @@
 <template>
   <div>
-    <PageHeader :title="t('cron.title')" :desc="t('cron.desc')" :icon="CalendarClock">
+    <PageHeader :title="t('cron.title')" doc="modules/tools" :desc="t('cron.desc')" :icon="CalendarClock">
       <CompactToggle v-model="compact" />
       <ListTools :gl="gl" :placeholder="t('groupSort.search')" />
       <el-button type="primary" :icon="Plus" @click="openEditor()">{{ t('cron.addTask') }}</el-button>

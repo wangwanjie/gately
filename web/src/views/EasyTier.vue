@@ -1,6 +1,6 @@
 <template>
   <div>
-    <PageHeader title="EasyTier" :desc="t('easytier.desc')" :icon="Cable">
+    <PageHeader title="EasyTier" doc="modules/tunnels#easytier" :desc="t('easytier.desc')" :icon="Cable">
       <ResetConfigButton v-if="!isReadonly" base="/api/easytier" :desc="t('components.resetConfig.easytier')" @done="onReset" />
     </PageHeader>
 

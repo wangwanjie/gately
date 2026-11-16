@@ -1,6 +1,6 @@
 <template>
   <div>
-    <PageHeader :title="t('ftp.title')" :desc="t('ftp.desc')" :icon="HardDrive">
+    <PageHeader :title="t('ftp.title')" doc="modules/tools#ftp" :desc="t('ftp.desc')" :icon="HardDrive">
       <el-button type="primary" :icon="Save" :loading="saving" @click="save">{{ t('common.save') }}</el-button>
     </PageHeader>
 

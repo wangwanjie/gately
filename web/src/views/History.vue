@@ -1,6 +1,6 @@
 <template>
   <div>
-    <PageHeader :title="t('history.title')" :desc="t('history.desc')" :icon="History">
+    <PageHeader :title="t('history.title')" doc="guide/audit" :desc="t('history.desc')" :icon="History">
       <el-button :icon="RefreshCw" :loading="loading" @click="load">{{ t('common.refresh') }}</el-button>
     </PageHeader>
 

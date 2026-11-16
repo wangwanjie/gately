@@ -56,6 +56,8 @@
   "networkError": "無法連線到 Gately，請檢查網路，或確認服務仍在執行",
   "advancedSettings": "進階設定",
   "advancedChanged": "（{count} 項已修改）",
+  "docs": "文件",
+  "docsTitle": "在新視窗開啟本頁的使用文件",
   "durationDaysHours": "{d} 天 {h} 小時",
   "durationHoursMinutes": "{h} 小時 {m} 分",
   "durationMinutes": "{m} 分鐘",

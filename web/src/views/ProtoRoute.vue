@@ -1,6 +1,6 @@
 <template>
   <div>
-    <PageHeader :title="t('protoRoute.title')" :desc="t('protoRoute.desc')" :icon="Split">
+    <PageHeader :title="t('protoRoute.title')" doc="modules/protoroute" :desc="t('protoRoute.desc')" :icon="Split">
       <CompactToggle v-model="compact" />
       <ListTools :gl="gl" :placeholder="t('protoRoute.filterPlaceholder')" />
       <el-button :icon="SlidersHorizontal" @click="openSettings">{{ t('protoRoute.globalSettings') }}</el-button>

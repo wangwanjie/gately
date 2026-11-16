@@ -1,6 +1,6 @@
 <template>
   <div>
-    <PageHeader :title="t('perf.title')" :desc="t('perf.desc')" :icon="Gauge">
+    <PageHeader :title="t('perf.title')" doc="modules/perf" :desc="t('perf.desc')" :icon="Gauge">
       <el-radio-group v-model="range" size="small" @change="loadOverview">
         <el-radio-button value="60s">{{ t('perf.range60s') }}</el-radio-button>
         <el-radio-button value="1h">{{ t('perf.range1h') }}</el-radio-button>

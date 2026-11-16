@@ -56,6 +56,8 @@
   "networkError": "Gately에 연결할 수 없습니다. 네트워크를 확인하거나 서비스가 실행 중인지 확인하세요",
   "advancedSettings": "고급 설정",
   "advancedChanged": "({count}개 변경됨)",
+  "docs": "문서",
+  "docsTitle": "이 페이지의 문서를 새 창에서 열기",
   "durationDaysHours": "{d}일 {h}시간",
   "durationHoursMinutes": "{h}시간 {m}분",
   "durationMinutes": "{m}분",

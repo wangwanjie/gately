@@ -1,6 +1,6 @@
 <template>
   <div>
-    <PageHeader :title="t('ddns.title')" :desc="t('ddns.desc')" :icon="Globe">
+    <PageHeader :title="t('ddns.title')" doc="modules/ddns" :desc="t('ddns.desc')" :icon="Globe">
       <el-button v-if="tasks.length" :icon="allTasksCollapsed ? ChevronsUpDown : ChevronsDownUp" @click="setAll(tasks.map((tk) => tk.key), !allTasksCollapsed)">
         {{ allTasksCollapsed ? t('common.expandAll') : t('common.collapseAll') }}
       </el-button>

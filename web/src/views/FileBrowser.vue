@@ -1,6 +1,6 @@
 <template>
   <div>
-    <PageHeader :title="t('filebrowser.title')" :desc="t('filebrowser.desc')" :icon="FolderOpen">
+    <PageHeader :title="t('filebrowser.title')" doc="modules/tools#filebrowser" :desc="t('filebrowser.desc')" :icon="FolderOpen">
       <CompactToggle v-model="compact" />
       <ListTools :gl="gl" :placeholder="t('groupSort.search')" />
       <ResetConfigButton base="/api/filebrowser" :desc="t('components.resetConfig.filebrowser')" @done="onReset" />

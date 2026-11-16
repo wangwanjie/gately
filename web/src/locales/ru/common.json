@@ -56,6 +56,8 @@
   "networkError": "Не удаётся подключиться к Gately. Проверьте сеть или убедитесь, что служба работает",
   "advancedSettings": "Дополнительные настройки",
   "advancedChanged": "(изменено: {count})",
+  "docs": "Документация",
+  "docsTitle": "Открыть документацию по этой странице в новом окне",
   "durationDaysHours": "{d} д {h} ч",
   "durationHoursMinutes": "{h} ч {m} мин",
   "durationMinutes": "{m} мин",

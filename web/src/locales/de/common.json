@@ -56,6 +56,8 @@
   "networkError": "Gately ist nicht erreichbar. Prüfen Sie die Netzwerkverbindung oder ob der Dienst noch läuft",
   "advancedSettings": "Erweiterte Einstellungen",
   "advancedChanged": "({count} geändert)",
+  "docs": "Doku",
+  "docsTitle": "Dokumentation zu dieser Seite in neuem Fenster öffnen",
   "durationDaysHours": "{d} T {h} Std.",
   "durationHoursMinutes": "{h} Std. {m} Min.",
   "durationMinutes": "{m} Min.",

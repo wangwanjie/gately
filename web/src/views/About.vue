@@ -25,6 +25,9 @@
       </p>
       <div class="actions">
         <el-button type="primary" tag="a" :href="REPO" target="_blank" rel="noopener" :icon="Github">{{ t('about.repo') }}</el-button>
+        <!-- 官网文档与快速上手，按界面语言打开 -->
+        <el-button tag="a" :href="docsUrl(locale, '/docs/guide/quick-start')" target="_blank" rel="noopener" :icon="Rocket">{{ t('about.quickStart') }}</el-button>
+        <el-button tag="a" :href="docsUrl(locale, '/docs/modules/')" target="_blank" rel="noopener" :icon="BookOpen">{{ t('common.docs') }}</el-button>
         <el-button tag="a" :href="`${REPO}/releases`" target="_blank" rel="noopener" :icon="Package">{{ t('about.releases') }}</el-button>
         <el-button tag="a" :href="`${REPO}/issues`" target="_blank" rel="noopener" :icon="MessageSquare">{{ t('about.feedback') }}</el-button>
         <el-button tag="a" :href="sponsorUrl" target="_blank" rel="noopener" :icon="Heart">{{ t('about.sponsor') }}</el-button>
@@ -197,6 +200,7 @@ import {
 } from 'lucide-vue-next'
 import { api, type SystemSettings, type SystemInfo, type UpdateInfo, type UpgradeStatus } from '../api'
 import { navByModule, sessionRole } from '../nav'
+import { docsUrl } from '../docsUrl'
 import { locales } from '../i18n/locales'
 import AppLogo from '../components/AppLogo.vue'
 import UpdateDialog from '../components/UpdateDialog.vue'

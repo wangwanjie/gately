@@ -1,6 +1,6 @@
 <template>
   <div>
-    <PageHeader title="Tailscale" :desc="t('tailscale.desc')" :icon="Network">
+    <PageHeader title="Tailscale" doc="modules/tunnels#tailscale" :desc="t('tailscale.desc')" :icon="Network">
       <ResetConfigButton base="/api/tailscale" :desc="t('components.resetConfig.tailscale')" @done="onReset" />
     </PageHeader>
 

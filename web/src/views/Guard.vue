@@ -1,6 +1,6 @@
 <template>
   <div>
-    <PageHeader :title="t('guard.title')" :desc="t('guard.desc')" :icon="ShieldBan">
+    <PageHeader :title="t('guard.title')" doc="modules/guard" :desc="t('guard.desc')" :icon="ShieldBan">
       <el-button :icon="RefreshCw" @click="loadAll">{{ t('common.refresh') }}</el-button>
       <el-button type="primary" :icon="Ban" @click="openBan">{{ t('guard.ban.add') }}</el-button>
     </PageHeader>

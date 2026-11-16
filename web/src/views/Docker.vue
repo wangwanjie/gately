@@ -1,6 +1,6 @@
 <template>
   <div>
-    <PageHeader title="Docker" :desc="t('docker.page.desc')" :icon="Container">
+    <PageHeader title="Docker" doc="modules/docker" :desc="t('docker.page.desc')" :icon="Container">
       <el-button :icon="RefreshCw" :loading="refreshing" @click="refresh">{{ t('common.refresh') }}</el-button>
     </PageHeader>
 
