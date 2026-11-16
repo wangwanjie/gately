@@ -1,8 +1,11 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import { readdirSync, readFileSync, statSync, unlinkSync, writeFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync, statSync, unlinkSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { constants, gzipSync } from 'node:zlib'
+import type { Plugin } from 'vite'
+import { fallbackOf } from './src/i18n/localeMeta.ts'
+import { fillMissing } from './src/i18n/localeFill.ts'
 
 // 全部界面语言及对应的 Element Plus 语言包，顺序同语言切换菜单
 const ALL_LOCALES: Record<string, string> = {
@@ -51,10 +54,19 @@ const localesModule = () => {
       }
       const codes = builtLocales()
       const messages: string[] = []
+      const fallback = fallbackOf(codes)
+      const jsonFiles = (code: string) => readdirSync(join(localesDir, code)).filter((f) => f.endsWith('.json')).sort()
       for (const code of codes) {
-        for (const file of readdirSync(join(localesDir, code)).filter((f) => f.endsWith('.json')).sort()) {
+        const own = jsonFiles(code)
+        for (const file of own) {
           // 键与 import.meta.glob 的结果保持同一格式：../locales/<语言>/<命名空间>.json
           messages.push(`  ${JSON.stringify(`../locales/${code}/${file}`)}: () => import(${JSON.stringify(join(localesDir, code, file))}),`)
+        }
+        // 目标语言缺少整个命名空间时改用回退语言的同名文件，与缺键补齐（gately-locale-fill）保持一致
+        if (code !== fallback) {
+          for (const file of jsonFiles(fallback).filter((f) => !own.includes(f))) {
+            messages.push(`  ${JSON.stringify(`../locales/${code}/${file}`)}: () => import(${JSON.stringify(join(localesDir, fallback, file))}),`)
+          }
         }
       }
       const element = codes.map((code) => `  ${JSON.stringify(code)}: () => import('element-plus/es/locale/lang/${ALL_LOCALES[code]}'),`)
@@ -63,6 +75,35 @@ const localesModule = () => {
         `export const messageLoaders = {\n${messages.join('\n')}\n}`,
         `export const elementLoaders = {\n${element.join('\n')}\n}`,
       ].join('\n')
+    },
+  }
+}
+
+// 构建时把目标语言缺少的文案键用回退语言的文案补齐：运行时不必再加载回退语言包（省一个 130 KB 左右的下载），
+// 缺键也不会闪现键名。正常情况下各语言键集合完全一致（scripts/check-i18n.mjs 校验），这里只是兜底，补齐时给出构建警告。
+const localeFill = (): Plugin => {
+  const localesDir = resolve(import.meta.dirname, 'src/locales')
+  return {
+    name: 'gately-locale-fill',
+    enforce: 'pre',
+    transform(code, id) {
+      const m = /[\\/]src[\\/]locales[\\/]([^\\/]+)[\\/]([^\\/]+\.json)$/.exec(id)
+      if (!m) {
+        return null
+      }
+      const fallback = fallbackOf(builtLocales())
+      const basePath = join(localesDir, fallback, m[2])
+      if (m[1] === fallback || !existsSync(basePath)) {
+        return null
+      }
+      this.addWatchFile(basePath)
+      const target = JSON.parse(code)
+      const filled = fillMissing(target, JSON.parse(readFileSync(basePath, 'utf8')))
+      if (filled === 0) {
+        return null
+      }
+      this.warn(`${m[1]}/${m[2]} 缺少 ${filled} 个键，已用 ${fallback} 的文案补齐`)
+      return { code: JSON.stringify(target), map: null }
     },
   }
 }
@@ -95,7 +136,7 @@ const precompress = {
 }
 
 export default defineConfig({
-  plugins: [vue(), localesModule(), keepGitkeep, precompress],
+  plugins: [vue(), localesModule(), localeFill(), keepGitkeep, precompress],
   // 资源使用相对路径，页面位于子路径（如飞牛 fnOS 统一网关的 /app/gately/）时也能加载
   base: './',
   build: {
