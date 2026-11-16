@@ -424,7 +424,8 @@ type ListenerView struct {
 }
 
 func (m *Module) viewLocked(l *Listener) any {
-	v := ListenerView{Listener: *l, Error: m.errors[l.Key], Stats: map[string]map[string]int64{}}
+	// 站点用户的密码（bcrypt 哈希或尚未转换的明文）不经接口输出，只显示掩码
+	v := ListenerView{Listener: maskListenerUsers(*l), Error: m.errors[l.Key], Stats: map[string]map[string]int64{}}
 	if r, ok := m.runners[l.Key]; ok {
 		v.Running = true
 		t := r.current()
@@ -460,6 +461,8 @@ func (m *Module) Routes(r module.Router) {
 		Key:     func(l *Listener) *string { return &l.Key },
 		Enabled: func(l *Listener) *bool { return &l.Enable },
 		Validate: func(l *Listener) error {
+			// 站点用户密码在接口中显示为掩码：提交的掩码或留空沿用已保存的密码（修改时为同一监听，新增与复制时按用户名查找）
+			m.restoreListenerUsers(m.findListenerLocked(l.Key), l)
 			if err := l.Validate(); err != nil {
 				return err
 			}
@@ -468,10 +471,14 @@ func (m *Module) Routes(r module.Router) {
 		// 额外 HTTP 端口不能与其他监听的端口冲突；启用已停用的监听时同样检查
 		Check:       func(l *Listener) error { return checkHTTPPortConflict(l, m.cfg.Listeners) },
 		CheckEnable: func(l *Listener) error { return checkHTTPPortConflict(l, m.cfg.Listeners) },
-		Copy:        func(_, dst *Listener) { dst.dropShareLinks() },
-		View:        m.viewLocked,
-		Changed:     m.restartLocked,
-		Removed:     m.stopLocked,
+		Copy: func(src, dst *Listener) {
+			dst.dropShareLinks()
+			// 副本中仍为掩码的站点用户密码沿用模板的值
+			m.restoreListenerUsers(src, dst)
+		},
+		View:    m.viewLocked,
+		Changed: m.restartLocked,
+		Removed: m.stopLocked,
 	}
 	listeners.Register(r, "/listeners")
 	m.registerIPLists(r)

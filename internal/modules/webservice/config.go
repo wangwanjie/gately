@@ -103,7 +103,8 @@ type Site struct {
 	ContentType string `json:"contentType"`
 	StatusCode  int    `json:"statusCode"`
 
-	// 认证：Users 每项为 用户名:密码（密码可为 bcrypt 哈希）
+	// 认证：Users 每项为 用户名:密码（密码可为 bcrypt 哈希）。保存时明文转为 bcrypt 哈希，接口输出时密码为掩码，
+	// 提交掩码或留空表示沿用原密码（见 siteusers.go）；旧版本保存的明文照常可比较
 	BasicAuth bool     `json:"basicAuth"`
 	WebAuth   bool     `json:"webAuth"`
 	Users     []string `json:"users"`
@@ -581,10 +582,16 @@ func (s *Site) validate(isDefault bool) error {
 		return err
 	}
 	for _, u := range s.Users {
-		if name, pass, ok := strings.Cut(u, ":"); !ok || name == "" || pass == "" {
+		if name, _, ok := strings.Cut(u, ":"); !ok || name == "" {
 			return fmt.Errorf("用户格式应为 用户名:密码，实际 %q", u)
 		}
 	}
+	// 明文密码转为 bcrypt 哈希保存（存量明文在这里随所在监听的下一次保存转换）
+	users, err := hashSiteUsers(s.Users)
+	if err != nil {
+		return err
+	}
+	s.Users = users
 	switch s.IPMode {
 	case IPModeOff, IPModeWhitelist, IPModeBlacklist:
 	default:
