@@ -182,7 +182,7 @@ func (a *App) handleThirdCallback(w http.ResponseWriter, r *http.Request) {
 	a.noteLoginIP(ip, id.String(), "第三方登录")
 	http.SetCookie(w, &http.Cookie{
 		Name: auth.CookieName, Value: token, Path: "/", Expires: exp,
-		HttpOnly: true, SameSite: http.SameSiteStrictMode, Secure: r.TLS != nil || strings.HasPrefix(cfg.CallbackBase, "https://"),
+		HttpOnly: true, SameSite: http.SameSiteStrictMode, Secure: cookieSecure(r) || strings.HasPrefix(cfg.CallbackBase, "https://"),
 	})
 	http.Redirect(w, r, "/", http.StatusFound)
 }

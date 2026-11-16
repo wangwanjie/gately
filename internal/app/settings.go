@@ -454,7 +454,7 @@ func (a *App) accessControl(next http.Handler) http.Handler {
 		}
 		if isEntry {
 			http.SetCookie(w, &http.Cookie{Name: entryCookie, Value: a.entryValue(s.SafePath), Path: "/", HttpOnly: true,
-				SameSite: http.SameSiteLaxMode, Secure: r.TLS != nil, MaxAge: 365 * 24 * 3600})
+				SameSite: http.SameSiteLaxMode, Secure: cookieSecure(r), MaxAge: 365 * 24 * 3600})
 			http.Redirect(w, r, "/", http.StatusFound)
 			return
 		}
