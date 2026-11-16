@@ -411,6 +411,9 @@ func (c *respCache) wrap(next http.Handler) http.Handler {
 			}
 			h.Set("X-Cache", "HIT")
 			h.Set("Age", strconv.Itoa(int(c.now().Sub(e.stored).Seconds())))
+			// 响应体已完整缓存，长度已知：写明 Content-Length，访客不必走分块传输（后端原本分块返回时也一样）。
+			// 外层开启压缩时由压缩中间件按需去掉
+			h.Set("Content-Length", strconv.Itoa(len(e.body)))
 			w.WriteHeader(e.status)
 			_, _ = w.Write(e.body)
 			return

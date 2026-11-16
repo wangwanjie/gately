@@ -2846,6 +2846,7 @@
   "自定义回调": "Custom callback",
   "自定义域名 %q 格式错误": "invalid custom domain %q",
   "自定义状态目录 %s 位于 %s 中，%s 未删除": "Custom state directory %s is inside %s, so %s was not deleted",
+  "自定义规则使用了 @validateSchema 操作符，当前版本为减小程序体积没有包含它，请删除或改写用到它的规则": "A custom rule uses the @validateSchema operator, which this version leaves out to keep the program small. Remove or rewrite the rules that use it",
   "自定义错误页面 %s 不可用，已改用默认样式: %v": "Custom error page %s is unavailable; the default style is used instead: %v",
   "自定义错误页面不存在": "The custom error page does not exist",
   "自定义错误页面仍被 %s 引用，请先修改这些站点的错误页设置": "The custom error page is still used by %s. Change the error page settings of those sites first",

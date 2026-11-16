@@ -6,7 +6,6 @@ package webpage
 
 import (
 	"fmt"
-	"html/template"
 	"net/http"
 	"strings"
 	"sync"
@@ -87,15 +86,14 @@ label.f>span{display:block;font-size:13px;font-weight:500;margin-bottom:6px}
 
 var (
 	mu    sync.RWMutex
-	pages = map[string]*template.Template{}
+	pages = map[string]*lazyTemplate{}
 )
 
-// MustRegister 注册一个页面模板，src 需以 {{define "body"}} 定义主体；在包初始化时调用，模板错误直接 panic。
+// MustRegister 注册一个页面模板，src 需以 {{define "body"}} 定义主体；在包初始化时调用。
+// 模板在首次渲染时才解析（见 lazyTemplate），模板错误届时直接 panic，测试中由 TestTemplatesParse 提前发现。
 func MustRegister(name, src string) {
-	t := template.Must(template.New(name).Parse(layoutSrc))
-	template.Must(t.Parse(src))
 	mu.Lock()
-	pages[name] = t
+	pages[name] = newLazyTemplate(name, layoutSrc, src)
 	mu.Unlock()
 }
 
@@ -112,12 +110,13 @@ func Localize(lang string, texts map[string]string) map[string]string {
 // PageTitle 为浏览器标签页标题，Host 非空时显示在页脚。
 func Render(w http.ResponseWriter, status int, name, lang string, texts map[string]string, data map[string]any) {
 	mu.RLock()
-	t := pages[name]
+	lt := pages[name]
 	mu.RUnlock()
-	if t == nil {
+	if lt == nil {
 		http.Error(w, fmt.Sprintf("%d %s", status, http.StatusText(status)), status)
 		return
 	}
+	t := lt.get()
 	if data == nil {
 		data = map[string]any{}
 	}

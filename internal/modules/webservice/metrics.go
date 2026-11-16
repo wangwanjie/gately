@@ -16,7 +16,8 @@ import (
 const (
 	// metricMinutes 是保留的分钟桶数量（24 小时）
 	metricMinutes = 1440
-	// topKeysCap 限制排行榜统计的不同键数量，防止被大量来源撑大内存
+	// topKeysCap 限制排行榜统计的不同键数量，防止被大量来源撑大内存。
+	// 达到上限时按计数淘汰到一半（见 pruneTopKeys），新来源仍能进入排行
 	topKeysCap = 5000
 )
 
@@ -28,8 +29,9 @@ type minuteBucket struct {
 
 // siteMetrics 记录站点最近 24 小时的分钟级统计与来源排行。
 type siteMetrics struct {
-	mu        sync.Mutex
-	ring      [metricMinutes]minuteBucket
+	mu sync.Mutex
+	// ring 为 24 小时分钟环（约 80 KB），首次登记请求时才分配：没有流量的站点不占这块内存
+	ring      *[metricMinutes]minuteBucket
 	ips       map[string]int64
 	countries map[string]int64
 	bytesOut  int64
@@ -57,6 +59,9 @@ func (m *siteMetrics) record(ip netip.Addr, status int, bytes int64, lat time.Du
 	key := limitKeyAddr(ip)
 	m.mu.Lock()
 	defer m.mu.Unlock()
+	if m.ring == nil {
+		m.ring = new([metricMinutes]minuteBucket)
+	}
 	b := &m.ring[idx]
 	if b.minute != min {
 		*b = minuteBucket{minute: min}
@@ -77,9 +82,10 @@ func (m *siteMetrics) record(ip netip.Addr, status int, bytes int64, lat time.Du
 	if class >= 1 && class <= 5 {
 		m.status[class]++
 	}
-	if _, ok := m.ips[key]; ok || len(m.ips) < topKeysCap {
-		m.ips[key]++
+	if _, ok := m.ips[key]; !ok && len(m.ips) >= topKeysCap {
+		m.ips = pruneTopKeys(m.ips, topKeysCap/2)
 	}
+	m.ips[key]++
 	if country != "" {
 		m.countries[country]++
 	}
@@ -118,6 +124,19 @@ type SiteStatsView struct {
 	Blocked map[string]int64 `json:"blocked"`
 }
 
+// pruneTopKeys 按计数从高到低保留前 keep 个键（计数相同按键排序，结果确定），返回新建的表。
+// 新建而非原地删除：Go 的 map 删除元素后不会缩小，长期暴露的站点会一直占着满载时的内存。
+// 满载后才淘汰一次、每次腾出一半，摊到每个新来源上的开销很小；被淘汰的长尾来源再次出现时从 1 重新计数，
+// 排行因此是近似值，但持续访问的来源始终保留，新出现的高频来源也能进入排行。
+func pruneTopKeys(m map[string]int64, keep int) map[string]int64 {
+	items := top(m, keep)
+	out := make(map[string]int64, len(items)*2)
+	for _, it := range items {
+		out[it.Key] = it.Count
+	}
+	return out
+}
+
 func top(m map[string]int64, n int) []TopItem {
 	out := make([]TopItem, 0, len(m))
 	for k, v := range m {
@@ -146,10 +165,12 @@ func (m *siteMetrics) view(minutes int, now time.Time) SiteStatsView {
 	series := make([]Point, 0, minutes)
 	for i := minutes - 1; i >= 0; i-- {
 		min := cur - int64(i)
-		b := m.ring[int(min%metricMinutes)]
 		p := Point{Time: min * 60}
-		if b.minute == min {
-			p.Requests, p.Bytes, p.S4xx, p.S5xx = b.req, b.bytes, b.s4xx, b.s5xx
+		// 分钟环未分配表示站点还没有请求，各分钟均为 0
+		if m.ring != nil {
+			if b := m.ring[int(min%metricMinutes)]; b.minute == min {
+				p.Requests, p.Bytes, p.S4xx, p.S5xx = b.req, b.bytes, b.s4xx, b.s5xx
+			}
 		}
 		p.P50, p.P95 = m.minuteQuantiles(min)
 		series = append(series, p)

@@ -480,7 +480,8 @@ func (m *Module) Routes(r module.Router) {
 		Changed: m.restartLocked,
 		Removed: m.stopLocked,
 	}
-	listeners.Register(r, "/listeners")
+	// 列表带 ETag，「Web 服务」页轮询时内容没变返回 304（见 listeners_etag.go）
+	listeners.Register(etagRouter{Router: r, pattern: "GET /listeners", perm: ID + ":write"}, "/listeners")
 	m.registerIPLists(r)
 	m.registerErrorPages(r)
 	m.registerPanels(r)
