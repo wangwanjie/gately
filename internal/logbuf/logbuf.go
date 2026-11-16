@@ -4,10 +4,13 @@
 package logbuf
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"log"
 	"sort"
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -41,8 +44,9 @@ type Buffer struct {
 	nextSeq uint64
 	// echo 不为 nil 时同时输出到标准日志，便于 docker logs 查看
 	echo *log.Logger
-	// sink 不为 nil 时日志同时写入文件，见 Persist
-	sink *fileSink
+	// sink 不为 nil 时日志同时写入文件，见 Persist；persisting 与它同步变化，写日志时不加锁就能知道是否需要序列化
+	sink       *fileSink
+	persisting atomic.Bool
 	// sources 为出现过的来源标签（不含空串），供日志页的来源下拉列出全部来源，见 Sources。
 	// 开启落盘时同时保存到文件，重启后保留；数量受 maxSources 限制
 	sources map[string]struct{}
@@ -75,8 +79,47 @@ func (b *Buffer) addAt(t time.Time, level, source, msg string, fields Fields) {
 	b.add(Entry{Time: t, Level: level, Source: source, Message: msg, Fields: fields})
 }
 
+// lineEncoder 把一条日志序列化为一行 JSON，缓冲区随对象池复用。
+type lineEncoder struct {
+	buf bytes.Buffer
+	enc *json.Encoder
+	// e 为正在序列化的日志：放在可复用的对象里，不必为每条日志单独分配
+	e Entry
+}
+
+var lineEncoders = sync.Pool{New: func() any {
+	le := &lineEncoder{}
+	le.enc = json.NewEncoder(&le.buf)
+	return le
+}}
+
+// lineEncoderKeep 以上的缓冲区不放回对象池，避免个别超长日志让池里长期留着大块内存
+const lineEncoderKeep = 16 << 10
+
+// encodeLine 把 e 序列化为一行 JSON（序号写成 0），失败时返回 nil。
+func encodeLine(e Entry) *lineEncoder {
+	le := lineEncoders.Get().(*lineEncoder)
+	le.buf.Reset()
+	le.e = e
+	le.e.Seq = 0
+	err := le.enc.Encode(&le.e)
+	// 不留着对消息与字段表的引用
+	le.e = Entry{}
+	if err != nil {
+		lineEncoders.Put(le)
+		return nil
+	}
+	return le
+}
+
 // add 追加一条日志，序号由缓冲分配（e.Seq 被忽略）。
 func (b *Buffer) add(e Entry) {
+	// 落盘的 JSON 在加锁之前序列化（序号先写 0，加锁后再填入真正的序号）：
+	// 序列化是写一条日志里最耗时的一步，放在锁内会让高并发下所有写日志的协程排队
+	var le *lineEncoder
+	if b.persisting.Load() {
+		le = encodeLine(e)
+	}
 	b.mu.Lock()
 	e.Seq = b.nextSeq
 	b.nextSeq++
@@ -104,9 +147,15 @@ func (b *Buffer) add(e Entry) {
 	}
 	// 在锁内交给落盘，保证文件中的顺序与序号一致
 	if b.sink != nil {
-		b.sink.add(e)
+		if le == nil || !b.sink.addEncoded(e.Seq, e.Time, le.buf.Bytes()) {
+			// 写入前一刻才开启落盘，或预先序列化的内容不是预期的形状：在锁内序列化
+			b.sink.add(e)
+		}
 	}
 	b.mu.Unlock()
+	if le != nil && le.buf.Cap() <= lineEncoderKeep {
+		lineEncoders.Put(le)
+	}
 	if b.echo != nil {
 		if e.Source != "" {
 			b.echo.Printf("[%s] [%s] %s", e.Level, e.Source, e.Message)
