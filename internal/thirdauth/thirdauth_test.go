@@ -159,3 +159,44 @@ func TestLoginSecrets(t *testing.T) {
 		t.Fatalf("应按标识返回 Client Secret 明文: %v", got)
 	}
 }
+
+// 身份表来自导入的文件：通配、空标识以及会被当成备注或拆成多项的写法都不能转换为允许列表项。
+func TestLuckyEntryRejectsWildcard(t *testing.T) {
+	for _, id := range []LuckyIdentity{
+		{Type: "github", ID: "*"},
+		{Type: "github", ID: ""},
+		{Type: "", ID: "1"},
+		{Type: "github", ID: " * "},
+		{Type: "github", ID: "1 2"},
+		{Type: "github", ID: "1\ngithub:*"},
+		{Type: "github", ID: "1\t"},
+		{Type: "github", ID: "1#x"},
+		{Type: "github:*", ID: "1"},
+		{Type: "git hub", ID: "1"},
+	} {
+		if e, ok := id.Entry(); ok {
+			t.Errorf("%+v 不应转换为允许列表项，实际 %q", id, e)
+		}
+	}
+	e, ok := LuckyIdentity{Type: "GitHub", ID: "15172899", Name: "a\nb", EMail: "x@y.z"}.Entry()
+	if !ok || e != "github:15172899 # a b x@y.z" {
+		t.Fatalf("有效身份: %q %v", e, ok)
+	}
+	// 含 * 的普通标识（不是单独一个 *）不受影响
+	if e, ok := (LuckyIdentity{Type: "qq", ID: "UID*X"}).Entry(); !ok || e != "qq:UID*X" {
+		t.Fatalf("含星号的标识: %q %v", e, ok)
+	}
+	ids := LuckyIdentities{List: []LuckyIdentity{
+		{Key: "a", Enable: true, Type: "github", ID: "1"},
+		{Key: "b", Enable: true, Type: "github", ID: "*"},
+		{Key: "c", Enable: false, Type: "github", ID: "*"},
+	}}
+	got, missing := ids.Resolve(nil, true)
+	if strings.Join(got, "|") != "github:1" || missing != 1 {
+		t.Fatalf("解析全部身份应跳过通配: %q missing=%d", got, missing)
+	}
+	got, missing = ids.Resolve([]string{"a", "b", "c", "zz"}, false)
+	if strings.Join(got, "|") != "github:1" || missing != 2 {
+		t.Fatalf("按 Key 解析应跳过通配: %q missing=%d", got, missing)
+	}
+}

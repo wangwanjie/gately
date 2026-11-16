@@ -60,6 +60,9 @@ La permission requise par une API dépend du chemin et de la méthode :
 - Les anciennes API `PUT /api/webdav/shared-users`, `PUT /api/ftp/shared-users` et `PUT /api/smb/shared-users` modifient la même liste d'utilisateurs partagés par les trois services : elles exigent à la fois `webdav:write`, `ftp:write` et `smb:write`. La nouvelle API `/api/fileusers` utilise le domaine `fileusers`.
 - `GET /api/session` et `GET /api/openapi.json` acceptent n'importe quel jeton valide.
 - L'accès en écriture aux modules suivants permet d'exécuter des commandes sur le serveur, ce qui équivaut à exécuter des commandes en tant qu'utilisateur du processus Gately : `ddns` (source d'IP par commande), `cron` (tâches planifiées), `guard` (source de journaux par commande), `stun` (scripts de règle), `ssl` (scripts de mappage et commandes de déploiement local), `webterminal`, `docker` (exécution dans les conteneurs et Compose), `frp`, `filebrowser` et `cloudflared` (chemins de programme personnalisés). Ces modules portent la mention « Exécute des commandes » lors de la création d'un jeton ; ne les accordez qu'aux scripts en qui vous avez entièrement confiance. Lorsqu'un jeton appelle l'import Lucky (`import:write`), les éléments importés sont toujours désactivés ; `enable=1` ne s'applique qu'aux sessions connectées.
+- L'accès en écriture à `tailscale` et `netbird` permet d'ajouter des arguments de démarrage et des variables d'environnement aux démons (par exemple pour activer leur serveur SSH intégré) ; ces modules portent donc aussi la marque « Exécute des commandes ».
+- L'accès en écriture aux modules suivants permet de lire ou de modifier des fichiers du serveur : `storage` (monter n'importe quel répertoire et utiliser le gestionnaire de fichiers), `webservice` (servir n'importe quel répertoire comme site statique), `webdav`, `ftp`, `smb`, `fileusers` (partager n'importe quel répertoire avec un utilisateur que vous créez) et `backup` (écrire des sauvegardes de la configuration, avec tous les secrets, sur un montage de stockage). À la création d'un jeton, ces modules portent la marque « Lit et écrit des fichiers ». Toutes ces fonctions refusent le répertoire de configuration de Gately, mais les autres fichiers ne sont pas restreints ; quand Gately s'exécute en root, pouvoir écraser des fichiers système équivaut à un contrôle total du serveur : ne les accordez qu'aux scripts en qui vous avez entièrement confiance.
+- Quand un jeton appelle l'import Lucky, les paramètres globaux et la table des identités de connexion tierce (`lucky_base`, `lucky_thirdPartyAuthManager`) ne sont pas importés ; connectez-vous à l'interface d'administration pour importer ces deux éléments.
 
 ### Opérations interdites aux jetons
 
@@ -73,6 +76,8 @@ Les API suivantes n'acceptent que les sessions de connexion ; tout accès par je
 - Téléchargement et restauration de la sauvegarde de configuration : `/api/system/backup`, `/api/system/restore`
 - Téléchargement des fichiers de sauvegarde locaux : `/api/backup/local`
 - Paramètres de sécurité du terminal Web : `/api/webterminal/security`
+- Chemins des programmes gérés : `PUT /api/easytier/settings`, `PUT /api/tailscale/settings`, `PUT /api/netbird/settings`
+- Phrase secrète de chiffrement des sauvegardes : `GET /api/backup/secrets` ; quand un jeton appelle `PUT /api/backup/settings`, la phrase secrète doit rester inchangée (envoyez `********`), la modifier ou l'effacer renvoie 403
 - Connexion et déconnexion : `/api/login`, `/api/logout`
 
 Une requête sans permission suffisante reçoit `le jeton n'a pas la permission <permission>` et un avertissement est consigné dans les journaux système, avec le nom du jeton, l'IP source et l'API refusée.

@@ -51,6 +51,10 @@ func (m *Module) ImportLucky(doc luckyimport.Document, opts luckyimport.Options)
 		rep.Warnings = append(rep.Warnings, "跳过，"+err.Error())
 		return rep, nil
 	}
+	if err := s.checkDirs(); err != nil {
+		rep.Warnings = append(rep.Warnings, "跳过，"+err.Error())
+		return rep, nil
+	}
 	rep.Imported = 1
 	rep.Warnings = append(rep.Warnings, fmt.Sprintf("导入 %d 个用户", added))
 	if !s.Enable {

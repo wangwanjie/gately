@@ -136,6 +136,7 @@ WAF 拦截和上游状态变化可能频繁发生，建议为这类规则设置 
 | `backup.done` | 备份：完成 | 信息 | 定时或手动备份全部目的地成功，见[配置备份](/docs/modules/backup) |
 | `backup.failed` | 备份：失败 | 错误 | 备份打包失败，或任一目的地写入失败 |
 | `auth.failed` | 认证：连续失败 | 警告 | 管理后台登录失败，附带 `ip` 字段 |
+| `fileauth.failed` | 文件服务：登录失败 | 警告 | WebDAV、FTP、SMB 登录失败，或因失败次数过多被拒绝，来源为服务名，附带 `ip`、`service`（`WebDAV`、`FTP` 或 `SMB`）字段，提交了用户名时还有 `user` 字段。同一来源每 5 秒最多发布一次，入侵防护可按此计数封禁，见[入侵防护](/docs/modules/guard) |
 | `auth.banned` | 认证：IP 已被封禁 | 警告 | Web 服务认证连续失败触发自动封禁 |
 | `guard.banned` | 入侵防护：IP 已被封禁 | 警告 | 日志规则、诱饵端口或端口扫描检测封禁了 IP 或网段，附带 `ip` 与 `reason` 字段（一次封禁多个地址时还有 `count`） |
 | `knock.opened` | 端口敲门：敲门成功 | 信息 | 端口敲门认证通过并放行来源地址，附带 `ip`、`rule`、`ports` 字段，见[端口敲门](/docs/modules/knock) |

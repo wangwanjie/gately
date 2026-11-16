@@ -32,6 +32,11 @@ services:
       # - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - TZ=Asia/Seoul
+    # 컨테이너 로그(docker logs)의 크기를 제한합니다. Docker는 기본적으로 상한을 두지 않습니다
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
 ```
 
 `--cap-add NET_ADMIN`과 `cap_add`는 [침입 방지](/ko/docs/modules/guard)가 차단을 호스트의 nftables 방화벽에 기록하는 데 쓰입니다. 필요 없으면 빼도 되며, 이 경우에도 차단은 Gately 자체 서비스에 적용됩니다.

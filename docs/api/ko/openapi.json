@@ -775,6 +775,15 @@
           "protocol": {
             "type": "string"
           },
+          "quicKeepalivePeriod": {
+            "type": "integer"
+          },
+          "quicMaxIdleTimeout": {
+            "type": "integer"
+          },
+          "quicMaxIncomingStreams": {
+            "type": "integer"
+          },
           "remark": {
             "type": "string"
           },
@@ -814,6 +823,15 @@
         "properties": {
           "protocol": {
             "type": "string"
+          },
+          "quicKeepalivePeriod": {
+            "type": "integer"
+          },
+          "quicMaxIdleTimeout": {
+            "type": "integer"
+          },
+          "quicMaxIncomingStreams": {
+            "type": "integer"
           },
           "serverAddr": {
             "type": "string"
@@ -940,6 +958,9 @@
           "allowPorts": {
             "type": "string"
           },
+          "autoFirewall": {
+            "type": "boolean"
+          },
           "bindAddr": {
             "type": "string"
           },
@@ -991,6 +1012,9 @@
             },
             "type": "array"
           },
+          "kcpBindPort": {
+            "type": "integer"
+          },
           "key": {
             "type": "string"
           },
@@ -999,6 +1023,18 @@
           },
           "proxyBindAddr": {
             "type": "string"
+          },
+          "quicBindPort": {
+            "type": "integer"
+          },
+          "quicKeepalivePeriod": {
+            "type": "integer"
+          },
+          "quicMaxIdleTimeout": {
+            "type": "integer"
+          },
+          "quicMaxIncomingStreams": {
+            "type": "integer"
           },
           "remark": {
             "type": "string"
@@ -1022,6 +1058,9 @@
         "properties": {
           "allowPorts": {
             "type": "string"
+          },
+          "autoFirewall": {
+            "type": "boolean"
           },
           "bindAddr": {
             "type": "string"
@@ -1068,8 +1107,23 @@
             },
             "type": "array"
           },
+          "kcpBindPort": {
+            "type": "integer"
+          },
           "proxyBindAddr": {
             "type": "string"
+          },
+          "quicBindPort": {
+            "type": "integer"
+          },
+          "quicKeepalivePeriod": {
+            "type": "integer"
+          },
+          "quicMaxIdleTimeout": {
+            "type": "integer"
+          },
+          "quicMaxIncomingStreams": {
+            "type": "integer"
           },
           "subdomainHost": {
             "type": "string"
@@ -4062,7 +4116,40 @@
       },
       "webservice.Panel": {
         "properties": {
+          "background": {
+            "type": "string"
+          },
+          "bgBlur": {
+            "type": "integer"
+          },
+          "bgDim": {
+            "type": "integer"
+          },
+          "defaultEngine": {
+            "type": "integer"
+          },
+          "description": {
+            "type": "string"
+          },
           "enable": {
+            "type": "boolean"
+          },
+          "engines": {
+            "items": {
+              "$ref": "#/components/schemas/webservice.PanelEngine"
+            },
+            "type": "array"
+          },
+          "favicon": {
+            "type": "string"
+          },
+          "footer": {
+            "type": "string"
+          },
+          "footerUrl": {
+            "type": "string"
+          },
+          "hideFooter": {
             "type": "boolean"
           },
           "icon": {
@@ -4095,6 +4182,9 @@
           "subtitle": {
             "type": "string"
           },
+          "tabTitle": {
+            "type": "string"
+          },
           "theme": {
             "type": "string"
           },
@@ -4105,6 +4195,17 @@
         "type": "object"
       },
       "webservice.PanelAlt": {
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.PanelEngine": {
         "properties": {
           "name": {
             "type": "string"
@@ -4146,6 +4247,9 @@
             },
             "type": "array"
           },
+          "authOnly": {
+            "type": "boolean"
+          },
           "color": {
             "type": "string"
           },
@@ -4156,6 +4260,12 @@
             "type": "string"
           },
           "hide": {
+            "type": "boolean"
+          },
+          "hideDesc": {
+            "type": "boolean"
+          },
+          "hideName": {
             "type": "boolean"
           },
           "icon": {
@@ -4169,6 +4279,9 @@
           },
           "sameTab": {
             "type": "boolean"
+          },
+          "size": {
+            "type": "string"
           },
           "url": {
             "type": "string"
@@ -7567,7 +7680,7 @@
     },
     "/api/backup/secrets": {
       "get": {
-        "description": "필요한 권한: `backup:write`.",
+        "description": "**로그인 세션에서만 사용할 수 있으며, API 토큰으로는 이 엔드포인트에 접근할 수 없습니다.**",
         "responses": {
           "200": {
             "content": {
@@ -7613,17 +7726,12 @@
             "description": "토큰에 필요한 권한이 없음"
           }
         },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
         "summary": "비밀 값 평문 보기",
         "tags": [
           "설정 백업"
         ],
-        "x-required-scope": "backup:write",
-        "x-token-allowed": true
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
       }
     },
     "/api/backup/settings": {
@@ -19367,7 +19475,7 @@
         "x-token-allowed": true
       },
       "put": {
-        "description": "요청 본문 `{\"corePath\": \"\"}`. 비워 두면 설정 디렉터리 bin, PATH 순으로 easytier-core를 찾습니다. `installProxy`는 설치 API로만 변경됩니다. 경로가 바뀌면 활성화된 인스턴스를 다시 시작하세요.\n\n필요한 권한: `easytier:write`.",
+        "description": "요청 본문 `{\"corePath\": \"\"}`. 비워 두면 설정 디렉터리 bin, PATH 순으로 easytier-core를 찾습니다. `installProxy`는 설치 API로만 변경됩니다. 경로가 바뀌면 활성화된 인스턴스를 다시 시작하세요.\n\n**로그인 세션에서만 사용할 수 있으며, API 토큰으로는 이 엔드포인트에 접근할 수 없습니다.**",
         "requestBody": {
           "content": {
             "application/json": {
@@ -19412,17 +19520,12 @@
             "description": "토큰에 필요한 권한이 없음"
           }
         },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
         "summary": "EasyTier 프로그램 설정 저장",
         "tags": [
           "EasyTier 네트워크"
         ],
-        "x-required-scope": "easytier:write",
-        "x-token-allowed": true
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
       }
     },
     "/api/easytier/status": {
@@ -31014,7 +31117,7 @@
         "x-token-allowed": true
       },
       "put": {
-        "description": "요청 본문 `{\"netbirdPath\": \"\"}`. 비워 두면 설정 디렉터리의 bin, 그다음 PATH에서 찾습니다. `installProxy`는 설치 API로만 변경합니다. 경로가 바뀌면 활성화된 인스턴스를 다시 시작합니다.\n\n필요한 권한: `netbird:write`.",
+        "description": "요청 본문 `{\"netbirdPath\": \"\"}`. 비워 두면 설정 디렉터리의 bin, 그다음 PATH에서 찾습니다. `installProxy`는 설치 API로만 변경합니다. 경로가 바뀌면 활성화된 인스턴스를 다시 시작합니다.\n\n**로그인 세션에서만 사용할 수 있으며, API 토큰으로는 이 엔드포인트에 접근할 수 없습니다.**",
         "requestBody": {
           "content": {
             "application/json": {
@@ -31059,17 +31162,12 @@
             "description": "토큰에 필요한 권한이 없음"
           }
         },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
         "summary": "NetBird 프로그램 설정 저장",
         "tags": [
           "NetBird 네트워크"
         ],
-        "x-required-scope": "netbird:write",
-        "x-token-allowed": true
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
       }
     },
     "/api/netbird/status": {
@@ -45968,7 +46066,7 @@
         "x-token-allowed": true
       },
       "put": {
-        "description": "요청 본문 `{\"tailscaledPath\": \"\", \"tailscalePath\": \"\"}`. 비우면 설정 디렉터리의 bin, 그다음 PATH 순서로 찾습니다. `installProxy`는 설치 API로만 변경합니다. 경로가 바뀌면 활성화된 인스턴스를 다시 시작합니다.\n\n필요한 권한: `tailscale:write`.",
+        "description": "요청 본문 `{\"tailscaledPath\": \"\", \"tailscalePath\": \"\"}`. 비우면 설정 디렉터리의 bin, 그다음 PATH 순서로 찾습니다. `installProxy`는 설치 API로만 변경합니다. 경로가 바뀌면 활성화된 인스턴스를 다시 시작합니다.\n\n**로그인 세션에서만 사용할 수 있으며, API 토큰으로는 이 엔드포인트에 접근할 수 없습니다.**",
         "requestBody": {
           "content": {
             "application/json": {
@@ -46013,17 +46111,12 @@
             "description": "토큰에 필요한 권한이 없음"
           }
         },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
         "summary": "Tailscale 프로그램 설정 저장",
         "tags": [
           "Tailscale 네트워킹"
         ],
-        "x-required-scope": "tailscale:write",
-        "x-token-allowed": true
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
       }
     },
     "/api/tailscale/status": {

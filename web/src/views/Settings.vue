@@ -352,6 +352,17 @@
           </div>
           <div class="g-card-body">
             <el-form :model="form" label-width="140px" :label-position="labelPosition">
+              <!-- 日志级别：空值为默认（环境变量 GATELY_LOG_LEVEL，未设置为 info），保存后立即生效 -->
+              <el-form-item :label="t('settings.runtime.logLevel')">
+                <el-select v-model="logLevel" class="w-280" :empty-values="[null, undefined]" data-testid="log-level">
+                  <el-option value="" :label="t('settings.runtime.logLevelDefault')" />
+                  <el-option value="debug" :label="t('settings.runtime.logLevelDebug')" />
+                  <el-option value="info" :label="t('settings.runtime.logLevelInfo')" />
+                  <el-option value="warn" :label="t('settings.runtime.logLevelWarn')" />
+                  <el-option value="error" :label="t('settings.runtime.logLevelError')" />
+                </el-select>
+                <div class="form-help">{{ t('settings.runtime.logLevelHelp') }}</div>
+              </el-form-item>
               <el-form-item :label="t('settings.runtime.logLines')">
                 <el-input-number v-model="form.logLines" :min="100" :max="20000" :step="500" />
                 <span class="help">{{ t('settings.runtime.logLinesHelp') }}</span>
@@ -730,6 +741,17 @@ const dnsServers = computed({
   set: (v: string[]) => {
     if (form.value) {
       form.value.dnsServers = v.map((s) => s.trim()).filter(Boolean)
+    }
+  },
+})
+
+// 日志级别：debug、info、warn、error，空串为默认。字段由后端的设置接口返回，表单类型里没有单独声明，这里按字符串读写
+type LogLevelForm = { logLevel?: string }
+const logLevel = computed({
+  get: () => (form.value as LogLevelForm | null)?.logLevel ?? '',
+  set: (v: string) => {
+    if (form.value) {
+      ;(form.value as LogLevelForm).logLevel = v
     }
   },
 })

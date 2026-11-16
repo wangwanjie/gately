@@ -417,7 +417,7 @@
               </el-form-item>
             </template>
             <template v-if="site.type === 'static'">
-              <el-form-item :label="t('web.root')" prop="root" required><el-input v-model="site.root" placeholder="/data/www" /></el-form-item>
+              <el-form-item :label="t('web.root')" prop="root" required><el-input v-model="site.root" placeholder="/data/www" /><ConfigDirHint :paths="[site.root]" /></el-form-item>
               <el-form-item :label="t('web.listDir')"><el-switch v-model="site.listDir" /></el-form-item>
               <el-form-item :label="t('web.cleanUrls')">
                 <el-switch v-model="site.cleanUrls" />
@@ -747,6 +747,7 @@ import type { Pager } from '../composables/usePager'
 import { PAGE_SIZES, pageSlice } from '../paging'
 import { moduleEnabled as navModuleEnabled } from '../nav'
 import GroupHeader from '../components/GroupHeader.vue'
+import ConfigDirHint from '../components/ConfigDirHint.vue'
 import SortToolbar from '../components/SortToolbar.vue'
 import WebBatch from '../components/WebBatch.vue'
 import { crossListenerDrop, type MoveListener, type SiteRef } from '../siteMove'

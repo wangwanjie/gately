@@ -535,6 +535,9 @@ func (s *Site) validate(isDefault bool) error {
 		if !filepath.IsAbs(s.Root) {
 			return errors.New("静态文件目录需为绝对路径")
 		}
+		if err := checkStaticRoot(s.Root); err != nil {
+			return err
+		}
 		s.NotFoundPage = strings.TrimSpace(s.NotFoundPage)
 		if strings.Contains(s.NotFoundPage, "..") {
 			return errors.New("404 页面需为站点目录内的相对路径")

@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 	"syscall"
@@ -141,6 +142,7 @@ func (b *Buffer) PersistWith(path string, opt PersistOptions) error {
 		// 换了文件路径：先把旧文件写完
 		b.sink.close()
 		b.sink = nil
+		b.persisting.Store(false)
 	}
 	if err := ensureDir(filepath.Dir(path)); err != nil {
 		return err
@@ -154,7 +156,7 @@ func (b *Buffer) PersistWith(path string, opt PersistOptions) error {
 	// 缓冲已有日志（运行中换了日志目录）时只需要文件里最大的序号，读一条即可
 	want := 1
 	if b.count == 0 {
-		want = len(b.entries)
+		want = b.size
 	}
 	var restored []Entry
 	if opt.Archive {
@@ -172,10 +174,12 @@ func (b *Buffer) PersistWith(path string, opt PersistOptions) error {
 		maxSeq = max(maxSeq, e.Seq)
 	}
 	if b.count == 0 {
-		for _, e := range restored {
-			b.entries[(b.start+b.count)%len(b.entries)] = e
-			b.count++
+		// 恢复的日志不超过 want（即容量上限）条，按时间顺序直接作为缓冲内容
+		if len(restored) > b.size {
+			restored = restored[len(restored)-b.size:]
 		}
+		b.entries = append(make([]Entry, 0, len(restored)), restored...)
+		b.start, b.count = 0, len(restored)
 	}
 	// 序号只增不减：运行中开启落盘时，文件里可能有更大的旧序号
 	if maxSeq >= b.nextSeq {
@@ -197,6 +201,7 @@ func (b *Buffer) PersistWith(path string, opt PersistOptions) error {
 	}
 	s.sourcesDirty = len(s.sources) > 0
 	b.sink = s
+	b.persisting.Store(true)
 	if opt.Archive {
 		// 压缩上次退出时没压缩完的归档，并按保留策略清理
 		s.goMaintain()
@@ -221,6 +226,7 @@ func (b *Buffer) ClosePersist() {
 	b.mu.Lock()
 	s := b.sink
 	b.sink = nil
+	b.persisting.Store(false)
 	b.mu.Unlock()
 	if s != nil {
 		s.close()
@@ -238,6 +244,7 @@ func (s *fileSink) sourcesPath() string {
 }
 
 // add 序列化一条日志追加到待写盘数据。调用方持有 Buffer.mu，保证文件中的顺序与序号一致。
+// 正常情况下日志在加锁前已经序列化好，走 addEncoded；这里只用于少数来不及预先序列化的情况。
 func (s *fileSink) add(e Entry) {
 	line, err := json.Marshal(e)
 	if err != nil {
@@ -251,12 +258,46 @@ func (s *fileSink) add(e Entry) {
 		s.pending = append(s.pending, line...)
 		s.pending = append(s.pending, '\n')
 	}
+	s.afterAddLocked()
+	s.mu.Unlock()
+}
+
+// seqZeroPrefix 是序号为 0 的日志序列化后的开头，addEncoded 把其中的 0 换成真正的序号
+const seqZeroPrefix = `{"seq":0,`
+
+// addEncoded 把预先序列化好的一条日志追加到待写盘数据：line 为序号写成 0、带行尾换行的一行 JSON，
+// 这里只把真正的序号 seq 填进去，写入的内容与直接序列化完全相同。调用方持有 Buffer.mu。
+// line 不是预期的形状时返回 false，由调用方改用 add。
+func (s *fileSink) addEncoded(seq uint64, t time.Time, line []byte) bool {
+	if !bytes.HasPrefix(line, []byte(seqZeroPrefix)) || line[len(line)-1] != '\n' {
+		return false
+	}
+	// rest 从序号后的逗号开始，包含行尾换行
+	rest := line[len(seqZeroPrefix)-1:]
+	var num [20]byte
+	digits := strconv.AppendUint(num[:0], seq, 10)
+	s.mu.Lock()
+	// 与 add 相同的上限判断：序列化后的一行（不含换行）放得下才写入
+	if len(s.pending)+len(`{"seq":`)+len(digits)+len(rest)-1 < maxPending {
+		if len(s.pending) == 0 {
+			s.pendingFirst = t
+		}
+		s.pending = append(s.pending, `{"seq":`...)
+		s.pending = append(s.pending, digits...)
+		s.pending = append(s.pending, rest...)
+	}
+	s.afterAddLocked()
+	s.mu.Unlock()
+	return true
+}
+
+// afterAddLocked 在追加待写盘数据后安排写盘：平时延迟批量写，攒得太多时立即写。调用方持有 s.mu。
+func (s *fileSink) afterAddLocked() {
 	s.scheduleLocked()
 	if len(s.pending) >= flushEarlyBytes && !s.urgent {
 		s.urgent = true
 		go s.flush()
 	}
-	s.mu.Unlock()
 }
 
 // addSource 记下新出现的来源，随下次写盘保存。调用方持有 Buffer.mu。

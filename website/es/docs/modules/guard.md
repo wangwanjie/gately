@@ -5,7 +5,7 @@ Prevención de intrusiones al estilo de fail2ban: Gately detecta ataques de fuer
 ## Funciones
 
 - **Reglas de registros**: leen archivos de registro, el diario de systemd, la salida de un comando (como `logread -f` en OpenWrt) o los registros de un contenedor Docker, buscan fallos con expresiones regulares y bloquean la IP que alcanza el número de fallos en la ventana de tiempo. Incluye plantillas para SSH, Dropbear, Nginx, Vaultwarden, Home Assistant, Proxmox VE y otros, y en el editor puedes pegar líneas de ejemplo para probar los filtros;
-- **Eventos de Gately**: los inicios de sesión fallidos en el panel y los bloqueos del WAF y las llamadas rechazadas de [Port Knocking](/es/docs/modules/knock) también pueden alimentar una regla, sin expresiones regulares;
+- **Eventos de Gately**: los inicios de sesión fallidos en el panel, los bloqueos del WAF, las llamadas rechazadas de [Port Knocking](/es/docs/modules/knock) y los inicios de sesión fallidos en WebDAV / FTP / SMB también pueden alimentar una regla, sin expresiones regulares;
 - **Sondeo de rutas web**: cuenta directamente las solicitudes que atiende el servicio web por escucha, ruta y código de estado, sin leer registros; se bloquean los orígenes que piden rutas señuelo como `/.env` o `/.git`, o que escanean una y otra vez dominios desconocidos;
 - **Fallos de handshake TLS**: cuenta los fallos de handshake en los listeners HTTPS del servicio web por tipo de fallo (corte a mitad, reinicio, tiempo agotado, no es TLS o error de protocolo, no negociable, dominio desconocido y más), listener y número de veces; detiene escaneos que cortan durante el handshake y nunca envían una petición HTTP;
 - **Puertos trampa**: trampas en puertos que este equipo no usa (por defecto 23, 135, 1433, 3389, 5900, 6379 y otros). Cualquier origen que se conecte queda bloqueado;
@@ -62,7 +62,7 @@ Sin ello, los bloqueos siguen aplicándose a los servicios de Gately. Para leer 
 | Diario de systemd | Unidades de servicio como `ssh.service` | Se lee con `journalctl -f` |
 | Salida de un comando | Un comando como `logread -f` | Se reinicia si termina |
 | Contenedor Docker | Nombre del contenedor | Se lee a través de la conexión a Docker del módulo Docker |
-| Evento de Gately | Inicio de sesión fallido / bloqueo del WAF / llamada de Port Knocking rechazada | Los eventos incluyen la IP de origen; no hace falta filtro |
+| Evento de Gately | Inicio de sesión fallido / bloqueo del WAF / llamada de Port Knocking rechazada / inicio de sesión fallido en servicios de archivos | Los eventos incluyen la IP de origen; no hace falta filtro |
 | Sondeo de rutas web | Escuchas (opcional) y reglas de ruta | Cuenta las solicitudes del servicio web, ver más abajo |
 | Fallos de handshake TLS | Listeners (opcional) y tipos de fallo | Cuenta los fallos de handshake en los listeners HTTPS del servicio web, ver abajo |
 
@@ -73,6 +73,8 @@ Failed password for (?:invalid user )?\S* ?from <HOST>
 ```
 
 Las líneas que coinciden con «Excluir» no se cuentan. La ventana de tiempo, el número de fallos y la duración del bloqueo se configuran por regla; la duración puede ser la predeterminada, personalizada o permanente.
+
+El origen de eventos de Gately incluye la plantilla «Inicios de sesión fallidos en servicios de archivos» (preajuste `gately-files`). Los inicios de sesión fallidos en WebDAV, FTP y SMB, y los intentos rechazados por exceso de fallos, se cuentan por IP de origen; por defecto 10 en 10 minutos bloquean el origen, con la duración de bloqueo por defecto. Un origen se cuenta como máximo una vez cada 5 segundos, así que un cliente que envía varias peticiones o reintenta con una contraseña incorrecta cuenta una sola vez. La dirección de origen sale de la conexión TCP (WebDAV solo usa las cabeceras reenviadas si hay un proxy de confianza configurado). Las peticiones sin credenciales no se cuentan (WebDAV a la espera del desafío 401, la prueba anónima del Explorador de Windows en SMB).
 
 ## Sondeo de rutas web
 

@@ -79,7 +79,7 @@ Ist eine Passphrase gesetzt, werden Sicherungen wie folgt verschlüsselt:
 - Verschlüsselung: AES-256-GCM mit einer zufälligen 12-Byte-Nonce.
 - Dateiformat: die Magic-Bytes `GATELYBK1`, Salt, Nonce und Chiffrat in dieser Reihenfolge aneinandergehängt. Die Magic-Bytes dienen zugleich als zusätzliche authentifizierte Daten (AAD) für GCM.
 
-Die Passphrase wird nur in `backup.json` im Konfigurationsverzeichnis gespeichert. Geht die Passphrase verloren, lässt sich die Sicherung nicht entschlüsseln.
+Die Passphrase wird nur in `backup.json` im Konfigurationsverzeichnis gespeichert. Geht die Passphrase verloren, lässt sich die Sicherung nicht entschlüsseln. Die Passphrase lässt sich nur nach der Anmeldung in der Verwaltungsoberfläche anzeigen und ändern; API-Tokens können sie weder lesen noch ändern oder löschen, die übrigen Sicherungseinstellungen lassen sich weiterhin per Token ändern.
 
 ::: warning Hinweis
 Liegen `backup.json` und die Sicherungsdateien auf derselben Maschine, bringt der Passphrase-Schutz nur begrenzten Nutzen. Schreiben Sie verschlüsselte Sicherungen in eine Einbindung auf einem anderen Gerät und notieren Sie die Passphrase separat.

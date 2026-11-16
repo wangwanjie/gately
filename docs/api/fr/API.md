@@ -185,7 +185,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | POST | `/api/tailscale/instances/{key}/restart` | `tailscale:write` | Redémarrer une instance Tailscale |
 | POST | `/api/tailscale/instances/{key}/logout` | `tailscale:write` | Déconnecter une instance Tailscale |
 | GET | `/api/tailscale/settings` | `tailscale:read` | Lire les paramètres du programme Tailscale |
-| PUT | `/api/tailscale/settings` | `tailscale:write` | Enregistrer les paramètres du programme Tailscale |
+| PUT | `/api/tailscale/settings` | Session connectée uniquement | Enregistrer les paramètres du programme Tailscale |
 | GET | `/api/tailscale/install` | `tailscale:read` | Voir les informations d'installation et la progression d'un programme géré |
 | POST | `/api/tailscale/install` | `tailscale:write` | Installer ou mettre à jour en ligne un programme géré |
 | POST | `/api/tailscale/install/check` | `tailscale:write` | Vérifier les mises à jour d'un programme géré |
@@ -218,7 +218,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | POST | `/api/netbird/instances/{key}/restart` | `netbird:write` | Redémarrer une instance NetBird |
 | POST | `/api/netbird/instances/{key}/logout` | `netbird:write` | Se déconnecter d'une instance NetBird |
 | GET | `/api/netbird/settings` | `netbird:read` | Lire les paramètres du programme NetBird |
-| PUT | `/api/netbird/settings` | `netbird:write` | Enregistrer les paramètres du programme NetBird |
+| PUT | `/api/netbird/settings` | Session connectée uniquement | Enregistrer les paramètres du programme NetBird |
 | GET | `/api/netbird/install` | `netbird:read` | Voir les informations d'installation et la progression d'un programme géré |
 | POST | `/api/netbird/install` | `netbird:write` | Installer ou mettre à jour en ligne un programme géré |
 | POST | `/api/netbird/install/check` | `netbird:write` | Vérifier les mises à jour d'un programme géré |
@@ -250,7 +250,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | GET | `/api/easytier/instances/{key}/status` | `easytier:read` | Afficher l'état d'exécution d'une instance EasyTier |
 | POST | `/api/easytier/instances/{key}/restart` | `easytier:write` | Redémarrer une instance EasyTier |
 | GET | `/api/easytier/settings` | `easytier:read` | Lire les paramètres du programme EasyTier |
-| PUT | `/api/easytier/settings` | `easytier:write` | Enregistrer les paramètres du programme EasyTier |
+| PUT | `/api/easytier/settings` | Session connectée uniquement | Enregistrer les paramètres du programme EasyTier |
 | GET | `/api/easytier/install` | `easytier:read` | Voir les informations d'installation et la progression d'un programme géré |
 | POST | `/api/easytier/install` | `easytier:write` | Installer ou mettre à jour en ligne un programme géré |
 | POST | `/api/easytier/install/check` | `easytier:write` | Vérifier les mises à jour d'un programme géré |
@@ -918,7 +918,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | POST | `/api/backup/targets-delete` | `backup:write` | Supprimer en lot : Destination de sauvegarde |
 | GET | `/api/backup/settings` | `backup:read` | Paramètres de sauvegarde |
 | PUT | `/api/backup/settings` | `backup:write` | Modifier les paramètres de sauvegarde (un espace réservé pour la phrase secrète la laisse inchangée) |
-| GET | `/api/backup/secrets` | `backup:write` | Afficher les secrets en clair |
+| GET | `/api/backup/secrets` | Session connectée uniquement | Afficher les secrets en clair |
 | POST | `/api/backup/run` | `backup:write` | Lancer une sauvegarde immédiatement |
 | GET | `/api/backup/status` | `backup:read` | Résultat de la dernière sauvegarde et heure de la prochaine exécution |
 | GET | `/api/backup/mounts` | `backup:read` | Points de montage de stockage utilisables comme destinations de sauvegarde |
@@ -1357,6 +1357,9 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `key` | string |
 | `name` | string |
 | `protocol` | string |
+| `quicKeepalivePeriod` | integer |
+| `quicMaxIdleTimeout` | integer |
+| `quicMaxIncomingStreams` | integer |
 | `remark` | string |
 | `serverAddr` | string |
 | `serverPort` | integer |
@@ -1377,6 +1380,9 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | Champ | Type |
 | --- | --- |
 | `protocol` | string |
+| `quicKeepalivePeriod` | integer |
+| `quicMaxIdleTimeout` | integer |
+| `quicMaxIncomingStreams` | integer |
 | `serverAddr` | string |
 | `serverPort` | integer |
 | `token` | string |
@@ -1429,6 +1435,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | Champ | Type |
 | --- | --- |
 | `allowPorts` | string |
+| `autoFirewall` | boolean |
 | `bindAddr` | string |
 | `bindPort` | integer |
 | `dashboardAddr` | string |
@@ -1442,9 +1449,14 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `ipList` | Tableau de string |
 | `ipMode` | string |
 | `ipSets` | Tableau de string |
+| `kcpBindPort` | integer |
 | `key` | string |
 | `name` | string |
 | `proxyBindAddr` | string |
+| `quicBindPort` | integer |
+| `quicKeepalivePeriod` | integer |
+| `quicMaxIdleTimeout` | integer |
+| `quicMaxIncomingStreams` | integer |
 | `remark` | string |
 | `subdomainHost` | string |
 | `token` | string |
@@ -1456,6 +1468,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | Champ | Type |
 | --- | --- |
 | `allowPorts` | string |
+| `autoFirewall` | boolean |
 | `bindAddr` | string |
 | `bindPort` | integer |
 | `dashboardAddr` | string |
@@ -1467,7 +1480,12 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `ipList` | Tableau de string |
 | `ipMode` | string |
 | `ipSets` | Tableau de string |
+| `kcpBindPort` | integer |
 | `proxyBindAddr` | string |
+| `quicBindPort` | integer |
+| `quicKeepalivePeriod` | integer |
+| `quicMaxIdleTimeout` | integer |
+| `quicMaxIncomingStreams` | integer |
 | `subdomainHost` | string |
 | `token` | string |
 | `vhostHttpPort` | integer |
@@ -2707,7 +2725,17 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 
 | Champ | Type |
 | --- | --- |
+| `background` | string |
+| `bgBlur` | integer |
+| `bgDim` | integer |
+| `defaultEngine` | integer |
+| `description` | string |
 | `enable` | boolean |
+| `engines` | Tableau de `webservice.PanelEngine` |
+| `favicon` | string |
+| `footer` | string |
+| `footerUrl` | string |
+| `hideFooter` | boolean |
 | `icon` | string |
 | `key` | string |
 | `lanCidrs` | Tableau de string |
@@ -2716,10 +2744,18 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `remark` | string |
 | `skin` | string |
 | `subtitle` | string |
+| `tabTitle` | string |
 | `theme` | string |
 | `title` | string |
 
 ### webservice.PanelAlt
+
+| Champ | Type |
+| --- | --- |
+| `name` | string |
+| `url` | string |
+
+### webservice.PanelEngine
 
 | Champ | Type |
 | --- | --- |
@@ -2742,14 +2778,18 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | Champ | Type |
 | --- | --- |
 | `alts` | Tableau de `webservice.PanelAlt` |
+| `authOnly` | boolean |
 | `color` | string |
 | `description` | string |
 | `group` | string |
 | `hide` | boolean |
+| `hideDesc` | boolean |
+| `hideName` | boolean |
 | `icon` | string |
 | `lanUrl` | string |
 | `name` | string |
 | `sameTab` | boolean |
+| `size` | string |
 | `url` | string |
 
 ### webservice.PanelPreview
