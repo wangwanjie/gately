@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useData, withBase } from 'vitepress'
-import AiNotice from './AiNotice.vue'
 import HeroFlow from './HeroFlow.vue'
 import { copyText } from '../clipboard'
 import {
@@ -159,8 +158,6 @@ function onSpot(e: PointerEvent) {
 
 <template>
   <div ref="root" class="gl" :class="{ js: ready }">
-    <div class="wrap notice-wrap"><AiNotice /></div>
-
     <!-- Hero -->
     <section class="hero">
       <div class="hero-bg" aria-hidden="true">
@@ -373,7 +370,6 @@ function onSpot(e: PointerEvent) {
   overflow-x: hidden;
 }
 .dark .gl { --acc: #3ed1ae; --acc-2: #a5b4fc; --line: rgba(62, 209, 174, 0.07); }
-.notice-wrap { position: relative; z-index: 2; padding-top: 16px; padding-bottom: 0; }
 .wrap { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
 .narrow { max-width: 820px; }
 .block { padding-top: 96px; padding-bottom: 8px; }
