@@ -54,3 +54,30 @@ func TestRequiredWOLShutdown(t *testing.T) {
 		t.Error("同时具备两项写权限的令牌应能触发远程关机")
 	}
 }
+
+// TestRequiredSessionOnly 覆盖模块前缀下只允许登录会话访问的个别接口：托管程序的路径与备份加密口令的明文。
+// 同一模块的其余接口仍按模块权限判定。
+func TestRequiredSessionOnly(t *testing.T) {
+	cases := []struct{ method, path, want string }{
+		{"PUT", "/api/easytier/settings", Denied},
+		{"PUT", "/api/tailscale/settings", Denied},
+		{"PUT", "/api/netbird/settings", Denied},
+		{"GET", "/api/backup/secrets", Denied},
+		{"GET", "/api/easytier/settings", "easytier:read"},
+		{"GET", "/api/tailscale/settings", "tailscale:read"},
+		{"GET", "/api/netbird/settings", "netbird:read"},
+		{"PUT", "/api/easytier/instances/abc", "easytier:write"},
+		{"GET", "/api/easytier/instances/abc/secrets", "easytier:write"},
+		{"PUT", "/api/backup/settings", "backup:write"},
+		{"POST", "/api/backup/run", "backup:write"},
+		{"GET", "/api/backup/settings", "backup:read"},
+	}
+	for _, c := range cases {
+		if got := Required(c.method, c.path); got != c.want {
+			t.Errorf("Required(%s %s) = %q，期望 %q", c.method, c.path, got, c.want)
+		}
+	}
+	if Match([]string{"*"}, Required("GET", "/api/backup/secrets")) {
+		t.Fatal("拥有全部权限的令牌也不能查看备份加密口令")
+	}
+}

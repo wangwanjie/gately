@@ -52,6 +52,16 @@ var forbiddenPrefixes = []string{
 	"/api/logout",
 }
 
+// sessionOnly 是模块前缀下个别禁止令牌访问的接口（"方法 路径"），其余接口仍按模块权限判定：
+//   - 托管程序的路径：进程按这个路径启动，能改它就能让 Gately 运行服务器上的任意程序；
+//   - 备份加密口令的明文：有了口令就能解开含全部密钥的配置备份。
+var sessionOnly = map[string]bool{
+	"PUT /api/easytier/settings":  true,
+	"PUT /api/tailscale/settings": true,
+	"PUT /api/netbird/settings":   true,
+	"GET /api/backup/secrets":     true,
+}
+
 // sensitiveGetSuffix 列出会返回敏感内容或建立交互通道的 GET 路径片段，这些接口按写权限处理。
 var sensitiveGetSegments = map[string]bool{
 	"ws":              true, // WebSocket 终端
@@ -81,6 +91,9 @@ func Required(method, path string) string {
 		if path == p || strings.HasPrefix(path, p+"/") {
 			return Denied
 		}
+	}
+	if sessionOnly[method+" "+path] {
+		return Denied
 	}
 	level := LevelWrite
 	if method == http.MethodGet || method == http.MethodHead {
