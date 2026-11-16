@@ -185,7 +185,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | POST | `/api/tailscale/instances/{key}/restart` | `tailscale:write` | Tailscale-Instanz neu starten |
 | POST | `/api/tailscale/instances/{key}/logout` | `tailscale:write` | Tailscale-Instanz abmelden |
 | GET | `/api/tailscale/settings` | `tailscale:read` | Tailscale-Programmeinstellungen lesen |
-| PUT | `/api/tailscale/settings` | `tailscale:write` | Tailscale-Programmeinstellungen speichern |
+| PUT | `/api/tailscale/settings` | Nur Anmeldesitzung | Tailscale-Programmeinstellungen speichern |
 | GET | `/api/tailscale/install` | `tailscale:read` | Installationsinfo und Fortschritt eines verwalteten Programms anzeigen |
 | POST | `/api/tailscale/install` | `tailscale:write` | Verwaltetes Programm online installieren oder aktualisieren |
 | POST | `/api/tailscale/install/check` | `tailscale:write` | Verwaltetes Programm auf Updates prüfen |
@@ -218,7 +218,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | POST | `/api/netbird/instances/{key}/restart` | `netbird:write` | NetBird-Instanz neu starten |
 | POST | `/api/netbird/instances/{key}/logout` | `netbird:write` | Von einer NetBird-Instanz abmelden |
 | GET | `/api/netbird/settings` | `netbird:read` | NetBird-Programmeinstellungen lesen |
-| PUT | `/api/netbird/settings` | `netbird:write` | NetBird-Programmeinstellungen speichern |
+| PUT | `/api/netbird/settings` | Nur Anmeldesitzung | NetBird-Programmeinstellungen speichern |
 | GET | `/api/netbird/install` | `netbird:read` | Installationsinfo und Fortschritt eines verwalteten Programms anzeigen |
 | POST | `/api/netbird/install` | `netbird:write` | Verwaltetes Programm online installieren oder aktualisieren |
 | POST | `/api/netbird/install/check` | `netbird:write` | Verwaltetes Programm auf Updates prüfen |
@@ -250,7 +250,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | GET | `/api/easytier/instances/{key}/status` | `easytier:read` | Laufstatus einer EasyTier-Instanz anzeigen |
 | POST | `/api/easytier/instances/{key}/restart` | `easytier:write` | EasyTier-Instanz neu starten |
 | GET | `/api/easytier/settings` | `easytier:read` | EasyTier-Programmeinstellungen lesen |
-| PUT | `/api/easytier/settings` | `easytier:write` | EasyTier-Programmeinstellungen speichern |
+| PUT | `/api/easytier/settings` | Nur Anmeldesitzung | EasyTier-Programmeinstellungen speichern |
 | GET | `/api/easytier/install` | `easytier:read` | Installationsinfo und Fortschritt eines verwalteten Programms anzeigen |
 | POST | `/api/easytier/install` | `easytier:write` | Verwaltetes Programm online installieren oder aktualisieren |
 | POST | `/api/easytier/install/check` | `easytier:write` | Verwaltetes Programm auf Updates prüfen |
@@ -918,7 +918,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | POST | `/api/backup/targets-delete` | `backup:write` | Im Stapel löschen: Backup-Ziele |
 | GET | `/api/backup/settings` | `backup:read` | Backup-Einstellungen |
 | PUT | `/api/backup/settings` | `backup:write` | Backup-Einstellungen ändern (Passphrase als Platzhalter übergeben, um sie beizubehalten) |
-| GET | `/api/backup/secrets` | `backup:write` | Geheimnisse im Klartext anzeigen |
+| GET | `/api/backup/secrets` | Nur Anmeldesitzung | Geheimnisse im Klartext anzeigen |
 | POST | `/api/backup/run` | `backup:write` | Sofort ein Backup ausführen |
 | GET | `/api/backup/status` | `backup:read` | Ergebnis des letzten Backups und nächster Ausführungszeitpunkt |
 | GET | `/api/backup/mounts` | `backup:read` | Speicher-Mountpunkte, die als Backup-Ziel dienen können |
@@ -1357,6 +1357,9 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `key` | string |
 | `name` | string |
 | `protocol` | string |
+| `quicKeepalivePeriod` | integer |
+| `quicMaxIdleTimeout` | integer |
+| `quicMaxIncomingStreams` | integer |
 | `remark` | string |
 | `serverAddr` | string |
 | `serverPort` | integer |
@@ -1377,6 +1380,9 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | Feld | Typ |
 | --- | --- |
 | `protocol` | string |
+| `quicKeepalivePeriod` | integer |
+| `quicMaxIdleTimeout` | integer |
+| `quicMaxIncomingStreams` | integer |
 | `serverAddr` | string |
 | `serverPort` | integer |
 | `token` | string |
@@ -1429,6 +1435,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | Feld | Typ |
 | --- | --- |
 | `allowPorts` | string |
+| `autoFirewall` | boolean |
 | `bindAddr` | string |
 | `bindPort` | integer |
 | `dashboardAddr` | string |
@@ -1442,9 +1449,14 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `ipList` | Array von string |
 | `ipMode` | string |
 | `ipSets` | Array von string |
+| `kcpBindPort` | integer |
 | `key` | string |
 | `name` | string |
 | `proxyBindAddr` | string |
+| `quicBindPort` | integer |
+| `quicKeepalivePeriod` | integer |
+| `quicMaxIdleTimeout` | integer |
+| `quicMaxIncomingStreams` | integer |
 | `remark` | string |
 | `subdomainHost` | string |
 | `token` | string |
@@ -1456,6 +1468,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | Feld | Typ |
 | --- | --- |
 | `allowPorts` | string |
+| `autoFirewall` | boolean |
 | `bindAddr` | string |
 | `bindPort` | integer |
 | `dashboardAddr` | string |
@@ -1467,7 +1480,12 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `ipList` | Array von string |
 | `ipMode` | string |
 | `ipSets` | Array von string |
+| `kcpBindPort` | integer |
 | `proxyBindAddr` | string |
+| `quicBindPort` | integer |
+| `quicKeepalivePeriod` | integer |
+| `quicMaxIdleTimeout` | integer |
+| `quicMaxIncomingStreams` | integer |
 | `subdomainHost` | string |
 | `token` | string |
 | `vhostHttpPort` | integer |
@@ -2707,7 +2725,17 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 
 | Feld | Typ |
 | --- | --- |
+| `background` | string |
+| `bgBlur` | integer |
+| `bgDim` | integer |
+| `defaultEngine` | integer |
+| `description` | string |
 | `enable` | boolean |
+| `engines` | Array von `webservice.PanelEngine` |
+| `favicon` | string |
+| `footer` | string |
+| `footerUrl` | string |
+| `hideFooter` | boolean |
 | `icon` | string |
 | `key` | string |
 | `lanCidrs` | Array von string |
@@ -2716,10 +2744,18 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `remark` | string |
 | `skin` | string |
 | `subtitle` | string |
+| `tabTitle` | string |
 | `theme` | string |
 | `title` | string |
 
 ### webservice.PanelAlt
+
+| Feld | Typ |
+| --- | --- |
+| `name` | string |
+| `url` | string |
+
+### webservice.PanelEngine
 
 | Feld | Typ |
 | --- | --- |
@@ -2742,14 +2778,18 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | Feld | Typ |
 | --- | --- |
 | `alts` | Array von `webservice.PanelAlt` |
+| `authOnly` | boolean |
 | `color` | string |
 | `description` | string |
 | `group` | string |
 | `hide` | boolean |
+| `hideDesc` | boolean |
+| `hideName` | boolean |
 | `icon` | string |
 | `lanUrl` | string |
 | `name` | string |
 | `sameTab` | boolean |
+| `size` | string |
 | `url` | string |
 
 ### webservice.PanelPreview

@@ -185,7 +185,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | POST | `/api/tailscale/instances/{key}/restart` | `tailscale:write` | Restart a Tailscale instance |
 | POST | `/api/tailscale/instances/{key}/logout` | `tailscale:write` | Sign a Tailscale instance out |
 | GET | `/api/tailscale/settings` | `tailscale:read` | Read Tailscale program settings |
-| PUT | `/api/tailscale/settings` | `tailscale:write` | Save Tailscale program settings |
+| PUT | `/api/tailscale/settings` | Login sessions only | Save Tailscale program settings |
 | GET | `/api/tailscale/install` | `tailscale:read` | View the install info and progress of a managed program |
 | POST | `/api/tailscale/install` | `tailscale:write` | Install or update a managed program online |
 | POST | `/api/tailscale/install/check` | `tailscale:write` | Check a managed program for updates |
@@ -218,7 +218,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | POST | `/api/netbird/instances/{key}/restart` | `netbird:write` | Restart a NetBird instance |
 | POST | `/api/netbird/instances/{key}/logout` | `netbird:write` | Log out of a NetBird instance |
 | GET | `/api/netbird/settings` | `netbird:read` | Get NetBird program settings |
-| PUT | `/api/netbird/settings` | `netbird:write` | Save NetBird program settings |
+| PUT | `/api/netbird/settings` | Login sessions only | Save NetBird program settings |
 | GET | `/api/netbird/install` | `netbird:read` | View the install info and progress of a managed program |
 | POST | `/api/netbird/install` | `netbird:write` | Install or update a managed program online |
 | POST | `/api/netbird/install/check` | `netbird:write` | Check a managed program for updates |
@@ -250,7 +250,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | GET | `/api/easytier/instances/{key}/status` | `easytier:read` | View the running status of an EasyTier instance |
 | POST | `/api/easytier/instances/{key}/restart` | `easytier:write` | Restart an EasyTier instance |
 | GET | `/api/easytier/settings` | `easytier:read` | Read EasyTier program settings |
-| PUT | `/api/easytier/settings` | `easytier:write` | Save EasyTier program settings |
+| PUT | `/api/easytier/settings` | Login sessions only | Save EasyTier program settings |
 | GET | `/api/easytier/install` | `easytier:read` | View the install info and progress of a managed program |
 | POST | `/api/easytier/install` | `easytier:write` | Install or update a managed program online |
 | POST | `/api/easytier/install/check` | `easytier:write` | Check a managed program for updates |
@@ -918,7 +918,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | POST | `/api/backup/targets-delete` | `backup:write` | Delete in bulk: Backup destinations |
 | GET | `/api/backup/settings` | `backup:read` | Backup settings |
 | PUT | `/api/backup/settings` | `backup:write` | Modify backup settings (send the placeholder for the passphrase to keep it unchanged) |
-| GET | `/api/backup/secrets` | `backup:write` | View secrets in plain text |
+| GET | `/api/backup/secrets` | Login sessions only | View secrets in plain text |
 | POST | `/api/backup/run` | `backup:write` | Run a backup now |
 | GET | `/api/backup/status` | `backup:read` | Latest backup result and next run time |
 | GET | `/api/backup/mounts` | `backup:read` | Storage mount points that can serve as backup destinations |
@@ -1357,6 +1357,9 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `key` | string |
 | `name` | string |
 | `protocol` | string |
+| `quicKeepalivePeriod` | integer |
+| `quicMaxIdleTimeout` | integer |
+| `quicMaxIncomingStreams` | integer |
 | `remark` | string |
 | `serverAddr` | string |
 | `serverPort` | integer |
@@ -1377,6 +1380,9 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | Field | Type |
 | --- | --- |
 | `protocol` | string |
+| `quicKeepalivePeriod` | integer |
+| `quicMaxIdleTimeout` | integer |
+| `quicMaxIncomingStreams` | integer |
 | `serverAddr` | string |
 | `serverPort` | integer |
 | `token` | string |
@@ -1429,6 +1435,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | Field | Type |
 | --- | --- |
 | `allowPorts` | string |
+| `autoFirewall` | boolean |
 | `bindAddr` | string |
 | `bindPort` | integer |
 | `dashboardAddr` | string |
@@ -1442,9 +1449,14 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `ipList` | Array of string |
 | `ipMode` | string |
 | `ipSets` | Array of string |
+| `kcpBindPort` | integer |
 | `key` | string |
 | `name` | string |
 | `proxyBindAddr` | string |
+| `quicBindPort` | integer |
+| `quicKeepalivePeriod` | integer |
+| `quicMaxIdleTimeout` | integer |
+| `quicMaxIncomingStreams` | integer |
 | `remark` | string |
 | `subdomainHost` | string |
 | `token` | string |
@@ -1456,6 +1468,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | Field | Type |
 | --- | --- |
 | `allowPorts` | string |
+| `autoFirewall` | boolean |
 | `bindAddr` | string |
 | `bindPort` | integer |
 | `dashboardAddr` | string |
@@ -1467,7 +1480,12 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `ipList` | Array of string |
 | `ipMode` | string |
 | `ipSets` | Array of string |
+| `kcpBindPort` | integer |
 | `proxyBindAddr` | string |
+| `quicBindPort` | integer |
+| `quicKeepalivePeriod` | integer |
+| `quicMaxIdleTimeout` | integer |
+| `quicMaxIncomingStreams` | integer |
 | `subdomainHost` | string |
 | `token` | string |
 | `vhostHttpPort` | integer |
@@ -2707,7 +2725,17 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 
 | Field | Type |
 | --- | --- |
+| `background` | string |
+| `bgBlur` | integer |
+| `bgDim` | integer |
+| `defaultEngine` | integer |
+| `description` | string |
 | `enable` | boolean |
+| `engines` | Array of `webservice.PanelEngine` |
+| `favicon` | string |
+| `footer` | string |
+| `footerUrl` | string |
+| `hideFooter` | boolean |
 | `icon` | string |
 | `key` | string |
 | `lanCidrs` | Array of string |
@@ -2716,10 +2744,18 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `remark` | string |
 | `skin` | string |
 | `subtitle` | string |
+| `tabTitle` | string |
 | `theme` | string |
 | `title` | string |
 
 ### webservice.PanelAlt
+
+| Field | Type |
+| --- | --- |
+| `name` | string |
+| `url` | string |
+
+### webservice.PanelEngine
 
 | Field | Type |
 | --- | --- |
@@ -2742,14 +2778,18 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | Field | Type |
 | --- | --- |
 | `alts` | Array of `webservice.PanelAlt` |
+| `authOnly` | boolean |
 | `color` | string |
 | `description` | string |
 | `group` | string |
 | `hide` | boolean |
+| `hideDesc` | boolean |
+| `hideName` | boolean |
 | `icon` | string |
 | `lanUrl` | string |
 | `name` | string |
 | `sameTab` | boolean |
+| `size` | string |
 | `url` | string |
 
 ### webservice.PanelPreview
