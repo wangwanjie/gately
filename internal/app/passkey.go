@@ -288,7 +288,7 @@ func (a *App) handlePasskeyLoginFinish(w http.ResponseWriter, r *http.Request) {
 	a.learnGatewayLoginOrigin(r)
 	http.SetCookie(w, &http.Cookie{
 		Name: auth.CookieName, Value: token, Path: "/", Expires: exp,
-		HttpOnly: true, SameSite: http.SameSiteStrictMode, Secure: r.TLS != nil,
+		HttpOnly: true, SameSite: http.SameSiteStrictMode, Secure: cookieSecure(r),
 	})
 	httpx.OK(w, map[string]any{"username": user, "expires": exp})
 }

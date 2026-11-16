@@ -476,7 +476,7 @@ func (a *App) issueGatewaySession(w http.ResponseWriter, r *http.Request, user s
 	http.SetCookie(w, &http.Cookie{
 		Name: auth.CookieName, Value: token, Path: "/", Expires: exp, HttpOnly: true, SameSite: http.SameSiteStrictMode,
 		// 网关以 HTTPS 对外提供时，Cookie 只经 HTTPS 发送
-		Secure: r.TLS != nil || strings.EqualFold(r.Header.Get("X-Forwarded-Proto"), "https"),
+		Secure: cookieSecure(r),
 	})
 	ip := httpx.ClientIP(r)
 	// 整页跳转带的是浏览器自身的语言，不代表界面语言，不在这里记录；进入管理界面后由前端上报

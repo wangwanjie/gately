@@ -630,7 +630,7 @@ func (a *App) handleLogin(w http.ResponseWriter, r *http.Request) {
 		Expires:  exp,
 		HttpOnly: true,
 		SameSite: http.SameSiteStrictMode,
-		Secure:   r.TLS != nil,
+		Secure:   cookieSecure(r),
 	})
 	httpx.OK(w, map[string]any{"username": req.Username, "expires": exp})
 }
@@ -1109,6 +1109,16 @@ func apiSecurityHeaders(next http.Handler) http.Handler {
 		}
 		next.ServeHTTP(w, r)
 	})
+}
+
+// cookieSecure 判断登录 Cookie 是否加 Secure 属性（只经 HTTPS 发送）：请求本身是 HTTPS，或者经 HTTPS 的反向代理而来。
+// X-Forwarded-Proto 只在请求来自可信代理或飞牛统一网关时采信，访客自己带上这个请求头没有作用。
+func cookieSecure(r *http.Request) bool {
+	if requestSecure(r) {
+		return true
+	}
+	_, viaGateway := gatewayPrefix(r)
+	return viaGateway && strings.EqualFold(r.Header.Get("X-Forwarded-Proto"), "https")
 }
 
 // prefixRouter 把模块的相对路由挂到 /api/<ID> 前缀下，并登记接口文档。
