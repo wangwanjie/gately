@@ -191,6 +191,23 @@ func (m *Module) applyLocked(key string) {
 		log.Errorf("%v", err)
 		return
 	}
+	// 升级前保存的共享目录没有经过与配置目录重叠的校验：这样的目录不交给 File Browser，写日志提示修改，
+	// 其余共享目录照常使用；全部被去掉时实例不启动
+	run := *inst
+	run.Sources = nil
+	for _, s := range inst.Sources {
+		if fsperm.CheckWholeDir(s.Path) != nil {
+			log.Warnf("共享目录 %s 与 Gately 的配置目录重叠，已停止提供，请改为不包含配置目录的目录", s.Path)
+			continue
+		}
+		run.Sources = append(run.Sources, s)
+	}
+	if len(run.Sources) == 0 {
+		rt.err = "没有可用的共享目录：共享目录与 Gately 的配置目录重叠"
+		log.Errorf("%s", rt.err)
+		return
+	}
+	inst = &run
 	// 共享目录不存在时上游会直接退出并被反复重启，这里提前报错，等待用户修正
 	for _, s := range inst.Sources {
 		if st, err := os.Stat(s.Path); err != nil || !st.IsDir() {
