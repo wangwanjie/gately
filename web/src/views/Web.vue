@@ -196,12 +196,12 @@
                 <el-button v-if="!item.item.isDefault" text size="small" :icon="CopyPlus" :title="t('web.copySite')" :aria-label="t('web.copySite')" @click="openSite(l, item.item, true)">{{ t('common.duplicate') }}</el-button>
                 <el-popconfirm v-if="item.item.isDefault" :title="t('web.resetDefaultConfirm')" width="260" @confirm="resetDefaultSite(l)">
                   <template #reference>
-                    <el-button text size="small" type="danger" :icon="Trash2" :aria-label="t('common.reset')" />
+                    <el-button text size="small" type="danger" class="site-del" :icon="Trash2" :aria-label="t('common.reset')" :title="t('common.reset')" />
                   </template>
                 </el-popconfirm>
                 <el-popconfirm v-else :title="t('web.deleteSiteConfirm')" @confirm="removeSite(l, item.item)">
                   <template #reference>
-                    <el-button text size="small" type="danger" :icon="Trash2" :aria-label="t('web.deleteSite')" />
+                    <el-button text size="small" type="danger" class="site-del" :icon="Trash2" :aria-label="t('web.deleteSite')" :title="t('web.deleteSite')" />
                   </template>
                 </el-popconfirm>
               </div>
@@ -2388,7 +2388,8 @@ onMounted(async () => {
 }
 .site {
   display: grid;
-  grid-template-columns: 40px minmax(0, 1.5fr) minmax(0, 1.8fr) minmax(0, 1.3fr) 190px auto;
+  /* 域名与后端列占主要宽度；统计列按内容宽度（最多 160px），操作列按按钮宽度 */
+  grid-template-columns: 40px minmax(0, 2fr) minmax(0, 1.7fr) minmax(0, 1.2fr) fit-content(160px) auto;
   gap: 8px 14px;
   align-items: center;
   padding: 9px 8px 9px 12px;
@@ -2449,7 +2450,8 @@ onMounted(async () => {
   min-width: 0;
 }
 .site-domains {
-  word-break: break-all;
+  /* 只在一行放不下时才断开长域名，不在任意字符处拆行 */
+  overflow-wrap: anywhere;
 }
 .site-cert {
   display: flex;
@@ -2494,7 +2496,7 @@ onMounted(async () => {
 .target {
   margin-left: 6px;
   font-size: 12px;
-  word-break: break-all;
+  overflow-wrap: anywhere;
 }
 .site-opts {
   display: flex;
@@ -2516,6 +2518,10 @@ onMounted(async () => {
 }
 .site-actions :deep(.el-button + .el-button) {
   margin-left: 0;
+}
+/* 删除与其他操作隔开一点，避免误点 */
+.site-actions .site-del {
+  margin-left: 6px;
 }
 .empty-sites {
   padding: 10px 12px;
@@ -2578,7 +2584,7 @@ onMounted(async () => {
   }
   /* 域名优先完整显示，名称说明只占剩余空间 */
   .sites.is-compact .site {
-    grid-template-columns: 40px minmax(0, 1.9fr) minmax(0, 1.6fr) minmax(0, 1fr) 190px auto;
+    grid-template-columns: 40px minmax(0, 2.2fr) minmax(0, 1.6fr) minmax(0, 1fr) fit-content(160px) auto;
   }
   .sites.is-compact .site-main .site-domains {
     flex: 0 1 auto;
@@ -2597,14 +2603,17 @@ onMounted(async () => {
     flex-shrink: 0;
   }
 }
-/* 中等宽度（平板、带侧栏的小屏笔记本）：操作按钮只显示图标（悬停有标题），统计列收窄，给域名列留出空间 */
-@media (min-width: 768px) and (max-width: 1439.98px) {
+/* 1680px 以下（含常见的 1440 桌面）：操作按钮只显示图标（悬停有标题），给域名与后端列留出空间；
+   带文字的按钮在中文下约 360px、英文下更宽，会把域名挤成一行几个字符 */
+@media (min-width: 768px) and (max-width: 1679.98px) {
   .site-actions :deep(.el-button > span:not(.el-icon)) {
     display: none;
   }
+}
+@media (min-width: 768px) and (max-width: 1439.98px) {
   .site,
   .sites.is-compact .site {
-    grid-template-columns: 40px minmax(0, 1.5fr) minmax(0, 1.8fr) minmax(0, 1.3fr) 130px auto;
+    grid-template-columns: 40px minmax(0, 1.8fr) minmax(0, 1.6fr) minmax(0, 1.2fr) fit-content(130px) auto;
   }
 }
 /* 更窄时改为上下排列：第一行开关、域名与操作按钮，目标、选项与统计放在下面 */
