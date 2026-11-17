@@ -45,6 +45,7 @@ La mise à niveau en ligne des déploiements binaires sous Linux (« Mettre à n
 
 - Signature invalide, clé inconnue ou `checksums.txt` modifié : la mise à niveau est refusée, la fenêtre de mise à niveau et le journal système en indiquent la raison, et le programme installé reste tel quel ;
 - Pas de `checksums.txt.minisig` dans la version (publiée avant l'introduction de la signature) : la mise à niveau se poursuit, et la fenêtre de mise à niveau et le journal système signalent que la version n'est pas signée et que seul son SHA-256 a été vérifié.
+- Une version v0.6.8 ou ultérieure sans `checksums.txt.minisig` : toutes les versions sont signées depuis v0.6.8, un fichier de signature manquant indique donc une page de publication peut-être modifiée, et la mise à jour en ligne la refuse. Pour l'installer quand même, téléchargez-la depuis la page de publication et utilisez « Téléverser un paquet de mise à niveau ».
 
 Le programme prévoit un second emplacement de clé publique pour la rotation des clés : la nouvelle clé publique est d'abord intégrée à une version et publiée sur cette page, et seules les versions suivantes sont signées avec elle, si bien que les instances déployées continuent de se mettre à niveau. « Téléverser un paquet de mise à niveau » ne vérifie pas les signatures ; vérifiez l'archive avec les étapes ci-dessus avant de la téléverser. Les mises à niveau de l'image Docker s'appuient sur les signatures cosign de l'image décrites plus bas.
 

@@ -45,6 +45,7 @@ La actualización en línea de los despliegues binarios en Linux ("Actualizar ah
 
 - Firma no válida, de una clave desconocida o `checksums.txt` modificado: la actualización se rechaza, el diálogo de actualización y el registro del sistema muestran el motivo y el programa instalado no cambia;
 - La versión no tiene `checksums.txt.minisig` (publicada antes de introducir la firma): la actualización continúa, y el diálogo de actualización y el registro del sistema avisan de que la versión no está firmada y solo se comprobó su SHA-256.
+- Una versión v0.6.8 o posterior sin `checksums.txt.minisig`: desde v0.6.8 todas las versiones se firman, así que la falta del archivo de firma indica que la página de publicación pudo ser alterada y la actualización en línea la rechaza. Para instalarla de todos modos, descárguela de la página de publicación y use «Subir paquete de actualización».
 
 El programa tiene un segundo hueco de clave pública para rotar claves: la nueva clave pública se integra primero en una versión y se publica en esta página, y solo las versiones posteriores se firman con ella, de modo que las instalaciones existentes siguen pudiendo actualizarse. "Subir paquete de actualización" no verifica firmas; comprueba el archivo con los pasos anteriores antes de subirlo. Las actualizaciones de la imagen de Docker se basan en las firmas cosign de la imagen descritas más abajo.
 

@@ -45,6 +45,7 @@ Das Online-Upgrade von Linux-Binärinstallationen („Jetzt aktualisieren“) l�
 
 - Ungültige Signatur, unbekannter Schlüssel oder veränderte `checksums.txt`: Das Upgrade wird abgelehnt, Upgrade-Dialog und Systemprotokoll nennen den Grund, und das installierte Programm bleibt unverändert;
 - Keine `checksums.txt.minisig` in der Version (vor Einführung der Signatur veröffentlicht): Das Upgrade läuft weiter, Upgrade-Dialog und Systemprotokoll warnen, dass die Version unsigniert ist und nur ihr SHA-256 geprüft wurde.
+- Eine Version ab v0.6.8 ohne `checksums.txt.minisig`: Ab v0.6.8 wird jede Version signiert; eine fehlende Signaturdatei deutet auf eine veränderte Release-Seite hin, daher lehnt das Online-Upgrade sie ab. Wer sie trotzdem installieren will, lädt sie von der Release-Seite herunter und nutzt „Upgrade-Paket hochladen“.
 
 Für den Schlüsselwechsel hat das Programm einen zweiten Platz für einen öffentlichen Schlüssel: Ein neuer öffentlicher Schlüssel wird zuerst in eine Version eingebaut und auf dieser Seite veröffentlicht, erst spätere Versionen werden damit signiert, sodass bestehende Installationen weiter aktualisieren können. „Upgrade-Paket hochladen“ prüft keine Signaturen; prüfen Sie das Archiv vor dem Hochladen mit den Schritten oben. Upgrades des Docker-Images stützen sich auf die unten beschriebenen cosign-Signaturen des Images.
 
