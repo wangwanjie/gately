@@ -1,0 +1,80 @@
+{
+ "TaskName": "bench-ddns",
+ "TaskKey": "",
+ "TaskType": "IPv4",
+ "Enable": true,
+ "Intervals": 36,
+ "FirstCheckDelay": 16,
+ "HttpClientTimeout": 15,
+ "TTL": "",
+ "InsecureSkipVerify": false,
+ "V4QueryIPEnable": true,
+ "V4QueryIPType": "url",
+ "V4QueryUrl": "http://127.0.0.1:9000/ip",
+ "Records": [
+  {
+   "SyncRecordData": {
+    "type": "A",
+    "remark": "bench",
+    "fullDomainName": "www.bench.test",
+    "ttl": 0,
+    "ipv4Address": "{ipv4Addr}"
+   }
+  }
+ ],
+ "DNS": {
+  "Name": "callback",
+  "ID": "",
+  "Secret": "",
+  "ForceInterval": 3600,
+  "ResolverDoaminCheck": false,
+  "Callback": {
+   "URL": "http://127.0.0.1:9000/cb?ip=#{ip}&domain=#{domain}",
+   "Method": "get",
+   "Headers": [
+    ""
+   ],
+   "RequestBody": "",
+   "Server": "other",
+   "DisableCallbackSuccessContentCheck": true,
+   "CallbackSuccessContent": []
+  },
+  "CallAPINetwork": "",
+  "HttpClientProxyType": "",
+  "HttpClientProxyAddr": "",
+  "HttpClientProxyUser": "",
+  "HttpClientProxyPassword": ""
+ },
+ "DiaglogShowMode": "simple",
+ "Expanded": true,
+ "IPSectionExpanded": true,
+ "V4NetInterface": "",
+ "V4NetInterfaceIPReg": "",
+ "V4GetIPScript": "",
+ "V6QueryIPEnable": false,
+ "V6QueryIPType": "url",
+ "V6QueryUrl": "",
+ "V6NetInterface": "",
+ "V6NetInterfaceIPReg": "",
+ "V6NetInterfaceSmart": true,
+ "V6NetInterfaceVerify": true,
+ "V6NetInterfacePreference": "stable",
+ "V6NetInterfaceProbeTargets": "www.qq.com:443",
+ "V6GetIPScript": "",
+ "V6DUID": "",
+ "Domains": [],
+ "GlobalWebhook": false,
+ "WebhookEnable": false,
+ "WebhookURL": "",
+ "WebhookMethod": "get",
+ "WebhookHeaders": [],
+ "WebhookRequestBody": "",
+ "WebhookDisableCallbackSuccessContentCheck": false,
+ "WebhookSuccessContent": [],
+ "WebhookProxy": "",
+ "WebhookProxyAddr": "",
+ "WebhookProxyUser": "",
+ "WebhookProxyPassword": "",
+ "RetryCount": 0,
+ "RetryInterval": 500
+}
