@@ -6,6 +6,12 @@
   "editRule": "Editar regra",
   "moduleOffTitle": "O módulo de redirecionamento de portas está desativado",
   "empty": "Nenhuma regra ainda. Adicione uma ou importe uma configuração do Lucky em \"Configurações → Backup e migração\"",
+  "templates": {
+    "title": "Comece por um caso comum:",
+    "ssh": "SSH para um NAS",
+    "rdp": "Área de Trabalho Remota do Windows",
+    "web": "Página de administração web de um dispositivo"
+  },
   "unnamed": "Sem nome",
   "listen": "Escuta",
   "target": "Destino",

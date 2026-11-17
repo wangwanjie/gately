@@ -6,6 +6,12 @@
   "moduleOffTitle": "ダイナミック DNS モジュールは無効です",
   "moduleOffDesc": "モジュールが無効の間は IP の確認も DNS レコードの更新も行われません。有効にすると、各タスクは個別のスイッチに従って動作します。",
   "empty": "タスクがありません。追加するか、「設定 → バックアップと移行」から Lucky の設定をインポートできます",
+  "templates": {
+    "title": "よくある使い方から始める:",
+    "cloudflare4": "Cloudflare 自宅 IPv4",
+    "alidns46": "Alibaba Cloud IPv4 + IPv6",
+    "dnspod6": "DNSPod IPv6 のみ"
+  },
   "lastCheck": "前回確認",
   "nextCheck": "次回確認",
   "noRecords": "レコードがありません",
