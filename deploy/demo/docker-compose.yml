@@ -1,0 +1,42 @@
+# Gately 在线演示实例（demo.gately.cn）。只暴露管理端口，根文件系统只读，数据全在内存盘里。
+#   DEMO_ADMIN_PASSWORD=<强密码> docker compose up -d --build
+# 管理员密码只用于运维，登录页只提供只读的「演示账号」一键进入。
+services:
+  gately-demo:
+    build:
+      context: ../..
+      dockerfile: deploy/demo/Dockerfile
+    image: gately-demo:local
+    container_name: gately-demo
+    restart: unless-stopped
+    # 演示模式不监听任何数据面端口，只有管理端口；绑定到本机回环，由前面的反向代理加 HTTPS 后对外
+    ports:
+      - "127.0.0.1:16680:16680"
+    environment:
+      - TZ=Asia/Shanghai
+      - GATELY_DEMO=1
+      - GATELY_INITIAL_PASSWORD=${DEMO_ADMIN_PASSWORD:?请设置 DEMO_ADMIN_PASSWORD}
+    user: "10001:10001"
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      # 配置目录与演示快照都在内存盘里，容器重启即回到全新状态
+      - /data:uid=10001,gid=10001,mode=0700,size=64m
+      - /tmp:uid=10001,gid=10001,mode=1777,size=64m
+    mem_limit: 256m
+    memswap_limit: 256m
+    cpus: 0.5
+    pids_limit: 128
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:16680/api/demo"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
