@@ -10,7 +10,7 @@ import (
 )
 
 // connPair 返回一对相连的 TCP 连接。
-func connPair(t *testing.T) (net.Conn, net.Conn) {
+func connPair(t testing.TB) (net.Conn, net.Conn) {
 	t.Helper()
 	ln, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
