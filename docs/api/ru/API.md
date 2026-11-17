@@ -440,6 +440,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/webservice/panels-delete` | `webservice:write` | Пакетно удалить: Панели навигации |
 | POST | `/api/webservice/panels/preview` | `webservice:write` | Предпросмотр панели навигации |
 | GET | `/api/webservice/panels/icons` | `webservice:read` | Встроенные значки панелей навигации |
+| POST | `/api/webservice/panels/sunpanel` | `webservice:write` | Преобразовать конфигурацию Sun-Panel |
 | GET | `/api/webservice/users` | `webservice:read` | Получить общих пользователей и поставщика удостоверений OIDC |
 | PUT | `/api/webservice/users` | `webservice:write` | Сохранить общих пользователей и поставщика удостоверений OIDC, массово настроить сайты |
 | DELETE | `/api/webservice/users/{id}/passkeys/{cred}` | `webservice:write` | Удаляет Passkey общего пользователя (id — ID общего пользователя, cred — идентификатор Passkey); Passkey регистрирует только сам пользователь, администратор может лишь удалять их, например при потере устройства |
@@ -3095,6 +3096,38 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `topCountries` | Массив из `webservice.TopItem` |
 | `topIps` | Массив из `webservice.TopItem` |
 | `upstreams` | Массив из `webservice.UpstreamStatus` |
+
+### webservice.SunPanelIconStats
+
+| Поле | Тип |
+| --- | --- |
+| `builtin` | integer |
+| `fallback` | integer |
+| `iconify` | integer |
+| `inline` | integer |
+| `remote` | integer |
+| `text` | integer |
+
+### webservice.SunPanelImportResult
+
+| Поле | Тип |
+| --- | --- |
+| `appVersion` | string |
+| `format` | string |
+| `groups` | integer |
+| `icons` | `webservice.SunPanelIconStats` |
+| `links` | Массив из `webservice.PanelLink` |
+| `notes` | Массив из `webservice.SunPanelNote` |
+| `total` | integer |
+
+### webservice.SunPanelNote
+
+| Поле | Тип |
+| --- | --- |
+| `group` | string |
+| `kind` | string |
+| `name` | string |
+| `value` | string |
 
 ### webservice.TopItem
 

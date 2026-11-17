@@ -440,6 +440,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | POST | `/api/webservice/panels-delete` | `webservice:write` | Eliminar en lote: Paneles de navegación |
 | POST | `/api/webservice/panels/preview` | `webservice:write` | Vista previa del panel de navegación |
 | GET | `/api/webservice/panels/icons` | `webservice:read` | Iconos integrados de los paneles de navegación |
+| POST | `/api/webservice/panels/sunpanel` | `webservice:write` | Convertir configuración de Sun-Panel |
 | GET | `/api/webservice/users` | `webservice:read` | Leer usuarios compartidos y proveedor de identidad OIDC |
 | PUT | `/api/webservice/users` | `webservice:write` | Guardar usuarios compartidos y proveedor de identidad OIDC, configurar sitios en bloque |
 | DELETE | `/api/webservice/users/{id}/passkeys/{cred}` | `webservice:write` | Elimina una Passkey de un usuario compartido (id es el ID del usuario compartido, cred es el ID de la Passkey); las Passkeys solo las registran los propios usuarios y los administradores solo pueden eliminarlas, por ejemplo si se pierde un dispositivo |
@@ -3095,6 +3096,38 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `topCountries` | Lista de `webservice.TopItem` |
 | `topIps` | Lista de `webservice.TopItem` |
 | `upstreams` | Lista de `webservice.UpstreamStatus` |
+
+### webservice.SunPanelIconStats
+
+| Campo | Tipo |
+| --- | --- |
+| `builtin` | integer |
+| `fallback` | integer |
+| `iconify` | integer |
+| `inline` | integer |
+| `remote` | integer |
+| `text` | integer |
+
+### webservice.SunPanelImportResult
+
+| Campo | Tipo |
+| --- | --- |
+| `appVersion` | string |
+| `format` | string |
+| `groups` | integer |
+| `icons` | `webservice.SunPanelIconStats` |
+| `links` | Lista de `webservice.PanelLink` |
+| `notes` | Lista de `webservice.SunPanelNote` |
+| `total` | integer |
+
+### webservice.SunPanelNote
+
+| Campo | Tipo |
+| --- | --- |
+| `group` | string |
+| `kind` | string |
+| `name` | string |
+| `value` | string |
 
 ### webservice.TopItem
 

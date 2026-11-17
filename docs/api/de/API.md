@@ -440,6 +440,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | POST | `/api/webservice/panels-delete` | `webservice:write` | Im Stapel löschen: Navigationspanels |
 | POST | `/api/webservice/panels/preview` | `webservice:write` | Vorschau des Navigationspanels |
 | GET | `/api/webservice/panels/icons` | `webservice:read` | Eingebaute Symbole für Navigationspanels |
+| POST | `/api/webservice/panels/sunpanel` | `webservice:write` | Sun-Panel-Konfiguration umwandeln |
 | GET | `/api/webservice/users` | `webservice:read` | Gemeinsame Benutzer und OIDC-Identitätsanbieter lesen |
 | PUT | `/api/webservice/users` | `webservice:write` | Gemeinsame Benutzer und OIDC-Identitätsanbieter speichern, Sites gesammelt einstellen |
 | DELETE | `/api/webservice/users/{id}/passkeys/{cred}` | `webservice:write` | Löscht einen Passkey eines gemeinsamen Benutzers (id ist die ID des Benutzers, cred die Passkey-ID); Passkeys können nur vom Benutzer selbst registriert werden, Administratoren können sie nur löschen, z. B. bei Geräteverlust |
@@ -3095,6 +3096,38 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `topCountries` | Array von `webservice.TopItem` |
 | `topIps` | Array von `webservice.TopItem` |
 | `upstreams` | Array von `webservice.UpstreamStatus` |
+
+### webservice.SunPanelIconStats
+
+| Feld | Typ |
+| --- | --- |
+| `builtin` | integer |
+| `fallback` | integer |
+| `iconify` | integer |
+| `inline` | integer |
+| `remote` | integer |
+| `text` | integer |
+
+### webservice.SunPanelImportResult
+
+| Feld | Typ |
+| --- | --- |
+| `appVersion` | string |
+| `format` | string |
+| `groups` | integer |
+| `icons` | `webservice.SunPanelIconStats` |
+| `links` | Array von `webservice.PanelLink` |
+| `notes` | Array von `webservice.SunPanelNote` |
+| `total` | integer |
+
+### webservice.SunPanelNote
+
+| Feld | Typ |
+| --- | --- |
+| `group` | string |
+| `kind` | string |
+| `name` | string |
+| `value` | string |
 
 ### webservice.TopItem
 

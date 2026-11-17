@@ -440,6 +440,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/webservice/panels-delete` | `webservice:write` | ナビゲーションパネル の一括削除 |
 | POST | `/api/webservice/panels/preview` | `webservice:write` | ナビゲーションパネルのプレビュー |
 | GET | `/api/webservice/panels/icons` | `webservice:read` | ナビゲーションパネルの組み込みアイコン一覧 |
+| POST | `/api/webservice/panels/sunpanel` | `webservice:write` | Sun-Panel 設定の変換 |
 | GET | `/api/webservice/users` | `webservice:read` | 共有ユーザーと OIDC ID プロバイダーを取得 |
 | PUT | `/api/webservice/users` | `webservice:write` | 共有ユーザーと OIDC ID プロバイダーを保存し、サイトを一括設定 |
 | DELETE | `/api/webservice/users/{id}/passkeys/{cred}` | `webservice:write` | 共有ユーザーの Passkey を削除します（id は共有ユーザーの ID、cred は Passkey の識別子）。Passkey は本人のみが登録でき、管理者は削除のみ可能です（端末の紛失時など） |
@@ -3095,6 +3096,38 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `topCountries` | 配列 of `webservice.TopItem` |
 | `topIps` | 配列 of `webservice.TopItem` |
 | `upstreams` | 配列 of `webservice.UpstreamStatus` |
+
+### webservice.SunPanelIconStats
+
+| フィールド | 型 |
+| --- | --- |
+| `builtin` | integer |
+| `fallback` | integer |
+| `iconify` | integer |
+| `inline` | integer |
+| `remote` | integer |
+| `text` | integer |
+
+### webservice.SunPanelImportResult
+
+| フィールド | 型 |
+| --- | --- |
+| `appVersion` | string |
+| `format` | string |
+| `groups` | integer |
+| `icons` | `webservice.SunPanelIconStats` |
+| `links` | 配列 of `webservice.PanelLink` |
+| `notes` | 配列 of `webservice.SunPanelNote` |
+| `total` | integer |
+
+### webservice.SunPanelNote
+
+| フィールド | 型 |
+| --- | --- |
+| `group` | string |
+| `kind` | string |
+| `name` | string |
+| `value` | string |
 
 ### webservice.TopItem
 

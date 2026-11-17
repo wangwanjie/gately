@@ -440,6 +440,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | POST | `/api/webservice/panels-delete` | `webservice:write` | Supprimer en lot : Panneaux de navigation |
 | POST | `/api/webservice/panels/preview` | `webservice:write` | Aperçu du panneau de navigation |
 | GET | `/api/webservice/panels/icons` | `webservice:read` | Icônes intégrées des panneaux de navigation |
+| POST | `/api/webservice/panels/sunpanel` | `webservice:write` | Convertir la configuration Sun-Panel |
 | GET | `/api/webservice/users` | `webservice:read` | Lire les utilisateurs partagés et le fournisseur d'identité OIDC |
 | PUT | `/api/webservice/users` | `webservice:write` | Enregistrer utilisateurs partagés et fournisseur d'identité OIDC, configurer les sites en masse |
 | DELETE | `/api/webservice/users/{id}/passkeys/{cred}` | `webservice:write` | Supprime une Passkey d'un utilisateur partagé (id est l'ID de l'utilisateur partagé, cred l'identifiant de la Passkey) ; les Passkeys ne peuvent être enregistrées que par les utilisateurs eux-mêmes, les administrateurs peuvent seulement les supprimer, par exemple en cas de perte d'un appareil |
@@ -3095,6 +3096,38 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `topCountries` | Tableau de `webservice.TopItem` |
 | `topIps` | Tableau de `webservice.TopItem` |
 | `upstreams` | Tableau de `webservice.UpstreamStatus` |
+
+### webservice.SunPanelIconStats
+
+| Champ | Type |
+| --- | --- |
+| `builtin` | integer |
+| `fallback` | integer |
+| `iconify` | integer |
+| `inline` | integer |
+| `remote` | integer |
+| `text` | integer |
+
+### webservice.SunPanelImportResult
+
+| Champ | Type |
+| --- | --- |
+| `appVersion` | string |
+| `format` | string |
+| `groups` | integer |
+| `icons` | `webservice.SunPanelIconStats` |
+| `links` | Tableau de `webservice.PanelLink` |
+| `notes` | Tableau de `webservice.SunPanelNote` |
+| `total` | integer |
+
+### webservice.SunPanelNote
+
+| Champ | Type |
+| --- | --- |
+| `group` | string |
+| `kind` | string |
+| `name` | string |
+| `value` | string |
 
 ### webservice.TopItem
 
