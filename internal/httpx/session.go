@@ -89,3 +89,28 @@ func VerifyAdminBridge(value string) string {
 	}
 	return h.verify(value)
 }
+
+// 本机 Web 服务站点反代到另一台 Gately（例如在线演示实例）时，访客浏览器带的同名后台会话 Cookie 是后端签发的，
+// 对本实例没有意义；只有本实例签发的会话才是需要防泄露的凭据。管理后台注册会话归属判定函数，Web 服务据此只剥离本实例的会话。
+
+// ownSession 为会话归属判定函数，未注册时为 nil。
+var ownSession atomic.Pointer[func(string) bool]
+
+// SetOwnSessionCheck 注册会话归属判定函数：value 是本实例签发的有效后台会话（含只读账号）时返回 true。传入 nil 取消注册。
+func SetOwnSessionCheck(f func(value string) bool) {
+	if f == nil {
+		ownSession.Store(nil)
+		return
+	}
+	ownSession.Store(&f)
+}
+
+// OwnSession 判断后台会话 Cookie 的值是否为本实例签发的有效会话。
+// 未注册判定函数时一律视为本实例的会话，按凭据处理（调用方据此剥离，宁可多剥）。
+func OwnSession(value string) bool {
+	f := ownSession.Load()
+	if f == nil {
+		return true
+	}
+	return (*f)(value)
+}

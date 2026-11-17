@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/http/cookiejar"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -17,8 +18,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/wangwanjie/gately/internal/auth"
 	"github.com/wangwanjie/gately/internal/banlist"
 	"github.com/wangwanjie/gately/internal/demo"
+	"github.com/wangwanjie/gately/internal/httpx"
 	"github.com/wangwanjie/gately/internal/modules/registry"
 	"github.com/wangwanjie/gately/tools/demo/gen"
 )
@@ -326,5 +329,29 @@ func TestDemoListensOnlyAdminPort(t *testing.T) {
 	}
 	if !strings.Contains(string(out), ":"+strconv.Itoa(admin)) {
 		t.Fatalf("未在输出中找到管理端口，无法确认检查有效: %s", out)
+	}
+}
+
+// 本机 Web 服务据会话归属判定决定剥离哪些后台 Cookie：本实例签发的会话（含只读账号）算本实例的，
+// 其他实例签发的同名会话不算（否则站点反代到另一台 Gately 时后端登录永远 401）。
+func TestOwnSessionCheck(t *testing.T) {
+	_, srv := newDemoApp(t, 0)
+	c := demoClient()
+	if code, body := doJSON(t, c, "POST", srv.URL+"/api/login/demo", nil); code != 200 {
+		t.Fatalf("一键进入失败 %d %s", code, body)
+	}
+	u, _ := url.Parse(srv.URL)
+	var token string
+	for _, ck := range c.Jar.Cookies(u) {
+		if ck.Name == auth.CookieName {
+			token = ck.Value
+		}
+	}
+	if token == "" || !httpx.OwnSession(token) {
+		t.Fatalf("本实例签发的只读会话应判定为本实例的: %q", token)
+	}
+	p, _, _ := strings.Cut(token, ".")
+	if httpx.OwnSession(p + ".AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA") {
+		t.Fatal("签名不符的会话不应判定为本实例的")
 	}
 }
