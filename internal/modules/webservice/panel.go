@@ -132,7 +132,7 @@ type Panel struct {
 	BgDim      int    `json:"bgDim"`
 	// BgBlur 为背景图片的模糊半径（0-20 像素）
 	BgBlur int `json:"bgBlur"`
-	// CardStyle 为链接样式：空为卡片，app 为桌面 App 图标（名称在图标下方，不显示描述，其他访问方式收在图标角上的菜单里）
+	// CardStyle 为链接样式：空为卡片，app 为桌面 App 图标（名称在图标下方，不显示描述）；两种样式下有其他访问方式的链接点击后都弹出地址选择
 	CardStyle string `json:"cardStyle"`
 	// IconSize 为图标边长（24-128 像素），0 为默认（卡片 40、App 图标 64，手机上分别为 34、56）
 	IconSize int `json:"iconSize"`
