@@ -371,11 +371,12 @@ func TestUpgradeRejectsBadSignature(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			exe := setupUpgrade(t)
-			_, srv, c := loginApp(t)
+			a, srv, c := loginApp(t)
 			fakeReleaseSigned(t, "v0.2.0", tarGz(t, map[string][]byte{"gately": fakeBinary("v0.2.0")}), tc.override, tc.sign)
 			st := runOnlineUpgrade(t, c, srv.URL)
-			if st.State != upgradeStateFailed || !strings.Contains(st.Error, "签名验证失败") {
-				t.Fatalf("应因签名验证失败拒绝升级: %+v", st)
+			// 接口返回的原因按请求语言翻译，这里检查未翻译的原文
+			if raw := a.upgradeSnapshot(); st.State != upgradeStateFailed || !strings.Contains(raw.Error, "签名验证失败") {
+				t.Fatalf("应因签名验证失败拒绝升级: %+v", raw)
 			}
 			if got, _ := os.ReadFile(exe); string(got) != "old-binary" {
 				t.Fatal("验签失败时不应改动可执行文件")
