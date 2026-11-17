@@ -39,3 +39,5 @@ Si l'interface WAN de votre routeur se trouve derrière un NAT de niveau opérat
 ## Comment signaler un problème ou contribuer ?
 
 Ouvrez un ticket sur [GitHub Issues](https://github.com/wangwanjie/gately/issues). Les conventions de développement figurent dans [Contribuer](/fr/docs/guide/contributing).
+
+Posez vos questions d'utilisation dans [GitHub Discussions Q&A](https://github.com/wangwanjie/gately/discussions/categories/q-a) pour que les réponses restent faciles à retrouver ; pour discuter en direct, rejoignez le groupe Telegram [t.me/gately_chat](https://t.me/gately_chat).

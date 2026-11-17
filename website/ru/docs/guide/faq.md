@@ -39,3 +39,5 @@
 ## Как сообщить о проблеме или принять участие в разработке?
 
 Создайте обращение в [GitHub Issues](https://github.com/wangwanjie/gately/issues). Правила разработки описаны в разделе [Участие в разработке](/ru/docs/guide/contributing).
+
+Вопросы по использованию задавайте в [GitHub Discussions Q&A](https://github.com/wangwanjie/gately/discussions/categories/q-a), чтобы ответы можно было найти поиском; для живого общения есть группа в Telegram [t.me/gately_chat](https://t.me/gately_chat).

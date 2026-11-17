@@ -39,3 +39,5 @@ Liegt der WAN-Anschluss Ihres Routers hinter Carrier-Grade-NAT (100.64.0.0/10), 
 ## Wie melde ich Probleme oder wirke mit?
 
 Eröffnen Sie ein Issue unter [GitHub Issues](https://github.com/wangwanjie/gately/issues). Die Entwicklungskonventionen stehen unter [Mitwirken](/de/docs/guide/contributing).
+
+Stellen Sie Fragen zur Nutzung in [GitHub Discussions Q&A](https://github.com/wangwanjie/gately/discussions/categories/q-a), damit die Antworten auffindbar bleiben; für den direkten Austausch gibt es die Telegram-Gruppe [t.me/gately_chat](https://t.me/gately_chat).
