@@ -82,7 +82,7 @@ var root=document.documentElement,KF="gately-theme-family",KM="gately-theme-mode
 function get(k){try{return localStorage.getItem(k)}catch(e){return null}}
 function put(k,v){try{if(v===null){localStorage.removeItem(k)}else{localStorage.setItem(k,v)}}catch(e){}}
 var byId={};D.families.forEach(function(f){byId[f.id]=f});
-var HEX=/^#[0-9a-fA-F]{6}$/,sf=get(KF),sm=get(KM),sa=get(KA),sr=get(KR);
+var HEX=/^#[0-9a-fA-F]{6}$/,FX=!!D.fixed,sf=FX?null:get(KF),sm=FX?null:get(KM),sa=FX?null:get(KA),sr=FX?null:get(KR);
 var st={family:byId[sf]?sf:D.skin,mode:/^(light|dark|auto)$/.test(sm||"")?sm:D.mode,accent:HEX.test(sa||"")?sa.toLowerCase():null,radius:/^(sharp|round)$/.test(sr||"")?sr:"",preview:null};
 var mql=window.matchMedia?window.matchMedia("(prefers-color-scheme: dark)"):{matches:false};
 function hex(s){return [1,3,5].map(function(i){return parseInt(s.substr(i,2),16)})}

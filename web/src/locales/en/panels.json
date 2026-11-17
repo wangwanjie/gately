@@ -153,6 +153,12 @@
   "groupCountHelp": "Show the number of links next to each group title.",
   "altBadge": "Address count badge",
   "altBadgeHelp": "Links with other ways to open show their total number of addresses on the icon's top-right corner. Either way, clicking such a link shows the address list to pick from.",
+  "lockMark": "Lock mark",
+  "lockMarkHelp": "Signed-in visitors see a lock on links that are visible only after sign-in; turn off to hide it. Visitors who are not signed in never see such links.",
+  "skinSwitch": "Theme button",
+  "skinSwitchHelp": "Show the theme button at the top right so visitors can pick colors and light or dark mode. When off, the page always uses the theme and mode set above, and choices visitors saved earlier no longer apply.",
+  "langSwitch": "Language switch",
+  "langSwitchHelp": "Show a language menu at the top right. When off (the default), the page follows the visitor's browser language.",
   "bgPreview": "Preview",
   "bgPreviewHelp": "Blur and overlay update as you drag the sliders; see the Preview tab for the full page."
 }

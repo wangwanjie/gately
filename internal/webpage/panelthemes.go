@@ -192,7 +192,9 @@ func skinCSS(id string) string {
 
 // skinScriptData 为页面脚本使用的皮肤数据：全部色系、主色预设、当前语言的文案与面板设置的默认值。
 // 由 html/template 在 application/json 脚本块中按 JSON 编码并转义 <、>、&，不会提前结束脚本块。
-func skinScriptData(lang, skin, mode string) map[string]any {
+// fixed 为面板不显示换肤按钮：页面固定用面板设置的皮肤与亮暗模式，不读取访客（或同域管理界面）保存的选择，
+// 否则访客此前保存的选择会一直生效且无法改回。
+func skinScriptData(lang, skin, mode string, fixed bool) map[string]any {
 	loadSkins()
 	if !ValidSkin(skin) || skin == "" {
 		skin = skins.Default
@@ -202,6 +204,6 @@ func skinScriptData(lang, skin, mode string) map[string]any {
 	}
 	return map[string]any{
 		"families": skins.Families, "accents": skins.Accents, "texts": skinLangTexts(lang),
-		"skin": skin, "mode": mode,
+		"skin": skin, "mode": mode, "fixed": fixed,
 	}
 }

@@ -150,6 +150,12 @@ type Panel struct {
 	// AltBadge 为在有多个访问地址（主地址加其他访问方式）的链接图标右上角显示地址数，默认不显示。
 	// 无论是否显示角标，点击这类链接都会弹出地址选择列表
 	AltBadge bool `json:"altBadge"`
+	// HideLock 为已登录访客不显示“登录后可见”链接上的锁标记，默认显示
+	HideLock bool `json:"hideLock"`
+	// ShowLang 为在页面右上角显示语言切换，默认不显示（访客按浏览器语言看到页面）
+	ShowLang bool `json:"showLang"`
+	// HideSkin 为不显示右上角的换肤按钮，默认显示；不显示时页面固定用面板设置的皮肤与亮暗模式，访客此前保存的选择不再生效
+	HideSkin bool `json:"hideSkin"`
 	// LANCIDRs 为额外视为内网的访客地址（IP 或 CIDR）。回环、私有地址（10/8、172.16/12、192.168/16、fc00::/7）
 	// 与链路本地地址始终视为内网；经 Tailscale、ZeroTier 等组网访问时可在这里加上对应网段
 	LANCIDRs []string `json:"lanCidrs"`
@@ -793,7 +799,7 @@ func linkAddress(u *url.URL) string {
 func (p *compiledPanel) view(q redirectRequest, lan, forced, preview, authed bool) webpage.PanelView {
 	v := webpage.PanelView{Title: p.Title, Subtitle: p.Subtitle, Theme: p.Theme, Skin: p.Skin, LAN: lan, Forced: forced, Preview: preview, BgDim: p.BgDim, BgBlur: p.BgBlur,
 		Layout:     webpage.PanelLayout{Style: p.CardStyle, IconSize: p.IconSize, Columns: p.Columns, MobileColumns: p.MobileColumns, Gap: p.Gap, MaxWidth: p.MaxWidth},
-		GroupCount: p.GroupCount, AltBadge: p.AltBadge}
+		GroupCount: p.GroupCount, AltBadge: p.AltBadge, ShowLang: p.ShowLang, HideSkin: p.HideSkin}
 	for _, e := range p.Engines {
 		v.Engines = append(v.Engines, webpage.PanelEngine{Name: e.Name, URL: e.URL})
 	}
@@ -830,7 +836,8 @@ func (p *compiledPanel) view(q redirectRequest, lan, forced, preview, authed boo
 		if lan && l.LANURL != "" {
 			raw = l.LANURL
 		}
-		link := webpage.PanelLink{Name: l.Name, Description: l.Description, NewTab: !l.SameTab, Icon: panelIcon(l.Icon, l.Color), Locked: l.AuthOnly, Small: l.Size == PanelSizeSmall, HideName: l.HideName, HideDesc: l.HideDesc}
+		// 锁标记只出现在已登录访客的页面上（未登录时这类链接不下发），面板可设置不显示
+		link := webpage.PanelLink{Name: l.Name, Description: l.Description, NewTab: !l.SameTab, Icon: panelIcon(l.Icon, l.Color), Locked: l.AuthOnly && !p.HideLock, Small: l.Size == PanelSizeSmall, HideName: l.HideName, HideDesc: l.HideDesc}
 		// 变量暂无值（例如 STUN 规则还没有公网地址）或展开后不再是允许的地址时，卡片显示为暂不可用
 		if href, ok := expandPanelURL(raw, q); ok {
 			if u, err := url.Parse(href); err == nil {
@@ -927,7 +934,10 @@ func (h *siteHandler) newPanel(s Site) http.Handler {
 		if authed {
 			v.User, _ = r.Context().Value(ctxKeyPanelUser{}).(string)
 		}
-		v.Lang = panelLang(r)
+		// 不显示语言切换时访客无法改回，此前在页面上选过的语言不再生效，按浏览器语言显示
+		if p.ShowLang {
+			v.Lang = panelLang(r)
+		}
 		// 面板对未登录访客开放且站点启用了网页认证时，页面提供登录入口；登录后回到面板，退出后回到登录页
 		if h.site.WebAuth && !h.needAuth(h.matchRule(r.URL.Path)) {
 			base := h.site.authPrefix()

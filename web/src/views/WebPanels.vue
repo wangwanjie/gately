@@ -208,6 +208,10 @@
               <el-switch v-model="editing.altBadge" data-test="layout-alt-badge" />
               <div class="form-help">{{ t('panels.altBadgeHelp') }}</div>
             </el-form-item>
+            <el-form-item :label="t('panels.lockMark')">
+              <el-switch :model-value="!editing.hideLock" data-test="layout-lock" @update:model-value="(v: string | number | boolean) => (editing.hideLock = !v)" />
+              <div class="form-help">{{ t('panels.lockMarkHelp') }}</div>
+            </el-form-item>
             <el-form-item label=" ">
               <el-button :icon="RotateCcw" data-test="layout-reset" @click="resetLayout">{{ t('panels.layoutReset') }}</el-button>
               <div class="form-help">{{ t('panels.layoutHelp') }}</div>
@@ -269,6 +273,14 @@
                 <el-radio-button value="light">{{ t('components.themePicker.modeLight') }}</el-radio-button>
                 <el-radio-button value="dark">{{ t('components.themePicker.modeDark') }}</el-radio-button>
               </el-radio-group>
+            </el-form-item>
+            <el-form-item :label="t('panels.skinSwitch')">
+              <el-switch :model-value="!editing.hideSkin" data-test="panel-skin-switch" @update:model-value="(v: string | number | boolean) => (editing.hideSkin = !v)" />
+              <div class="form-help">{{ t('panels.skinSwitchHelp') }}</div>
+            </el-form-item>
+            <el-form-item :label="t('panels.langSwitch')">
+              <el-switch v-model="editing.showLang" data-test="panel-lang-switch" />
+              <div class="form-help">{{ t('panels.langSwitchHelp') }}</div>
             </el-form-item>
             <el-form-item :label="t('panels.background')">
               <PanelBackgroundInput v-model="editing.background" @uploaded="onBgUploaded" />
@@ -717,7 +729,7 @@ function layoutPlaceholder(key: LayoutField): string {
   return d ? t('panels.layoutDefault', { n: d }) : t('panels.layoutAuto')
 }
 function resetLayout() {
-  Object.assign(editing.value, { cardStyle: '', iconSize: 0, columns: 0, mobileColumns: 0, gap: 0, maxWidth: 0, groupCount: false, altBadge: false })
+  Object.assign(editing.value, { cardStyle: '', iconSize: 0, columns: 0, mobileColumns: 0, gap: 0, maxWidth: 0, groupCount: false, altBadge: false, hideLock: false })
 }
 
 function resetBackground() {

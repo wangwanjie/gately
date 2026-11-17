@@ -71,6 +71,11 @@ export interface Panel {
   // groupCount 为在分组标题旁显示链接数；altBadge 为在有多个访问地址的链接图标右上角显示地址数，都默认关闭
   groupCount: boolean
   altBadge: boolean
+  // hideLock 为已登录访客不显示锁标记
+  hideLock: boolean
+  // showLang 为显示语言切换（默认不显示）；hideSkin 为不显示换肤按钮（默认显示）
+  showLang: boolean
+  hideSkin: boolean
   lanCidrs: string[]
   links: PanelLink[]
   remark: string
@@ -171,7 +176,7 @@ export function moveEngine(engines: PanelEngine[], def: number, i: number, delta
 }
 
 export function emptyPanel(): Panel {
-  return { name: '', enable: true, title: '', subtitle: '', icon: '', tabTitle: '', favicon: '', description: '', footer: '', footerUrl: '', hideFooter: false, theme: '', skin: '', engines: [], defaultEngine: 0, background: '', bgDim: 0, bgBlur: 0, cardStyle: '', iconSize: 0, columns: 0, mobileColumns: 0, gap: 0, maxWidth: 0, groupCount: false, altBadge: false, lanCidrs: [], links: [], remark: '' }
+  return { name: '', enable: true, title: '', subtitle: '', icon: '', tabTitle: '', favicon: '', description: '', footer: '', footerUrl: '', hideFooter: false, theme: '', skin: '', engines: [], defaultEngine: 0, background: '', bgDim: 0, bgBlur: 0, cardStyle: '', iconSize: 0, columns: 0, mobileColumns: 0, gap: 0, maxWidth: 0, groupCount: false, altBadge: false, hideLock: false, showLang: false, hideSkin: false, lanCidrs: [], links: [], remark: '' }
 }
 
 export function emptyLink(group = ''): PanelLink {
@@ -207,6 +212,9 @@ export function toPanel(v: PanelView | Panel): Panel {
     maxWidth: v.maxWidth ?? 0,
     groupCount: v.groupCount ?? false,
     altBadge: v.altBadge ?? false,
+    hideLock: v.hideLock ?? false,
+    showLang: v.showLang ?? false,
+    hideSkin: v.hideSkin ?? false,
     lanCidrs: [...(v.lanCidrs ?? [])],
     links: (v.links ?? []).map((l) => ({ ...emptyLink(), ...l, alts: (l.alts ?? []).map((a) => ({ name: a.name, url: a.url })) })),
     remark: v.remark ?? '',

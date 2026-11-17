@@ -88,9 +88,9 @@ func TestPanelCardRendering(t *testing.T) {
 	}
 }
 
-// 语言：Cookie 选择优先于 Accept-Language，无效值被忽略；页面提供语言菜单数据。
+// 语言：开启语言切换时 Cookie 选择优先于 Accept-Language，无效值被忽略；页面提供语言菜单数据。
 func TestPanelLanguageCookie(t *testing.T) {
-	p := Panel{Key: "p1", Name: "家里", Enable: true, Links: []PanelLink{{Name: "NAS", URL: "https://nas.example.com"}}}
+	p := Panel{Key: "p1", Name: "家里", Enable: true, ShowLang: true, Links: []PanelLink{{Name: "NAS", URL: "https://nas.example.com"}}}
 	h, _ := panelHandler(t, []Panel{p})
 	get := func(cookie, accept string) string {
 		r := httptest.NewRequest("GET", "http://home.nav.test/", nil)
@@ -126,5 +126,30 @@ func TestPanelLanguageCookie(t *testing.T) {
 	}
 	if b := get("", "zh-CN"); !strings.Contains(b, `id="set-btn"`) {
 		t.Error("应有页面设置按钮")
+	}
+}
+
+// 默认不显示语言切换：页面没有语言按钮与语言列表，此前保存的语言 Cookie 也不再生效（访客无法改回），按浏览器语言显示。
+func TestPanelLanguageHiddenByDefault(t *testing.T) {
+	p := Panel{Key: "p1", Name: "家里", Enable: true, Links: []PanelLink{{Name: "NAS", URL: "https://nas.example.com"}}}
+	h, _ := panelHandler(t, []Panel{p})
+	r := httptest.NewRequest("GET", "http://home.nav.test/", nil)
+	r.Host = "home.nav.test"
+	r.RemoteAddr = "203.0.113.9:1"
+	r.Header.Set("Accept-Language", "ja")
+	r.AddCookie(&http.Cookie{Name: panelLangCookie, Value: "en"})
+	w := httptest.NewRecorder()
+	h.ServeHTTP(w, r)
+	b := w.Body.String()
+	if !strings.Contains(b, `<html lang="ja"`) {
+		t.Errorf("不显示语言切换时应按浏览器语言: %.120s", b)
+	}
+	for _, bad := range []string{`id="lang-btn"`, `"langs":[{`} {
+		if strings.Contains(b, bad) {
+			t.Errorf("默认不应输出 %s", bad)
+		}
+	}
+	if !strings.Contains(b, `id="skin-btn"`) {
+		t.Error("换肤按钮默认显示")
 	}
 }

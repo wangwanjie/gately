@@ -153,6 +153,12 @@
   "groupCountHelp": "Affiche le nombre de liens à côté du titre de chaque groupe.",
   "altBadge": "Pastille d’adresses",
   "altBadgeHelp": "Les liens ayant d’autres accès affichent leur nombre total d’adresses au coin supérieur droit de l’icône. Dans tous les cas, un clic sur ces liens affiche la liste des adresses.",
+  "lockMark": "Marque de cadenas",
+  "lockMarkHelp": "Les visiteurs connectés voient un cadenas sur les liens visibles uniquement après connexion ; désactivez pour le masquer. Les visiteurs non connectés ne voient jamais ces liens.",
+  "skinSwitch": "Bouton de thème",
+  "skinSwitchHelp": "Affiche le bouton de thème en haut à droite pour que le visiteur choisisse les couleurs et le mode clair ou sombre. Désactivé, la page utilise toujours le thème et le mode réglés ci-dessus, et les choix enregistrés par le visiteur ne s'appliquent plus.",
+  "langSwitch": "Sélecteur de langue",
+  "langSwitchHelp": "Affiche un menu de langue en haut à droite. Désactivé (par défaut), la page suit la langue du navigateur du visiteur.",
   "bgPreview": "Aperçu",
   "bgPreviewHelp": "Le flou et le voile se mettent à jour quand vous déplacez les curseurs ; la page complète est dans l'onglet Aperçu."
 }
