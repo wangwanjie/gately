@@ -253,6 +253,12 @@ func restartRequired(old, cur Settings) bool {
 	return old.Listen != cur.Listen || old.HTTPSListen != cur.HTTPSListen || !slices.Equal(old.DisabledModules, cur.DisabledModules)
 }
 
+// setLocalZone 替换进程的本地时区。time.Local 是全局变量，测试中替换为不改全局状态的版本：
+// 包内用例共用一个进程，某个用例导入的时区会影响其后所有用例，且与其他协程读取时间构成数据竞争。
+var setLocalZone = func(loc *time.Location) {
+	time.Local = loc
+}
+
 // applyRuntime 应用无需重启即可生效的设置。
 func (a *App) applyRuntime() {
 	s := a.settingsSnapshot()
@@ -268,7 +274,7 @@ func (a *App) applyRuntime() {
 	// 时区变化时才替换 time.Local：它是全局变量，其他协程随时在读，未改时不重复写
 	if s.TimeZone != "" && time.Local.String() != s.TimeZone {
 		if loc, err := time.LoadLocation(s.TimeZone); err == nil {
-			time.Local = loc
+			setLocalZone(loc)
 		}
 	}
 	if err := resolver.Install(s.DNSServers); err != nil {
