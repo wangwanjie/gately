@@ -146,7 +146,7 @@
     "title": "네트워크",
     "dnsServers": "DNS 서버",
     "dnsPlaceholder": "비워 두면 시스템 DNS 사용. IP 또는 IP:포트 입력 가능",
-    "dnsHelp": "모든 아웃바운드 도메인 조회(DDNS, Webhook, ACME 등)에 영향을 주며, 여러 개이면 무작위로 선택하고 자동 장애 조치를 합니다.",
+    "dnsHelp": "모든 아웃바운드 도메인 조회(DDNS, Webhook, ACME 등)에 영향을 줍니다. IP, IP:포트, doh{'@'}호스트 또는 https:// DoH 주소를 입력할 수 있습니다. 여러 개이면 마지막으로 응답한 서버부터 조회하고, 실패하거나 1초 안에 응답이 없으면 다음 서버에도 병렬로 조회해 가장 먼저 온 응답을 사용합니다.",
     "updateProxy": "업데이트 프록시",
     "updateProxyPlaceholder": "비우면 직접 연결, 예: http://127.0.0.1:7890",
     "updateProxyHelp": "업데이트 확인과 온라인 업그레이드 시 GitHub 접속에 사용합니다. http://, https://, socks5://를 지원하며, 비워 두면 HTTPS_PROXY 환경 변수를 따릅니다.",

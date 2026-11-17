@@ -146,7 +146,7 @@
     "title": "Rede",
     "dnsServers": "Servidores DNS",
     "dnsPlaceholder": "Deixe em branco para usar o DNS do sistema; informe um IP ou IP:porta",
-    "dnsHelp": "Afeta toda a resolução de nomes de saída (DDNS, Webhook, ACME etc.). Com vários servidores, um é escolhido aleatoriamente, com failover automático.",
+    "dnsHelp": "Afeta toda a resolução de nomes de saída (DDNS, Webhook, ACME etc.). Aceita IP, IP:porta, doh{'@'}host ou um endereço DoH https://. Com vários servidores, a consulta começa pelo que respondeu por último; se ele falhar ou não responder em 1 segundo, o próximo é consultado em paralelo e vale a primeira resposta.",
     "updateProxy": "Proxy de atualização",
     "updateProxyPlaceholder": "Vazio para conexão direta, ex.: http://127.0.0.1:7890",
     "updateProxyHelp": "Usado para acessar o GitHub ao verificar atualizações e atualizar online. Suporta http://, https:// e socks5://; vazio, vale a variável de ambiente HTTPS_PROXY.",
