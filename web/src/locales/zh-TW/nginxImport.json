@@ -1,6 +1,8 @@
 {
   "title": "匯入 nginx 設定",
   "intro": "貼上 server 區塊，或在 nginx 所在主機執行下面的指令並貼上完整輸出（會包含 include 的檔案）。匯入前會先預覽轉換結果，已存在的網域會略過。",
+  "npmIntro": "Nginx Proxy Manager：在 NPM 所在主機執行下面的指令（換成 NPM 的容器名稱），貼上完整輸出。",
+  "npmCommand": "docker exec <NPM 容器名稱> nginx -T",
   "readFile": "從檔案讀取",
   "preview": "預覽",
   "import": "匯入 {count} 個站點",
