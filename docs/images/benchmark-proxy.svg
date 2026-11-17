@@ -1,0 +1,201 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" role="img" aria-label="Reverse proxy performance (2 vCPU, same Debian 13 VM)">
+
+<style>
+  .t { font: 600 15px -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; fill: #1f1f1d; }
+  .h { font: 600 13px -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; fill: #1f1f1d; }
+  .n { font: 12px -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; fill: #52514e; }
+  .v { font: 12px ui-monospace, SFMono-Regular, Menlo, monospace; fill: #52514e; }
+  .hl .n, .hl .v { fill: #1f1f1d; font-weight: 600; }
+  .bar { fill: #b4b3ad; }
+  .hl .bar { fill: #0e7c66; }
+  .f { font: 11px -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; fill: #6f6e69; }
+  .panel { fill: none; stroke: #e2e1dc; }
+  @media (prefers-color-scheme: dark) {
+    .t, .h, .hl .n, .hl .v { fill: #f0efec; }
+    .n, .v { fill: #c3c2b7; }
+    .bar { fill: #55544f; }
+    .hl .bar { fill: #1aa886; }
+    .f { fill: #9b9a93; }
+    .panel { stroke: #3a3a37; }
+  }
+</style>
+
+<text class="t" x="2" y="24">Reverse proxy performance (2 vCPU, same Debian 13 VM)</text>
+<rect class="panel" x="1" y="50" width="466" height="216" rx="10"/>
+<text class="h" x="15" y="74">HTTPS requests/s (keep-alive)</text>
+<g>
+<text class="n" x="129" y="102" text-anchor="end">nginx</text>
+<rect class="bar" x="139" y="93" width="244.0" height="13" rx="4"/>
+<rect class="bar" x="139" y="93" width="4.0" height="13"/>
+<text class="v" x="389.0" y="102">85,434</text>
+</g>
+<g>
+<text class="n" x="129" y="126" text-anchor="end">HAProxy</text>
+<rect class="bar" x="139" y="117" width="239.8" height="13" rx="4"/>
+<rect class="bar" x="139" y="117" width="4.0" height="13"/>
+<text class="v" x="384.8" y="126">83,953</text>
+</g>
+<g>
+<text class="n" x="129" y="150" text-anchor="end">Traefik</text>
+<rect class="bar" x="139" y="141" width="102.3" height="13" rx="4"/>
+<rect class="bar" x="139" y="141" width="4.0" height="13"/>
+<text class="v" x="247.3" y="150">35,812</text>
+</g>
+<g>
+<text class="n" x="129" y="174" text-anchor="end">Nginx Proxy Manager</text>
+<rect class="bar" x="139" y="165" width="93.7" height="13" rx="4"/>
+<rect class="bar" x="139" y="165" width="4.0" height="13"/>
+<text class="v" x="238.7" y="174">32,816</text>
+</g>
+<g class="hl">
+<text class="n" x="129" y="198" text-anchor="end">Gately</text>
+<rect class="bar" x="139" y="189" width="93.6" height="13" rx="4"/>
+<rect class="bar" x="139" y="189" width="4.0" height="13"/>
+<text class="v" x="238.6" y="198">32,764</text>
+</g>
+<g>
+<text class="n" x="129" y="222" text-anchor="end">Caddy</text>
+<rect class="bar" x="139" y="213" width="65.3" height="13" rx="4"/>
+<rect class="bar" x="139" y="213" width="4.0" height="13"/>
+<text class="v" x="210.3" y="222">22,871</text>
+</g>
+<g>
+<text class="n" x="129" y="246" text-anchor="end">Lucky</text>
+<rect class="bar" x="139" y="237" width="41.1" height="13" rx="4"/>
+<rect class="bar" x="139" y="237" width="4.0" height="13"/>
+<text class="v" x="186.1" y="246">14,376</text>
+</g>
+<rect class="panel" x="493" y="50" width="466" height="216" rx="10"/>
+<text class="h" x="507" y="74">New TLS connections/s</text>
+<g class="hl">
+<text class="n" x="621" y="102" text-anchor="end">Gately</text>
+<rect class="bar" x="631" y="93" width="244.0" height="13" rx="4"/>
+<rect class="bar" x="631" y="93" width="4.0" height="13"/>
+<text class="v" x="881.0" y="102">4,636</text>
+</g>
+<g>
+<text class="n" x="621" y="126" text-anchor="end">Traefik</text>
+<rect class="bar" x="631" y="117" width="235.9" height="13" rx="4"/>
+<rect class="bar" x="631" y="117" width="4.0" height="13"/>
+<text class="v" x="872.9" y="126">4,482</text>
+</g>
+<g>
+<text class="n" x="621" y="150" text-anchor="end">Nginx Proxy Manager</text>
+<rect class="bar" x="631" y="141" width="211.3" height="13" rx="4"/>
+<rect class="bar" x="631" y="141" width="4.0" height="13"/>
+<text class="v" x="848.3" y="150">4,015</text>
+</g>
+<g>
+<text class="n" x="621" y="174" text-anchor="end">Caddy</text>
+<rect class="bar" x="631" y="165" width="209.8" height="13" rx="4"/>
+<rect class="bar" x="631" y="165" width="4.0" height="13"/>
+<text class="v" x="846.8" y="174">3,987</text>
+</g>
+<g>
+<text class="n" x="621" y="198" text-anchor="end">nginx</text>
+<rect class="bar" x="631" y="189" width="199.8" height="13" rx="4"/>
+<rect class="bar" x="631" y="189" width="4.0" height="13"/>
+<text class="v" x="836.8" y="198">3,796</text>
+</g>
+<g>
+<text class="n" x="621" y="222" text-anchor="end">Lucky</text>
+<rect class="bar" x="631" y="213" width="190.6" height="13" rx="4"/>
+<rect class="bar" x="631" y="213" width="4.0" height="13"/>
+<text class="v" x="827.6" y="222">3,621</text>
+</g>
+<g>
+<text class="n" x="621" y="246" text-anchor="end">HAProxy</text>
+<rect class="bar" x="631" y="237" width="173.3" height="13" rx="4"/>
+<rect class="bar" x="631" y="237" width="4.0" height="13"/>
+<text class="v" x="810.3" y="246">3,293</text>
+</g>
+<rect class="panel" x="1" y="290" width="466" height="216" rx="10"/>
+<text class="h" x="15" y="314">HTTP/2 requests/s</text>
+<g>
+<text class="n" x="129" y="342" text-anchor="end">HAProxy</text>
+<rect class="bar" x="139" y="333" width="244.0" height="13" rx="4"/>
+<rect class="bar" x="139" y="333" width="4.0" height="13"/>
+<text class="v" x="389.0" y="342">90,633</text>
+</g>
+<g>
+<text class="n" x="129" y="366" text-anchor="end">nginx</text>
+<rect class="bar" x="139" y="357" width="210.3" height="13" rx="4"/>
+<rect class="bar" x="139" y="357" width="4.0" height="13"/>
+<text class="v" x="355.3" y="366">78,110</text>
+</g>
+<g>
+<text class="n" x="129" y="390" text-anchor="end">Nginx Proxy Manager</text>
+<rect class="bar" x="139" y="381" width="93.4" height="13" rx="4"/>
+<rect class="bar" x="139" y="381" width="4.0" height="13"/>
+<text class="v" x="238.4" y="390">34,710</text>
+</g>
+<g class="hl">
+<text class="n" x="129" y="414" text-anchor="end">Gately</text>
+<rect class="bar" x="139" y="405" width="58.1" height="13" rx="4"/>
+<rect class="bar" x="139" y="405" width="4.0" height="13"/>
+<text class="v" x="203.1" y="414">21,591</text>
+</g>
+<g>
+<text class="n" x="129" y="438" text-anchor="end">Traefik</text>
+<rect class="bar" x="139" y="429" width="52.8" height="13" rx="4"/>
+<rect class="bar" x="139" y="429" width="4.0" height="13"/>
+<text class="v" x="197.8" y="438">19,606</text>
+</g>
+<g>
+<text class="n" x="129" y="462" text-anchor="end">Caddy</text>
+<rect class="bar" x="139" y="453" width="31.6" height="13" rx="4"/>
+<rect class="bar" x="139" y="453" width="4.0" height="13"/>
+<text class="v" x="176.6" y="462">11,746</text>
+</g>
+<g>
+<text class="n" x="129" y="486" text-anchor="end">Lucky</text>
+<rect class="bar" x="139" y="477" width="27.6" height="13" rx="4"/>
+<rect class="bar" x="139" y="477" width="4.0" height="13"/>
+<text class="v" x="172.6" y="486">10,261</text>
+</g>
+<rect class="panel" x="493" y="290" width="466" height="216" rx="10"/>
+<text class="h" x="507" y="314">Idle memory MiB (lower is better)</text>
+<g>
+<text class="n" x="621" y="342" text-anchor="end">nginx</text>
+<rect class="bar" x="631" y="333" width="24.6" height="13" rx="4"/>
+<rect class="bar" x="631" y="333" width="4.0" height="13"/>
+<text class="v" x="661.6" y="342">15.7</text>
+</g>
+<g>
+<text class="n" x="621" y="366" text-anchor="end">HAProxy</text>
+<rect class="bar" x="631" y="357" width="57.0" height="13" rx="4"/>
+<rect class="bar" x="631" y="357" width="4.0" height="13"/>
+<text class="v" x="694.0" y="366">36.4</text>
+</g>
+<g class="hl">
+<text class="n" x="621" y="390" text-anchor="end">Gately</text>
+<rect class="bar" x="631" y="381" width="74.6" height="13" rx="4"/>
+<rect class="bar" x="631" y="381" width="4.0" height="13"/>
+<text class="v" x="711.6" y="390">47.6</text>
+</g>
+<g>
+<text class="n" x="621" y="414" text-anchor="end">Caddy</text>
+<rect class="bar" x="631" y="405" width="76.5" height="13" rx="4"/>
+<rect class="bar" x="631" y="405" width="4.0" height="13"/>
+<text class="v" x="713.5" y="414">48.8</text>
+</g>
+<g>
+<text class="n" x="621" y="438" text-anchor="end">Traefik</text>
+<rect class="bar" x="631" y="429" width="139.5" height="13" rx="4"/>
+<rect class="bar" x="631" y="429" width="4.0" height="13"/>
+<text class="v" x="776.5" y="438">89.0</text>
+</g>
+<g>
+<text class="n" x="621" y="462" text-anchor="end">Lucky</text>
+<rect class="bar" x="631" y="453" width="195.3" height="13" rx="4"/>
+<rect class="bar" x="631" y="453" width="4.0" height="13"/>
+<text class="v" x="832.3" y="462">124.6</text>
+</g>
+<g>
+<text class="n" x="621" y="486" text-anchor="end">Nginx Proxy Manager</text>
+<rect class="bar" x="631" y="477" width="244.0" height="13" rx="4"/>
+<rect class="bar" x="631" y="477" width="4.0" height="13"/>
+<text class="v" x="881.0" y="486">155.7</text>
+</g>
+<text class="f" x="2" y="530">Data and scripts: tools/benchmark · gately.cn/en/docs/guide/benchmarks</text>
+</svg>

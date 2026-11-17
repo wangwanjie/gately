@@ -312,6 +312,21 @@ The File Browser module hosts [FileBrowser Quantum](https://github.com/gtsteffan
 
 ## Performance
 
+Gately was measured against the tools it replaces on the same Debian 13 VM, each limited to the same 2 vCPUs, with the backend and the load generators on other cores. Full results, methodology and the scripts to reproduce them: [Benchmarks](https://gately.cn/en/docs/guide/benchmarks) and [tools/benchmark](tools/benchmark).
+
+<p align="center"><img src="docs/images/benchmark-proxy.svg" alt="Reverse proxy benchmark: HTTPS requests per second, new TLS connections per second, HTTP/2 requests per second and idle memory for Gately, nginx, HAProxy, Caddy, Traefik, Lucky and Nginx Proxy Manager" width="100%"></p>
+
+- **Reverse proxy**: nginx and HAProxy (written in C) have the highest throughput. Gately serves 43% more HTTPS requests than Caddy and 2.3× Lucky, has the highest new TLS connection rate of the seven, and restarts in 0.4 s.
+- **1000 sites**: Gately loses only 6% (33,211 req/s), ahead of HAProxy, Traefik and Caddy.
+- **Web sign-in**: 26,726 req/s for signed-in users, 1.9× nginx + Authelia, with 45 MiB idle memory against 120 MiB.
+- **WAF (OWASP CRS 4.25)**: about 70% faster than nginx + ModSecurity on ordinary requests with identical block and false-positive results; ModSecurity is faster and uses far less memory when inspecting POST bodies.
+- **Intrusion prevention**: 10,000 attacking IPs banned in 12 s against 51 s for fail2ban, using less than half of fail2ban's CPU for the same log volume.
+- **Port knocking**: 8 ms from knock to open port (fwknop 9 ms), and traffic then goes straight through; fn-knock forwards traffic through its gateway, reaching 3% of the direct short-connection throughput.
+- **All in one**: reverse proxy, WAF, sign-in, 20 DDNS tasks, intrusion prevention and port knocking in one Gately take about 91 MiB, against about 204 MiB for nginx + ModSecurity + Authelia + ddns-go + fail2ban + fwknop. For a single job, small tools such as ddns-go, fail2ban and fwknop use less memory.
+
+<details>
+<summary><b>Replacing a haproxy + nginx chain</b></summary>
+
 Protocol routing by SNI plus Web Services can replace the common haproxy (TCP routing by SNI) + nginx (TLS and reverse proxy) pair. The numbers below compare the two on the same machine with the configuration of a real server: 90 domains routed by SNI, PROXY protocol v2 between the two hops, and an ECDSA P-256 certificate with TLS 1.3.
 
 | Scenario | haproxy + nginx | Gately |
@@ -324,8 +339,10 @@ Protocol routing by SNI plus Web Services can replace the common haproxy (TCP ro
 | SNI passthrough, new connections per second, 64 at a time | 6,334 /s | 6,266 /s (on par) |
 | Memory under load | haproxy ≈ 21 MB + nginx ≈ 21 MB | ≈ 110 MB (one process with every module) |
 
+</details>
+
 <details>
-<summary><b>How it was measured</b></summary>
+<summary><b>How the haproxy + nginx comparison was measured</b></summary>
 
 - Host: Intel Core i5-13500T. Each stack was limited to 2 CPU cores (haproxy and nginx in Docker with `--cpuset-cpus`, Gately pinned with `taskset`) to match a small cloud server. Backends and the load generator ran on other cores.
 - haproxy used `mode tcp` with `req_ssl_sni` rules and `send-proxy-v2`. nginx used `worker_processes 2` and the proxy settings of the production site, which send `Connection: upgrade` and therefore open a new backend connection per request; a tuned nginx with upstream keep-alive would narrow the gap on small responses.

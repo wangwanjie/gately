@@ -312,6 +312,21 @@ File Browser 模块托管 [FileBrowser Quantum](https://github.com/gtsteffaniak/
 
 ## 性能
 
+Gately 与它能替代的工具在同一台 Debian 13 虚拟机上对比，每个程序都限制在同样的 2 个 vCPU，源站与压测工具运行在其他核心。完整结果、测试方法与复现脚本见[性能对比](https://gately.cn/docs/guide/benchmarks)和 [tools/benchmark](tools/benchmark)。
+
+<p align="center"><img src="docs/images/benchmark-proxy.zh.svg" alt="反向代理性能对比：Gately、nginx、HAProxy、Caddy、Traefik、Lucky 与 Nginx Proxy Manager 的 HTTPS 请求/秒、TLS 新建连接/秒、HTTP/2 请求/秒与空闲内存" width="100%"></p>
+
+- **反向代理**：nginx、HAProxy（C 语言）吞吐最高；Gately 的 HTTPS 吞吐比 Caddy 高 43%、是 Lucky 的 2.3 倍，TLS 新建连接速率 7 个程序中最高，重启 0.4 秒。
+- **1000 个站点**：Gately 吞吐只降 6%（33,211 请求/秒），高于 HAProxy、Traefik 与 Caddy。
+- **网页认证**：已登录请求 26,726 请求/秒，是 nginx + Authelia 的 1.9 倍，空闲内存 45 MiB 对 120 MiB。
+- **WAF（OWASP CRS 4.25）**：普通请求比 nginx + ModSecurity 快约 70%，拦截与误报结果一致；检查 POST 请求体时 ModSecurity 更快、更省内存。
+- **入侵防护**：1 万个攻击 IP 12 秒封完，fail2ban 要 51 秒；同样日志量 CPU 不到 fail2ban 的一半。
+- **端口敲门**：敲门到放行 8 ms（fwknop 9 ms），放行后流量直连；飞牛敲门经网关转发，短连接吞吐只有直连的 3%。
+- **一体化**：反代 + WAF + 认证 + 20 个 DDNS + 入侵防护 + 端口敲门放在一个 Gately 里约 91 MiB，换成 nginx + ModSecurity + Authelia + ddns-go + fail2ban + fwknop 合计约 204 MiB。只需要单一功能时，ddns-go、fail2ban、fwknop 这类小工具的内存更少。
+
+<details>
+<summary><b>替换 haproxy + nginx 双跳链路</b></summary>
+
 按 SNI 的协议分流加 Web 服务，可以替代常见的 haproxy（按 SNI 做 TCP 分流）+ nginx（TLS 与反向代理）组合。下表在同一台机器上、按一台真实服务器的配置对比两者：90 个域名按 SNI 分流，两跳之间使用 PROXY 协议 v2，ECDSA P-256 证书，TLS 1.3。
 
 | 场景 | haproxy + nginx | Gately |
@@ -324,8 +339,10 @@ File Browser 模块托管 [FileBrowser Quantum](https://github.com/gtsteffaniak/
 | SNI 透传，每秒新建连接数，64 并发 | 6,334 /s | 6,266 /s（持平） |
 | 负载下的内存 | haproxy ≈ 21 MB + nginx ≈ 21 MB | ≈ 110 MB（包含全部模块的单个进程） |
 
+</details>
+
 <details>
-<summary><b>测试方法</b></summary>
+<summary><b>haproxy + nginx 对比的测试方法</b></summary>
 
 - 机器：Intel Core i5-13500T。为贴近小型云服务器，每套方案限制在 2 个 CPU 核心（haproxy 与 nginx 在 Docker 中用 `--cpuset-cpus`，Gately 用 `taskset` 绑核），后端与压测程序运行在其他核心。
 - haproxy 使用 `mode tcp`、`req_ssl_sni` 规则与 `send-proxy-v2`。nginx 使用 `worker_processes 2` 与生产站点的代理设置，其中 `Connection: upgrade` 会让每个请求新建一条后端连接；开启上游 keep-alive 的 nginx 在小响应上会缩小差距。
