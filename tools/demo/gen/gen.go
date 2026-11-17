@@ -22,6 +22,9 @@ type Options struct {
 	PortBase int
 	// AdminListen 写入全局设置的管理端口，空为 :16680
 	AdminListen string
+	// TrustedProxies 写入全局设置的可信代理（IP 或 CIDR）。演示实例在容器里由前置反向代理访问，
+	// 代理的地址是 Docker 网络里的地址，不属于本机；信任它后才会采信 X-Forwarded-Proto（会话 Cookie 加 Secure）与访客真实 IP
+	TrustedProxies []string
 }
 
 type generator struct {
@@ -100,11 +103,15 @@ func (g *generator) settings() error {
 	if listen == "" {
 		listen = ":16680"
 	}
-	return g.write("gately", obj{
+	set := obj{
 		"listen":             listen,
 		"language":           "zh-CN",
 		"timeZone":           "Asia/Shanghai",
 		"disableUpdateCheck": true,
 		"logLevel":           "info",
-	})
+	}
+	if len(g.opt.TrustedProxies) > 0 {
+		set["trustedProxies"] = g.opt.TrustedProxies
+	}
+	return g.write("gately", set)
 }
