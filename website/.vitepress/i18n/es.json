@@ -112,7 +112,7 @@
         {
           "from": "nginx, Nginx Proxy Manager",
           "module": "Servicios web",
-          "text": "Proxy inverso, sitios estáticos, redirecciones, HTTP/3, reglas de acceso por sitio; importa configuración de nginx"
+          "text": "Proxy inverso, sitios estáticos, redirecciones, HTTP/3, reglas de acceso por sitio; importa configuración de nginx y de Nginx Proxy Manager"
         },
         {
           "from": "certbot, acme.sh",
@@ -122,7 +122,7 @@
         {
           "from": "ddns-go, scripts de DDNS",
           "module": "DNS dinámico",
-          "text": "Más de 35 proveedores, IPv4 e IPv6"
+          "text": "Más de 30 proveedores, IPv4 e IPv6"
         },
         {
           "from": "Enrutamiento SNI de haproxy, sslh",
