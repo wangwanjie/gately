@@ -1760,7 +1760,8 @@ async function onDrop(l: ListenerView) {
 // 去掉运行状态字段，得到可提交的监听配置
 function plain(l: ListenerView): Listener {
   // 剥离仅用于展示的运行态字段，后端保存接口会拒绝未知字段
-  const { running: _r, error: _e, stats: _s, upstreams: _u, firewall: _f, firewallFailed: _ff, ...rest } = l
+  // siteCerts 为站点证书匹配结果，同样只用于展示，漏剥会让添加/编辑站点被后端以未知字段拒绝
+  const { running: _r, error: _e, stats: _s, upstreams: _u, firewall: _f, firewallFailed: _ff, siteCerts: _sc, ...rest } = l
   return JSON.parse(JSON.stringify(rest))
 }
 
