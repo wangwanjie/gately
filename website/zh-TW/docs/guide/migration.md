@@ -5,7 +5,7 @@
 Gately 可以直接讀取 Lucky 的 `.lkcf` 設定檔，或 Lucky「備份設定」匯出的整站 zip，把規則、工作、憑證遷移過來。整個過程不需要移除 Lucky，可以兩邊並存、逐個模組切換。
 
 ::: tip 從 nginx 遷移
-本文介紹從 Lucky 遷移。現有的 nginx 站台可以在「Web 服務 → 匯入 nginx」中直接匯入，見 [Web 服務 · 匯入 nginx 設定](/zh-TW/docs/modules/web#import-nginx)。
+本文介紹從 Lucky 遷移。現有的 nginx 站台可以在「Web 服務 → 匯入 nginx」中直接匯入，見 [Web 服務 · 匯入 nginx 設定](/zh-TW/docs/modules/web#import-nginx)。Nginx Proxy Manager 的設定同樣可以匯入，見 [匯入 Nginx Proxy Manager](/zh-TW/docs/modules/web#import-npm)。
 :::
 
 ## 1. 準備
