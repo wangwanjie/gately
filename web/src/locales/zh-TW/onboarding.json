@@ -1,23 +1,135 @@
 {
-  "title": "歡迎使用 Gately",
-  "subtitle": "完成幾個簡單步驟，讓閘道更安全、更省心。",
-  "go": "前往",
-  "later": "稍後提醒",
-  "done": "完成，不再提示",
-  "security": {
-    "title": "新增第二重驗證",
-    "desc": "啟用兩步驟驗證或註冊 Passkey，讓登入更安全。"
+  "scene": {
+    "title": "你打算用 Gately 做什麼？",
+    "subtitle": "可複選。只保留相關的功能，側邊欄更清爽；其餘功能隨時可在「設定 → 功能模組」中開啟。",
+    "items": {
+      "web": {
+        "title": "把內網服務發佈成網域",
+        "desc": "反向代理 + HTTPS 憑證，用自己的網域存取 NAS、Home Assistant 等"
+      },
+      "forward": {
+        "title": "連接埠轉發 / 打洞",
+        "desc": "TCP / UDP 連接埠轉發，沒有公網 IPv4 時搭配 STUN 打洞"
+      },
+      "ddns": {
+        "title": "動態網域",
+        "desc": "家用寬頻 IP 變更時自動更新 DNS 解析"
+      },
+      "mesh": {
+        "title": "異地組網",
+        "desc": "Tailscale、NetBird、EasyTier，讓異地裝置互相存取"
+      },
+      "files": {
+        "title": "檔案共享",
+        "desc": "WebDAV、SMB、FTP 與 File Browser"
+      },
+      "vps": {
+        "title": "VPS 入口",
+        "desc": "協定分流與 frp 伺服器，一個公網連接埠分給多個服務"
+      },
+      "all": {
+        "title": "全部功能",
+        "desc": "保留所有功能，適合想先全面看看的使用者"
+      }
+    },
+    "hintAll": "未選擇或選「全部功能」時保留所有功能。",
+    "hintSome": "將保留 {count} / {total} 個功能模組，其餘關閉（設定不會刪除），儲存後自動重新啟動一次。",
+    "skip": "略過，保留全部功能",
+    "confirm": "確定",
+    "restarting": "正在依所選情境重新啟動…"
   },
-  "check": {
-    "title": "執行網路自檢",
-    "desc": "提前發現 NAT、連接埠、時間與 DNS 方面的問題。"
+  "card": {
+    "title": "開始使用",
+    "progress": "已完成 {done} / {total} 項",
+    "allDone": "全部完成，可以關閉這張卡片了",
+    "close": "關閉",
+    "closeConfirm": "關閉後不再顯示「開始使用」清單，確定嗎？",
+    "doneLabel": "已完成",
+    "todoLabel": "未完成",
+    "again": "再來一次"
+  },
+  "items": {
+    "site": {
+      "title": "發佈第一個站台",
+      "desc": "填入網域和後端位址，一步建好監聽與站台",
+      "action": "快速建站"
+    },
+    "https": {
+      "title": "為站台啟用 HTTPS",
+      "desc": "選用既有憑證，或用 DNS / HTTP 驗證自動申請",
+      "action": "前往設定"
+    },
+    "ddns": {
+      "title": "讓網域指向這台裝置",
+      "desc": "新增動態網域任務，IP 變更時自動更新解析",
+      "action": "新增任務"
+    },
+    "portforward": {
+      "title": "新增第一條轉發規則",
+      "desc": "把一個連接埠轉發到內網裝置，例如 NAS 的 SSH",
+      "action": "新增規則"
+    },
+    "stun": {
+      "title": "沒有公網 IPv4？試試 STUN 打洞",
+      "desc": "在 NAT1 網路下取得可從外網存取的連接埠",
+      "action": "前往設定"
+    },
+    "mesh": {
+      "title": "加入一個組網",
+      "desc": "新增 Tailscale、NetBird 或 EasyTier 實例",
+      "action": "前往新增"
+    },
+    "fileuser": {
+      "title": "新增共享使用者",
+      "desc": "WebDAV、SMB、FTP 共用的登入帳號與目錄",
+      "action": "新增使用者"
+    },
+    "fileservice": {
+      "title": "開啟一個檔案服務",
+      "desc": "選擇 WebDAV、SMB、FTP 或 File Browser",
+      "action": "前往開啟"
+    },
+    "protoroute": {
+      "title": "新增協定分流規則",
+      "desc": "讓一個連接埠同時承載 HTTPS、SSH、frp 等協定",
+      "action": "新增規則"
+    },
+    "frps": {
+      "title": "啟動 frp 伺服器",
+      "desc": "讓家裡的 frp 用戶端經由這台 VPS 對外提供服務",
+      "action": "前往設定"
+    },
+    "security": {
+      "title": "新增第二重驗證",
+      "desc": "啟用兩步驟驗證或註冊 Passkey，讓登入更安全",
+      "action": "前往設定"
+    },
+    "check": {
+      "title": "執行網路自我檢查",
+      "desc": "提前發現 NAT、連接埠、時間與 DNS 方面的問題",
+      "action": "執行"
+    },
+    "import": {
+      "title": "匯入現有設定",
+      "desc": "從 nginx、Nginx Proxy Manager、frp 或 Lucky 遷移",
+      "action": "選擇來源"
+    },
+    "notify": {
+      "title": "設定通知",
+      "desc": "用現成的範本接收更新失敗、憑證到期與登入提醒",
+      "action": "前往設定"
+    }
   },
   "import": {
-    "title": "從 Lucky 匯入",
-    "desc": "匯入現有的 Lucky 設定（.lkcf），依模組逐步遷移。"
+    "title": "匯入現有設定",
+    "desc": "選擇要遷移的來源，匯入前都可以先預覽。",
+    "open": "開啟",
+    "nginx": "貼上或上傳 nginx 的 server 設定，轉換為監聽與站台",
+    "npm": "上傳資料目錄 nginx/proxy_host 下的 .conf 檔案，依 nginx 設定匯入",
+    "frp": "貼上 frpc / frps 的設定檔",
+    "lucky": "在「設定 → 備份與遷移」中匯入 .lkcf 設定"
   },
-  "notify": {
-    "title": "設定通知",
-    "desc": "用現成的範本接收更新失敗、憑證到期與登入提醒。"
+  "addFeatures": {
+    "title": "新增更多功能"
   }
 }
