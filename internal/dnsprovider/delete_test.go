@@ -53,6 +53,13 @@ func TestPickTargets(t *testing.T) {
 	if !sameValue("TXT", `"hello"`, "hello") || !sameValue("CNAME", "Target.Example.com.", "target.example.com") || sameValue("A", "1.1.1.1", "1.1.1.2") {
 		t.Fatal("记录值比较错误")
 	}
+	// A/AAAA 按地址比较：IPv6 展开、大写写法与压缩写法相同，IPv4 映射地址与 IPv4 相同
+	if !sameValue("AAAA", "2001:0DB8:0000:0000:0000:0000:0000:0001", "2001:db8::1") ||
+		sameValue("AAAA", "2001:db8::1", "2001:db8::2") ||
+		!sameValue("A", "::ffff:203.0.113.1", "203.0.113.1") ||
+		!sameValue("A", " 203.0.113.1 ", "203.0.113.1") {
+		t.Fatal("地址比较错误")
+	}
 }
 
 // 阿里云：只删除默认线路上同名同类型的记录。
