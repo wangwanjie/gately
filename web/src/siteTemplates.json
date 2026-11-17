@@ -1,0 +1,84 @@
+[
+  {
+    "id": "homeassistant",
+    "name": "Home Assistant",
+    "icon": "homeassistant",
+    "scheme": "http",
+    "port": 8123,
+    "https": true,
+    "site": { "forwardedHeaders": true }
+  },
+  {
+    "id": "jellyfin",
+    "name": "Jellyfin",
+    "icon": "jellyfin",
+    "scheme": "http",
+    "port": 8096,
+    "https": true,
+    "site": { "forwardedHeaders": true, "clientTimeouts": { "readIdle": 0, "writeIdle": 300 } }
+  },
+  {
+    "id": "emby",
+    "name": "Emby",
+    "icon": "emby",
+    "scheme": "http",
+    "port": 8096,
+    "https": true,
+    "site": { "forwardedHeaders": true, "clientTimeouts": { "readIdle": 0, "writeIdle": 300 } }
+  },
+  {
+    "id": "vaultwarden",
+    "name": "Vaultwarden",
+    "icon": "vaultwarden",
+    "scheme": "http",
+    "port": 80,
+    "https": true,
+    "site": { "forwardedHeaders": true }
+  },
+  {
+    "id": "nextcloud",
+    "name": "Nextcloud",
+    "icon": "nextcloud",
+    "scheme": "http",
+    "port": 80,
+    "https": true,
+    "site": { "forwardedHeaders": true, "clientTimeouts": { "readIdle": 300, "writeIdle": 300 } }
+  },
+  {
+    "id": "immich",
+    "name": "Immich",
+    "icon": "immich",
+    "scheme": "http",
+    "port": 2283,
+    "https": true,
+    "site": { "forwardedHeaders": true, "clientTimeouts": { "readIdle": 300, "writeIdle": 300 } }
+  },
+  {
+    "id": "proxmox",
+    "name": "Proxmox VE",
+    "icon": "proxmox",
+    "scheme": "https",
+    "port": 8006,
+    "https": true,
+    "site": { "forwardedHeaders": true, "insecureSkipVerify": true }
+  },
+  {
+    "id": "synology",
+    "name": "Synology DSM",
+    "icon": "synology",
+    "scheme": "https",
+    "port": 5001,
+    "https": true,
+    "site": { "forwardedHeaders": true, "insecureSkipVerify": true }
+  },
+  {
+    "id": "fnos",
+    "name": "fnOS",
+    "icon": "hard-drive",
+    "color": "#1f6feb",
+    "scheme": "http",
+    "port": 5666,
+    "https": true,
+    "site": { "forwardedHeaders": true, "clientTimeouts": { "readIdle": 300, "writeIdle": 300 } }
+  }
+]
