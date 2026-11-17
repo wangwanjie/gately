@@ -6,6 +6,12 @@
   "editRule": "ルールを編集",
   "moduleOffTitle": "ポート転送モジュールは無効です",
   "empty": "ルールがありません。追加するか、「設定 → バックアップと移行」から Lucky の設定をインポートできます",
+  "templates": {
+    "title": "よくある使い方から始める:",
+    "ssh": "NAS の SSH を転送",
+    "rdp": "Windows リモートデスクトップ",
+    "web": "機器の Web 管理画面"
+  },
   "unnamed": "名称未設定",
   "listen": "待ち受け",
   "target": "転送先",

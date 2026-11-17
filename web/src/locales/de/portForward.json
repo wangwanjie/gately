@@ -6,6 +6,12 @@
   "editRule": "Regel bearbeiten",
   "moduleOffTitle": "Das Modul Portweiterleitung ist deaktiviert",
   "empty": "Noch keine Regeln. Fügen Sie eine hinzu oder importieren Sie eine Lucky-Konfiguration unter „Einstellungen → Sicherung & Migration“",
+  "templates": {
+    "title": "Mit einem gängigen Fall beginnen:",
+    "ssh": "SSH zu einem NAS",
+    "rdp": "Windows-Remotedesktop",
+    "web": "Web-Verwaltungsseite eines Geräts"
+  },
   "unnamed": "Unbenannt",
   "listen": "Lauschen",
   "target": "Ziel",

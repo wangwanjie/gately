@@ -22,7 +22,8 @@
       </el-button>
       <el-button :icon="FileInput" @click="nginxImport?.open()">{{ t('web.importNginx') }}</el-button>
       <el-button :icon="SlidersHorizontal" @click="openSettings">{{ t('web.globalSettings') }}</el-button>
-      <el-button type="primary" :icon="Plus" @click="openListener()">{{ t('web.addListener') }}</el-button>
+      <el-button :icon="Plus" @click="openListener()">{{ t('web.addListener') }}</el-button>
+      <el-button type="primary" :icon="WandSparkles" data-testid="quick-site" @click="quickSite?.open()">{{ t('quickSite.button') }}</el-button>
     </PageHeader>
 
     <ModuleBanner v-if="moduleOff" :title="t('web.moduleOffTitle')" :desc="t('web.moduleOffDesc')" :loading="enabling" @enable="enableModule" />
@@ -49,7 +50,11 @@
     <div v-loading="loading" class="card-list">
       <LoadError v-if="loadError && listeners.length" bar :error="loadError" @retry="load" />
       <LoadError v-if="!loading && loadError && !listeners.length" :error="loadError" @retry="load" />
-      <el-empty v-else-if="!loading && !listeners.length" :description="t('web.empty')" />
+      <el-empty v-else-if="!loading && !listeners.length" :description="t('web.empty')">
+        <!-- 空状态：一步建好监听与站点 -->
+        <div class="empty-hint">{{ t('quickSite.emptyHint') }}</div>
+        <el-button type="primary" :icon="WandSparkles" data-testid="quick-site-empty" @click="quickSite?.open()">{{ t('quickSite.button') }}</el-button>
+      </el-empty>
       <EntityCard
         v-for="(l, li) in listeners"
         :key="l.key"
@@ -704,6 +709,7 @@
       </template>
     </el-dialog>
     <NginxImport ref="nginxImport" @imported="load" />
+    <QuickSite ref="quickSite" @done="load" />
     <ErrorPagesManager v-model="errorPagesVisible" />
   </div>
 </template>
@@ -730,6 +736,7 @@ import {
   ListChecks,
   Pencil,
   Plus,
+  WandSparkles,
   Search,
   Server,
   Shield,
@@ -770,6 +777,7 @@ import { type AuthUser, fromAPI } from '../sharedUsers'
 import AccessSettings from '../components/AccessSettings.vue'
 import IPListsManager from '../components/IPListsManager.vue'
 import NginxImport from '../components/NginxImport.vue'
+import QuickSite from '../components/QuickSite.vue'
 import SiteTraffic, { type BackendTimeouts, type CacheSettings, type CacheTarget, type ClientTimeouts, type Rewrite } from '../components/SiteTraffic.vue'
 import SiteStats from '../components/SiteStats.vue'
 import SiteConns from '../components/SiteConns.vue'
@@ -973,6 +981,7 @@ const { isCollapsed, setCollapsed, setAll, allCollapsed } = useCollapsed('web')
 const allListenersCollapsed = allCollapsed(() => listeners.value.map((l) => l.key))
 const wafInstances = ref<{ key: string; name: string }[]>([])
 const nginxImport = ref<InstanceType<typeof NginxImport>>()
+const quickSite = ref<InstanceType<typeof QuickSite>>()
 // ipLists 为订阅的 IP 列表，供站点与路径规则的访问控制引用
 const ipLists = ref<{ key: string; name: string; loaded: boolean }[]>([])
 const loading = ref(true)
@@ -1829,6 +1838,18 @@ function visibleItems(l: ListenerView): GroupItem<SiteRow>[] {
 
 // 拓扑页点“编辑”会带上 editListener、editSite 跳到本页，列表加载后打开对应站点的编辑框并清掉参数
 async function openFromQuery() {
+  // ?quick=1 / ?quick=https 打开快速建站向导（总览「开始使用」清单），?import=nginx 打开 nginx 导入（「导入现有配置」）
+  const quick = route.query.quick
+  const imp = route.query.import
+  if (typeof quick === 'string' || imp === 'nginx') {
+    await router.replace({ query: {} })
+    if (typeof quick === 'string') {
+      void quickSite.value?.open({ https: quick === 'https' ? true : undefined })
+    } else {
+      nginxImport.value?.open()
+    }
+    return
+  }
   const lk = route.query.editListener
   const sk = route.query.editSite
   if (typeof lk !== 'string' || typeof sk !== 'string') {
@@ -2451,6 +2472,11 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.empty-hint {
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: var(--el-text-color-secondary);
+}
 /* 认证标记密钥：输入框占满剩余宽度，窄屏时按钮换到下一行 */
 .marker-key {
   display: flex;

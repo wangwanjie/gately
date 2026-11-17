@@ -963,8 +963,11 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/system/restore` | 仅登录会话 | 从备份恢复配置 |
 | POST | `/api/system/restart` | 仅登录会话 | 重启 Gately |
 | POST | `/api/system/selfcheck` | 仅登录会话 | 网络与配置自检 |
-| GET | `/api/system/onboarding` | 仅登录会话 | 是否需要首次启动引导 |
-| POST | `/api/system/onboarding/dismiss` | 仅登录会话 | 完成或跳过首次启动引导 |
+| GET | `/api/system/onboarding` | 仅登录会话 | 首次启动引导状态 |
+| POST | `/api/system/onboarding/dismiss` | 仅登录会话 | 完成或关闭首次启动引导 |
+| POST | `/api/system/onboarding/scenes` | 仅登录会话 | 记录选择的使用场景 |
+| POST | `/api/system/onboarding/done` | 仅登录会话 | 把「开始使用」清单项标记为完成 |
+| POST | `/api/system/probe` | 仅登录会话 | 测试后端地址是否可达 |
 | GET | `/api/openapi.json` | 任意有效令牌 | 获取本 API 的 OpenAPI 描述 |
 
 ## 配置导入

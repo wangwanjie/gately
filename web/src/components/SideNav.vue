@@ -46,6 +46,7 @@
         </template>
       </div>
     </div>
+    <AddFeaturesLink :collapsed="collapsed" @navigate="$emit('navigate')" />
   </nav>
 </template>
 
@@ -55,6 +56,7 @@ import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { ChevronRight, Search } from 'lucide-vue-next'
 import AppLogo from './AppLogo.vue'
+import AddFeaturesLink from './AddFeaturesLink.vue'
 import { navByPath, navGroups, visibleNavGroups } from '../nav'
 
 // collapsible 为分组是否可折叠（手机抽屉）

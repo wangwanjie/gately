@@ -86,20 +86,6 @@ func (a *App) userError(w http.ResponseWriter, err error) {
 	httpx.Error(w, http.StatusBadRequest, "%v", err)
 }
 
-// handleOnboarding 返回是否需要展示首次启动引导（全新安装且尚未完成）。
-func (a *App) handleOnboarding(w http.ResponseWriter, r *http.Request) {
-	httpx.OK(w, map[string]bool{"pending": a.auth.OnboardingPending()})
-}
-
-// handleOnboardingDismiss 标记引导已完成。
-func (a *App) handleOnboardingDismiss(w http.ResponseWriter, r *http.Request) {
-	if err := a.auth.DismissOnboarding(); err != nil {
-		httpx.Error(w, http.StatusInternalServerError, "%v", err)
-		return
-	}
-	httpx.OK(w, map[string]bool{"pending": false})
-}
-
 // resetPollInterval 是运行中的实例检查命令行重置请求的间隔。
 const resetPollInterval = 2 * time.Second
 

@@ -963,8 +963,11 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | POST | `/api/system/restore` | Nur Anmeldesitzung | Konfiguration aus Backup wiederherstellen |
 | POST | `/api/system/restart` | Nur Anmeldesitzung | Gately neu starten |
 | POST | `/api/system/selfcheck` | Nur Anmeldesitzung | Selbsttest von Netzwerk und Konfiguration |
-| GET | `/api/system/onboarding` | Nur Anmeldesitzung | Ob die Ersteinrichtung aussteht |
-| POST | `/api/system/onboarding/dismiss` | Nur Anmeldesitzung | Ersteinrichtung abschließen oder überspringen |
+| GET | `/api/system/onboarding` | Nur Anmeldesitzung | Status der Einführung beim ersten Start |
+| POST | `/api/system/onboarding/dismiss` | Nur Anmeldesitzung | Einführung beim ersten Start abschließen oder schließen |
+| POST | `/api/system/onboarding/scenes` | Nur Anmeldesitzung | Gewählte Einsatzzwecke speichern |
+| POST | `/api/system/onboarding/done` | Nur Anmeldesitzung | Punkt der Checkliste „Erste Schritte“ als erledigt markieren |
+| POST | `/api/system/probe` | Nur Anmeldesitzung | Testen, ob eine Backend-Adresse erreichbar ist |
 | GET | `/api/openapi.json` | Beliebiges gültiges Token | OpenAPI-Beschreibung dieser API abrufen |
 
 ## Konfigurationsimport

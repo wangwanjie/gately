@@ -6,6 +6,12 @@
   "editRule": "編輯規則",
   "moduleOffTitle": "連接埠轉發模組已停用",
   "empty": "暫無規則，可新增或在「設定 → 備份與遷移」中匯入 Lucky 設定",
+  "templates": {
+    "title": "從常見情境開始：",
+    "ssh": "轉發 NAS 的 SSH",
+    "rdp": "Windows 遠端桌面",
+    "web": "裝置的網頁管理介面"
+  },
   "unnamed": "未命名",
   "listen": "監聽",
   "target": "目標",

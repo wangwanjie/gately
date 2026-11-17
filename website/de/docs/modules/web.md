@@ -2,6 +2,16 @@
 
 Stellen Sie Reverse Proxy, Weiterleitungen, statische Dateien und festen Text pro Domain bereit. Das ist der einheitliche Web-Einstiegspunkt von Gately. Menüpunkt: Seitenleiste „Web → Web-Dienste“.
 
+## Schnell-Website {#quick-site}
+
+„Schnell-Website“ in der Seitenkopfzeile (auch auf der leeren Seite, wenn es keine Listener gibt) richtet in drei Schritten eine Reverse-Proxy-Website ein, ohne dass Sie zuvor den Zusammenhang von Listenern und Websites kennen müssen:
+
+1. Domain: die Domain, die Sie im Browser eingeben; `*.example.com` wird unterstützt.
+2. Backend-Adresse: Ohne Schema wird `http://` verwendet, bei Port 443 `https://`. „Testen“ baut eine einzelne TCP-Verbindung auf oder sendet eine einzelne HEAD-Anfrage, die Weiterleitungen nicht folgt, und zeigt, ob das Backend erreichbar ist, samt Statuscode; bei einem selbstsignierten Backend-Zertifikat wird „Zertifikatsprüfung des Backends überspringen“ automatisch angehakt. Vorlagen für gängige Anwendungen (Home Assistant, Jellyfin, Emby, Vaultwarden, Nextcloud, Immich, Proxmox VE, Synology DSM, fnOS) füllen Port und empfohlene Optionen vor, etwa längere Leerlauf-Timeouts für Besucher bei Medien- und Foto-Anwendungen und übersprungene Zertifikatsprüfung des Backends bei Proxmox und DSM, und erklären, was in der Anwendung selbst noch eingestellt werden muss. WebSocket wird automatisch weitergeleitet.
+3. HTTP oder HTTPS: Standardmäßig wird ein vorhandener Listener mit demselben Protokoll auf Port 443 oder 80 wiederverwendet; Sie können auch einen anderen Listener wählen oder einen neuen anlegen (mit eigenem Port). Ein neuer HTTPS-Listener erhält zusätzlich den HTTP-Port 80, der auf HTTPS umleitet, sofern Port 80 frei ist. Bei HTTPS wird ein vorhandenes Zertifikat verwendet, das die Domain abdeckt; andernfalls wählen Sie die DNS-Validierung (Anbieter und Zugangsdaten, mit dem Link „Zugangsdaten abrufen“) oder die HTTP-Validierung und geben die E-Mail-Adresse des ACME-Kontos ein (vorausgefüllt mit der Standard-E-Mail aus den Verlängerungseinstellungen des Zertifikatsmoduls). Nach dem Veröffentlichen wird das Zertifikat im Hintergrund angefordert, und der letzte Schritt verlinkt auf die Zertifikatsseite, um den Fortschritt zu verfolgen.
+
+Der letzte Schritt zeigt die anklickbare Adresse und was zu tun ist, wenn die Domain noch nicht auf dieses Gerät zeigt (DNS-Eintrag, dynamisches DNS, lokale hosts-Datei). Danach lassen sich alle Optionen der Website wie gewohnt in der Liste bearbeiten.
+
 ## Aufbau: Listener, Sites und Standard-Site
 
 Die Konfiguration hat drei Ebenen:

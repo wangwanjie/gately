@@ -6,6 +6,12 @@
   "editRule": "규칙 편집",
   "moduleOffTitle": "포트 포워딩 모듈을 사용하지 않습니다",
   "empty": "규칙이 없습니다. 추가하거나 「설정 → 백업 및 마이그레이션」에서 Lucky 설정을 가져오세요",
+  "templates": {
+    "title": "자주 쓰는 사례로 시작:",
+    "ssh": "NAS의 SSH 포워딩",
+    "rdp": "Windows 원격 데스크톱",
+    "web": "기기의 웹 관리 화면"
+  },
   "unnamed": "이름 없음",
   "listen": "수신",
   "target": "대상",

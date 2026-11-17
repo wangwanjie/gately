@@ -43555,7 +43555,7 @@
     },
     "/api/system/onboarding": {
       "get": {
-        "description": "僅限登入工作階段使用。全新安裝且尚未完成引導時 `pending` 為 true。\n\n**僅限登入工作階段使用，API 權杖無法存取此介面。**",
+        "description": "僅登入工作階段可用。全新安裝且尚未完成引導時 `pending` 為 true（顯示「開始使用」清單）；`scenePending` 為 true 時需要先選擇使用場景（只在全新安裝、設定目錄裡還沒有任何設定檔時出現）；`scenes` 為選擇的使用場景，`done` 為手動標記完成的清單項。\n\n**僅限登入工作階段使用，API 權杖無法存取此介面。**",
         "responses": {
           "200": {
             "description": "成功"
@@ -43591,7 +43591,7 @@
             "description": "權杖缺少所需權限"
           }
         },
-        "summary": "是否需要首次啟動引導",
+        "summary": "首次啟動引導狀態",
         "tags": [
           "系統"
         ],
@@ -43601,7 +43601,7 @@
     },
     "/api/system/onboarding/dismiss": {
       "post": {
-        "description": "僅限登入工作階段使用。\n\n**僅限登入工作階段使用，API 權杖無法存取此介面。**",
+        "description": "僅登入工作階段可用。之後不再顯示「開始使用」清單，也不再詢問使用場景。\n\n**僅限登入工作階段使用，API 權杖無法存取此介面。**",
         "responses": {
           "200": {
             "description": "成功"
@@ -43637,7 +43637,172 @@
             "description": "權杖缺少所需權限"
           }
         },
-        "summary": "完成或略過首次啟動引導",
+        "summary": "完成或關閉首次啟動引導",
+        "tags": [
+          "系統"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/onboarding/done": {
+      "post": {
+        "description": "僅登入工作階段可用。body 為 `{\"item\": \"check\"}`，用於無法從設定判斷是否完成的項目（如網路自檢）。\n\n**僅限登入工作階段使用，API 權杖無法存取此介面。**",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "summary": "把「開始使用」清單項標記為完成",
+        "tags": [
+          "系統"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/onboarding/scenes": {
+      "post": {
+        "description": "僅登入工作階段可用。body 為 `{\"scenes\": [...]}`，可選 `web`、`forward`、`ddns`、`mesh`、`files`、`vps`、`all`，為空表示跳過選擇。只記錄選擇並結束場景選擇，功能模組開關透過 `PUT /api/system/settings` 的 `disabledModules` 儲存。\n\n**僅限登入工作階段使用，API 權杖無法存取此介面。**",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "summary": "記錄選擇的使用場景",
+        "tags": [
+          "系統"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/probe": {
+      "post": {
+        "description": "僅管理員登入工作階段可用（唯讀帳號與 API 權杖不能呼叫）。body 為 `{\"target\": \"http://192.168.1.10:8123\"}`：`http(s)://` 位址向根路徑發一次不跟隨跳轉的 HEAD 請求，`主機:連接埠` 只測試 TCP 連線，5 秒逾時。回傳 `reachable`、`status`（HTTP 狀態碼）、`insecure`（https 後端憑證無法通過驗證、略過驗證後可連線）、`reason`（無法連線的類別：refused、timeout、dns、tls、protocol、unreachable、error）與 `elapsedMs`，不回傳回應標頭和回應內容。\n\n**僅限登入工作階段使用，API 權杖無法存取此介面。**",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "summary": "測試後端位址是否可連線",
         "tags": [
           "系統"
         ],

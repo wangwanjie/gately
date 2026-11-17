@@ -963,8 +963,11 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | POST | `/api/system/restore` | Login sessions only | Restore configuration from a backup |
 | POST | `/api/system/restart` | Login sessions only | Restart Gately |
 | POST | `/api/system/selfcheck` | Login sessions only | Network and configuration self-check |
-| GET | `/api/system/onboarding` | Login sessions only | Whether first-run onboarding is pending |
-| POST | `/api/system/onboarding/dismiss` | Login sessions only | Complete or skip first-run onboarding |
+| GET | `/api/system/onboarding` | Login sessions only | First-run onboarding status |
+| POST | `/api/system/onboarding/dismiss` | Login sessions only | Finish or close the first-run onboarding |
+| POST | `/api/system/onboarding/scenes` | Login sessions only | Record the chosen usage scenes |
+| POST | `/api/system/onboarding/done` | Login sessions only | Mark a Getting started checklist item as done |
+| POST | `/api/system/probe` | Login sessions only | Test whether a backend address is reachable |
 | GET | `/api/openapi.json` | Any valid token | Get the OpenAPI description of this API |
 
 ## Configuration import

@@ -6,6 +6,12 @@
   "editRule": "Editar regla",
   "moduleOffTitle": "El módulo de reenvío de puertos está desactivado",
   "empty": "Aún no hay reglas. Añade una o importa una configuración de Lucky en \"Ajustes → Copia de seguridad y migración\"",
+  "templates": {
+    "title": "Empieza con un caso habitual:",
+    "ssh": "SSH a un NAS",
+    "rdp": "Escritorio remoto de Windows",
+    "web": "Página de administración web de un dispositivo"
+  },
   "unnamed": "Sin nombre",
   "listen": "Escucha",
   "target": "Destino",

@@ -6,6 +6,12 @@
   "moduleOffTitle": "Dynamic DNS module is disabled",
   "moduleOffDesc": "While the module is disabled, no IP checks run and no DNS records are updated. After enabling, each task runs according to its own switch.",
   "empty": "No tasks yet. Add one, or import a Lucky config in \"Settings → Backup & Migration\"",
+  "templates": {
+    "title": "Start from a common case:",
+    "cloudflare4": "Cloudflare, home IPv4",
+    "alidns46": "Alibaba Cloud, IPv4 + IPv6",
+    "dnspod6": "DNSPod, IPv6 only"
+  },
   "lastCheck": "Last check",
   "nextCheck": "Next check",
   "noRecords": "No DNS records",

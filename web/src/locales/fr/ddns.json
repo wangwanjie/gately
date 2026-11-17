@@ -6,6 +6,12 @@
   "moduleOffTitle": "Le module DNS dynamique est désactivé",
   "moduleOffDesc": "Tant que le module est désactivé, aucune vérification d'IP n'est effectuée et aucun enregistrement DNS n'est mis à jour. Une fois activé, chaque tâche s'exécute selon son propre interrupteur.",
   "empty": "Aucune tâche. Ajoutez-en une ou importez une configuration Lucky via « Paramètres → Sauvegarde et migration »",
+  "templates": {
+    "title": "Partir d'un cas courant :",
+    "cloudflare4": "Cloudflare, IPv4 domestique",
+    "alidns46": "Alibaba Cloud, IPv4 + IPv6",
+    "dnspod6": "DNSPod, IPv6 uniquement"
+  },
   "lastCheck": "Dernière vérification",
   "nextCheck": "Prochaine vérification",
   "noRecords": "Aucun enregistrement DNS",

@@ -6,6 +6,12 @@
   "editRule": "Edit rule",
   "moduleOffTitle": "The port forwarding module is disabled",
   "empty": "No rules yet. Add one, or import a Lucky config under \"Settings → Backup & Migration\"",
+  "templates": {
+    "title": "Start from a common case:",
+    "ssh": "SSH to a NAS",
+    "rdp": "Windows Remote Desktop",
+    "web": "A device's web admin page"
+  },
   "unnamed": "Unnamed",
   "listen": "Listen",
   "target": "Target",

@@ -6,6 +6,12 @@
   "moduleOffTitle": "동적 DNS 모듈을 사용하지 않습니다",
   "moduleOffDesc": "모듈을 사용하지 않는 동안 IP를 확인하거나 DNS 레코드를 업데이트하지 않습니다. 모듈을 사용하면 각 작업은 자체 스위치에 따라 동작합니다.",
   "empty": "작업이 없습니다. 추가하거나 「설정 → 백업 및 마이그레이션」에서 Lucky 설정을 가져오세요",
+  "templates": {
+    "title": "자주 쓰는 사례로 시작:",
+    "cloudflare4": "Cloudflare 가정용 IPv4",
+    "alidns46": "알리바바 클라우드 IPv4 + IPv6",
+    "dnspod6": "DNSPod IPv6 전용"
+  },
   "lastCheck": "마지막 확인",
   "nextCheck": "다음 확인",
   "noRecords": "DNS 레코드가 없습니다",

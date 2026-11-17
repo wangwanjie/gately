@@ -10,6 +10,14 @@
     <ModuleBanner v-if="settings && !settings.enable" :title="t('portForward.moduleOffTitle')" :loading="enabling" @enable="enableModule" />
 
     <GroupedList :gl="gl" :error="loadError" @retry="load" :loading="loading" :compact="compact" :empty-text="t('portForward.empty')" :count-text="(n: number) => t('portForward.groupCount', { count: n })">
+      <template #empty>
+        <div class="tpl-empty">
+          <div class="tpl-empty-title">{{ t('portForward.templates.title') }}</div>
+          <div class="tpl-empty-list">
+            <el-button v-for="tp in PORTFORWARD_TEMPLATES" :key="tp.id" :data-tpl="tp.id" @click="openTemplate(tp)">{{ t(`portForward.templates.${tp.id}`) }}</el-button>
+          </div>
+        </div>
+      </template>
       <template #item="{ it, sorting, bind }">
       <EntityCard
         v-bind="bind"
@@ -168,6 +176,7 @@ import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { ArrowLeftRight, CopyPlus, Pencil, Plus, SlidersHorizontal, Trash2, TriangleAlert } from 'lucide-vue-next'
 import { api, errorText, formatBytes } from '../api'
 import GroupedList from '../components/GroupedList.vue'
+import { PORTFORWARD_TEMPLATES, type PortForwardTemplate } from '../emptyTemplates'
 import GroupInput from '../components/GroupInput.vue'
 import IPAccessEditor from '../components/IPAccessEditor.vue'
 import { knockRuleName, useKnockRules } from '../composables/useKnockRules'
@@ -383,6 +392,15 @@ const advCount = computed(() => {
 })
 
 // openEditor 打开编辑框：copy 为 true 时以 row 为模板新建副本
+// openTemplate 按场景模板打开新建表单：预填名称、协议与端口，目标地址由用户填写
+function openTemplate(tp: PortForwardTemplate) {
+  openEditor()
+  editing.value.name = t(`portForward.templates.${tp.id}`)
+  editing.value.protocols = [...tp.protocols]
+  editing.value.listenPorts = tp.listenPorts
+  editing.value.targetPorts = tp.targetPorts
+}
+
 function openEditor(row?: RuleView, copy = false) {
   copyFrom.value = null
   if (row) {
@@ -508,6 +526,21 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* 空状态的场景模板按钮 */
+.tpl-empty-title {
+  margin-bottom: 10px;
+  font-size: 13px;
+  color: var(--el-text-color-secondary);
+}
+.tpl-empty-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+.tpl-empty-list .el-button {
+  margin-left: 0;
+}
 .fw-status {
   overflow-wrap: anywhere;
 }

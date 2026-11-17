@@ -43555,7 +43555,7 @@
     },
     "/api/system/onboarding": {
       "get": {
-        "description": "Доступно только для сессий входа. При новой установке `pending` равно true, пока начальная настройка не завершена.\n\n**Доступно только для сессий входа; API-токены не имеют доступа к этому эндпоинту.**",
+        "description": "Только для сеансов входа. `pending` равно true на новой установке с незавершённым знакомством (показывается список «С чего начать»); `scenePending` равно true, пока нужно выбрать сценарий использования (только на новой установке, в каталоге конфигурации которой ещё не было файлов конфигурации); `scenes` — выбранные сценарии, `done` — пункты, отмеченные выполненными.\n\n**Доступно только для сессий входа; API-токены не имеют доступа к этому эндпоинту.**",
         "responses": {
           "200": {
             "description": "Успешно"
@@ -43591,7 +43591,7 @@
             "description": "У токена нет необходимого права"
           }
         },
-        "summary": "Требуется ли начальная настройка",
+        "summary": "Состояние знакомства при первом запуске",
         "tags": [
           "Система"
         ],
@@ -43601,7 +43601,7 @@
     },
     "/api/system/onboarding/dismiss": {
       "post": {
-        "description": "Доступно только для сессий входа.\n\n**Доступно только для сессий входа; API-токены не имеют доступа к этому эндпоинту.**",
+        "description": "Только для сеансов входа. После этого список «С чего начать» больше не показывается и сценарий использования не запрашивается.\n\n**Доступно только для сессий входа; API-токены не имеют доступа к этому эндпоинту.**",
         "responses": {
           "200": {
             "description": "Успешно"
@@ -43637,7 +43637,172 @@
             "description": "У токена нет необходимого права"
           }
         },
-        "summary": "Завершить или пропустить начальную настройку",
+        "summary": "Завершить или закрыть знакомство при первом запуске",
+        "tags": [
+          "Система"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/onboarding/done": {
+      "post": {
+        "description": "Только для сеансов входа. Тело — `{\"item\": \"check\"}`; для пунктов, выполнение которых нельзя определить по конфигурации (например, самопроверка сети).\n\n**Доступно только для сессий входа; API-токены не имеют доступа к этому эндпоинту.**",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "summary": "Отметить пункт «С чего начать» выполненным",
+        "tags": [
+          "Система"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/onboarding/scenes": {
+      "post": {
+        "description": "Только для сеансов входа. Тело — `{\"scenes\": [...]}` со значениями `web`, `forward`, `ddns`, `mesh`, `files`, `vps`, `all`; пустой список означает пропуск выбора. Только сохраняет выбор и завершает шаг выбора сценариев; модули включаются и отключаются через `disabledModules` в `PUT /api/system/settings`.\n\n**Доступно только для сессий входа; API-токены не имеют доступа к этому эндпоинту.**",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "summary": "Сохранить выбранные сценарии использования",
+        "tags": [
+          "Система"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/probe": {
+      "post": {
+        "description": "Только для сеансов администратора (учётные записи только для чтения и API-токены не допускаются). Тело — `{\"target\": \"http://192.168.1.10:8123\"}`: на адрес `http(s)://` отправляется один HEAD-запрос к корневому пути без перехода по перенаправлениям, `хост:порт` проверяет только TCP-подключение; тайм-аут 5 секунд. Возвращает `reachable`, `status` (код состояния HTTP), `insecure` (сертификат https-бэкенда не проходит проверку, но без проверки подключение работает), `reason` (причина: refused, timeout, dns, tls, protocol, unreachable, error) и `elapsedMs`; заголовки и тело ответа не возвращаются.\n\n**Доступно только для сессий входа; API-токены не имеют доступа к этому эндпоинту.**",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "summary": "Проверить доступность адреса бэкенда",
         "tags": [
           "Система"
         ],

@@ -963,8 +963,11 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | POST | `/api/system/restore` | Solo sesión iniciada | Restaurar la configuración desde una copia de seguridad |
 | POST | `/api/system/restart` | Solo sesión iniciada | Reiniciar Gately |
 | POST | `/api/system/selfcheck` | Solo sesión iniciada | Autodiagnóstico de red y configuración |
-| GET | `/api/system/onboarding` | Solo sesión iniciada | Si la configuración inicial está pendiente |
-| POST | `/api/system/onboarding/dismiss` | Solo sesión iniciada | Completar u omitir la configuración inicial |
+| GET | `/api/system/onboarding` | Solo sesión iniciada | Estado de la guía del primer inicio |
+| POST | `/api/system/onboarding/dismiss` | Solo sesión iniciada | Terminar o cerrar la guía del primer inicio |
+| POST | `/api/system/onboarding/scenes` | Solo sesión iniciada | Registrar los escenarios de uso elegidos |
+| POST | `/api/system/onboarding/done` | Solo sesión iniciada | Marcar como hecho un elemento de Primeros pasos |
+| POST | `/api/system/probe` | Solo sesión iniciada | Probar si una dirección de backend es accesible |
 | GET | `/api/openapi.json` | Cualquier token válido | Obtener la descripción OpenAPI de esta API |
 
 ## Importación de configuración

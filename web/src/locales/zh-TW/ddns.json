@@ -6,6 +6,12 @@
   "moduleOffTitle": "動態網域模組已停用",
   "moduleOffDesc": "模組停用期間不會檢查 IP，也不會更新任何解析記錄；啟用後各工作依自身開關執行。",
   "empty": "暫無工作，可新增或在「設定 → 備份與遷移」中匯入 Lucky 設定",
+  "templates": {
+    "title": "從常見情境開始：",
+    "cloudflare4": "Cloudflare 家用寬頻 IPv4",
+    "alidns46": "阿里雲 IPv4 + IPv6",
+    "dnspod6": "DNSPod 僅 IPv6"
+  },
   "lastCheck": "上次檢查",
   "nextCheck": "下次檢查",
   "noRecords": "沒有解析記錄",

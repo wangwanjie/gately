@@ -2,6 +2,16 @@
 
 Servez un proxy inverse, des redirections, des fichiers statiques et du texte fixe par domaine. C'est le point d'entrée web unifié de Gately. Emplacement dans le menu : barre latérale « Web → Services Web ».
 
+## Site rapide {#quick-site}
+
+« Site rapide » dans l'en-tête de la page (aussi sur la page vide quand il n'y a aucune écoute) crée un site de proxy inverse en trois étapes, sans avoir à connaître d'abord le lien entre écoutes et sites :
+
+1. Domaine : le domaine saisi dans le navigateur ; `*.example.com` est pris en charge.
+2. Adresse du backend : sans schéma, `http://` est utilisé, ou `https://` pour le port 443. « Tester » effectue une seule connexion TCP ou une seule requête HEAD qui ne suit pas les redirections, et indique si le backend est joignable ainsi que son code d'état ; avec un certificat auto-signé sur le backend, « Ignorer la vérification du certificat du backend » est coché automatiquement. Les modèles d'applications courantes (Home Assistant, Jellyfin, Emby, Vaultwarden, Nextcloud, Immich, Proxmox VE, Synology DSM, fnOS) préremplissent le port et les options recommandées, par exemple des délais d'inactivité des visiteurs plus longs pour les applications de médias et de photos et la vérification du certificat du backend ignorée pour Proxmox et DSM, et indiquent ce qu'il reste à régler dans l'application. WebSocket est redirigé automatiquement.
+3. HTTP ou HTTPS : par défaut, une écoute existante de même protocole sur le port 443 ou 80 est réutilisée ; il est possible de choisir une autre écoute ou d'en créer une nouvelle (avec un port personnalisé). Une nouvelle écoute HTTPS reçoit aussi le port HTTP 80 supplémentaire, qui redirige vers HTTPS, lorsque le port 80 est libre. Avec HTTPS, un certificat existant couvrant le domaine est utilisé ; sinon, choisissez la validation DNS (fournisseur et identifiants, avec un lien « Obtenir les identifiants ») ou la validation HTTP, et saisissez l'e-mail du compte ACME (prérempli avec l'e-mail par défaut des réglages de renouvellement du module de certificats). Après la publication, le certificat est demandé en arrière-plan et la dernière étape renvoie vers la page des certificats pour suivre l'avancement.
+
+La dernière étape affiche l'adresse cliquable et ce qu'il faut faire quand le domaine ne pointe pas encore vers cet appareil (enregistrement DNS, DNS dynamique, fichier hosts local). Toutes les options du site restent modifiables ensuite dans la liste, comme d'habitude.
+
 ## Structure : écouteurs, sites et site par défaut
 
 La configuration comporte trois niveaux :

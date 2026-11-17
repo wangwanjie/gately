@@ -6,6 +6,12 @@
   "editRule": "Modifier la règle",
   "moduleOffTitle": "Le module de redirection de ports est désactivé",
   "empty": "Aucune règle. Ajoutez-en une ou importez une configuration Lucky via « Paramètres → Sauvegarde et migration »",
+  "templates": {
+    "title": "Partir d'un cas courant :",
+    "ssh": "SSH vers un NAS",
+    "rdp": "Bureau à distance Windows",
+    "web": "Page d'administration web d'un appareil"
+  },
   "unnamed": "Sans nom",
   "listen": "Écoute",
   "target": "Cible",
