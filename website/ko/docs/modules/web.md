@@ -720,7 +720,24 @@ curl -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/webservice/m
 - `client_body_timeout`과 `send_timeout`은 사이트의 [방문자 시간 제한](#client-timeouts)으로 변환되며 모든 사이트 유형에 적용됩니다;
 - `auth_request`는 포워드 인증으로 변환됩니다. 인증 엔드포인트는 인증 하위 요청 location의 `proxy_pass`에서 가져오고(`set` 변수 지원), 로그인 리디렉션은 `error_page 401 =302`에서 가져오므로 Authelia의 일반적인 설정은 그대로 변환됩니다. 일부 location에서만 쓰는 경우에는 「인증 범위」에서 지정한 경로만 인증하도록 변환합니다.
 - `auth_basic`은 공유 사용자를 쓰는 기본 인증으로 변환됩니다. nginx의 사용자 파일은 읽지 않으므로 사용자를 추가하기 전에는 아무도 통과할 수 없습니다.
+- `proxy_pass`와 리디렉션 대상에서 `set`으로 정의한 변수는 대입되며, location의 `set`이 server의 `set`보다 우선합니다. 끝의 `$request_uri`는 요청 경로를 그대로 전달하는 것과 같습니다. `if` 안에서 대입되거나 요청마다 값이 바뀌는 변수는 여전히 변환할 수 없으며 미리 보기에 표시됩니다.
 - `stream`의 TCP/UDP 전달은 [포트 포워딩](/ko/docs/modules/portforward)에서 설정하세요. 인증서는 가져오지 않습니다. HTTPS 사이트에 인증서가 없으면 미리 보기에서 nginx가 쓰는 인증서 파일을 보여 주므로 [인증서](/ko/docs/modules/ssl) 페이지에서 파일 경로로 추가할 수 있습니다.
+
+### Nginx Proxy Manager 가져오기 {#import-npm}
+
+Nginx Proxy Manager(NPM)가 생성한 설정은 바로 가져올 수 있습니다. NPM 호스트에서 아래 명령을 실행하고(NPM 컨테이너 이름으로 바꾸세요) 전체 출력을 「nginx 가져오기」에 붙여넣습니다.
+
+```bash
+docker exec <NPM 컨테이너 이름> nginx -T
+```
+
+NPM 데이터 디렉터리의 `nginx/proxy_host/*.conf`, `nginx/redirection_host/*.conf` 같은 사이트 파일만 붙여넣어도 됩니다. 빠진 NPM 기본 스니펫은 자동으로 채웁니다.
+
+- 프록시 호스트는 리버스 프록시 사이트가 되며 백엔드는 `set $forward_scheme`, `set $server`, `set $port`에서 가져옵니다. 리디렉션 호스트는 리디렉션 사이트, 404 호스트는 404를 반환하는 고정 내용 사이트, 사용자 지정 location은 경로별 백엔드가 됩니다.
+- Force SSL은 HTTP 포트에서 HTTPS로 리디렉션하는 사이트, HSTS는 응답 헤더, Cache Assets는 정적 파일 30분 캐시(다른 경로는 캐시하지 않음)가 됩니다. Websockets Support와 HTTP/2는 설정할 필요가 없습니다.
+- Access List의 IP 규칙은 IP 허용 목록 또는 차단 목록이 되고, 사용자 이름과 비밀번호는 공유 사용자를 쓰는 기본 인증이 됩니다. 사용자는 Gately에서 다시 추가하세요. 「Satisfy Any」는 nginx에서 목록의 IP가 비밀번호 없이 들어오는 설정인데, Gately는 IP별 인증 면제를 지원하지 않으므로 인증만 가져오고 미리 보기에 해당 IP를 표시합니다.
+- Block Common Exploits는 가져오지 않으며 미리 보기에서 한 번 안내합니다. 비슷한 보호가 필요하면 사이트의 「보안」 탭에서 [WAF 인스턴스](/ko/docs/modules/waf)를 선택하세요. NPM 기본 페이지, 443 대체 서버, 관리 화면(포트 81)은 건너뜁니다. Streams는 [포트 포워딩](/ko/docs/modules/portforward)에서 설정하세요.
+- 인증서는 가져오지 않습니다. 파일은 NPM 컨테이너 안의 `/etc/letsencrypt/live/npm-N/`(Let's Encrypt) 또는 `/data/custom_ssl/npm-N/`(사용자 지정 인증서)에 있으며, 호스트에서는 NPM이 마운트한 `letsencrypt`와 `data` 디렉터리입니다. [인증서](/ko/docs/modules/ssl) 페이지에서 소스를 「파일에서 읽기」로 선택해 추가하거나(Gately가 Docker에서 실행 중이면 먼저 이 디렉터리를 마운트) 새로 발급하세요.
 
 ## haproxy와 nginx 대체
 

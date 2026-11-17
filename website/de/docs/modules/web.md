@@ -720,7 +720,24 @@ Mit „nginx importieren“ oben auf der Seite lassen sich bestehende nginx-Site
 - `client_body_timeout` und `send_timeout` werden zu den [Besucher-Timeouts](#client-timeouts) der Site, für alle Site-Typen;
 - `auth_request` wird zu Forward-Auth: Die Authentifizierungsadresse stammt aus dem `proxy_pass` der location für die Auth-Subanfrage (`set`-Variablen werden unterstützt), die Anmeldeweiterleitung aus `error_page 401 =302`; gängige Authelia-Konfigurationen lassen sich direkt übernehmen. Ist es nur in einzelnen locations aktiv, wird daraus eine Authentifizierung nur für die betreffenden Pfade;
 - `auth_basic` wird zu Basic-Authentifizierung mit gemeinsamen Benutzern. Die Benutzerdatei von nginx wird nicht gelesen; bis Sie Benutzer anlegen, kommt niemand durch;
+- Mit `set` definierte Variablen in `proxy_pass` und Weiterleitungszielen werden eingesetzt, wobei ein `set` in der location Vorrang vor einem im server hat; ein abschließendes `$request_uri` bedeutet, dass der Anfragepfad unverändert weitergegeben wird. Variablen, die in `if` gesetzt werden oder deren Wert von der Anfrage abhängt, lassen sich weiterhin nicht umwandeln; die Vorschau weist darauf hin;
 - TCP/UDP-Weiterleitungen aus `stream` richten Sie in der [Portweiterleitung](/de/docs/modules/portforward) ein. Zertifikate werden nicht importiert: Fehlt einer HTTPS-Site ein Zertifikat, nennt die Vorschau die von nginx verwendeten Zertifikatsdateien, die Sie auf der Seite [Zertifikate](/de/docs/modules/ssl) per Dateipfad hinzufügen können.
+
+### Nginx Proxy Manager importieren {#import-npm}
+
+Von Nginx Proxy Manager (NPM) erzeugte Konfigurationen lassen sich direkt importieren. Führen Sie auf dem NPM-Host den folgenden Befehl aus (mit dem Namen des NPM-Containers) und fügen Sie die vollständige Ausgabe unter „nginx importieren“ ein:
+
+```bash
+docker exec <npm-container> nginx -T
+```
+
+Sie können auch nur die Site-Dateien aus dem NPM-Datenverzeichnis einfügen, etwa `nginx/proxy_host/*.conf` und `nginx/redirection_host/*.conf`; fehlende NPM-eigene Snippets werden automatisch ergänzt.
+
+- Proxy Hosts werden zu Reverse-Proxy-Sites, das Backend stammt aus `set $forward_scheme`, `set $server` und `set $port`; Redirection Hosts werden zu Weiterleitungs-Sites, 404 Hosts zu Sites mit festem Inhalt, die 404 liefern, und benutzerdefinierte locations zu pfadbezogenen Backends.
+- Force SSL wird zu einer Site auf dem HTTP-Port, die auf HTTPS weiterleitet, HSTS zu einem Antwort-Header und Cache Assets zu einem 30-Minuten-Cache für statische Dateien (andere Pfade werden nicht zwischengespeichert); Websockets Support und HTTP/2 brauchen keine Einstellung.
+- IP-Regeln aus Access Lists werden zu einer IP-Positiv- oder Sperrliste, Benutzernamen und Passwörter zu Basic-Authentifizierung mit gemeinsamen Benutzern; legen Sie die Benutzer in Gately neu an. „Satisfy Any“ lässt in nginx IPs aus der Liste ohne Passwort zu; Gately kann IPs nicht von der Authentifizierung ausnehmen, daher wird nur die Authentifizierung importiert und die Vorschau nennt diese IPs.
+- Block Common Exploits wird nicht importiert, die Vorschau weist einmal darauf hin; für ähnlichen Schutz wählen Sie auf der Registerkarte Sicherheit der Site eine [WAF-Instanz](/de/docs/modules/waf). Die Standardseite, der 443-Fallback und die Verwaltungsoberfläche (Port 81) von NPM werden übersprungen. Streams richten Sie in der [Portweiterleitung](/de/docs/modules/portforward) ein.
+- Zertifikate werden nicht importiert. Die Dateien liegen im NPM-Container unter `/etc/letsencrypt/live/npm-N/` (Let's Encrypt) oder `/data/custom_ssl/npm-N/` (eigene Zertifikate), auf dem Host also in den Verzeichnissen `letsencrypt` und `data`, die NPM einbindet. Fügen Sie sie auf der Seite [Zertifikate](/de/docs/modules/ssl) mit der Quelle „Aus Datei einlesen“ hinzu (läuft Gately in Docker, binden Sie diese Verzeichnisse zuerst ein) oder stellen Sie neue aus.
 
 ## haproxy und nginx ersetzen
 
