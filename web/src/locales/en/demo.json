@@ -1,0 +1,4 @@
+{
+  "banner": "This is a demo instance: data resets every hour, and writes and outbound actions are disabled. Deploy your own →",
+  "install": "Install guide"
+}
