@@ -1,23 +1,135 @@
 {
-  "title": "Gately へようこそ",
-  "subtitle": "いくつかの簡単な手順で、ゲートウェイをより安全で扱いやすくできます。",
-  "go": "開く",
-  "later": "後で通知",
-  "done": "完了（今後表示しない）",
-  "security": {
-    "title": "第二の認証要素を追加",
-    "desc": "2 段階認証を有効にするか、パスキーを登録してログインを強化します。"
+  "scene": {
+    "title": "Gately を何に使いますか？",
+    "subtitle": "複数選択できます。関連する機能だけを残すとサイドバーがすっきりします。残りの機能は「設定 → 機能モジュール」からいつでも有効にできます。",
+    "items": {
+      "web": {
+        "title": "社内サービスをドメインで公開",
+        "desc": "リバースプロキシと HTTPS 証明書で、NAS や Home Assistant などに自分のドメインでアクセス"
+      },
+      "forward": {
+        "title": "ポート転送 / ホールパンチ",
+        "desc": "TCP / UDP のポート転送。パブリック IPv4 がない場合は STUN でホールパンチ"
+      },
+      "ddns": {
+        "title": "ダイナミック DNS",
+        "desc": "自宅の IP が変わったときに DNS レコードを自動更新"
+      },
+      "mesh": {
+        "title": "拠点間ネットワーク",
+        "desc": "Tailscale、NetBird、EasyTier で離れた場所の機器を相互に接続"
+      },
+      "files": {
+        "title": "ファイル共有",
+        "desc": "WebDAV、SMB、FTP、File Browser"
+      },
+      "vps": {
+        "title": "VPS の入口",
+        "desc": "プロトコル振り分けと frp サーバーで、1 つの公開ポートを複数のサービスに分配"
+      },
+      "all": {
+        "title": "すべての機能",
+        "desc": "すべての機能を残します。まず一通り見てみたい方向け"
+      }
+    },
+    "hintAll": "何も選択しない、または「すべての機能」を選ぶと、すべての機能が残ります。",
+    "hintSome": "{count} / {total} 個の機能モジュールを残し、残りは無効にします（設定は削除されません）。保存後に 1 回自動で再起動します。",
+    "skip": "スキップしてすべて残す",
+    "confirm": "決定",
+    "restarting": "選択した用途に合わせて再起動しています…"
   },
-  "check": {
-    "title": "ネットワーク自己診断を実行",
-    "desc": "NAT・ポート・時刻・DNS の問題を事前に見つけます。"
+  "card": {
+    "title": "はじめに",
+    "progress": "{done} / {total} 件完了",
+    "allDone": "すべて完了しました。このカードを閉じて構いません",
+    "close": "閉じる",
+    "closeConfirm": "閉じると「はじめに」のチェックリストは表示されなくなります。よろしいですか？",
+    "doneLabel": "完了",
+    "todoLabel": "未完了",
+    "again": "もう一度"
+  },
+  "items": {
+    "site": {
+      "title": "最初のサイトを公開",
+      "desc": "ドメインとバックエンドのアドレスを入力すると、リスナーとサイトをまとめて作成します",
+      "action": "クイックサイト"
+    },
+    "https": {
+      "title": "サイトの HTTPS を有効化",
+      "desc": "既存の証明書を選ぶか、DNS / HTTP 検証で自動取得します",
+      "action": "設定へ"
+    },
+    "ddns": {
+      "title": "ドメインをこの機器に向ける",
+      "desc": "ダイナミック DNS タスクを追加し、IP の変化時にレコードを自動更新します",
+      "action": "タスクを追加"
+    },
+    "portforward": {
+      "title": "最初の転送ルールを追加",
+      "desc": "ポートを社内の機器に転送します。例: NAS の SSH",
+      "action": "ルールを追加"
+    },
+    "stun": {
+      "title": "パブリック IPv4 がない場合は STUN ホールパンチ",
+      "desc": "NAT1 環境で、外部からアクセスできるポートを取得します",
+      "action": "設定へ"
+    },
+    "mesh": {
+      "title": "ネットワークに参加",
+      "desc": "Tailscale、NetBird、EasyTier のインスタンスを追加します",
+      "action": "追加へ"
+    },
+    "fileuser": {
+      "title": "共有ユーザーを追加",
+      "desc": "WebDAV、SMB、FTP で共通のログインアカウントとディレクトリ",
+      "action": "ユーザーを追加"
+    },
+    "fileservice": {
+      "title": "ファイルサービスを有効化",
+      "desc": "WebDAV、SMB、FTP、File Browser から選択します",
+      "action": "有効化へ"
+    },
+    "protoroute": {
+      "title": "プロトコル振り分けルールを追加",
+      "desc": "1 つのポートで HTTPS、SSH、frp などのプロトコルを同時に受け付けます",
+      "action": "ルールを追加"
+    },
+    "frps": {
+      "title": "frp サーバーを起動",
+      "desc": "自宅の frp クライアントがこの VPS 経由でサービスを公開できるようにします",
+      "action": "設定へ"
+    },
+    "security": {
+      "title": "2 要素目の認証を追加",
+      "desc": "2 段階認証を有効にするか Passkey を登録して、ログインをより安全にします",
+      "action": "設定へ"
+    },
+    "check": {
+      "title": "ネットワーク自己診断を実行",
+      "desc": "NAT、ポート、時刻、DNS の問題を事前に見つけます",
+      "action": "実行"
+    },
+    "import": {
+      "title": "既存の設定をインポート",
+      "desc": "nginx、Nginx Proxy Manager、frp、Lucky から移行します",
+      "action": "ソースを選択"
+    },
+    "notify": {
+      "title": "通知を設定",
+      "desc": "用意されたテンプレートで、更新の失敗、証明書の期限切れ、ログインの通知を受け取ります",
+      "action": "設定へ"
+    }
   },
   "import": {
-    "title": "Lucky からインポート",
-    "desc": "既存の Lucky 設定（.lkcf）を取り込み、段階的に移行します。"
+    "title": "既存の設定をインポート",
+    "desc": "移行元を選択します。インポート前にプレビューできます。",
+    "open": "開く",
+    "nginx": "nginx の server 設定を貼り付けまたはアップロードして、リスナーとサイトに変換します",
+    "npm": "データディレクトリの nginx/proxy_host にある .conf ファイルをアップロードし、nginx 設定としてインポートします",
+    "frp": "frpc / frps の設定ファイルを貼り付けます",
+    "lucky": "「設定 → バックアップと移行」で .lkcf 設定をインポートします"
   },
-  "notify": {
-    "title": "通知を設定",
-    "desc": "用意されたテンプレートで、更新失敗・証明書の期限・ログインの通知を受け取れます。"
+  "addFeatures": {
+    "title": "機能を追加"
   }
 }

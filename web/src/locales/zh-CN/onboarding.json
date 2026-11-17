@@ -1,23 +1,135 @@
 {
-  "title": "欢迎使用 Gately",
-  "subtitle": "完成几个简单步骤，让网关更安全、更省心。",
-  "go": "前往",
-  "later": "稍后提醒",
-  "done": "完成，不再提示",
-  "security": {
-    "title": "添加第二重验证",
-    "desc": "启用两步验证或注册 Passkey，让登录更安全。"
+  "scene": {
+    "title": "你打算用 Gately 做什么？",
+    "subtitle": "可多选。只保留相关的功能，侧边栏更清爽；其余功能随时可在「设置 → 功能模块」里打开。",
+    "items": {
+      "web": {
+        "title": "把内网服务发布成域名",
+        "desc": "反向代理 + HTTPS 证书，用自己的域名访问 NAS、Home Assistant 等"
+      },
+      "forward": {
+        "title": "端口转发 / 打洞",
+        "desc": "TCP / UDP 端口转发，没有公网 IPv4 时配合 STUN 打洞"
+      },
+      "ddns": {
+        "title": "动态域名",
+        "desc": "家宽 IP 变化时自动更新 DNS 解析"
+      },
+      "mesh": {
+        "title": "异地组网",
+        "desc": "Tailscale、NetBird、EasyTier，让异地设备互相访问"
+      },
+      "files": {
+        "title": "文件共享",
+        "desc": "WebDAV、SMB、FTP 与 File Browser"
+      },
+      "vps": {
+        "title": "VPS 入口",
+        "desc": "协议分流与 frp 服务端，一个公网端口分给多个服务"
+      },
+      "all": {
+        "title": "全部功能",
+        "desc": "保留所有功能，适合想先全面看看的用户"
+      }
+    },
+    "hintAll": "不选择或选「全部功能」时保留所有功能。",
+    "hintSome": "将保留 {count} / {total} 个功能模块，其余关闭（配置不会删除），保存后自动重启一次。",
+    "skip": "跳过，保留全部功能",
+    "confirm": "确定",
+    "restarting": "正在按所选场景重启…"
   },
-  "check": {
-    "title": "运行网络自检",
-    "desc": "提前发现 NAT、端口、时间与 DNS 方面的问题。"
+  "card": {
+    "title": "开始使用",
+    "progress": "已完成 {done} / {total} 项",
+    "allDone": "全部完成，可以关闭这张卡片了",
+    "close": "关闭",
+    "closeConfirm": "关闭后不再显示「开始使用」清单，确定吗？",
+    "doneLabel": "已完成",
+    "todoLabel": "未完成",
+    "again": "再来一次"
+  },
+  "items": {
+    "site": {
+      "title": "发布第一个站点",
+      "desc": "填域名和后端地址，一步建好监听与站点",
+      "action": "快速建站"
+    },
+    "https": {
+      "title": "为站点启用 HTTPS",
+      "desc": "选用已有证书，或用 DNS / HTTP 验证自动申请",
+      "action": "去设置"
+    },
+    "ddns": {
+      "title": "让域名指向这台设备",
+      "desc": "添加动态域名任务，IP 变化时自动更新解析",
+      "action": "添加任务"
+    },
+    "portforward": {
+      "title": "添加第一条转发规则",
+      "desc": "把一个端口转发到内网设备，例如 NAS 的 SSH",
+      "action": "添加规则"
+    },
+    "stun": {
+      "title": "没有公网 IPv4？试试 STUN 打洞",
+      "desc": "在 NAT1 网络下获得可从外网访问的端口",
+      "action": "去设置"
+    },
+    "mesh": {
+      "title": "加入一个组网",
+      "desc": "添加 Tailscale、NetBird 或 EasyTier 实例",
+      "action": "去添加"
+    },
+    "fileuser": {
+      "title": "添加共享用户",
+      "desc": "WebDAV、SMB、FTP 共用的登录账号与目录",
+      "action": "添加用户"
+    },
+    "fileservice": {
+      "title": "开启一个文件服务",
+      "desc": "选择 WebDAV、SMB、FTP 或 File Browser",
+      "action": "去开启"
+    },
+    "protoroute": {
+      "title": "添加协议分流规则",
+      "desc": "让一个端口同时承载 HTTPS、SSH、frp 等协议",
+      "action": "添加规则"
+    },
+    "frps": {
+      "title": "启动 frp 服务端",
+      "desc": "让家里的 frp 客户端经这台 VPS 对外提供服务",
+      "action": "去设置"
+    },
+    "security": {
+      "title": "添加第二重验证",
+      "desc": "启用两步验证或注册 Passkey，让登录更安全",
+      "action": "去设置"
+    },
+    "check": {
+      "title": "运行网络自检",
+      "desc": "提前发现 NAT、端口、时间与 DNS 方面的问题",
+      "action": "运行"
+    },
+    "import": {
+      "title": "导入现有配置",
+      "desc": "从 nginx、Nginx Proxy Manager、frp 或 Lucky 迁移",
+      "action": "选择来源"
+    },
+    "notify": {
+      "title": "设置通知",
+      "desc": "用现成的模板接收更新失败、证书到期与登录提醒",
+      "action": "去设置"
+    }
   },
   "import": {
-    "title": "从 Lucky 导入",
-    "desc": "导入现有的 Lucky 配置（.lkcf），按模块逐步迁移。"
+    "title": "导入现有配置",
+    "desc": "选择要迁移的来源，导入前都可以先预览。",
+    "open": "打开",
+    "nginx": "粘贴或上传 nginx 的 server 配置，转换为监听与站点",
+    "npm": "上传数据目录 nginx/proxy_host 下的 .conf 文件，按 nginx 配置导入",
+    "frp": "粘贴 frpc / frps 的配置文件",
+    "lucky": "在「设置 → 备份与迁移」中导入 .lkcf 配置"
   },
-  "notify": {
-    "title": "设置通知",
-    "desc": "用现成的模板接收更新失败、证书到期与登录提醒。"
+  "addFeatures": {
+    "title": "添加更多功能"
   }
 }

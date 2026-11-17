@@ -1,23 +1,135 @@
 {
-  "title": "Bienvenue dans Gately",
-  "subtitle": "Quelques étapes rapides rendent votre passerelle plus sûre et plus simple à gérer.",
-  "go": "Ouvrir",
-  "later": "Me le rappeler plus tard",
-  "done": "Terminé, ne plus afficher",
-  "security": {
-    "title": "Ajouter un second facteur",
-    "desc": "Activez la vérification en deux étapes ou enregistrez une passkey pour une connexion plus sûre."
+  "scene": {
+    "title": "À quoi servira Gately ?",
+    "subtitle": "Plusieurs choix possibles. Seules les fonctions concernées restent actives et la barre latérale reste courte ; activez le reste à tout moment dans Paramètres → Modules.",
+    "items": {
+      "web": {
+        "title": "Publier des services internes sur un domaine",
+        "desc": "Proxy inverse avec certificats HTTPS : accédez à votre NAS, Home Assistant et plus avec votre propre domaine"
+      },
+      "forward": {
+        "title": "Redirection de ports / traversée de NAT",
+        "desc": "Redirection de ports TCP / UDP, avec traversée par STUN quand vous n'avez pas d'IPv4 publique"
+      },
+      "ddns": {
+        "title": "DNS dynamique",
+        "desc": "Met à jour automatiquement les enregistrements DNS quand l'IP de votre domicile change"
+      },
+      "mesh": {
+        "title": "Réseau entre sites",
+        "desc": "Tailscale, NetBird et EasyTier relient des appareils situés à des endroits différents"
+      },
+      "files": {
+        "title": "Partage de fichiers",
+        "desc": "WebDAV, SMB, FTP et File Browser"
+      },
+      "vps": {
+        "title": "Point d'entrée VPS",
+        "desc": "Routage par protocole et serveur frp pour partager un port public entre plusieurs services"
+      },
+      "all": {
+        "title": "Toutes les fonctions",
+        "desc": "Garde toutes les fonctions actives, pratique pour tout explorer d'abord"
+      }
+    },
+    "hintAll": "Sans sélection, ou avec « Toutes les fonctions », toutes les fonctions restent actives.",
+    "hintSome": "{count} modules sur {total} restent actifs ; les autres sont désactivés (leurs réglages sont conservés). Gately redémarre une fois après l'enregistrement.",
+    "skip": "Ignorer et tout garder",
+    "confirm": "Valider",
+    "restarting": "Redémarrage avec les fonctions choisies…"
   },
-  "check": {
-    "title": "Lancer l’auto-diagnostic réseau",
-    "desc": "Repérez les problèmes de NAT, de ports, d’horloge et de DNS avant qu’ils ne gênent."
+  "card": {
+    "title": "Premiers pas",
+    "progress": "{done} sur {total} terminées",
+    "allDone": "Tout est fait. Vous pouvez fermer cette carte",
+    "close": "Fermer",
+    "closeConfirm": "La liste « Premiers pas » ne sera plus affichée. La fermer ?",
+    "doneLabel": "Fait",
+    "todoLabel": "À faire",
+    "again": "Recommencer"
+  },
+  "items": {
+    "site": {
+      "title": "Publier votre premier site",
+      "desc": "Saisissez un domaine et l'adresse du backend ; l'écoute et le site sont créés en une fois",
+      "action": "Site rapide"
+    },
+    "https": {
+      "title": "Activer HTTPS pour un site",
+      "desc": "Utilisez un certificat existant ou demandez-en un par validation DNS ou HTTP",
+      "action": "Configurer"
+    },
+    "ddns": {
+      "title": "Faire pointer votre domaine vers cet appareil",
+      "desc": "Ajoutez une tâche de DNS dynamique qui met à jour les enregistrements quand l'IP change",
+      "action": "Ajouter une tâche"
+    },
+    "portforward": {
+      "title": "Ajouter votre première règle de redirection",
+      "desc": "Redirigez un port vers un appareil de votre réseau, par exemple le SSH d'un NAS",
+      "action": "Ajouter une règle"
+    },
+    "stun": {
+      "title": "Pas d'IPv4 publique ? Essayez la traversée STUN",
+      "desc": "Obtenez un port joignable depuis internet derrière un NAT1",
+      "action": "Configurer"
+    },
+    "mesh": {
+      "title": "Rejoindre un réseau entre sites",
+      "desc": "Ajoutez une instance Tailscale, NetBird ou EasyTier",
+      "action": "Ajouter"
+    },
+    "fileuser": {
+      "title": "Ajouter un utilisateur partagé",
+      "desc": "Comptes de connexion et dossiers partagés par WebDAV, SMB et FTP",
+      "action": "Ajouter un utilisateur"
+    },
+    "fileservice": {
+      "title": "Activer un service de fichiers",
+      "desc": "Choisissez WebDAV, SMB, FTP ou File Browser",
+      "action": "Activer"
+    },
+    "protoroute": {
+      "title": "Ajouter une règle de routage par protocole",
+      "desc": "Servez HTTPS, SSH, frp et d'autres protocoles sur un seul port",
+      "action": "Ajouter une règle"
+    },
+    "frps": {
+      "title": "Démarrer le serveur frp",
+      "desc": "Permet aux clients frp installés chez vous de publier des services via ce VPS",
+      "action": "Configurer"
+    },
+    "security": {
+      "title": "Ajouter un second facteur de connexion",
+      "desc": "Activez la validation en deux étapes ou enregistrez un Passkey pour sécuriser la connexion",
+      "action": "Configurer"
+    },
+    "check": {
+      "title": "Lancer l'autodiagnostic réseau",
+      "desc": "Repérez tôt les problèmes de NAT, de ports, d'horloge et de DNS",
+      "action": "Lancer"
+    },
+    "import": {
+      "title": "Importer une configuration existante",
+      "desc": "Migrez depuis nginx, Nginx Proxy Manager, frp ou Lucky",
+      "action": "Choisir la source"
+    },
+    "notify": {
+      "title": "Configurer les notifications",
+      "desc": "Des modèles prêts à l'emploi pour les mises à jour en échec, les certificats qui expirent et les alertes de connexion",
+      "action": "Configurer"
+    }
   },
   "import": {
-    "title": "Importer depuis Lucky",
-    "desc": "Reprenez votre configuration Lucky (.lkcf) et migrez pas à pas."
+    "title": "Importer une configuration existante",
+    "desc": "Choisissez d'où vous venez. Chaque import peut être prévisualisé d'abord.",
+    "open": "Ouvrir",
+    "nginx": "Collez ou importez des blocs server nginx pour les convertir en écoutes et en sites",
+    "npm": "Importez les fichiers .conf du dossier nginx/proxy_host de son répertoire de données comme configuration nginx",
+    "frp": "Collez un fichier de configuration frpc / frps",
+    "lucky": "Importez un fichier .lkcf dans Paramètres → Sauvegarde et migration"
   },
-  "notify": {
-    "title": "Configurer les notifications",
-    "desc": "Recevez des alertes pour les échecs de mise à jour, les certificats proches de l’expiration et les connexions grâce à des modèles prêts à l’emploi."
+  "addFeatures": {
+    "title": "Ajouter d'autres fonctions"
   }
 }

@@ -1,5 +1,7 @@
 <template>
   <div class="overview">
+    <!-- 全新安装的「开始使用」清单，完成或关闭后不再显示 -->
+    <GettingStarted v-if="sessionRole === 'admin'" />
     <!-- ============ 主机信息 ============ -->
     <section class="hero">
       <div class="hero-grid" aria-hidden="true" />
@@ -249,7 +251,8 @@ import SelfCheck from '../components/SelfCheck.vue'
 import Sparkline from '../components/Sparkline.vue'
 import ManagedProcList from '../components/ManagedProcList.vue'
 import StatusBadge, { type StatusType } from '../components/StatusBadge.vue'
-import { navByModule } from '../nav'
+import { navByModule, sessionRole } from '../nav'
+import GettingStarted from '../components/GettingStarted.vue'
 import { firstAttention, serviceLevel, type SvcLevel } from '../overviewStatus'
 
 const { t } = useI18n()
