@@ -1,0 +1,28 @@
+{
+ "sut": "nginx",
+ "sites": 1000,
+ "startupSec": 0.541,
+ "startupRuns": [
+  0.483,
+  0.612,
+  0.541
+ ],
+ "idle": {
+  "pssKiB": 58299,
+  "rssKiB": 152212,
+  "cgroupKiB": 59976,
+  "cpuUsec": 254633,
+  "procs": 3
+ },
+ "rps": 122958.15,
+ "p99ms": 1.17,
+ "non2xx": 0,
+ "watch": {
+  "peakPssKiB": 59832,
+  "peakRssKiB": 153996,
+  "avgPssKiB": 59302,
+  "cpuSeconds": 40.132677,
+  "cpuPercent": 181.7842074549403,
+  "elapsed": 22.07709765434265
+ }
+}

@@ -1,0 +1,32 @@
+modsec off get 0 {"rps": 118086.31, "p50ms": 1.08, "p99ms": 1.23, "non2xx": 0, "sockErrors": 0, "requests": 2368009, "sutCpuPercent": 181.7, "sutCpuPercentLoad": 200.3, "peakPssKiB": 25222, "cpuMsPerKReq": 16.91}
+modsec off get 1 {"rps": 114128.15, "p50ms": 1.13, "p99ms": 1.39, "non2xx": 0, "sockErrors": 0, "requests": 2288476, "sutCpuPercent": 181.7, "sutCpuPercentLoad": 200.3, "peakPssKiB": 25282, "cpuMsPerKReq": 17.5}
+modsec off get 2 {"rps": 110516.6, "p50ms": 1.16, "p99ms": 1.37, "non2xx": 0, "sockErrors": 0, "requests": 2215153, "sutCpuPercent": 181.7, "sutCpuPercentLoad": 200.3, "peakPssKiB": 25222, "cpuMsPerKReq": 18.08}
+modsec off query 0 {"rps": 107140.22, "p50ms": 1.18, "p99ms": 1.43, "non2xx": 0, "sockErrors": 0, "requests": 2148951, "sutCpuPercent": 181.6, "sutCpuPercentLoad": 200.2, "peakPssKiB": 25278, "cpuMsPerKReq": 18.63}
+modsec off query 1 {"rps": 107139.59, "p50ms": 1.1, "p99ms": 1.59, "non2xx": 0, "sockErrors": 0, "requests": 2149137, "sutCpuPercent": 181.6, "sutCpuPercentLoad": 200.2, "peakPssKiB": 25430, "cpuMsPerKReq": 18.63}
+modsec off query 2 {"rps": 108763.15, "p50ms": 1.17, "p99ms": 1.44, "non2xx": 0, "sockErrors": 0, "requests": 2183432, "sutCpuPercent": 181.8, "sutCpuPercentLoad": 200.4, "peakPssKiB": 25371, "cpuMsPerKReq": 18.35}
+modsec off post4k 0 {"rps": 92181.71, "p50ms": 1.39, "p99ms": 1.63, "non2xx": 1852754, "sockErrors": 0, "requests": 1852754, "sutCpuPercent": 182.1, "sutCpuPercentLoad": 200.7, "peakPssKiB": 25871, "cpuMsPerKReq": 21.67}
+modsec off post4k 1 {"rps": 92072.56, "p50ms": 1.42, "p99ms": 1.62, "non2xx": 1845962, "sockErrors": 0, "requests": 1845962, "sutCpuPercent": 181.7, "sutCpuPercentLoad": 200.3, "peakPssKiB": 25743, "cpuMsPerKReq": 21.7}
+modsec off post4k 2 {"rps": 92331.77, "p50ms": 1.41, "p99ms": 1.61, "non2xx": 1855771, "sockErrors": 0, "requests": 1855771, "sutCpuPercent": 182.2, "sutCpuPercentLoad": 200.7, "peakPssKiB": 26007, "cpuMsPerKReq": 21.63}
+modsec off attack 0 {"rps": 98619.44, "p50ms": 1.2, "p99ms": 5.86, "non2xx": 1551441, "sockErrors": 0, "requests": 1982004, "sutCpuPercent": 175.2, "sutCpuPercentLoad": 193.1, "peakPssKiB": 25922, "cpuMsPerKReq": 19.48}
+modsec off attack 1 {"rps": 98990.69, "p50ms": 1.21, "p99ms": 6.25, "non2xx": 1557241, "sockErrors": 0, "requests": 1989437, "sutCpuPercent": 175.0, "sutCpuPercentLoad": 192.9, "peakPssKiB": 25918, "cpuMsPerKReq": 19.39}
+modsec off attack 2 {"rps": 99817.14, "p50ms": 1.22, "p99ms": 5.86, "non2xx": 1570311, "sockErrors": 0, "requests": 2006107, "sutCpuPercent": 176.1, "sutCpuPercentLoad": 194.0, "peakPssKiB": 25922, "cpuMsPerKReq": 19.34}
+attack.jsonl {405: 252, 200: 121, 404: 183, 400: 1}
+benign.jsonl {200: 48, 405: 99, 404: 242}
+crs-regression.jsonl {405: 102, 404: 1885, 400: 1, 200: 61}
+DONE modsec off {"startup": 0.78, "idle": {"pssKiB": 24252, "rssKiB": 33524, "cgroupKiB": 32984, "cpuUsec": 260298, "procs": 3}}
+modsec on get 0 {"rps": 1505.21, "p50ms": 84.25, "p99ms": 90.09, "non2xx": 0, "sockErrors": 0, "requests": 30203, "sutCpuPercent": 181.1, "sutCpuPercentLoad": 199.9, "peakPssKiB": 69471, "cpuMsPerKReq": 1323.75}
+modsec on get 1 {"rps": 1484.1, "p50ms": 83.42, "p99ms": 96.08, "non2xx": 0, "sockErrors": 0, "requests": 29730, "sutCpuPercent": 180.8, "sutCpuPercentLoad": 199.6, "peakPssKiB": 69983, "cpuMsPerKReq": 1342.59}
+modsec on get 2 {"rps": 1491.15, "p50ms": 85.17, "p99ms": 91.1, "non2xx": 0, "sockErrors": 0, "requests": 29908, "sutCpuPercent": 181.0, "sutCpuPercentLoad": 199.8, "peakPssKiB": 69415, "cpuMsPerKReq": 1336.22}
+modsec on query 0 {"rps": 599.52, "p50ms": 200.83, "p99ms": 238.48, "non2xx": 0, "sockErrors": 0, "requests": 12040, "sutCpuPercent": 181.4, "sutCpuPercentLoad": 200.2, "peakPssKiB": 70514, "cpuMsPerKReq": 3325.28}
+modsec on query 1 {"rps": 568.96, "p50ms": 225.04, "p99ms": 267.43, "non2xx": 0, "sockErrors": 0, "requests": 11434, "sutCpuPercent": 180.5, "sutCpuPercentLoad": 199.3, "peakPssKiB": 71035, "cpuMsPerKReq": 3485.23}
+modsec on query 2 {"rps": 590.56, "p50ms": 215.12, "p99ms": 1410.0, "non2xx": 0, "sockErrors": 0, "requests": 11851, "sutCpuPercent": 181.8, "sutCpuPercentLoad": 200.7, "peakPssKiB": 68735, "cpuMsPerKReq": 3386.79}
+modsec on post4k 0 {"rps": 102.86, "p50ms": 1060.0, "p99ms": 6930.0, "non2xx": 2066, "sockErrors": 23, "requests": 2066, "sutCpuPercent": 186.3, "sutCpuPercentLoad": 205.6, "peakPssKiB": 75451, "cpuMsPerKReq": 19898.55}
+modsec on post4k 1 {"rps": 101.46, "p50ms": 1090.0, "p99ms": 6990.0, "non2xx": 2036, "sockErrors": 15, "requests": 2036, "sutCpuPercent": 184.2, "sutCpuPercentLoad": 203.3, "peakPssKiB": 76327, "cpuMsPerKReq": 19968.23}
+modsec on post4k 2 {"rps": 101.71, "p50ms": 1050.0, "p99ms": 7000.0, "non2xx": 2044, "sockErrors": 25, "requests": 2044, "sutCpuPercent": 186.1, "sutCpuPercentLoad": 205.3, "peakPssKiB": 74759, "cpuMsPerKReq": 20089.76}
+modsec on attack 0 {"rps": 1016.01, "p50ms": 105.18, "p99ms": 1620.0, "non2xx": 19308, "sockErrors": 0, "requests": 20407, "sutCpuPercent": 181.6, "sutCpuPercentLoad": 200.4, "peakPssKiB": 67323, "cpuMsPerKReq": 1964.36}
+modsec on attack 1 {"rps": 1008.35, "p50ms": 107.98, "p99ms": 1680.0, "non2xx": 19169, "sockErrors": 0, "requests": 20258, "sutCpuPercent": 180.9, "sutCpuPercentLoad": 199.6, "peakPssKiB": 68055, "cpuMsPerKReq": 1970.64}
+modsec on attack 2 {"rps": 1013.62, "p50ms": 108.59, "p99ms": 1640.0, "non2xx": 19243, "sockErrors": 0, "requests": 20343, "sutCpuPercent": 181.5, "sutCpuPercentLoad": 200.3, "peakPssKiB": 67779, "cpuMsPerKReq": 1969.07}
+attack.jsonl {403: 429, 405: 67, 200: 30, 400: 2, 404: 29}
+benign.jsonl {403: 78, 200: 43, 405: 86, 404: 182}
+crs-regression.jsonl {403: 1880, 400: 72, 200: 12, 404: 85}
+DONE modsec on {"startup": 0.907, "idle": {"pssKiB": 63428, "rssKiB": 144156, "cgroupKiB": 73228, "cpuUsec": 384341, "procs": 3}}

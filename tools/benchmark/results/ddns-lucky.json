@@ -1,0 +1,23 @@
+{
+ "sut": "lucky",
+ "tasks": 20,
+ "intervalSec": 30,
+ "window": {
+  "peakPssKiB": 138160,
+  "peakRssKiB": 138176,
+  "avgPssKiB": 134464,
+  "cpuSeconds": 1.434635,
+  "cpuPercent": 0.4781231477195053,
+  "elapsed": 300.05554151535034
+ },
+ "idle": {
+  "pssKiB": 132372,
+  "rssKiB": 132388,
+  "cgroupKiB": 169216,
+  "cpuUsec": 3982170,
+  "procs": 2
+ },
+ "callbacksInWindow": 0,
+ "image": "gdy666/lucky:v3.8.1_lucky",
+ "imageBytes": 57602956
+}

@@ -1,0 +1,34 @@
+== 入侵防护：Gately vs fail2ban ==
+gately: {"buildDate":"2026-11-17T12:17:45Z","commit":"1869b4f1ee7cf175f235fbe11eceb2d57a3205fa","go":"go1.26.11","version":"v0.6.8.1"}
+fail2ban: Fail2Ban v1.1.0
+gately-web: {"buildDate":"2026-11-17T12:17:45Z","commit":"1869b4f1ee7cf175f235fbe11eceb2d57a3205fa","go":"go1.26.11","version":"v0.6.8.1"}
+gately-full: {"buildDate":"2026-11-17T12:17:45Z","commit":"1869b4f1ee7cf175f235fbe11eceb2d57a3205fa","go":"go1.26.11","version":"v0.6.8.1"}
+
+-- 安装体积 --
+Gately 程序 38.6 MiB（单文件，含全部模块），镜像 218.1 MiB
+fail2ban 包 2.1 MiB；fail2ban + Python 运行时 24.1 MiB；依赖闭包中的其余共享库 42.6 MiB（多数系统已装）
+
+-- 空闲（就绪后等待，PSS） --
+gately       PSS 44.1 MiB  空闲 CPU 0.2%  就绪 1.62 秒  cpuset 0-1
+fail2ban     PSS 17.6 MiB  空闲 CPU 0.1%  就绪 1.47 秒  cpuset 0-1
+gately-web   PSS 40.7 MiB  空闲 CPU 0.1%  就绪 0.94 秒  cpuset 0-1
+gately-full  PSS 44.4 MiB  空闲 CPU 0.2%  就绪 1.52 秒  cpuset 0-1
+
+-- 封禁延迟（达到阈值 → 进入 nftables 集合，毫秒）--
+被测              n     p50     p90     p99     max  检测p50 同步p50 漏封
+gately         60     478     912     996     996     468     10    0
+fail2ban       60     280     688     864     864     270      9    0
+gately-web     60      10      11      13      13       1     10    0
+
+-- 日志吞吐（CPU% 为注入期间平均，100% = 1 个 vCPU；末封s = 注入结束到最后一个封禁；忙到s = 注入结束后 CPU 回落所需秒数）--
+被测              行/秒     应封     已封    漏封   误封   p50ms   p99ms   maxms   CPU%      峰值PSS     末封s     忙到s
+gately         1000    237    237     0    0     501    1008    1010    2.9   45.5 MiB     0.1     0.1
+gately         4999   1187   1187     0    0     489     997    1011    7.4   51.4 MiB    0.23     0.1
+gately        19997   4752   4752     0    0     509    1006    1029   35.7   61.9 MiB    0.57     0.6
+fail2ban       1000    237    237     0    0     163     609     615   20.4   20.2 MiB   -0.06     0.1
+fail2ban       4999   1187   1187     0    0     108     298     395   48.9   25.6 MiB    0.12     0.1
+fail2ban      19997   4753   4753     0    0     110     210     573   83.2   35.3 MiB     0.0     0.0
+
+-- 大规模攻击者（每个 IP 写 5 行 404，全部为恶意行）--
+gately       攻击者 10000，注入 10.0 秒，已封 10000，漏封 0，全部封完 12.3 秒（从注入开始），注入结束后 2.3 秒封完，延迟 p50/p99 605/2408 ms，同步段 p50/p99 8/16 ms，CPU 10.13 秒，峰值 PSS 71.8 MiB，列集合耗时 0.034 秒
+fail2ban     攻击者 10000，注入 10.01 秒，已封 10000，漏封 0，全部封完 51.17 秒（从注入开始），注入结束后 41.16 秒封完，延迟 p50/p99 21603/40697 ms，同步段 p50/p99 5/8 ms，CPU 60.3 秒，峰值 PSS 50.6 MiB，列集合耗时 0.014 秒

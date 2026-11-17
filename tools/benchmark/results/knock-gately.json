@@ -1,0 +1,621 @@
+{
+ "sut": "gately",
+ "env": {
+  "sutCpus": "0,1",
+  "loadCpus": "4-7",
+  "kernel": "6.12.63+deb13-amd64",
+  "arch": "x86_64"
+ },
+ "startupSec": 0.62,
+ "idle": {
+  "pssKiB": 49876,
+  "rssKiB": 49884,
+  "cgroupKiB": 24652,
+  "cpuUsec": 450954,
+  "procs": 1
+ },
+ "image": "ghcr.io/wangwanjie/gately:v0.6.8.1",
+ "imageBytes": 228676697,
+ "info": {
+  "version": "{\"buildDate\":\"2026-11-17T12:17:45Z\",\"commit\":\"1869b4f1ee7cf175f235fbe11eceb2d57a3205fa\",\"go\":\"go1.26.11\",\"version\":\"v0.6.8.1\"}",
+  "programBytes": 40505506,
+  "programNote": "gately 单个静态二进制（含全部模块与管理界面）"
+ },
+ "stealth": {
+  "probe": {
+   "tcp/9100": {
+    "result": "超时（DROP）",
+    "ms": 3003.3
+   },
+   "udp/62201": {
+    "result": "无响应（开放或被过滤，无法区分）"
+   },
+   "tcp/16680": {
+    "result": "握手成功并返回数据",
+    "first": "HTTP/1.1 200 OK"
+   }
+  },
+  "nmap": [
+   "Host: 203.0.113.1 ()\tPorts: 9100/filtered/tcp//jetdirect///, 16680/open/tcp/////, 62201/open|filtered/udp/////"
+  ]
+ },
+ "latency": {
+  "attempts": 60,
+  "ok": 60,
+  "total": {
+   "n": 60,
+   "p50ms": 8.414,
+   "p90ms": 12.582,
+   "p99ms": 13.378,
+   "maxms": 13.378,
+   "minms": 3.186,
+   "meanms": 9.214
+  },
+  "runs": [
+   {
+    "ok": true,
+    "ms": 9.157328999208403
+   },
+   {
+    "ok": true,
+    "ms": 7.852570000977721
+   },
+   {
+    "ok": true,
+    "ms": 7.9231359995901585
+   },
+   {
+    "ok": true,
+    "ms": 8.028019999983371
+   },
+   {
+    "ok": true,
+    "ms": 8.616113000243786
+   },
+   {
+    "ok": true,
+    "ms": 12.591833999977098
+   },
+   {
+    "ok": true,
+    "ms": 7.591159999719821
+   },
+   {
+    "ok": true,
+    "ms": 11.643695999737247
+   },
+   {
+    "ok": true,
+    "ms": 10.13313899966306
+   },
+   {
+    "ok": true,
+    "ms": 8.804611999948975
+   },
+   {
+    "ok": true,
+    "ms": 8.17171200105804
+   },
+   {
+    "ok": true,
+    "ms": 12.113288001273759
+   },
+   {
+    "ok": true,
+    "ms": 11.727469998731976
+   },
+   {
+    "ok": true,
+    "ms": 12.080229000275722
+   },
+   {
+    "ok": true,
+    "ms": 12.988022001081845
+   },
+   {
+    "ok": true,
+    "ms": 8.123474999592872
+   },
+   {
+    "ok": true,
+    "ms": 8.108333000564016
+   },
+   {
+    "ok": true,
+    "ms": 8.6173220006458
+   },
+   {
+    "ok": true,
+    "ms": 8.474310998280998
+   },
+   {
+    "ok": true,
+    "ms": 9.572830000251997
+   },
+   {
+    "ok": true,
+    "ms": 11.628236001342884
+   },
+   {
+    "ok": true,
+    "ms": 9.347995999632985
+   },
+   {
+    "ok": true,
+    "ms": 8.080059000349138
+   },
+   {
+    "ok": true,
+    "ms": 8.15272200088657
+   },
+   {
+    "ok": true,
+    "ms": 7.768334999127546
+   },
+   {
+    "ok": true,
+    "ms": 7.126805998268537
+   },
+   {
+    "ok": true,
+    "ms": 12.644740998439374
+   },
+   {
+    "ok": true,
+    "ms": 8.378709000680828
+   },
+   {
+    "ok": true,
+    "ms": 12.611068999831332
+   },
+   {
+    "ok": true,
+    "ms": 8.7020749997464
+   },
+   {
+    "ok": true,
+    "ms": 3.1855699999141507
+   },
+   {
+    "ok": true,
+    "ms": 12.215710999953444
+   },
+   {
+    "ok": true,
+    "ms": 7.811067000147887
+   },
+   {
+    "ok": true,
+    "ms": 8.462983998470008
+   },
+   {
+    "ok": true,
+    "ms": 12.581982999108732
+   },
+   {
+    "ok": true,
+    "ms": 8.20653800110449
+   },
+   {
+    "ok": true,
+    "ms": 12.237441000252147
+   },
+   {
+    "ok": true,
+    "ms": 9.060663000127533
+   },
+   {
+    "ok": true,
+    "ms": 8.414421999987098
+   },
+   {
+    "ok": true,
+    "ms": 5.819990999953006
+   },
+   {
+    "ok": true,
+    "ms": 7.856738000555197
+   },
+   {
+    "ok": true,
+    "ms": 7.095038999977987
+   },
+   {
+    "ok": true,
+    "ms": 3.5706130001926795
+   },
+   {
+    "ok": true,
+    "ms": 8.595080000304733
+   },
+   {
+    "ok": true,
+    "ms": 8.401585000683554
+   },
+   {
+    "ok": true,
+    "ms": 7.472090001101606
+   },
+   {
+    "ok": true,
+    "ms": 7.215580999400117
+   },
+   {
+    "ok": true,
+    "ms": 7.779985000524903
+   },
+   {
+    "ok": true,
+    "ms": 6.574171000465867
+   },
+   {
+    "ok": true,
+    "ms": 7.812693000232684
+   },
+   {
+    "ok": true,
+    "ms": 11.929296999369399
+   },
+   {
+    "ok": true,
+    "ms": 7.7475960006268
+   },
+   {
+    "ok": true,
+    "ms": 7.966929000758682
+   },
+   {
+    "ok": true,
+    "ms": 12.932572999488912
+   },
+   {
+    "ok": true,
+    "ms": 12.380149000819074
+   },
+   {
+    "ok": true,
+    "ms": 13.378201998420991
+   },
+   {
+    "ok": true,
+    "ms": 11.706362998666009
+   },
+   {
+    "ok": true,
+    "ms": 8.293963999676635
+   },
+   {
+    "ok": true,
+    "ms": 11.776456000006874
+   },
+   {
+    "ok": true,
+    "ms": 7.605577000504127
+   }
+  ]
+ },
+ "flood": {
+  "udp-single-10000": {
+   "flood": {
+    "mode": "single",
+    "targetPps": 10000.0,
+    "sent": 399997,
+    "sendErrors": 0,
+    "achievedPps": 9999.8,
+    "seconds": 40.0
+   },
+   "sutCpuPercent": 18.1,
+   "peakPssKiB": 55112,
+   "legitKnock": {
+    "attempts": 10,
+    "ok": 10,
+    "total": {
+     "n": 10,
+     "p50ms": 8.029,
+     "p90ms": 12.267,
+     "p99ms": 12.267,
+     "maxms": 12.267,
+     "minms": 3.225,
+     "meanms": 8.062
+    }
+   },
+   "statusBefore": {
+    "counters": {
+     "accepted": 60,
+     "rejected": 0,
+     "ignored": 3
+    },
+    "firewall": {
+     "backend": "nftables",
+     "version": "nftables v1.1.1 (Commodore Bullmoose #2)",
+     "dropped": 797,
+     "allowed": 106
+    }
+   },
+   "statusAfter": {
+    "counters": {
+     "accepted": 70,
+     "rejected": 419,
+     "ignored": 399581
+    },
+    "firewall": {
+     "backend": "nftables",
+     "version": "nftables v1.1.1 (Commodore Bullmoose #2)",
+     "dropped": 1075,
+     "allowed": 139
+    }
+   }
+  },
+  "udp-single-50000": {
+   "flood": {
+    "mode": "single",
+    "targetPps": 50000.0,
+    "sent": 1999988,
+    "sendErrors": 0,
+    "achievedPps": 49999.0,
+    "seconds": 40.0
+   },
+   "sutCpuPercent": 26.0,
+   "peakPssKiB": 52152,
+   "legitKnock": {
+    "attempts": 10,
+    "ok": 10,
+    "total": {
+     "n": 10,
+     "p50ms": 5.168,
+     "p90ms": 5.828,
+     "p99ms": 5.828,
+     "maxms": 5.828,
+     "minms": 3.093,
+     "meanms": 4.775
+    }
+   },
+   "statusBefore": {
+    "counters": {
+     "accepted": 70,
+     "rejected": 419,
+     "ignored": 399581
+    },
+    "firewall": {
+     "backend": "nftables",
+     "version": "nftables v1.1.1 (Commodore Bullmoose #2)",
+     "dropped": 1075,
+     "allowed": 139
+    }
+   },
+   "statusAfter": {
+    "counters": {
+     "accepted": 80,
+     "rejected": 838,
+     "ignored": 2398867
+    },
+    "firewall": {
+     "backend": "nftables",
+     "version": "nftables v1.1.1 (Commodore Bullmoose #2)",
+     "dropped": 1180,
+     "allowed": 159
+    }
+   }
+  },
+  "udp-spoof-10000": {
+   "flood": {
+    "mode": "spoof",
+    "targetPps": 10000.0,
+    "sent": 399996,
+    "sendErrors": 0,
+    "achievedPps": 9999.8,
+    "seconds": 40.0
+   },
+   "sutCpuPercent": 18.8,
+   "peakPssKiB": 60032,
+   "legitKnock": {
+    "attempts": 7,
+    "ok": 1,
+    "total": {
+     "n": 1,
+     "p50ms": 9.923,
+     "p90ms": 9.923,
+     "p99ms": 9.923,
+     "maxms": 9.923,
+     "minms": 9.923,
+     "meanms": 9.923
+    },
+    "errors": [
+     null,
+     null,
+     null,
+     null,
+     null
+    ]
+   },
+   "statusBefore": {
+    "counters": {
+     "accepted": 80,
+     "rejected": 838,
+     "ignored": 2398867
+    },
+    "firewall": {
+     "backend": "nftables",
+     "version": "nftables v1.1.1 (Commodore Bullmoose #2)",
+     "dropped": 1180,
+     "allowed": 159
+    }
+   },
+   "statusAfter": {
+    "counters": {
+     "accepted": 81,
+     "rejected": 60376,
+     "ignored": 2739331
+    },
+    "firewall": {
+     "backend": "nftables",
+     "version": "nftables v1.1.1 (Commodore Bullmoose #2)",
+     "dropped": 25854,
+     "allowed": 162
+    }
+   }
+  },
+  "udp-spoof-50000": {
+   "flood": {
+    "mode": "spoof",
+    "targetPps": 50000.0,
+    "sent": 1999988,
+    "sendErrors": 0,
+    "achievedPps": 49999.5,
+    "seconds": 40.0
+   },
+   "sutCpuPercent": 25.5,
+   "peakPssKiB": 57448,
+   "legitKnock": {
+    "attempts": 7,
+    "ok": 1,
+    "total": {
+     "n": 1,
+     "p50ms": 4.366,
+     "p90ms": 4.366,
+     "p99ms": 4.366,
+     "maxms": 4.366,
+     "minms": 4.366,
+     "meanms": 4.366
+    },
+    "errors": [
+     null,
+     null,
+     null,
+     null,
+     null
+    ]
+   },
+   "statusBefore": {
+    "counters": {
+     "accepted": 81,
+     "rejected": 60376,
+     "ignored": 2739331
+    },
+    "firewall": {
+     "backend": "nftables",
+     "version": "nftables v1.1.1 (Commodore Bullmoose #2)",
+     "dropped": 30624,
+     "allowed": 162
+    }
+   },
+   "statusAfter": {
+    "counters": {
+     "accepted": 82,
+     "rejected": 133753,
+     "ignored": 4665863
+    },
+    "firewall": {
+     "backend": "nftables",
+     "version": "nftables v1.1.1 (Commodore Bullmoose #2)",
+     "dropped": 55585,
+     "allowed": 164
+    }
+   }
+  }
+ },
+ "afterFlood": {
+  "pssKiB": 57448,
+  "rssKiB": 57456,
+  "cgroupKiB": 35964,
+  "cpuUsec": 37877132,
+  "procs": 1
+ },
+ "dataplane": {
+  "keepalive": {
+   "median": {
+    "rps": 143866.57,
+    "MBps": 173.42,
+    "p50ms": 0.443,
+    "p99ms": 0.495,
+    "non2xx": 0,
+    "sockErrors": 0,
+    "sutCpuPercent": 0.1,
+    "peakPssKiB": 63472
+   },
+   "runs": [
+    {
+     "rps": 143866.57,
+     "MBps": 173.42,
+     "p50ms": 0.443,
+     "p99ms": 0.495,
+     "non2xx": 0,
+     "sockErrors": 0,
+     "sutCpuPercent": 0.1,
+     "peakPssKiB": 63472
+    },
+    {
+     "rps": 143686.51,
+     "MBps": 173.21,
+     "p50ms": 0.425,
+     "p99ms": 0.5710000000000001,
+     "non2xx": 0,
+     "sockErrors": 0,
+     "sutCpuPercent": 0.1,
+     "peakPssKiB": 57456
+    },
+    {
+     "rps": 144650.6,
+     "MBps": 174.37,
+     "p50ms": 0.44,
+     "p99ms": 0.517,
+     "non2xx": 0,
+     "sockErrors": 0,
+     "sutCpuPercent": 0.1,
+     "peakPssKiB": 57460
+    }
+   ]
+  },
+  "newconn": {
+   "median": {
+    "rps": 64763.63538705824,
+    "p50ms": 0.481954,
+    "p99ms": 1.029712,
+    "ok": 1295371,
+    "non2xx": 0,
+    "errors": 32,
+    "sutCpuPercent": 2.2,
+    "peakPssKiB": 57472
+   },
+   "runs": [
+    {
+     "rps": 66542.48719521031,
+     "p50ms": 0.470501,
+     "p99ms": 0.970219,
+     "ok": 1330900,
+     "non2xx": 0,
+     "errors": 31,
+     "sutCpuPercent": 0.4,
+     "peakPssKiB": 57464
+    },
+    {
+     "rps": 63352.1818179294,
+     "p50ms": 0.49715899999999996,
+     "p99ms": 1.030134,
+     "ok": 1267137,
+     "non2xx": 0,
+     "errors": 32,
+     "sutCpuPercent": 0.6,
+     "peakPssKiB": 57464
+    },
+    {
+     "rps": 64763.63538705824,
+     "p50ms": 0.481954,
+     "p99ms": 1.029712,
+     "ok": 1295371,
+     "non2xx": 0,
+     "errors": 32,
+     "sutCpuPercent": 2.2,
+     "peakPssKiB": 57472
+    }
+   ]
+  }
+ },
+ "idleAfter": {
+  "pssKiB": 57472,
+  "rssKiB": 57480,
+  "cgroupKiB": 35948,
+  "cpuUsec": 38663082,
+  "procs": 1
+ }
+}

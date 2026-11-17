@@ -1,0 +1,32 @@
+{
+ "sut": "gately-bundle",
+ "idle": {
+  "pssKiB": 92996,
+  "rssKiB": 93004,
+  "cgroupKiB": 67476,
+  "cpuUsec": 804998,
+  "procs": 1
+ },
+ "idleAfterLoad": {
+  "pssKiB": 121116,
+  "rssKiB": 121124,
+  "cgroupKiB": 97060,
+  "cpuUsec": 44928418,
+  "procs": 1
+ },
+ "authStatus": "401",
+ "load": {
+  "rps": 999.9771480888885,
+  "p99ms": 4.359471,
+  "ok": 60000
+ },
+ "watch": {
+  "peakPssKiB": 116856,
+  "peakRssKiB": 116864,
+  "avgPssKiB": 115646,
+  "cpuSeconds": 44.005977,
+  "cpuPercent": 70.89010173216562,
+  "elapsed": 62.076334953308105
+ },
+ "ddnsCallbacksTotal": "20"
+}

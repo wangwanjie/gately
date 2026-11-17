@@ -1,0 +1,23 @@
+{
+ "sut": "traefik",
+ "httpsCheck": "200 1024 2",
+ "idle": {
+  "pssKiB": 94728,
+  "rssKiB": 94736,
+  "cgroupKiB": 116132,
+  "cpuUsec": 183145,
+  "procs": 1
+ },
+ "tests": {},
+ "info": "Version:      3.7.19",
+ "idleAfter": {
+  "pssKiB": 94728,
+  "rssKiB": 94736,
+  "cgroupKiB": 117508,
+  "cpuUsec": 236573,
+  "procs": 1
+ },
+ "startupSec": 0.529,
+ "image": "traefik:v3",
+ "imageBytes": 249668916
+}

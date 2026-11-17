@@ -1,0 +1,514 @@
+{
+ "sut": "fwknop",
+ "env": {
+  "sutCpus": "0,1",
+  "loadCpus": "4-7",
+  "kernel": "6.12.63+deb13-amd64",
+  "arch": "x86_64"
+ },
+ "startupSec": 0.59,
+ "idle": {
+  "pssKiB": 2276,
+  "rssKiB": 2284,
+  "cgroupKiB": 4652,
+  "cpuUsec": 89677,
+  "procs": 1
+ },
+ "image": "bench-fwknop:2.6.11",
+ "imageBytes": 147275154,
+ "info": {
+  "version": "fwknopd server 2.6.11, compiled for firewall bin: /usr/sbin/iptables",
+  "programBytes": 246728,
+  "programNote": "fwknopd + libfko.so（另依赖系统 iptables、libpcap 等）",
+  "debPackagesInstalledKiB": 406
+ },
+ "stealth": {
+  "probe": {
+   "tcp/9100": {
+    "result": "超时（DROP）",
+    "ms": 3003.8
+   },
+   "udp/62201": {
+    "result": "无响应（开放或被过滤，无法区分）"
+   }
+  },
+  "nmap": [
+   "Host: 203.0.113.1 ()\tPorts: 9100/filtered/tcp//jetdirect///, 62201/open|filtered/udp/////"
+  ]
+ },
+ "latency": {
+  "attempts": 60,
+  "ok": 60,
+  "total": {
+   "n": 60,
+   "p50ms": 8.991,
+   "p90ms": 17.435,
+   "p99ms": 18.106,
+   "maxms": 18.106,
+   "minms": 4.971,
+   "meanms": 10.839
+  },
+  "runs": [
+   {
+    "ok": true,
+    "ms": 12.997655001527164
+   },
+   {
+    "ok": true,
+    "ms": 8.688390998941031
+   },
+   {
+    "ok": true,
+    "ms": 9.642365999752656
+   },
+   {
+    "ok": true,
+    "ms": 8.913273999496596
+   },
+   {
+    "ok": true,
+    "ms": 8.5992719996284
+   },
+   {
+    "ok": true,
+    "ms": 13.047452001046622
+   },
+   {
+    "ok": true,
+    "ms": 8.465482000246993
+   },
+   {
+    "ok": true,
+    "ms": 9.211055999912787
+   },
+   {
+    "ok": true,
+    "ms": 6.982086999414605
+   },
+   {
+    "ok": true,
+    "ms": 8.698703000845853
+   },
+   {
+    "ok": true,
+    "ms": 8.9905609984271
+   },
+   {
+    "ok": true,
+    "ms": 8.46986999931687
+   },
+   {
+    "ok": true,
+    "ms": 8.40592500026105
+   },
+   {
+    "ok": true,
+    "ms": 17.150642999695265
+   },
+   {
+    "ok": true,
+    "ms": 15.09654599976784
+   },
+   {
+    "ok": true,
+    "ms": 8.518586000718642
+   },
+   {
+    "ok": true,
+    "ms": 8.535830000255373
+   },
+   {
+    "ok": true,
+    "ms": 9.420802000022377
+   },
+   {
+    "ok": true,
+    "ms": 11.421721999795409
+   },
+   {
+    "ok": true,
+    "ms": 8.308553000460961
+   },
+   {
+    "ok": true,
+    "ms": 17.900842000017292
+   },
+   {
+    "ok": true,
+    "ms": 8.456696999928681
+   },
+   {
+    "ok": true,
+    "ms": 17.72972300022957
+   },
+   {
+    "ok": true,
+    "ms": 8.659498000270105
+   },
+   {
+    "ok": true,
+    "ms": 17.423342998881708
+   },
+   {
+    "ok": true,
+    "ms": 8.577960999900824
+   },
+   {
+    "ok": true,
+    "ms": 10.654226998667582
+   },
+   {
+    "ok": true,
+    "ms": 8.85424999978568
+   },
+   {
+    "ok": true,
+    "ms": 17.67669000037131
+   },
+   {
+    "ok": true,
+    "ms": 8.927238000978832
+   },
+   {
+    "ok": true,
+    "ms": 10.833080999873346
+   },
+   {
+    "ok": true,
+    "ms": 17.130360000010114
+   },
+   {
+    "ok": true,
+    "ms": 9.271066999644972
+   },
+   {
+    "ok": true,
+    "ms": 17.25989799888339
+   },
+   {
+    "ok": true,
+    "ms": 5.600755999694229
+   },
+   {
+    "ok": true,
+    "ms": 14.100181999310735
+   },
+   {
+    "ok": true,
+    "ms": 8.733275000849972
+   },
+   {
+    "ok": true,
+    "ms": 8.71846900008677
+   },
+   {
+    "ok": true,
+    "ms": 5.057349999333383
+   },
+   {
+    "ok": true,
+    "ms": 17.435159999877214
+   },
+   {
+    "ok": true,
+    "ms": 8.997572000225773
+   },
+   {
+    "ok": true,
+    "ms": 17.523864000395406
+   },
+   {
+    "ok": true,
+    "ms": 17.564940000738716
+   },
+   {
+    "ok": true,
+    "ms": 15.781669000716647
+   },
+   {
+    "ok": true,
+    "ms": 8.625444999779575
+   },
+   {
+    "ok": true,
+    "ms": 8.940765001170803
+   },
+   {
+    "ok": true,
+    "ms": 9.265213000617223
+   },
+   {
+    "ok": true,
+    "ms": 8.474720998492558
+   },
+   {
+    "ok": true,
+    "ms": 8.567990000301506
+   },
+   {
+    "ok": true,
+    "ms": 5.632578999211546
+   },
+   {
+    "ok": true,
+    "ms": 9.033644999362878
+   },
+   {
+    "ok": true,
+    "ms": 9.1396790012368
+   },
+   {
+    "ok": true,
+    "ms": 8.886362000339432
+   },
+   {
+    "ok": true,
+    "ms": 9.297216000049957
+   },
+   {
+    "ok": true,
+    "ms": 16.8396520002716
+   },
+   {
+    "ok": true,
+    "ms": 7.885179998993408
+   },
+   {
+    "ok": true,
+    "ms": 18.105518000083975
+   },
+   {
+    "ok": true,
+    "ms": 8.635811998829013
+   },
+   {
+    "ok": true,
+    "ms": 9.589946999767562
+   },
+   {
+    "ok": true,
+    "ms": 4.9711239989846945
+   }
+  ]
+ },
+ "flood": {
+  "udp-single-10000": {
+   "flood": {
+    "mode": "single",
+    "targetPps": 10000.0,
+    "sent": 399995,
+    "sendErrors": 0,
+    "achievedPps": 9999.8,
+    "seconds": 40.0
+   },
+   "sutCpuPercent": 54.4,
+   "peakPssKiB": 3232,
+   "legitKnock": {
+    "attempts": 10,
+    "ok": 10,
+    "total": {
+     "n": 10,
+     "p50ms": 3.848,
+     "p90ms": 4.844,
+     "p99ms": 4.844,
+     "maxms": 4.844,
+     "minms": 3.585,
+     "meanms": 3.983
+    }
+   }
+  },
+  "udp-single-50000": {
+   "flood": {
+    "mode": "single",
+    "targetPps": 50000.0,
+    "sent": 1999979,
+    "sendErrors": 0,
+    "achievedPps": 49999.1,
+    "seconds": 40.0
+   },
+   "sutCpuPercent": 102.4,
+   "peakPssKiB": 3264,
+   "legitKnock": {
+    "attempts": 8,
+    "ok": 3,
+    "total": {
+     "n": 3,
+     "p50ms": 12.343,
+     "p90ms": 12.938,
+     "p99ms": 12.938,
+     "maxms": 12.938,
+     "minms": 11.176,
+     "meanms": 12.152
+    },
+    "errors": [
+     null,
+     null,
+     null,
+     null,
+     null
+    ]
+   }
+  },
+  "udp-spoof-10000": {
+   "flood": {
+    "mode": "spoof",
+    "targetPps": 10000.0,
+    "sent": 399997,
+    "sendErrors": 0,
+    "achievedPps": 9999.8,
+    "seconds": 40.0
+   },
+   "sutCpuPercent": 54.1,
+   "peakPssKiB": 3228,
+   "legitKnock": {
+    "attempts": 10,
+    "ok": 10,
+    "total": {
+     "n": 10,
+     "p50ms": 4.254,
+     "p90ms": 4.793,
+     "p99ms": 4.793,
+     "maxms": 4.793,
+     "minms": 3.633,
+     "meanms": 4.107
+    }
+   }
+  },
+  "udp-spoof-50000": {
+   "flood": {
+    "mode": "spoof",
+    "targetPps": 50000.0,
+    "sent": 1999996,
+    "sendErrors": 0,
+    "achievedPps": 49999.3,
+    "seconds": 40.0
+   },
+   "sutCpuPercent": 102.4,
+   "peakPssKiB": 3272,
+   "legitKnock": {
+    "attempts": 7,
+    "ok": 1,
+    "total": {
+     "n": 1,
+     "p50ms": 12.484,
+     "p90ms": 12.484,
+     "p99ms": 12.484,
+     "maxms": 12.484,
+     "minms": 12.484,
+     "meanms": 12.484
+    },
+    "errors": [
+     null,
+     null,
+     null,
+     null,
+     null
+    ]
+   }
+  }
+ },
+ "afterFlood": {
+  "pssKiB": 2384,
+  "rssKiB": 2392,
+  "cgroupKiB": 4808,
+  "cpuUsec": 126362809,
+  "procs": 1
+ },
+ "dataplane": {
+  "keepalive": {
+   "median": {
+    "rps": 148370.92,
+    "MBps": 178.85,
+    "p50ms": 0.43,
+    "p99ms": 0.486,
+    "non2xx": 0,
+    "sockErrors": 0,
+    "sutCpuPercent": 0.0,
+    "peakPssKiB": 2384
+   },
+   "runs": [
+    {
+     "rps": 148370.92,
+     "MBps": 178.85,
+     "p50ms": 0.43,
+     "p99ms": 0.486,
+     "non2xx": 0,
+     "sockErrors": 0,
+     "sutCpuPercent": 0.0,
+     "peakPssKiB": 2384
+    },
+    {
+     "rps": 140499.99,
+     "MBps": 169.36,
+     "p50ms": 0.453,
+     "p99ms": 0.526,
+     "non2xx": 0,
+     "sockErrors": 0,
+     "sutCpuPercent": 0.0,
+     "peakPssKiB": 2384
+    },
+    {
+     "rps": 149504.34,
+     "MBps": 180.22,
+     "p50ms": 0.424,
+     "p99ms": 0.501,
+     "non2xx": 0,
+     "sockErrors": 0,
+     "sutCpuPercent": 0.0,
+     "peakPssKiB": 2384
+    }
+   ]
+  },
+  "newconn": {
+   "median": {
+    "rps": 65046.205924416034,
+    "p50ms": 0.480185,
+    "p99ms": 0.9948610000000001,
+    "ok": 1301022,
+    "non2xx": 0,
+    "errors": 31,
+    "sutCpuPercent": 0.3,
+    "peakPssKiB": 2384
+   },
+   "runs": [
+    {
+     "rps": 68245.57984844624,
+     "p50ms": 0.468792,
+     "p99ms": 0.932165,
+     "ok": 1365034,
+     "non2xx": 0,
+     "errors": 32,
+     "sutCpuPercent": 0.3,
+     "peakPssKiB": 2384
+    },
+    {
+     "rps": 64596.30166679859,
+     "p50ms": 0.487925,
+     "p99ms": 0.996975,
+     "ok": 1292021,
+     "non2xx": 0,
+     "errors": 31,
+     "sutCpuPercent": 0.2,
+     "peakPssKiB": 2490
+    },
+    {
+     "rps": 65046.205924416034,
+     "p50ms": 0.480185,
+     "p99ms": 0.9948610000000001,
+     "ok": 1301022,
+     "non2xx": 0,
+     "errors": 31,
+     "sutCpuPercent": 0.3,
+     "peakPssKiB": 2384
+    }
+   ]
+  }
+ },
+ "idleAfter": {
+  "pssKiB": 2384,
+  "rssKiB": 2392,
+  "cgroupKiB": 4588,
+  "cpuUsec": 126659052,
+  "procs": 1
+ }
+}

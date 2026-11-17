@@ -1,0 +1,32 @@
+caddy-coraza off get 0 {"rps": 23973.9, "p50ms": 4.89, "p99ms": 14.66, "non2xx": 0, "sockErrors": 0, "requests": 480529, "sutCpuPercent": 178.9, "sutCpuPercentLoad": 197.2, "peakPssKiB": 79556, "cpuMsPerKReq": 82.07}
+caddy-coraza off get 1 {"rps": 24095.39, "p50ms": 4.86, "p99ms": 13.96, "non2xx": 0, "sockErrors": 0, "requests": 483640, "sutCpuPercent": 180.0, "sutCpuPercentLoad": 198.4, "peakPssKiB": 78396, "cpuMsPerKReq": 82.04}
+caddy-coraza off get 2 {"rps": 24027.35, "p50ms": 4.88, "p99ms": 13.97, "non2xx": 0, "sockErrors": 0, "requests": 481768, "sutCpuPercent": 179.7, "sutCpuPercentLoad": 198.0, "peakPssKiB": 80528, "cpuMsPerKReq": 82.22}
+caddy-coraza off query 0 {"rps": 23895.78, "p50ms": 4.91, "p99ms": 14.07, "non2xx": 0, "sockErrors": 0, "requests": 479298, "sutCpuPercent": 179.7, "sutCpuPercentLoad": 198.0, "peakPssKiB": 77600, "cpuMsPerKReq": 82.63}
+caddy-coraza off query 1 {"rps": 23700.41, "p50ms": 4.95, "p99ms": 14.23, "non2xx": 0, "sockErrors": 0, "requests": 475025, "sutCpuPercent": 179.4, "sutCpuPercentLoad": 197.7, "peakPssKiB": 77168, "cpuMsPerKReq": 83.23}
+caddy-coraza off query 2 {"rps": 23832.34, "p50ms": 4.93, "p99ms": 14.22, "non2xx": 0, "sockErrors": 0, "requests": 477888, "sutCpuPercent": 179.6, "sutCpuPercentLoad": 197.9, "peakPssKiB": 81316, "cpuMsPerKReq": 82.84}
+caddy-coraza off post4k 0 {"rps": 19375.09, "p50ms": 6.15, "p99ms": 16.79, "non2xx": 388138, "sockErrors": 0, "requests": 388138, "sutCpuPercent": 179.3, "sutCpuPercentLoad": 197.6, "peakPssKiB": 80320, "cpuMsPerKReq": 101.84}
+caddy-coraza off post4k 1 {"rps": 19351.31, "p50ms": 6.14, "p99ms": 16.76, "non2xx": 387567, "sockErrors": 0, "requests": 387567, "sutCpuPercent": 179.3, "sutCpuPercentLoad": 197.6, "peakPssKiB": 78544, "cpuMsPerKReq": 101.97}
+caddy-coraza off post4k 2 {"rps": 19401.84, "p50ms": 6.11, "p99ms": 16.72, "non2xx": 389208, "sockErrors": 0, "requests": 389208, "sutCpuPercent": 179.5, "sutCpuPercentLoad": 197.8, "peakPssKiB": 79544, "cpuMsPerKReq": 101.64}
+caddy-coraza off attack 0 {"rps": 22157.74, "p50ms": 5.29, "p99ms": 15.18, "non2xx": 348601, "sockErrors": 0, "requests": 445347, "sutCpuPercent": 180.3, "sutCpuPercentLoad": 198.8, "peakPssKiB": 78540, "cpuMsPerKReq": 89.27}
+caddy-coraza off attack 1 {"rps": 21546.66, "p50ms": 5.46, "p99ms": 15.59, "non2xx": 339005, "sockErrors": 0, "requests": 433053, "sutCpuPercent": 180.6, "sutCpuPercentLoad": 199.0, "peakPssKiB": 78980, "cpuMsPerKReq": 91.92}
+caddy-coraza off attack 2 {"rps": 21405.65, "p50ms": 5.49, "p99ms": 15.66, "non2xx": 336810, "sockErrors": 0, "requests": 430249, "sutCpuPercent": 180.6, "sutCpuPercentLoad": 199.0, "peakPssKiB": 78360, "cpuMsPerKReq": 92.52}
+attack.jsonl {405: 252, 200: 121, 404: 183, 400: 1}
+benign.jsonl {200: 48, 405: 99, 404: 242}
+crs-regression.jsonl {405: 102, 404: 1885, 400: 1, 200: 61}
+DONE caddy-coraza off {"startup": 0.645, "idle": {"pssKiB": 56584, "rssKiB": 56592, "cgroupKiB": 65060, "cpuUsec": 109730, "procs": 1}}
+caddy-coraza on get 0 {"rps": 2249.34, "p50ms": 56.2, "p99ms": 98.23, "non2xx": 0, "sockErrors": 0, "requests": 45096, "sutCpuPercent": 180.9, "sutCpuPercentLoad": 199.4, "peakPssKiB": 150304, "cpuMsPerKReq": 884.18}
+caddy-coraza on get 1 {"rps": 2265.26, "p50ms": 55.92, "p99ms": 95.8, "non2xx": 0, "sockErrors": 0, "requests": 45427, "sutCpuPercent": 181.7, "sutCpuPercentLoad": 200.2, "peakPssKiB": 150756, "cpuMsPerKReq": 881.28}
+caddy-coraza on get 2 {"rps": 2271.05, "p50ms": 55.8, "p99ms": 94.4, "non2xx": 0, "sockErrors": 0, "requests": 45556, "sutCpuPercent": 181.7, "sutCpuPercentLoad": 200.3, "peakPssKiB": 152648, "cpuMsPerKReq": 879.17}
+caddy-coraza on query 0 {"rps": 941.62, "p50ms": 136.22, "p99ms": 228.15, "non2xx": 0, "sockErrors": 0, "requests": 18887, "sutCpuPercent": 182.2, "sutCpuPercentLoad": 200.8, "peakPssKiB": 181216, "cpuMsPerKReq": 2126.31}
+caddy-coraza on query 1 {"rps": 942.9, "p50ms": 135.52, "p99ms": 212.23, "non2xx": 0, "sockErrors": 0, "requests": 18937, "sutCpuPercent": 181.9, "sutCpuPercentLoad": 200.5, "peakPssKiB": 192200, "cpuMsPerKReq": 2117.69}
+caddy-coraza on query 2 {"rps": 946.23, "p50ms": 135.48, "p99ms": 218.02, "non2xx": 0, "sockErrors": 0, "requests": 18952, "sutCpuPercent": 181.9, "sutCpuPercentLoad": 200.5, "peakPssKiB": 186020, "cpuMsPerKReq": 2115.52}
+caddy-coraza on post4k 0 {"rps": 45.47, "p50ms": 2600.0, "p99ms": 4050.0, "non2xx": 913, "sockErrors": 0, "requests": 913, "sutCpuPercent": 193.5, "sutCpuPercentLoad": 213.3, "peakPssKiB": 838560, "cpuMsPerKReq": 46724.61}
+caddy-coraza on post4k 1 {"rps": 46.35, "p50ms": 2520.0, "p99ms": 4100.0, "non2xx": 930, "sockErrors": 0, "requests": 930, "sutCpuPercent": 191.7, "sutCpuPercentLoad": 211.4, "peakPssKiB": 767280, "cpuMsPerKReq": 45472.9}
+caddy-coraza on post4k 2 {"rps": 46.07, "p50ms": 2580.0, "p99ms": 3780.0, "non2xx": 926, "sockErrors": 0, "requests": 926, "sutCpuPercent": 192.7, "sutCpuPercentLoad": 212.6, "peakPssKiB": 810856, "cpuMsPerKReq": 45924.96}
+caddy-coraza on attack 0 {"rps": 1011.59, "p50ms": 112.68, "p99ms": 389.42, "non2xx": 19221, "sockErrors": 0, "requests": 20307, "sutCpuPercent": 182.6, "sutCpuPercentLoad": 201.5, "peakPssKiB": 770688, "cpuMsPerKReq": 1984.26}
+caddy-coraza on attack 1 {"rps": 1003.73, "p50ms": 116.92, "p99ms": 365.41, "non2xx": 19090, "sockErrors": 0, "requests": 20171, "sutCpuPercent": 182.0, "sutCpuPercentLoad": 200.8, "peakPssKiB": 202024, "cpuMsPerKReq": 1991.04}
+caddy-coraza on attack 2 {"rps": 981.19, "p50ms": 118.55, "p99ms": 382.74, "non2xx": 18654, "sockErrors": 0, "requests": 19707, "sutCpuPercent": 183.1, "sutCpuPercentLoad": 201.9, "peakPssKiB": 217576, "cpuMsPerKReq": 2049.51}
+attack.jsonl {403: 429, 405: 67, 200: 30, 400: 1, 404: 30}
+benign.jsonl {403: 78, 200: 43, 405: 86, 404: 182}
+crs-regression.jsonl {403: 1959, 200: 12, 404: 77, 400: 1}
+DONE caddy-coraza on {"startup": 0.734, "idle": {"pssKiB": 98192, "rssKiB": 98200, "cgroupKiB": 105840, "cpuUsec": 250847, "procs": 1}}

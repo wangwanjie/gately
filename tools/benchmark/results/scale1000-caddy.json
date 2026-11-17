@@ -1,0 +1,28 @@
+{
+ "sut": "caddy",
+ "sites": 1000,
+ "startupSec": 0.801,
+ "startupRuns": [
+  0.822,
+  0.801,
+  0.699
+ ],
+ "idle": {
+  "pssKiB": 81412,
+  "rssKiB": 81420,
+  "cgroupKiB": 97388,
+  "cpuUsec": 484787,
+  "procs": 1
+ },
+ "rps": 9819.38,
+ "p99ms": 52.72,
+ "non2xx": 0,
+ "watch": {
+  "peakPssKiB": 369396,
+  "peakRssKiB": 369404,
+  "avgPssKiB": 354984,
+  "cpuSeconds": 39.460307,
+  "cpuPercent": 178.95799143583383,
+  "elapsed": 22.050039052963257
+ }
+}

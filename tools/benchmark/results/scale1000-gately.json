@@ -1,0 +1,28 @@
+{
+ "sut": "gately",
+ "sites": 1000,
+ "startupSec": 0.426,
+ "startupRuns": [
+  0.426,
+  0.473,
+  0.386
+ ],
+ "idle": {
+  "pssKiB": 96212,
+  "rssKiB": 96220,
+  "cgroupKiB": 104440,
+  "cpuUsec": 211021,
+  "procs": 1
+ },
+ "rps": 33211.15,
+ "p99ms": 29.77,
+ "non2xx": 0,
+ "watch": {
+  "peakPssKiB": 473692,
+  "peakRssKiB": 473700,
+  "avgPssKiB": 449125,
+  "cpuSeconds": 39.600009,
+  "cpuPercent": 179.4861902922449,
+  "elapsed": 22.062983751296997
+ }
+}
