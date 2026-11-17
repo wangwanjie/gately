@@ -2,6 +2,16 @@
 
 Sirve proxy inverso, redirecciones, archivos estáticos y texto fijo por dominio. Es el punto de entrada web unificado de Gately. Ubicación en el menú: barra lateral «Web → Servicios web».
 
+## Sitio rápido {#quick-site}
+
+«Sitio rápido» en la cabecera de la página (también en la página vacía cuando no hay listeners) crea un sitio de proxy inverso en tres pasos, sin necesidad de conocer antes la relación entre listeners y sitios:
+
+1. Dominio: el dominio que se escribe en el navegador; admite `*.example.com`.
+2. Dirección del backend: sin protocolo se usa `http://`, o `https://` para el puerto 443. «Probar» hace una única conexión TCP o una única petición HEAD que no sigue redirecciones y muestra si el backend es accesible y su código de estado; si el backend usa un certificado autofirmado, se marca automáticamente «Omitir la verificación del certificado del backend». Las plantillas de aplicaciones habituales (Home Assistant, Jellyfin, Emby, Vaultwarden, Nextcloud, Immich, Proxmox VE, Synology DSM, fnOS) rellenan el puerto y las opciones recomendadas, como tiempos de inactividad de visitantes más largos para aplicaciones de medios y fotos y la verificación del certificado del backend omitida para Proxmox y DSM, y explican qué falta por configurar en la propia aplicación. WebSocket se reenvía automáticamente.
+3. HTTP o HTTPS: por defecto se reutiliza un listener existente con el mismo protocolo en el puerto 443 o 80; también se puede elegir otro listener o crear uno nuevo (con puerto personalizado). Un nuevo listener HTTPS recibe además el puerto HTTP 80, que redirige a HTTPS, cuando el puerto 80 está libre. Con HTTPS se usa un certificado existente que cubra el dominio; si no lo hay, elige validación DNS (proveedor y credenciales, con el enlace «Obtener credenciales») o validación HTTP e indica el correo de la cuenta ACME (se rellena con el correo predeterminado de los ajustes de renovación del módulo de certificados). Tras publicar, el certificado se solicita en segundo plano y el último paso enlaza con la página de certificados para seguir el progreso.
+
+El último paso muestra la dirección en la que se puede hacer clic y qué hacer si el dominio aún no apunta a este dispositivo (registro DNS, DNS dinámico, archivo hosts local). Después se pueden editar en la lista, como siempre, todas las opciones del sitio.
+
 ## Estructura: listeners, sitios y sitio por defecto
 
 La configuración tiene tres niveles:

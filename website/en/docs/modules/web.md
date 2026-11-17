@@ -2,6 +2,16 @@
 
 Serve reverse proxy, redirects, static files and fixed text by domain. This is Gately's unified web entry point. Menu location: sidebar "Web → Web Services".
 
+## Quick site {#quick-site}
+
+"Quick site" in the page header (also on the empty page when there are no listeners) sets up a reverse proxy site in three steps, without having to learn about listeners and sites first:
+
+1. Domain: the domain typed in the browser; `*.example.com` is supported.
+2. Backend address: without a scheme `http://` is used, or `https://` for port 443. "Test" makes one TCP connection or one HEAD request that does not follow redirects and shows whether the backend is reachable and its status code; a self-signed backend certificate ticks "Skip backend certificate verification" automatically. Templates for common apps (Home Assistant, Jellyfin, Emby, Vaultwarden, Nextcloud, Immich, Proxmox VE, Synology DSM, fnOS) prefill the port and recommended options, such as longer visitor idle timeouts for media and photo apps and skipped backend certificate verification for Proxmox and DSM, and explain what still has to be set in the app.
+3. HTTP or HTTPS: an existing listener with the same protocol on port 443 or 80 is reused by default; another listener or a new one (with a custom port) can be picked. A new HTTPS listener also gets the extra HTTP port 80, redirecting to HTTPS, when port 80 is free. With HTTPS, an existing certificate covering the domain is used; otherwise choose DNS validation (provider and credentials, with a "Get credentials" link) or HTTP validation and enter the ACME account email (prefilled with the default email from the certificate renewal settings). The certificate is requested in the background after publishing, and the last step links to the certificate page to follow progress.
+
+The last step shows the clickable address and what to do when the domain does not point at this device yet (DNS record, dynamic DNS, local hosts file). Every option of the site can be edited in the list afterwards as usual.
+
 ## Structure: listeners, sites and the default site
 
 The configuration has three layers:

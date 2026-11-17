@@ -22,6 +22,8 @@ Te recomendamos instalar la aplicación nativa: se abre desde el icono del escri
 
 Abre `http://<ip-del-dispositivo>:16680` en un navegador. El usuario es `admin` y la contraseña predeterminada es `gately.cn`. Esta contraseña es pública: al iniciar sesión aparece un diálogo de cambio de contraseña, y para continuar hay que elegir una nueva de al menos 10 caracteres y difícil de adivinar.
 
+En una instalación nueva, tras cambiar la contraseña, Gately pregunta primero «¿Para qué vas a usar Gately?»: puedes elegir varias de «Publicar servicios internos con un dominio», «Reenvío de puertos / perforación de NAT», «DNS dinámico», «Red entre sedes», «Compartir archivos», «Punto de entrada VPS» o «Todas las funciones». Solo se mantienen los módulos de los casos elegidos, los demás se desactivan (su configuración se conserva) y Gately se reinicia una vez; puedes activarlos cuando quieras en «Ajustes → Módulos» o con «Añadir más funciones» al final de la barra lateral. «Omitir» mantiene todo activado. Las instancias actualizadas no ven este paso. La lista «Primeros pasos» de la parte superior de la vista general muestra los siguientes pasos de los casos elegidos y los marca según la configuración real; se puede contraer o cerrar.
+
 ## 3. Aplicar un refuerzo básico
 
 Nada más iniciar sesión, ve a «Ajustes» y:
@@ -33,6 +35,8 @@ Nada más iniciar sesión, ve a «Ajustes» y:
 Consulta la [Guía de refuerzo](/es/docs/guide/hardening) para más recomendaciones.
 
 ## 4. Añadir tu primera regla
+
+«Sitio rápido» en la página de Servicios web publica un sitio en tres pasos: indica el dominio y la dirección del backend (con «Probar», o rellenada desde las plantillas de Home Assistant, Jellyfin, Emby, Vaultwarden, Nextcloud, Immich, Proxmox VE, Synology DSM, fnOS) y elige HTTP o HTTPS. El listener se reutiliza o se crea automáticamente; consulta [Servicios web · Sitio rápido](/es/docs/modules/web#quick-site).
 
 Elige el módulo que se ajuste a tu necesidad:
 
