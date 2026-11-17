@@ -64,6 +64,57 @@ type PanelView struct {
 	Forced     bool
 	// Preview 为管理界面中的预览：放在禁用脚本的 iframe 中，不输出脚本与搜索框
 	Preview bool
+	// Layout 为链接样式与页面布局
+	Layout PanelLayout
+}
+
+// PanelLayout 是链接样式与页面布局，数值为 0 时用默认值（随样式而定）。取值已由 Web 服务校验，渲染时再按范围收紧一次。
+type PanelLayout struct {
+	// Style 为 ""（卡片）或 app（桌面 App 图标：大图标在上、名称在下，不显示描述）
+	Style string
+	// IconSize 为图标边长（像素），Columns 为宽屏每行最多的链接数，MobileColumns 为手机每行的链接数，
+	// Gap 为链接间距（像素），MaxWidth 为内容最大宽度（像素）
+	IconSize, Columns, MobileColumns, Gap, MaxWidth int
+}
+
+// layoutCSS 把布局写成页面样式与 <html> 的类名：app 为 App 图标样式，lc 为设置了宽屏每行数量，lm 为设置了手机每行数量。
+// 写入样式的只有收紧到范围内的整数；手机每行数量要写进 repeat() 的次数，只能由服务端按样式分别输出。
+func layoutCSS(l PanelLayout) (css string, classes []string) {
+	clamp := func(v, lo, hi int) int {
+		if v <= 0 {
+			return 0
+		}
+		return min(max(v, lo), hi)
+	}
+	icon, cols, mcols := clamp(l.IconSize, 24, 128), clamp(l.Columns, 1, 12), clamp(l.MobileColumns, 1, 8)
+	gap, width := clamp(l.Gap, 4, 48), clamp(l.MaxWidth, 640, 3840)
+	if l.Style == "app" {
+		classes = append(classes, "app")
+	}
+	var vars []string
+	if icon > 0 {
+		vars = append(vars, "--is:"+strconv.Itoa(icon)+"px")
+	}
+	if cols > 0 {
+		vars = append(vars, "--cols:"+strconv.Itoa(cols))
+		classes = append(classes, "lc")
+	}
+	if gap > 0 {
+		vars = append(vars, "--gap:"+strconv.Itoa(gap)+"px")
+	}
+	if width > 0 {
+		vars = append(vars, "--maxw:"+strconv.Itoa(width)+"px")
+	}
+	if len(vars) > 0 {
+		css = ":root{" + strings.Join(vars, ";") + "}"
+	}
+	if mcols > 0 {
+		classes = append(classes, "lm")
+		// 卡片样式的网格以半张大卡片为一格（小卡片占一格），所以是 2 倍
+		css += "@media (max-width:640px){html.lm .grid{grid-template-columns:repeat(" + strconv.Itoa(mcols*2) + ",minmax(0,1fr))}" +
+			"html.lm.app .grid{grid-template-columns:repeat(" + strconv.Itoa(mcols) + ",minmax(0,1fr))}}"
+	}
+	return css, classes
 }
 
 // PanelEngine 是一个搜索引擎：URL 已校验为 http(s) 地址，其中的 {q} 由页面脚本换成关键词。
@@ -146,6 +197,11 @@ var panelTexts = map[string]string{
 	"foldHint":      "展开或收起分组",
 	"confirmLogout": "确定要退出登录吗？",
 	"cancel":        "取消",
+	"layout":        "布局",
+	"styleCard":     "卡片",
+	"styleApp":      "图标",
+	"iconSize":      "大小",
+	"alts":          "其他访问方式",
 }
 
 // panelPalette 为未指定颜色时按名称挑选的图标底色，深浅主题下白字都清晰可读。
@@ -165,7 +221,7 @@ const panelCSS = `
 body{margin:0;min-height:100vh;display:flex;flex-direction:column;background:var(--bg);color:var(--text);font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;-webkit-font-smoothing:antialiased}
 .bg{position:fixed;inset:0;z-index:-1;background:radial-gradient(60rem 30rem at 0% -10%,var(--soft),transparent 70%),radial-gradient(50rem 28rem at 100% 0%,var(--soft),transparent 70%)}
 .bg.has::after{content:"";position:absolute;inset:0;background:var(--bg)}
-.page{width:100%;max-width:1200px;margin:0 auto;padding:32px 24px 12px;flex:1}
+.page{width:100%;max-width:var(--maxw,1200px);margin:0 auto;padding:32px 24px 12px;flex:1}
 .top{display:flex;align-items:center;justify-content:space-between;gap:16px 24px;flex-wrap:wrap;margin-bottom:26px}
 .brand{display:flex;align-items:center;gap:14px;min-width:0}
 .logo{width:48px;height:48px;flex:none;border-radius:var(--r);display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,var(--brand-2),var(--brand));box-shadow:0 8px 20px -10px var(--brand);font-size:22px;font-weight:650;overflow:hidden}
@@ -201,7 +257,7 @@ body{margin:0;min-height:100vh;display:flex;flex-direction:column;background:var
 .grp{margin:0 0 26px}
 .grp h2{display:flex;align-items:center;gap:8px;margin:0 0 12px;font-size:13px;font-weight:600;color:var(--muted);letter-spacing:.02em}
 .grp h2 .n{min-width:20px;padding:0 6px;border-radius:999px;background:var(--input);border:1px solid var(--line);color:var(--faint);font-size:11px;font-weight:500;text-align:center}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:var(--gap,12px)}
 .card{grid-column:span 2;position:relative;display:flex;align-items:center;gap:12px;min-width:0;padding:12px 14px;border:1px solid var(--line);border-radius:var(--r);background:var(--card);color:inherit;box-shadow:var(--shadow);transition:border-color .15s,transform .15s,background .15s}
 .card .hit{position:absolute;inset:0;z-index:1;border-radius:inherit}
 .card.link:hover{border-color:var(--brand);background:var(--hover);transform:translateY(-1px)}
@@ -211,10 +267,10 @@ body{margin:0;min-height:100vh;display:flex;flex-direction:column;background:var
 .alt{display:inline-block;max-width:100%;padding:1px 7px;border:1px solid var(--line);border-radius:999px;background:var(--input);color:var(--muted);font-size:11.5px;line-height:17px;text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 a.alt:hover{border-color:var(--brand);color:var(--brand)}
 .alt.off{opacity:.5;text-decoration:line-through;cursor:not-allowed}
-.ic{width:40px;height:40px;flex:none;border-radius:calc(var(--r-sm) + 1px);display:grid;place-items:center;color:#fff;background:var(--c,var(--brand));font-size:17px;font-weight:650;overflow:hidden}
+.ic{--s:var(--is,40px);width:var(--s);height:var(--s);flex:none;border-radius:calc(var(--r-sm) + 1px);display:grid;place-items:center;color:#fff;background:var(--c,var(--brand));font-size:calc(var(--s)*.42);font-weight:650;overflow:hidden}
 .ic.img{background:var(--input);border:1px solid var(--line)}
-.ic img{width:28px;height:28px;object-fit:contain}
-.ic.tile img{width:22px;height:22px}
+.ic img{width:70%;height:70%;object-fit:contain}
+.ic.tile img{width:55%;height:55%}
 .tx{display:flex;flex-direction:column;min-width:0}
 .nm{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ds{margin-top:1px;color:var(--muted);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -233,25 +289,23 @@ a.alt:hover{border-color:var(--brand);color:var(--brand)}
 .sbox{flex:1 1 180px}
 .sbox .search{flex:1 1 0}
 .search kbd{display:none}
-.grid{grid-template-columns:repeat(4,1fr);gap:10px}
+.grid{grid-template-columns:repeat(4,1fr);gap:var(--gap,10px)}
 .card{grid-column:span 2}
 .card{gap:10px;padding:10px 11px;border-radius:calc(var(--r) - 2px)}
-.ic{width:34px;height:34px;border-radius:var(--r-sm);font-size:15px}
-.ic img{width:24px;height:24px}
-.ic.tile img{width:19px;height:19px}
+.ic{--s:var(--is,34px);border-radius:var(--r-sm)}
 .nm{font-size:13.5px}
 .ds{font-size:12px}
 }
 `
 
 const panelSrc = `<!doctype html>
-<html lang="{{.Lang}}"{{if .Theme}} data-theme="{{.Theme}}"{{end}}{{if .Background}} class="hasbg"{{end}}><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="{{.Lang}}"{{if .Theme}} data-theme="{{.Theme}}"{{end}}{{with .RootClass}} class="{{.}}"{{end}}><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
 <title>{{.TabTitle}}</title>
 {{if .MetaDesc}}<meta name="description" content="{{.MetaDesc}}">{{end}}
 <link rel="icon" href="{{.Favicon}}">
-<style nonce="{{.Nonce}}">{{.SkinCSS}}` + panelCSS + panelUICSS + panelSkinCSS + `{{range $i, $c := .Colors}}.c{{$i}}{--c:{{$c}}}{{end}}{{.BgCSS}}</style>
-{{if not .Preview}}<script type="application/json" id="ui-data">{{.UIData}}</script><script type="application/json" id="skin-data">{{.Skins}}</script><script nonce="{{.Nonce}}">` + panelSkinJS + `</script>{{end}}</head>
+<style nonce="{{.Nonce}}">{{.SkinCSS}}` + panelCSS + panelUICSS + panelLayoutStyleCSS + panelSkinCSS + `{{range $i, $c := .Colors}}.c{{$i}}{--c:{{$c}}}{{end}}{{.BgCSS}}{{.LayoutCSS}}</style>
+{{if not .Preview}}<script type="application/json" id="ui-data">{{.UIData}}</script><script type="application/json" id="skin-data">{{.Skins}}</script><script nonce="{{.Nonce}}">` + panelSkinJS + panelLayoutHeadJS + `</script>{{end}}</head>
 <body><div class="bg{{if .Background}} has{{end}}" aria-hidden="true">{{if .Background}}<img src="{{.Background}}" alt="" decoding="async" referrerpolicy="no-referrer">{{end}}</div>
 <div class="page">
 <header class="top">
@@ -270,6 +324,7 @@ const panelSrc = `<!doctype html>
 {{range .Links}}<div class="card{{if .Small}} sm{{end}}{{if .Href}} link{{else}} off{{end}}" data-s="{{.Search}}" data-k="{{.Key}}"{{if not .Href}} title="{{$.T.off}}"{{end}}>
 {{if .Locked}}<svg class="lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>{{$.T.locked}}</title><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>{{end}}
 {{if .Href}}<a class="hit" href="{{.Href}}"{{if .NewTab}} target="_blank" rel="noopener noreferrer"{{end}} title="{{.Name}}" aria-label="{{.Name}}"></a>{{end}}
+{{if and .Alts (not .Small)}}<details class="am"><summary title="{{$.T.alts}}" aria-label="{{$.T.alts}}">{{$.MoreIcon}}</summary><span class="amp"><span class="t">{{$.T.alts}}</span>{{range .Alts}}{{if .Href}}<a href="{{.Href}}" target="_blank" rel="noopener noreferrer" title="{{.Title}}">{{.Name}}</a>{{else}}<span class="off" title="{{$.T.off}}">{{.Name}}</span>{{end}}{{end}}</span></details>{{end}}
 {{with .Icon}}{{if and .Image .Class}}<span class="ic tile {{.Class}}"><img src="{{.Image}}" alt="" loading="lazy"></span>{{else if .Image}}<span class="ic img"><img src="{{.Image}}" alt="" loading="lazy" referrerpolicy="no-referrer"></span>{{else}}<span class="ic {{.Class}}">{{.Text}}</span>{{end}}{{end}}
 {{if not .Small}}<span class="tx">{{if not .HideName}}<span class="nm">{{.Name}}</span>{{end}}{{if not .Href}}<span class="ds">{{$.T.off}}</span>{{else if .HideDesc}}{{else if .Description}}<span class="ds">{{.Description}}</span>{{else if .Address}}<span class="ds mono">{{.Address}}</span>{{end}}{{if .Alts}}<span class="alts">{{range .Alts}}{{if .Href}}<a class="alt" href="{{.Href}}" target="_blank" rel="noopener noreferrer" title="{{.Title}}">{{.Name}}</a>{{else}}<span class="alt off" title="{{$.T.off}}">{{.Name}}</span>{{end}}{{end}}</span>{{end}}</span>{{end}}
 </div>
@@ -512,6 +567,11 @@ func RenderPanel(r *http.Request, v PanelView) ([]byte, string) {
 		Lang    string            `json:"lang"`
 		Bg      map[string]any    `json:"bg"`
 		Logout  string            `json:"logout"`
+		// Layout 为面板设置的链接样式（card 或 app）与图标大小（0 为默认），访客在页面设置中可以另选
+		Layout struct {
+			Style string `json:"style"`
+			Icon  int    `json:"icon"`
+		} `json:"layout"`
 	}{Logout: v.LogoutURL, T: Localize(lang, panelTexts), Engines: []uiEngine{}, Def: v.DefaultEngine, Lang: lang, Bg: map[string]any{"has": v.Background != "", "dim": dim, "blur": blur}}
 	engineName := Localize(lang, panelTexts)["local"]
 	for i, e := range v.Engines {
@@ -529,9 +589,20 @@ func RenderPanel(r *http.Request, v PanelView) ([]byte, string) {
 		langs = nil
 	}
 	ui.Langs = langs
+	ui.Layout.Style, ui.Layout.Icon = "card", 0
+	if v.Layout.Style == "app" {
+		ui.Layout.Style = "app"
+	}
+	if v.Layout.IconSize >= 24 && v.Layout.IconSize <= 128 {
+		ui.Layout.Icon = v.Layout.IconSize
+	}
+	layout, rootClass := layoutCSS(v.Layout)
+	if v.Background != "" {
+		rootClass = append([]string{"hasbg"}, rootClass...)
+	}
 	uiJSON, _ := json.Marshal(ui)
 	data := map[string]any{
-		"Engines": engines, "DefaultEngine": v.DefaultEngine, "Background": bg, "BgCSS": bgCSS, "UIData": template.JS(uiJSON), "EngineName": engineName,
+		"Engines": engines, "DefaultEngine": v.DefaultEngine, "Background": bg, "BgCSS": bgCSS, "LayoutCSS": template.CSS(layout), "RootClass": strings.Join(rootClass, " "), "MoreIcon": template.HTML(panelMoreIcon), "UIData": template.JS(uiJSON), "EngineName": engineName,
 		"Langs": langs, "ChevronIcon": template.HTML(panelChevronIcon), "GoIcon": template.HTML(panelGoIcon), "LangIcon": template.HTML(panelLangIcon), "HideFooter": v.HideFooter, "Footer": v.Footer, "FooterLink": template.URL(v.FooterURL), "UserInitial": iconInitial(v.User), "User": v.User, "GearIcon": template.HTML(panelGearIcon),
 		"LoginURL": v.LoginURL, "LogoutURL": v.LogoutURL, "Hidden": v.Hidden, "LockIcon": template.HTML(panelLockIcon),
 		"Lang": lang, "T": Localize(lang, panelTexts), "Nonce": nonce,

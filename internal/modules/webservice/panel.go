@@ -54,6 +54,21 @@ const (
 	maxPanelBgBlur = 20
 )
 
+// 页面布局的取值范围；各项为 0 时使用默认值（随链接样式而定）。
+const (
+	minPanelIconSize, maxPanelIconSize = 24, 128
+	maxPanelColumns                    = 12
+	maxPanelMobileColumns              = 8
+	minPanelGap, maxPanelGap           = 4, 48
+	minPanelMaxWidth, maxPanelMaxWidth = 640, 3840
+)
+
+// 链接样式：默认卡片（图标在左，右侧标题与描述），app 为桌面 App 图标（大图标在上、名称在下，不显示描述）。
+const (
+	PanelStyleCard = ""
+	PanelStyleApp  = "app"
+)
+
 // 链接卡片的尺寸：默认大卡片（图标加标题、描述），小卡片只显示图标。
 const (
 	PanelSizeLarge = ""
@@ -117,6 +132,19 @@ type Panel struct {
 	BgDim      int    `json:"bgDim"`
 	// BgBlur 为背景图片的模糊半径（0-20 像素）
 	BgBlur int `json:"bgBlur"`
+	// CardStyle 为链接样式：空为卡片，app 为桌面 App 图标（名称在图标下方，不显示描述，其他访问方式收在图标角上的菜单里）
+	CardStyle string `json:"cardStyle"`
+	// IconSize 为图标边长（24-128 像素），0 为默认（卡片 40、App 图标 64，手机上分别为 34、56）
+	IconSize int `json:"iconSize"`
+	// Columns 为宽屏下每行最多显示的链接数（1-12），窗口变窄时自动减少；0 为按宽度自动排列。
+	// 卡片样式下按大卡片计，小卡片占半格
+	Columns int `json:"columns"`
+	// MobileColumns 为手机（宽度不超过 640 像素）上每行显示的链接数（1-8），0 为默认（卡片 2 个，App 图标按宽度自动排列）
+	MobileColumns int `json:"mobileColumns"`
+	// Gap 为链接之间的间距（4-48 像素），0 为默认（卡片 12、App 图标 18）
+	Gap int `json:"gap"`
+	// MaxWidth 为页面内容的最大宽度（640-3840 像素），0 为默认 1200
+	MaxWidth int `json:"maxWidth"`
 	// LANCIDRs 为额外视为内网的访客地址（IP 或 CIDR）。回环、私有地址（10/8、172.16/12、192.168/16、fc00::/7）
 	// 与链路本地地址始终视为内网；经 Tailscale、ZeroTier 等组网访问时可在这里加上对应网段
 	LANCIDRs []string `json:"lanCidrs"`
@@ -482,6 +510,9 @@ func (p *Panel) validate() error {
 	if p.BgBlur < 0 || p.BgBlur > maxPanelBgBlur {
 		return fmt.Errorf("背景模糊需在 0 到 %d 之间", maxPanelBgBlur)
 	}
+	if err := p.validateLayout(); err != nil {
+		return err
+	}
 	if err := p.validateEngines(); err != nil {
 		return err
 	}
@@ -506,6 +537,35 @@ func (p *Panel) validate() error {
 	}
 	if total > maxPanelIconsTotal {
 		return fmt.Errorf("面板中的图标合计不能超过 %d MB，请改用图标地址或更小的图片", maxPanelIconsTotal>>20)
+	}
+	return nil
+}
+
+// validateLayout 校验链接样式与页面布局：数值为 0 表示默认，其余需在范围内。
+// 这些值以整数写进页面样式，范围校验同时保证页面不会被设置成无法使用的尺寸。
+func (p *Panel) validateLayout() error {
+	switch p.CardStyle {
+	case PanelStyleCard, PanelStyleApp:
+	default:
+		return fmt.Errorf("不支持的链接样式 %q", p.CardStyle)
+	}
+	inRange := func(v, lo, hi int) bool {
+		return v == 0 || (v >= lo && v <= hi)
+	}
+	if !inRange(p.IconSize, minPanelIconSize, maxPanelIconSize) {
+		return fmt.Errorf("图标大小需在 %d 到 %d 之间", minPanelIconSize, maxPanelIconSize)
+	}
+	if !inRange(p.Columns, 1, maxPanelColumns) {
+		return fmt.Errorf("每行数量需在 1 到 %d 之间", maxPanelColumns)
+	}
+	if !inRange(p.MobileColumns, 1, maxPanelMobileColumns) {
+		return fmt.Errorf("手机每行数量需在 1 到 %d 之间", maxPanelMobileColumns)
+	}
+	if !inRange(p.Gap, minPanelGap, maxPanelGap) {
+		return fmt.Errorf("间距需在 %d 到 %d 之间", minPanelGap, maxPanelGap)
+	}
+	if !inRange(p.MaxWidth, minPanelMaxWidth, maxPanelMaxWidth) {
+		return fmt.Errorf("内容宽度需在 %d 到 %d 之间", minPanelMaxWidth, maxPanelMaxWidth)
 	}
 	return nil
 }
@@ -726,7 +786,8 @@ func linkAddress(u *url.URL) string {
 // view 生成页面内容。q 用于展开链接地址中的变量；lan 为使用内网地址；authed 为访客已登录，
 // 未登录时“登录后可见”的链接不进入页面，只统计被隐藏的个数。
 func (p *compiledPanel) view(q redirectRequest, lan, forced, preview, authed bool) webpage.PanelView {
-	v := webpage.PanelView{Title: p.Title, Subtitle: p.Subtitle, Theme: p.Theme, Skin: p.Skin, LAN: lan, Forced: forced, Preview: preview, BgDim: p.BgDim, BgBlur: p.BgBlur}
+	v := webpage.PanelView{Title: p.Title, Subtitle: p.Subtitle, Theme: p.Theme, Skin: p.Skin, LAN: lan, Forced: forced, Preview: preview, BgDim: p.BgDim, BgBlur: p.BgBlur,
+		Layout: webpage.PanelLayout{Style: p.CardStyle, IconSize: p.IconSize, Columns: p.Columns, MobileColumns: p.MobileColumns, Gap: p.Gap, MaxWidth: p.MaxWidth}}
 	for _, e := range p.Engines {
 		v.Engines = append(v.Engines, webpage.PanelEngine{Name: e.Name, URL: e.URL})
 	}
