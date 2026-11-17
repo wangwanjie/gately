@@ -1,23 +1,135 @@
 {
-  "title": "Willkommen bei Gately",
-  "subtitle": "Ein paar kurze Schritte machen Ihr Gateway sicherer und einfacher im Betrieb.",
-  "go": "Öffnen",
-  "later": "Später erinnern",
-  "done": "Fertig, nicht mehr anzeigen",
-  "security": {
-    "title": "Zweiten Faktor hinzufügen",
-    "desc": "Aktivieren Sie die Zwei-Faktor-Authentifizierung oder registrieren Sie einen Passkey für eine sicherere Anmeldung."
+  "scene": {
+    "title": "Wofür möchten Sie Gately nutzen?",
+    "subtitle": "Mehrfachauswahl möglich. Nur die passenden Funktionen bleiben aktiv und die Seitenleiste bleibt übersichtlich; alles andere lässt sich jederzeit unter Einstellungen → Module einschalten.",
+    "items": {
+      "web": {
+        "title": "Interne Dienste über eine Domain veröffentlichen",
+        "desc": "Reverse-Proxy mit HTTPS-Zertifikaten: NAS, Home Assistant und mehr über die eigene Domain erreichen"
+      },
+      "forward": {
+        "title": "Portweiterleitung / Hole Punching",
+        "desc": "TCP- / UDP-Portweiterleitung, mit STUN-Hole-Punching, wenn keine öffentliche IPv4-Adresse vorhanden ist"
+      },
+      "ddns": {
+        "title": "Dynamisches DNS",
+        "desc": "DNS-Einträge automatisch aktualisieren, wenn sich die Heim-IP ändert"
+      },
+      "mesh": {
+        "title": "Standortübergreifendes Netzwerk",
+        "desc": "Tailscale, NetBird und EasyTier verbinden Geräte an verschiedenen Orten"
+      },
+      "files": {
+        "title": "Dateifreigabe",
+        "desc": "WebDAV, SMB, FTP und File Browser"
+      },
+      "vps": {
+        "title": "VPS-Eingang",
+        "desc": "Protokoll-Routing und ein frp-Server teilen einen öffentlichen Port auf mehrere Dienste auf"
+      },
+      "all": {
+        "title": "Alle Funktionen",
+        "desc": "Alle Funktionen bleiben aktiv, praktisch für einen ersten Überblick"
+      }
+    },
+    "hintAll": "Ohne Auswahl oder mit „Alle Funktionen“ bleiben alle Funktionen aktiv.",
+    "hintSome": "{count} von {total} Modulen bleiben aktiv, die übrigen werden ausgeschaltet (ihre Einstellungen bleiben erhalten). Gately startet nach dem Speichern einmal neu.",
+    "skip": "Überspringen und alles behalten",
+    "confirm": "Weiter",
+    "restarting": "Neustart mit den gewählten Funktionen…"
   },
-  "check": {
-    "title": "Netzwerk-Selbsttest ausführen",
-    "desc": "Probleme mit NAT, Ports, Uhrzeit und DNS früh erkennen."
+  "card": {
+    "title": "Erste Schritte",
+    "progress": "{done} von {total} erledigt",
+    "allDone": "Alles erledigt. Sie können diese Karte jetzt schließen",
+    "close": "Schließen",
+    "closeConfirm": "Die Checkliste „Erste Schritte“ wird nicht mehr angezeigt. Schließen?",
+    "doneLabel": "Erledigt",
+    "todoLabel": "Offen",
+    "again": "Nochmal"
+  },
+  "items": {
+    "site": {
+      "title": "Erste Website veröffentlichen",
+      "desc": "Domain und Backend-Adresse eingeben; Listener und Website werden in einem Schritt angelegt",
+      "action": "Schnell-Website"
+    },
+    "https": {
+      "title": "HTTPS für eine Website aktivieren",
+      "desc": "Ein vorhandenes Zertifikat verwenden oder per DNS- oder HTTP-Validierung eines anfordern",
+      "action": "Einrichten"
+    },
+    "ddns": {
+      "title": "Domain auf dieses Gerät zeigen lassen",
+      "desc": "Eine Dynamisches-DNS-Aufgabe anlegen, die die Einträge bei IP-Änderungen aktualisiert",
+      "action": "Aufgabe hinzufügen"
+    },
+    "portforward": {
+      "title": "Erste Weiterleitungsregel hinzufügen",
+      "desc": "Einen Port an ein Gerät im Netzwerk weiterleiten, etwa SSH eines NAS",
+      "action": "Regel hinzufügen"
+    },
+    "stun": {
+      "title": "Keine öffentliche IPv4? STUN-Hole-Punching probieren",
+      "desc": "Einen aus dem Internet erreichbaren Port hinter einem NAT1 erhalten",
+      "action": "Einrichten"
+    },
+    "mesh": {
+      "title": "Einem Netzwerk beitreten",
+      "desc": "Eine Tailscale-, NetBird- oder EasyTier-Instanz hinzufügen",
+      "action": "Hinzufügen"
+    },
+    "fileuser": {
+      "title": "Gemeinsamen Benutzer hinzufügen",
+      "desc": "Anmeldekonten und Ordner, die WebDAV, SMB und FTP gemeinsam nutzen",
+      "action": "Benutzer hinzufügen"
+    },
+    "fileservice": {
+      "title": "Dateidienst einschalten",
+      "desc": "WebDAV, SMB, FTP oder File Browser auswählen",
+      "action": "Einschalten"
+    },
+    "protoroute": {
+      "title": "Protokoll-Routing-Regel hinzufügen",
+      "desc": "HTTPS, SSH, frp und weitere Protokolle über einen einzigen Port bedienen",
+      "action": "Regel hinzufügen"
+    },
+    "frps": {
+      "title": "frp-Server starten",
+      "desc": "frp-Clients zu Hause können Dienste über diesen VPS veröffentlichen",
+      "action": "Einrichten"
+    },
+    "security": {
+      "title": "Zweiten Anmeldefaktor hinzufügen",
+      "desc": "Zwei-Schritt-Verifizierung aktivieren oder einen Passkey registrieren, damit die Anmeldung sicherer wird",
+      "action": "Einrichten"
+    },
+    "check": {
+      "title": "Netzwerk-Selbsttest ausführen",
+      "desc": "Probleme mit NAT, Ports, Uhrzeit und DNS früh erkennen",
+      "action": "Ausführen"
+    },
+    "import": {
+      "title": "Vorhandene Konfiguration importieren",
+      "desc": "Von nginx, Nginx Proxy Manager, frp oder Lucky migrieren",
+      "action": "Quelle wählen"
+    },
+    "notify": {
+      "title": "Benachrichtigungen einrichten",
+      "desc": "Fertige Vorlagen für fehlgeschlagene Updates, ablaufende Zertifikate und Anmeldewarnungen",
+      "action": "Einrichten"
+    }
   },
   "import": {
-    "title": "Aus Lucky importieren",
-    "desc": "Übernehmen Sie Ihre bestehende Lucky-Konfiguration (.lkcf) und migrieren Sie Schritt für Schritt."
+    "title": "Vorhandene Konfiguration importieren",
+    "desc": "Wählen Sie die Herkunft. Jeder Import lässt sich vorher in der Vorschau ansehen.",
+    "open": "Öffnen",
+    "nginx": "nginx-server-Blöcke einfügen oder hochladen und in Listener und Websites umwandeln",
+    "npm": "Die .conf-Dateien aus nginx/proxy_host im Datenverzeichnis hochladen und als nginx-Konfiguration importieren",
+    "frp": "Eine frpc- / frps-Konfigurationsdatei einfügen",
+    "lucky": "Eine .lkcf-Datei unter Einstellungen → Sicherung & Migration importieren"
   },
-  "notify": {
-    "title": "Benachrichtigungen einrichten",
-    "desc": "Mit fertigen Vorlagen Hinweise zu fehlgeschlagenen Updates, ablaufenden Zertifikaten und Anmeldungen erhalten."
+  "addFeatures": {
+    "title": "Weitere Funktionen hinzufügen"
   }
 }

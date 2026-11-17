@@ -44,6 +44,8 @@ var forbiddenPrefixes = []string{
 	"/api/system/upgrade",
 	"/api/system/selfcheck",
 	"/api/system/onboarding",
+	// 后端连通性测试能探测内网地址与端口，只允许管理员登录会话使用
+	"/api/system/probe",
 	// Web 终端的安全设置（两步验证、协议确认）等同于账号安全，只允许会话修改
 	"/api/webterminal/security",
 	// 本地备份文件含全部密钥，只允许会话下载

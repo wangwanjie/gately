@@ -97,6 +97,8 @@ type App struct {
 	store      *config.Store
 	settingsMu sync.RWMutex
 	settings   Settings
+	// onboardMu 保护首次启动引导进度（onboarding.json）的读改写
+	onboardMu sync.Mutex
 	// loginIPs 记录登录管理后台成功过的来源，用于新地址登录告警
 	loginIPs *loginips.Tracker
 	// fileListen 为配置文件中的监听地址（命令行 -listen 覆盖时用于回写）
@@ -187,6 +189,8 @@ func New(opts Options) (_ *App, err error) {
 		}
 		log.Printf("已从 %s 应用 %d 个配置文件", opts.ApplyDir, n)
 	}
+	// 全新安装（配置目录里还没有任何配置文件）首次登录后先询问使用场景；须在写入任何配置之前判断
+	fresh := freshConfigDir(store.Dir())
 	// 运行日志异步回显到标准错误输出；标准日志按服务端语言翻译后经同一个出口输出，两者的先后顺序保持一致
 	echo := opts.Echo
 	if echo == nil {
@@ -254,6 +258,9 @@ func New(opts Options) (_ *App, err error) {
 		// 默认密码只在首次启动时打印一次，登录后应立即修改
 		// 日志同时包含英文关键词 "initial password"，便于各语言用户统一用 grep -i "initial password" 检索
 		a.logger.Printf("==== 已创建管理员账号 admin / Admin account \"admin\" created, initial password: %s ，请登录后立即修改 / change it after your first login ====", initial)
+	}
+	if err := a.markFreshInstall(fresh); err != nil {
+		return nil, err
 	}
 	// 服务未运行期间通过命令行提交的重置请求，在启动时应用
 	a.applyAccountReset()
@@ -410,6 +417,9 @@ func (a *App) Handler() http.Handler {
 	rec.add("POST /api/system/selfcheck", a.handleSelfCheck, "")
 	rec.add("GET /api/system/onboarding", a.handleOnboarding, "")
 	rec.add("POST /api/system/onboarding/dismiss", a.handleOnboardingDismiss, "")
+	rec.add("POST /api/system/onboarding/scenes", a.handleOnboardingScenes, "")
+	rec.add("POST /api/system/onboarding/done", a.handleOnboardingDone, "")
+	rec.add("POST /api/system/probe", a.handleProbe, "")
 	for _, e := range a.modules {
 		prefix := "/api/" + e.mod.ID()
 		if !e.enabled {

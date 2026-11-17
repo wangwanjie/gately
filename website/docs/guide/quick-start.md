@@ -22,6 +22,8 @@ docker run -d --name gately --network host --cap-add NET_ADMIN \
 
 浏览器打开 `http://<设备IP>:16680`，用户名 `admin`，默认密码 `gately.cn`。默认密码是公开的，登录后会弹出改密对话框，改成至少 10 位、不易猜到的新密码后才能继续使用。
 
+全新安装改完密码后，会先询问「你打算用 Gately 做什么」：可多选「把内网服务发布成域名」「端口转发 / 打洞」「动态域名」「异地组网」「文件共享」「VPS 入口」或「全部功能」。只保留所选场景相关的功能模块，其余模块关闭（配置不删除），随后自动重启一次；之后随时可在「设置 → 功能模块」或侧边栏底部的「添加更多功能」里打开。选择「跳过」保留全部功能。升级的实例不会出现这一步。总览顶部的「开始使用」清单按所选场景列出接下来要做的事，并根据实际配置自动打勾，可收起或关闭。
+
 管理界面的侧边栏按分组列出全部页面。按 Ctrl+K（macOS 为 ⌘K）或点侧边栏顶部的搜索框打开全局搜索，可以按名称跳到页面或页内标签，也能搜站点域名、端口转发规则、DDNS 记录与证书域名；手机上点顶栏的搜索图标。
 
 ## 3. 完成基础加固
@@ -35,6 +37,8 @@ docker run -d --name gately --network host --cap-add NET_ADMIN \
 更多建议见 [加固建议](/docs/guide/hardening)。
 
 ## 4. 添加第一条规则
+
+Web 服务页的「快速建站」三步发布一个站点：填域名，填后端地址（可「测试连通」，也可从 Home Assistant、Jellyfin、Emby、Vaultwarden、Nextcloud、Immich、Proxmox VE、群晖 DSM、飞牛 fnOS 模板预填端口与推荐选项），再选 HTTP 或 HTTPS。监听自动复用或新建，详见 [Web 服务 · 快速建站](/docs/modules/web#quick-site)。
 
 按需求选择一个模块开始：
 

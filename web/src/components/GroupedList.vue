@@ -19,7 +19,10 @@
     <!-- 加载失败：没有数据时显示错误块代替空状态；已有数据（轮询偶发失败）时保留数据，顶部显示一行提示 -->
     <LoadError v-if="error && gl.total.value" bar :error="error" @retry="emit('retry')" />
     <LoadError v-if="!loading && error && !gl.total.value" :error="error" :compact="!!emptyImageSize && emptyImageSize < 80" @retry="emit('retry')" />
-    <el-empty v-else-if="!loading && !gl.total.value" :description="emptyText" :image-size="emptyImageSize" />
+    <el-empty v-else-if="!loading && !gl.total.value" :description="emptyText" :image-size="emptyImageSize">
+      <!-- empty 插槽：空状态下的操作按钮（如场景模板） -->
+      <template v-if="$slots.empty" #default><slot name="empty" /></template>
+    </el-empty>
     <el-empty v-else-if="!loading && !gl.items.value.length" :description="t('groupSort.noMatched')" :image-size="60" />
     <div v-for="b in blocks" :key="b.id" class="gl-block">
       <GroupHeader
@@ -85,6 +88,8 @@ const emit = defineEmits<{ retry: [] }>()
 
 defineSlots<{
   item(props: { it: Extract<GroupItem<T>, { kind: 'item' }>; item: T; sorting: boolean; bind: Record<string, unknown> }): unknown
+  // empty 为空状态下显示在说明文字下方的内容（可选）
+  empty?(): unknown
 }>()
 
 const { t } = useI18n()

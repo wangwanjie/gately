@@ -1,23 +1,135 @@
 {
-  "title": "Te damos la bienvenida a Gately",
-  "subtitle": "Unos pasos rápidos hacen tu pasarela más segura y fácil de gestionar.",
-  "go": "Abrir",
-  "later": "Recordármelo luego",
-  "done": "Hecho, no volver a mostrar",
-  "security": {
-    "title": "Añade un segundo factor",
-    "desc": "Activa la verificación en dos pasos o registra una passkey para un acceso más seguro."
+  "scene": {
+    "title": "¿Para qué vas a usar Gately?",
+    "subtitle": "Puedes elegir varias opciones. Solo se mantienen las funciones relacionadas y la barra lateral queda más limpia; el resto se activa cuando quieras en Ajustes → Módulos.",
+    "items": {
+      "web": {
+        "title": "Publicar servicios internos con un dominio",
+        "desc": "Proxy inverso con certificados HTTPS: accede a tu NAS, Home Assistant y más con tu propio dominio"
+      },
+      "forward": {
+        "title": "Reenvío de puertos / perforación de NAT",
+        "desc": "Reenvío de puertos TCP / UDP, con perforación mediante STUN cuando no tienes IPv4 pública"
+      },
+      "ddns": {
+        "title": "DNS dinámico",
+        "desc": "Actualiza los registros DNS automáticamente cuando cambia la IP de tu casa"
+      },
+      "mesh": {
+        "title": "Red entre sedes",
+        "desc": "Tailscale, NetBird y EasyTier conectan dispositivos situados en lugares distintos"
+      },
+      "files": {
+        "title": "Compartir archivos",
+        "desc": "WebDAV, SMB, FTP y File Browser"
+      },
+      "vps": {
+        "title": "Punto de entrada VPS",
+        "desc": "Enrutamiento por protocolo y un servidor frp para repartir un puerto público entre varios servicios"
+      },
+      "all": {
+        "title": "Todas las funciones",
+        "desc": "Mantiene todas las funciones activas, ideal para echar un vistazo general"
+      }
+    },
+    "hintAll": "Si no eliges nada o eliges «Todas las funciones», se mantienen todas las funciones.",
+    "hintSome": "Se mantienen {count} de {total} módulos y el resto se desactiva (la configuración no se borra). Gately se reinicia una vez al guardar.",
+    "skip": "Omitir y mantener todo",
+    "confirm": "Aceptar",
+    "restarting": "Reiniciando con las funciones elegidas…"
   },
-  "check": {
-    "title": "Ejecuta el autodiagnóstico de red",
-    "desc": "Detecta problemas de NAT, puertos, reloj y DNS antes de que den guerra."
+  "card": {
+    "title": "Primeros pasos",
+    "progress": "{done} de {total} completados",
+    "allDone": "Todo listo. Ya puedes cerrar esta tarjeta",
+    "close": "Cerrar",
+    "closeConfirm": "La lista «Primeros pasos» dejará de mostrarse. ¿Cerrarla?",
+    "doneLabel": "Hecho",
+    "todoLabel": "Pendiente",
+    "again": "Repetir"
+  },
+  "items": {
+    "site": {
+      "title": "Publica tu primer sitio",
+      "desc": "Indica un dominio y la dirección del backend; el listener y el sitio se crean de una vez",
+      "action": "Sitio rápido"
+    },
+    "https": {
+      "title": "Activa HTTPS en un sitio",
+      "desc": "Usa un certificado existente o solicita uno con validación DNS o HTTP",
+      "action": "Configurar"
+    },
+    "ddns": {
+      "title": "Apunta tu dominio a este dispositivo",
+      "desc": "Añade una tarea de DNS dinámico que actualiza los registros cuando cambia la IP",
+      "action": "Añadir tarea"
+    },
+    "portforward": {
+      "title": "Añade tu primera regla de reenvío",
+      "desc": "Reenvía un puerto a un dispositivo de tu red, por ejemplo el SSH de un NAS",
+      "action": "Añadir regla"
+    },
+    "stun": {
+      "title": "¿Sin IPv4 pública? Prueba la perforación con STUN",
+      "desc": "Consigue un puerto accesible desde internet en una red con NAT1",
+      "action": "Configurar"
+    },
+    "mesh": {
+      "title": "Únete a una red entre sedes",
+      "desc": "Añade una instancia de Tailscale, NetBird o EasyTier",
+      "action": "Añadir"
+    },
+    "fileuser": {
+      "title": "Añade un usuario compartido",
+      "desc": "Cuentas de acceso y carpetas compartidas por WebDAV, SMB y FTP",
+      "action": "Añadir usuario"
+    },
+    "fileservice": {
+      "title": "Activa un servicio de archivos",
+      "desc": "Elige WebDAV, SMB, FTP o File Browser",
+      "action": "Activar"
+    },
+    "protoroute": {
+      "title": "Añade una regla de enrutamiento por protocolo",
+      "desc": "Sirve HTTPS, SSH, frp y más protocolos desde un solo puerto",
+      "action": "Añadir regla"
+    },
+    "frps": {
+      "title": "Inicia el servidor frp",
+      "desc": "Permite que los clientes frp de casa publiquen servicios a través de este VPS",
+      "action": "Configurar"
+    },
+    "security": {
+      "title": "Añade un segundo factor de inicio de sesión",
+      "desc": "Activa la verificación en dos pasos o registra un Passkey para proteger mejor el acceso",
+      "action": "Configurar"
+    },
+    "check": {
+      "title": "Ejecuta la autocomprobación de red",
+      "desc": "Detecta pronto problemas de NAT, puertos, hora y DNS",
+      "action": "Ejecutar"
+    },
+    "import": {
+      "title": "Importa una configuración existente",
+      "desc": "Migra desde nginx, Nginx Proxy Manager, frp o Lucky",
+      "action": "Elegir origen"
+    },
+    "notify": {
+      "title": "Configura las notificaciones",
+      "desc": "Plantillas listas para avisos de actualizaciones fallidas, certificados a punto de caducar e inicios de sesión",
+      "action": "Configurar"
+    }
   },
   "import": {
-    "title": "Importa desde Lucky",
-    "desc": "Trae tu configuración de Lucky (.lkcf) y migra paso a paso."
+    "title": "Importa una configuración existente",
+    "desc": "Elige el origen de la migración. Todas las importaciones se pueden previsualizar antes.",
+    "open": "Abrir",
+    "nginx": "Pega o sube bloques server de nginx y conviértelos en listeners y sitios",
+    "npm": "Sube los archivos .conf de nginx/proxy_host en su directorio de datos y se importan como configuración de nginx",
+    "frp": "Pega un archivo de configuración de frpc / frps",
+    "lucky": "Importa un archivo .lkcf en Ajustes → Copia de seguridad y migración"
   },
-  "notify": {
-    "title": "Configura notificaciones",
-    "desc": "Recibe avisos de fallos de actualización, certificados por caducar e inicios de sesión con plantillas listas."
+  "addFeatures": {
+    "title": "Añadir más funciones"
   }
 }

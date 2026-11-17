@@ -30,6 +30,7 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { CircleCheck, CircleX, Info, RefreshCw, TriangleAlert } from 'lucide-vue-next'
 import { api } from '../api'
+import { markOnboardingDone, onboardingState } from '../composables/useOnboarding'
 
 interface CheckResult {
   id: string
@@ -141,6 +142,10 @@ async function run() {
   error.value = ''
   try {
     results.value = (await api.post<{ results: CheckResult[] }>('/api/system/selfcheck', {})).results
+    // 「开始使用」清单显示时，运行过一次自检即完成该项
+    if (onboardingState.value?.pending) {
+      void markOnboardingDone('check')
+    }
   } catch (e) {
     error.value = (e as Error).message
     results.value = []

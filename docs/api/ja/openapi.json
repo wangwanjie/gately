@@ -43555,7 +43555,7 @@
     },
     "/api/system/onboarding": {
       "get": {
-        "description": "ログインセッションでのみ利用できます。新規インストールで初回セットアップが完了するまで `pending` は true です。\n\n**ログインセッションでのみ利用できます。API トークンではこのエンドポイントにアクセスできません。**",
+        "description": "ログインセッションのみ利用できます。新規インストールでガイドが未完了のとき `pending` が true（「はじめに」チェックリストを表示）、`scenePending` が true のときは先に用途を選ぶ必要があります（新規インストールで設定ディレクトリに設定ファイルがまだ無い場合のみ）。`scenes` は選んだ用途、`done` は手動で完了にした項目です。\n\n**ログインセッションでのみ利用できます。API トークンではこのエンドポイントにアクセスできません。**",
         "responses": {
           "200": {
             "description": "成功"
@@ -43591,7 +43591,7 @@
             "description": "トークンに必要な権限がありません"
           }
         },
-        "summary": "初回起動セットアップが必要かどうか",
+        "summary": "初回起動ガイドの状態",
         "tags": [
           "システム"
         ],
@@ -43601,7 +43601,7 @@
     },
     "/api/system/onboarding/dismiss": {
       "post": {
-        "description": "ログインセッションでのみ利用できます。\n\n**ログインセッションでのみ利用できます。API トークンではこのエンドポイントにアクセスできません。**",
+        "description": "ログインセッションのみ利用できます。以後「はじめに」チェックリストは表示されず、用途も尋ねません。\n\n**ログインセッションでのみ利用できます。API トークンではこのエンドポイントにアクセスできません。**",
         "responses": {
           "200": {
             "description": "成功"
@@ -43637,7 +43637,172 @@
             "description": "トークンに必要な権限がありません"
           }
         },
-        "summary": "初回起動セットアップを完了またはスキップ",
+        "summary": "初回起動ガイドを完了または閉じる",
+        "tags": [
+          "システム"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/onboarding/done": {
+      "post": {
+        "description": "ログインセッションのみ利用できます。body は `{\"item\": \"check\"}` で、設定から完了を判断できない項目（ネットワーク自己診断など）に使います。\n\n**ログインセッションでのみ利用できます。API トークンではこのエンドポイントにアクセスできません。**",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "summary": "「はじめに」チェックリストの項目を完了にする",
+        "tags": [
+          "システム"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/onboarding/scenes": {
+      "post": {
+        "description": "ログインセッションのみ利用できます。body は `{\"scenes\": [...]}` で、`web`、`forward`、`ddns`、`mesh`、`files`、`vps`、`all` から選びます。空の場合は選択をスキップします。選択を記録して用途の選択を終えるだけで、機能モジュールのオン／オフは `PUT /api/system/settings` の `disabledModules` で保存します。\n\n**ログインセッションでのみ利用できます。API トークンではこのエンドポイントにアクセスできません。**",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "summary": "選んだ用途を記録",
+        "tags": [
+          "システム"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/probe": {
+      "post": {
+        "description": "管理者のログインセッションのみ利用できます（読み取り専用アカウントと API トークンは不可）。body は `{\"target\": \"http://192.168.1.10:8123\"}`：`http(s)://` のアドレスにはルートパスへリダイレクトを追わない HEAD リクエストを 1 回送り、`ホスト:ポート` は TCP 接続のみ試します。タイムアウトは 5 秒。`reachable`、`status`（HTTP ステータスコード）、`insecure`（https バックエンドの証明書が検証に失敗し、検証を省略すると接続できる）、`reason`（到達できない理由：refused、timeout、dns、tls、protocol、unreachable、error）、`elapsedMs` を返し、レスポンスヘッダーと本文は返しません。\n\n**ログインセッションでのみ利用できます。API トークンではこのエンドポイントにアクセスできません。**",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "summary": "バックエンドのアドレスに到達できるか試す",
         "tags": [
           "システム"
         ],

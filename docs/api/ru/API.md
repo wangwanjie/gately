@@ -963,8 +963,11 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/system/restore` | Только сессия входа | Восстановить конфигурацию из резервной копии |
 | POST | `/api/system/restart` | Только сессия входа | Перезапустить Gately |
 | POST | `/api/system/selfcheck` | Только сессия входа | Самопроверка сети и конфигурации |
-| GET | `/api/system/onboarding` | Только сессия входа | Требуется ли начальная настройка |
-| POST | `/api/system/onboarding/dismiss` | Только сессия входа | Завершить или пропустить начальную настройку |
+| GET | `/api/system/onboarding` | Только сессия входа | Состояние знакомства при первом запуске |
+| POST | `/api/system/onboarding/dismiss` | Только сессия входа | Завершить или закрыть знакомство при первом запуске |
+| POST | `/api/system/onboarding/scenes` | Только сессия входа | Сохранить выбранные сценарии использования |
+| POST | `/api/system/onboarding/done` | Только сессия входа | Отметить пункт «С чего начать» выполненным |
+| POST | `/api/system/probe` | Только сессия входа | Проверить доступность адреса бэкенда |
 | GET | `/api/openapi.json` | Любой действующий токен | Получить описание OpenAPI этого API |
 
 ## Импорт конфигурации

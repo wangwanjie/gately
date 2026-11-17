@@ -445,6 +445,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import { ArrowRightLeft, CopyPlus, FileUp, Pencil, Plug, Plus, RefreshCw, Save, Server, Terminal, Trash2, Waypoints } from 'lucide-vue-next'
@@ -578,6 +579,8 @@ interface Proxy {
 }
 
 const { t } = useI18n()
+const route = useRoute()
+const router = useRouter()
 // 列表最近一次加载失败的原因，空为成功；接口出错时列表显示错误而不是空状态
 const loadError = ref('')
 const { isMobile, labelPosition } = useFormLayout()
@@ -1118,6 +1121,11 @@ async function runImport(apply: boolean) {
 onMounted(() => {
   load()
   polling.start()
+  // ?import=1 直接打开导入对话框（总览「开始使用」清单的「导入现有配置」）
+  if (route.query.import) {
+    void router.replace({ query: {} })
+    openImport()
+  }
 })
 </script>
 

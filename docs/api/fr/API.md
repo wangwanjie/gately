@@ -963,8 +963,11 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | POST | `/api/system/restore` | Session connectée uniquement | Restaurer la configuration depuis une sauvegarde |
 | POST | `/api/system/restart` | Session connectée uniquement | Redémarrer Gately |
 | POST | `/api/system/selfcheck` | Session connectée uniquement | Autodiagnostic du réseau et de la configuration |
-| GET | `/api/system/onboarding` | Session connectée uniquement | Indique si l'assistant de premier démarrage est en attente |
-| POST | `/api/system/onboarding/dismiss` | Session connectée uniquement | Terminer ou ignorer l'assistant de premier démarrage |
+| GET | `/api/system/onboarding` | Session connectée uniquement | État de la prise en main du premier démarrage |
+| POST | `/api/system/onboarding/dismiss` | Session connectée uniquement | Terminer ou fermer la prise en main du premier démarrage |
+| POST | `/api/system/onboarding/scenes` | Session connectée uniquement | Enregistrer les usages choisis |
+| POST | `/api/system/onboarding/done` | Session connectée uniquement | Marquer un élément de Bien démarrer comme fait |
+| POST | `/api/system/probe` | Session connectée uniquement | Tester si une adresse de backend est joignable |
 | GET | `/api/openapi.json` | Tout jeton valide | Obtenir la description OpenAPI de cette API |
 
 ## Import de configuration

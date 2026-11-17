@@ -1,23 +1,135 @@
 {
-  "title": "Welcome to Gately",
-  "subtitle": "A few quick steps make your gateway safer and easier to run.",
-  "go": "Open",
-  "later": "Remind me later",
-  "done": "Done, don't show again",
-  "security": {
-    "title": "Add a second factor",
-    "desc": "Enable two-step verification or register a Passkey for stronger sign-in."
+  "scene": {
+    "title": "What will you use Gately for?",
+    "subtitle": "Pick one or more. Only the related features stay on and the sidebar stays short; turn the rest on any time under Settings → Modules.",
+    "items": {
+      "web": {
+        "title": "Publish home services on a domain",
+        "desc": "Reverse proxy with HTTPS certificates: reach your NAS, Home Assistant and more by your own domain"
+      },
+      "forward": {
+        "title": "Port forwarding / hole punching",
+        "desc": "TCP / UDP port forwarding, plus STUN hole punching when you have no public IPv4"
+      },
+      "ddns": {
+        "title": "Dynamic DNS",
+        "desc": "Update DNS records automatically when your home IP changes"
+      },
+      "mesh": {
+        "title": "Mesh networking",
+        "desc": "Tailscale, NetBird and EasyTier connect devices across sites"
+      },
+      "files": {
+        "title": "File sharing",
+        "desc": "WebDAV, SMB, FTP and File Browser"
+      },
+      "vps": {
+        "title": "VPS entry point",
+        "desc": "Protocol routing and an frp server share one public port among several services"
+      },
+      "all": {
+        "title": "Everything",
+        "desc": "Keep every feature on, good for looking around first"
+      }
+    },
+    "hintAll": "With nothing or Everything selected, all features stay on.",
+    "hintSome": "{count} of {total} modules stay on; the others are turned off (their settings are kept). Gately restarts once after saving.",
+    "skip": "Skip and keep everything",
+    "confirm": "Continue",
+    "restarting": "Restarting with the chosen features…"
   },
-  "check": {
-    "title": "Run the network self-check",
-    "desc": "Find out about NAT, ports, clock and DNS problems before they bite."
+  "card": {
+    "title": "Getting started",
+    "progress": "{done} of {total} done",
+    "allDone": "All done. You can close this card now",
+    "close": "Close",
+    "closeConfirm": "The Getting started checklist will no longer be shown. Close it?",
+    "doneLabel": "Done",
+    "todoLabel": "To do",
+    "again": "Again"
+  },
+  "items": {
+    "site": {
+      "title": "Publish your first site",
+      "desc": "Enter a domain and a backend address; the listener and site are set up in one go",
+      "action": "Quick site"
+    },
+    "https": {
+      "title": "Turn on HTTPS for a site",
+      "desc": "Use an existing certificate or request one with DNS or HTTP validation",
+      "action": "Set up"
+    },
+    "ddns": {
+      "title": "Point your domain at this device",
+      "desc": "Add a dynamic DNS task that updates records when the IP changes",
+      "action": "Add task"
+    },
+    "portforward": {
+      "title": "Add your first forwarding rule",
+      "desc": "Forward a port to a device on your network, such as SSH on a NAS",
+      "action": "Add rule"
+    },
+    "stun": {
+      "title": "No public IPv4? Try STUN hole punching",
+      "desc": "Get a port reachable from the internet behind a full-cone NAT",
+      "action": "Set up"
+    },
+    "mesh": {
+      "title": "Join a mesh network",
+      "desc": "Add a Tailscale, NetBird or EasyTier instance",
+      "action": "Add"
+    },
+    "fileuser": {
+      "title": "Add a shared user",
+      "desc": "Sign-in accounts and folders shared by WebDAV, SMB and FTP",
+      "action": "Add user"
+    },
+    "fileservice": {
+      "title": "Turn on a file service",
+      "desc": "Pick WebDAV, SMB, FTP or File Browser",
+      "action": "Turn on"
+    },
+    "protoroute": {
+      "title": "Add a protocol routing rule",
+      "desc": "Serve HTTPS, SSH, frp and more on a single port",
+      "action": "Add rule"
+    },
+    "frps": {
+      "title": "Start the frp server",
+      "desc": "Let frp clients at home publish services through this VPS",
+      "action": "Set up"
+    },
+    "security": {
+      "title": "Add a second sign-in factor",
+      "desc": "Turn on two-step verification or register a passkey",
+      "action": "Set up"
+    },
+    "check": {
+      "title": "Run the network self-check",
+      "desc": "Find NAT, port, clock and DNS problems early",
+      "action": "Run"
+    },
+    "import": {
+      "title": "Import an existing configuration",
+      "desc": "Migrate from nginx, Nginx Proxy Manager, frp or Lucky",
+      "action": "Choose source"
+    },
+    "notify": {
+      "title": "Set up notifications",
+      "desc": "Ready-made templates for failed updates, expiring certificates and sign-in alerts",
+      "action": "Set up"
+    }
   },
   "import": {
-    "title": "Import from Lucky",
-    "desc": "Bring over your existing Lucky configuration (.lkcf) and migrate step by step."
+    "title": "Import an existing configuration",
+    "desc": "Pick where you are coming from. Every import can be previewed first.",
+    "open": "Open",
+    "nginx": "Paste or upload nginx server blocks and turn them into listeners and sites",
+    "npm": "Upload the .conf files from the nginx/proxy_host folder of its data directory and import them as nginx configuration",
+    "frp": "Paste an frpc / frps configuration file",
+    "lucky": "Import a .lkcf file under Settings → Backup & Migration"
   },
-  "notify": {
-    "title": "Set up notifications",
-    "desc": "Get alerts for failed updates, expiring certificates and sign-ins using ready-made templates."
+  "addFeatures": {
+    "title": "Add more features"
   }
 }

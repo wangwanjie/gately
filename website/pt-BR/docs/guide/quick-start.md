@@ -22,6 +22,8 @@ Instale o aplicativo nativo: ele abre pelo ícone da área de trabalho através 
 
 Abra `http://<ip-do-dispositivo>:16680` no navegador. O usuário é `admin` e a senha padrão é `gately.cn`. A senha padrão é pública; depois de entrar, abre-se uma janela de troca de senha, e só é possível continuar depois de definir uma nova senha com pelo menos 10 caracteres e difícil de adivinhar.
 
+Em uma instalação nova, depois de alterar a senha, o Gately pergunta primeiro «Para que você vai usar o Gately?»: escolha uma ou mais entre «Publicar serviços internos em um domínio», «Encaminhamento de portas / hole punching», «DNS dinâmico», «Rede entre locais», «Compartilhamento de arquivos», «Ponto de entrada VPS» ou «Todos os recursos». Apenas os módulos dos cenários escolhidos permanecem ativos, os demais são desligados (as configurações são mantidas) e o Gately reinicia uma vez; você pode ativá-los quando quiser em «Configurações → Módulos» ou com «Adicionar mais recursos» no fim da barra lateral. «Pular» mantém tudo ativo. Instâncias atualizadas não veem esta etapa. A lista «Primeiros passos» no topo da visão geral mostra os próximos passos dos cenários escolhidos e os marca conforme a configuração real; ela pode ser recolhida ou fechada.
+
 A barra lateral da interface de administração lista todas as páginas por grupo. Pressione Ctrl+K (⌘K no macOS) ou clique na caixa de busca no topo da barra lateral para abrir a busca global: ela leva a páginas e às suas abas pelo nome e também encontra domínios de sites, regras de encaminhamento de portas, registros DDNS e domínios de certificados. No celular, toque no ícone de busca na barra superior.
 
 ## 3. Aplicar o reforço básico de segurança
@@ -35,6 +37,8 @@ Logo após entrar, vá em "Configurações" e:
 Veja mais recomendações no [Guia de reforço de segurança](/pt-BR/docs/guide/hardening).
 
 ## 4. Adicionar a primeira regra
+
+«Site rápido» na página Serviço Web publica um site em três etapas: informe o domínio, o endereço do backend (com «Testar», ou preenchido pelos modelos de Home Assistant, Jellyfin, Emby, Vaultwarden, Nextcloud, Immich, Proxmox VE, Synology DSM, fnOS) e escolha HTTP ou HTTPS. Um listener é reutilizado ou criado automaticamente; veja [Serviço Web · Site rápido](/pt-BR/docs/modules/web#quick-site).
 
 Escolha o módulo que atende à sua necessidade:
 

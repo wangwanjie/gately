@@ -22,6 +22,8 @@ Installieren Sie stattdessen die native App: Sie öffnet sich über das Desktop-
 
 Öffnen Sie `http://<geräte-ip>:16680` im Browser. Der Benutzername lautet `admin`, das Standardpasswort `gately.cn`. Das Standardpasswort ist öffentlich bekannt: Nach der Anmeldung erscheint ein Dialog zur Passwortänderung, und Sie können erst weiterarbeiten, wenn Sie ein neues, schwer zu erratendes Passwort mit mindestens 10 Zeichen gesetzt haben.
 
+Bei einer Neuinstallation fragt Gately nach der Passwortänderung zuerst „Wofür möchten Sie Gately nutzen?“: Sie können mehrere der Optionen „Interne Dienste über eine Domain veröffentlichen“, „Portweiterleitung / Hole Punching“, „Dynamisches DNS“, „Standortübergreifendes Netzwerk“, „Dateifreigabe“, „VPS-Eingang“ oder „Alle Funktionen“ wählen. Nur die Module der gewählten Szenarien bleiben aktiv, die übrigen werden ausgeschaltet (ihre Einstellungen bleiben erhalten) und Gately startet einmal neu; Sie können sie jederzeit unter „Einstellungen → Module“ oder mit „Weitere Funktionen hinzufügen“ am Ende der Seitenleiste einschalten. „Überspringen“ lässt alles eingeschaltet. Aktualisierte Instanzen sehen diesen Schritt nicht. Die Checkliste „Erste Schritte“ oben in der Übersicht listet die nächsten Schritte für die gewählten Szenarien auf und hakt sie anhand der tatsächlichen Konfiguration ab; sie lässt sich einklappen oder schließen.
+
 Die Seitenleiste der Verwaltungsoberfläche listet alle Seiten nach Gruppen. Mit Strg+K (unter macOS ⌘K) oder über das Suchfeld oben in der Seitenleiste öffnen Sie die globale Suche: Sie springt per Name zu Seiten und deren Tabs und findet auch Site-Domains, Portweiterleitungsregeln, DDNS-Einträge und Zertifikatsdomains. Auf dem Smartphone tippen Sie auf das Suchsymbol in der oberen Leiste.
 
 ## 3. Grundlegende Härtung
@@ -35,6 +37,8 @@ Gehen Sie direkt nach der Anmeldung zu „Einstellungen“ und:
 Weitere Empfehlungen finden Sie im [Härtungsleitfaden](/de/docs/guide/hardening).
 
 ## 4. Erste Regel anlegen
+
+„Schnell-Website“ auf der Seite Web-Dienst veröffentlicht eine Website in drei Schritten: Domain eingeben, Backend-Adresse eingeben (mit „Testen“ oder vorausgefüllt aus den Vorlagen für Home Assistant, Jellyfin, Emby, Vaultwarden, Nextcloud, Immich, Proxmox VE, Synology DSM, fnOS), dann HTTP oder HTTPS wählen. Ein Listener wird automatisch wiederverwendet oder angelegt; siehe [Web-Dienst · Schnell-Website](/de/docs/modules/web#quick-site).
 
 Wählen Sie das Modul, das zu Ihrem Bedarf passt:
 

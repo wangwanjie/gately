@@ -22,6 +22,8 @@ Installez plutôt l'application native : elle s'ouvre depuis l'icône du bureau 
 
 Ouvrez `http://<ip-de-l-appareil>:16680` dans un navigateur. Le nom d'utilisateur est `admin` et le mot de passe par défaut est `gately.cn`. Ce mot de passe est public : après la connexion, une boîte de dialogue demande de le remplacer par un nouveau mot de passe d'au moins 10 caractères, difficile à deviner, avant de pouvoir continuer.
 
+Sur une installation neuve, après le changement du mot de passe, Gately demande d'abord « À quoi servira Gately ? » : choisissez une ou plusieurs options parmi « Publier des services internes sur un domaine », « Redirection de ports / traversée de NAT », « DNS dynamique », « Réseau entre sites », « Partage de fichiers », « Point d'entrée VPS » ou « Toutes les fonctions ». Seuls les modules des cas choisis restent actifs, les autres sont désactivés (leurs réglages sont conservés) et Gately redémarre une fois ; vous pouvez les activer à tout moment dans « Paramètres → Modules » ou avec « Ajouter d'autres fonctions » en bas de la barre latérale. « Ignorer » garde tout actif. Les instances mises à niveau ne voient pas cette étape. La liste « Premiers pas » en haut de la vue d'ensemble indique les prochaines étapes des cas choisis et les coche d'après la configuration réelle ; elle peut être réduite ou fermée.
+
 La barre latérale de l'interface d'administration liste toutes les pages par groupe. Appuyez sur Ctrl+K (⌘K sur macOS) ou cliquez sur le champ de recherche en haut de la barre latérale pour ouvrir la recherche globale : elle mène par son nom à une page ou à un onglet de page, et recherche aussi les domaines des sites, les règles de redirection de ports, les enregistrements DDNS et les domaines des certificats. Sur mobile, touchez l'icône de recherche de la barre supérieure.
 
 ## 3. Appliquer un durcissement de base
@@ -35,6 +37,8 @@ Dès la connexion, ouvrez « Paramètres » et :
 Consultez le [guide de durcissement](/fr/docs/guide/hardening) pour d'autres recommandations.
 
 ## 4. Ajouter votre première règle
+
+« Site rapide » sur la page Service Web publie un site en trois étapes : saisissez le domaine, puis l'adresse du backend (avec « Tester », ou préremplie à partir des modèles Home Assistant, Jellyfin, Emby, Vaultwarden, Nextcloud, Immich, Proxmox VE, Synology DSM, fnOS), puis choisissez HTTP ou HTTPS. Une écoute est réutilisée ou créée automatiquement ; voir [Service Web · Site rapide](/fr/docs/modules/web#quick-site).
 
 Choisissez le module qui correspond à votre besoin :
 

@@ -43555,7 +43555,7 @@
     },
     "/api/system/onboarding": {
       "get": {
-        "description": "Session login only. `pending` is true on a fresh install until onboarding is completed.\n\n**Available only to login sessions; API tokens cannot access this endpoint.**",
+        "description": "Sign-in sessions only. `pending` is true on a fresh install whose onboarding is not finished (the Getting started checklist is shown); `scenePending` is true when the usage scene still has to be chosen (only on a fresh install whose config directory had no configuration files yet); `scenes` lists the chosen scenes and `done` the checklist items marked as done.\n\n**Available only to login sessions; API tokens cannot access this endpoint.**",
         "responses": {
           "200": {
             "description": "Success"
@@ -43591,7 +43591,7 @@
             "description": "Token lacks the required permission"
           }
         },
-        "summary": "Whether first-run onboarding is pending",
+        "summary": "First-run onboarding status",
         "tags": [
           "System"
         ],
@@ -43601,7 +43601,7 @@
     },
     "/api/system/onboarding/dismiss": {
       "post": {
-        "description": "Session login only.\n\n**Available only to login sessions; API tokens cannot access this endpoint.**",
+        "description": "Sign-in sessions only. Afterwards the Getting started checklist is no longer shown and the usage scene is no longer asked.\n\n**Available only to login sessions; API tokens cannot access this endpoint.**",
         "responses": {
           "200": {
             "description": "Success"
@@ -43637,7 +43637,172 @@
             "description": "Token lacks the required permission"
           }
         },
-        "summary": "Complete or skip first-run onboarding",
+        "summary": "Finish or close the first-run onboarding",
+        "tags": [
+          "System"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/onboarding/done": {
+      "post": {
+        "description": "Sign-in sessions only. The body is `{\"item\": \"check\"}`; used for items whose completion cannot be derived from the configuration (such as the network self-check).\n\n**Available only to login sessions; API tokens cannot access this endpoint.**",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "summary": "Mark a Getting started checklist item as done",
+        "tags": [
+          "System"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/onboarding/scenes": {
+      "post": {
+        "description": "Sign-in sessions only. The body is `{\"scenes\": [...]}` with any of `web`, `forward`, `ddns`, `mesh`, `files`, `vps`, `all`; an empty list skips the choice. Only records the choice and ends the scene step; module switches are saved through `disabledModules` of `PUT /api/system/settings`.\n\n**Available only to login sessions; API tokens cannot access this endpoint.**",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "summary": "Record the chosen usage scenes",
+        "tags": [
+          "System"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/probe": {
+      "post": {
+        "description": "Admin sign-in sessions only (read-only accounts and API tokens cannot call it). The body is `{\"target\": \"http://192.168.1.10:8123\"}`: an `http(s)://` address gets one HEAD request to the root path without following redirects, `host:port` only tests a TCP connection; 5 second timeout. Returns `reachable`, `status` (HTTP status code), `insecure` (the https backend certificate fails verification but connecting without verification works), `reason` (why it is unreachable: refused, timeout, dns, tls, protocol, unreachable, error) and `elapsedMs`; response headers and body are never returned.\n\n**Available only to login sessions; API tokens cannot access this endpoint.**",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "summary": "Test whether a backend address is reachable",
         "tags": [
           "System"
         ],
