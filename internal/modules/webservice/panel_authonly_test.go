@@ -71,8 +71,8 @@ func TestPanelAuthOnlyHTTP(t *testing.T) {
 				t.Fatalf("未登录页面泄露了 %q", leak)
 			}
 		}
-		if !strings.Contains(body, `href="`+loginURL+`"`) || strings.Contains(body, `id="user-btn"`) || !strings.Contains(body, `id="set-btn"`) || !strings.Contains(body, `class="more"`) || strings.Contains(body, logoutURL) {
-			t.Fatalf("应有登录入口与提示、没有退出入口")
+		if !strings.Contains(body, `href="`+loginURL+`"`) || strings.Contains(body, `id="user-btn"`) || !strings.Contains(body, `id="set-btn"`) || strings.Contains(body, `class="more"`) || strings.Contains(body, logoutURL) {
+			t.Fatalf("应有登录入口、没有退出入口；页头已有登录按钮，链接下方不再提示")
 		}
 		if cc := resp.Header.Get("Cache-Control"); cc != "no-store" {
 			t.Fatalf("页面随登录状态变化，不能缓存: %q", cc)

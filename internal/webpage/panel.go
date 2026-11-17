@@ -247,8 +247,6 @@ body{margin:0;min-height:100vh;display:flex;flex-direction:column;background:var
 .btn:hover{border-color:var(--brand);color:var(--brand)}
 .btn svg{width:15px;height:15px}
 .lock{position:absolute;top:7px;right:8px;z-index:2;width:14px;height:14px;color:var(--faint);pointer-events:none}
-.more{margin:0 0 20px;text-align:center;color:var(--muted);font-size:12.5px}
-.more a{color:var(--brand);text-decoration:none;margin-left:6px}
 .net{display:inline-flex;align-items:center;gap:2px;height:38px;padding:3px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--card)}
 .net a,.net span{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 11px;border-radius:max(2px,calc(var(--r-sm) - 3px));color:var(--muted);text-decoration:none;font-size:13px;white-space:nowrap}
 .net a:hover{color:var(--text);background:var(--input)}
@@ -331,7 +329,6 @@ const panelSrc = `<!doctype html>
 {{end}}</div></section>
 {{end}}
 {{if .Empty}}<p class="empty">{{if .Hidden}}{{.T.loginHint}}{{else}}{{.T.empty}}{{end}}</p>{{else}}<p id="none" class="empty" hidden>{{.T.noMatch}}</p>{{end}}
-{{if and .Hidden (not .Empty)}}<p class="more">{{.T.loginHint}}{{if .LoginURL}}<a href="{{.LoginURL}}">{{.T.login}}</a>{{end}}</p>{{end}}
 </main>
 </div>
 {{if not .HideFooter}}<footer class="foot">{{if .Footer}}{{if .FooterLink}}<a href="{{.FooterLink}}" target="_blank" rel="noopener noreferrer">{{.Footer}}</a>{{else}}<span>{{.Footer}}</span>{{end}}{{else}}<svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" fill="currentColor"/><path d="M21.7 10.3A8 8 0 1 0 24 16h-7" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>Gately{{end}}</footer>{{end}}
