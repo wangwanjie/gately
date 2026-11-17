@@ -10,7 +10,7 @@
       </button>
     </aside>
     <el-drawer v-else v-model="drawer" direction="ltr" size="260px" :with-header="false" class="nav-drawer">
-      <SideNav @navigate="drawer = false" />
+      <SideNav collapsible @navigate="drawer = false" />
     </el-drawer>
 
     <div class="main">
