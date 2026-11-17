@@ -105,7 +105,7 @@ When an outer site of a two-tier Gately enables "Trust backend auth marker", req
 Whichever listener triggers it, the ban goes into the same ban list and applies to all listeners, sites and Gately's other services; with firewall sync on, the system firewall also drops all traffic from the address.
 :::
 
-The source address is the same as in the access log and is only restored through the PROXY protocol. For sites behind a CDN that passes the real IP in a request header, the CDN node would be banned, so do not use path probing on such listeners. When Gately sits behind another reverse proxy on the same host, the source is a loopback address: with "Ignore LAN addresses" on it is never banned, and the jail has no effect.
+The source address is the same as in the access log: it is restored through the PROXY protocol, and for sites behind a CDN through the web service's [visitor real IP](/en/docs/modules/web#real-ip) (trusted proxies and the real-IP request header). Without trusted proxies configured for a CDN, the CDN node would be banned, so configure trusted proxies first before using path probing on such listeners. When Gately sits behind another reverse proxy on the same host, the source is a loopback address: with "Ignore LAN addresses" on it is never banned, and the jail has no effect.
 
 ## TLS handshake failures
 
@@ -158,7 +158,7 @@ IPv6 has no NAT, so every device has a public address, and once that address sho
 
 Bans from the web service's "Ban after failed authentication" go into the same ban list, so with firewall sync on they apply to the whole host rather than only to web sites. With "Ignore LAN addresses" on, LAN addresses are never banned automatically.
 
-The web service and the WAF only learn the real client address through the PROXY protocol. For sites behind a CDN that passes the real IP in a header, failed-auth bans and the "WAF blocks" jail would ban the CDN's nodes, so do not enable them for such sites.
+The web service and the WAF learn the real client address through the PROXY protocol and the [visitor real IP](/en/docs/modules/web#real-ip) setting in the web service's global settings (trusted proxies and the real-IP request header). For sites behind a CDN, first enter the CDN's origin-pull addresses under "Visitor real IP" and choose the real-IP request header; then failed-auth bans and the "WAF blocks" jail ban the visitor. Without that setting they would ban the CDN's nodes.
 
 ## Notifications
 
