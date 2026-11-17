@@ -17,6 +17,7 @@ import (
 
 	"github.com/wangwanjie/gately/internal/auth"
 	"github.com/wangwanjie/gately/internal/backup"
+	"github.com/wangwanjie/gately/internal/demo"
 	"github.com/wangwanjie/gately/internal/fsperm"
 	"github.com/wangwanjie/gately/internal/httpx"
 	"github.com/wangwanjie/gately/internal/logbuf"
@@ -222,10 +223,15 @@ func (a *App) handleSystemInfo(w http.ResponseWriter, r *http.Request) {
 	var ms runtime.MemStats
 	runtime.ReadMemStats(&ms)
 	host, _ := os.Hostname()
+	configDir := a.opts.ConfigDir
+	// 演示实例对公众开放：不暴露宿主机的主机名与部署目录
+	if demo.Enabled() {
+		host, configDir = "gately-demo", "/data"
+	}
 	httpx.OK(w, map[string]any{
 		"version": version.Version, "commit": version.Commit, "buildDate": version.BuildDate,
 		"goVersion": runtime.Version(), "os": runtime.GOOS, "arch": runtime.GOARCH,
-		"hostname": host, "pid": os.Getpid(), "startTime": a.startTime, "configDir": a.opts.ConfigDir,
+		"hostname": host, "pid": os.Getpid(), "startTime": a.startTime, "configDir": configDir,
 		"goroutines": runtime.NumGoroutine(), "memSys": ms.Sys, "memAlloc": ms.Alloc,
 		"numCPU": runtime.NumCPU(), "maxProcs": runtime.GOMAXPROCS(0), "timeZone": time.Local.String(),
 		"inDocker": fileExists("/.dockerenv"), "selfUpgrade": a.upgradeSupport(), "build": a.buildProfile(),
