@@ -107,6 +107,8 @@ type Store struct {
 	ignore   func(netip.Prefix) bool
 	// limit 为总条数上限，见 SetLimit
 	limit int
+	// byUntil、byCreated 为表满时挑选淘汰记录用的堆，见 evict.go
+	byUntil, byCreated evictHeap
 
 	hookMu sync.Mutex
 	hooks  map[int]func(Change)
@@ -130,24 +132,6 @@ func (s *Store) SetLimit(n int) {
 // evictable 判断记录能否在封禁表已满时被淘汰：只淘汰有期限的自动封禁。
 func evictable(e Entry) bool {
 	return !e.Permanent() && e.Source != SourceManual
-}
-
-// victimLocked 返回表满时要淘汰的记录：优先已到期（尚未清理）的记录，其次是最早创建的临时自动封禁。调用方持有写锁。
-func (s *Store) victimLocked(now time.Time) (Entry, bool) {
-	var victim Entry
-	found := false
-	for _, e := range s.entries {
-		if e.Expired(now) {
-			return e, true
-		}
-		if !evictable(e) {
-			continue
-		}
-		if !found || e.Created.Before(victim.Created) || e.Created.Equal(victim.Created) && e.Key < victim.Key {
-			victim, found = e, true
-		}
-	}
-	return victim, found
 }
 
 // Default 是进程级封禁表。
@@ -330,7 +314,7 @@ func (s *Store) Ban(key string, o Options) (e Entry, added bool, err error) {
 	}
 	var evicted []Entry
 	if _, present := s.entries[key]; !present && len(s.entries) >= s.limit {
-		if v, ok := s.victimLocked(now); ok {
+		if v, ok := s.victimLocked(now.UnixNano()); ok {
 			delete(s.entries, v.Key)
 			s.untrackNetLocked(v.Key)
 			evicted = append(evicted, v)
@@ -365,6 +349,7 @@ func (s *Store) Ban(key string, o Options) (e Entry, added bool, err error) {
 	s.entries[key] = e
 	s.offenses[key] = Offense{Count: count, Last: now}
 	s.trackNetLocked(key)
+	s.indexLocked(e)
 	s.mu.Unlock()
 	s.notify(Change{Added: []Entry{e}, Removed: evicted, Evicted: evicted})
 	return e, true, nil
@@ -485,6 +470,7 @@ func (s *Store) Import(entries []Entry, offenses map[string]Offense) {
 		}
 		s.entries[e.Key] = e
 		s.trackNetLocked(e.Key)
+		s.indexLocked(e)
 		added = append(added, e)
 	}
 	for k, o := range offenses {

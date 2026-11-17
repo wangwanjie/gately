@@ -253,6 +253,8 @@ func (r *runner) startUDP(ctx context.Context, network, addr string, targetPort 
 		mu sync.Mutex
 		// 会话键用 netip.AddrPort：可比较、不分配，省掉每个数据包的 String() 与 UDPAddr
 		sessions = map[netip.AddrPort]*udpSession{}
+		// full 为会话数达到上限时警告的节流
+		full l4proxy.WarnThrottle
 	)
 	closeAll := func() {
 		mu.Lock()
@@ -299,7 +301,14 @@ func (r *runner) startUDP(ctx context.Context, network, addr string, targetPort 
 				}
 				if len(sessions) >= rt.settings.MaxUDPSessions {
 					mu.Unlock()
-					rt.log.Warnf("%s UDP 会话数达到上限 %d，丢弃 %s 的数据包", addr, rt.settings.MaxUDPSessions, client)
+					// 伪造来源的洪水下每个数据包都会走到这里，警告按 10 秒节流
+					if warn, more := full.Allow(time.Now()); warn {
+						if more > 0 {
+							rt.log.Warnf("%s UDP 会话数达到上限 %d，丢弃 %s 的数据包（此前 10 秒内另有 %d 个数据包因此被丢弃）", addr, rt.settings.MaxUDPSessions, client, more)
+						} else {
+							rt.log.Warnf("%s UDP 会话数达到上限 %d，丢弃 %s 的数据包", addr, rt.settings.MaxUDPSessions, client)
+						}
+					}
 					continue
 				}
 				// 目标为域名时拨号需要解析，放到锁外，避免阻塞会话清理

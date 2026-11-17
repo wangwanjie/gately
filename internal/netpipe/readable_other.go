@@ -19,3 +19,8 @@ func WaitReadable(raw syscall.RawConn) error {
 		return false
 	})
 }
+
+// ReadableNow 不阻塞地判断套接字此刻是否可读。非 Unix 平台没有不阻塞又不取数据的偷看方式，总是返回 false，由调用方照常等待。
+func ReadableNow(syscall.RawConn) bool {
+	return false
+}
