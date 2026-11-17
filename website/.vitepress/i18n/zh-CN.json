@@ -185,7 +185,7 @@
       },
       {
         "title": "组网与穿透",
-        "text": "以进程托管方式集成 Tailscale、NetBird、frp（frpc / frps）与 cloudflared 隧道，支持在线安装、更新、回滚与卸载。"
+        "text": "以进程托管方式集成 Tailscale、NetBird、EasyTier、frp（frpc / frps）与 cloudflared 隧道，支持在线安装、更新、回滚与卸载。"
       },
       {
         "title": "Docker 管理",

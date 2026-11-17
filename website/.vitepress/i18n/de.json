@@ -185,7 +185,7 @@
       },
       {
         "title": "Netzwerk & Tunnel",
-        "text": "Betreibt Tailscale, NetBird, frp (frpc / frps) und cloudflared-Tunnel als verwaltete Prozesse, mit Online-Installation, Update, Rollback und Deinstallation."
+        "text": "Betreibt Tailscale, NetBird, EasyTier, frp (frpc / frps) und cloudflared-Tunnel als verwaltete Prozesse, mit Online-Installation, Update, Rollback und Deinstallation."
       },
       {
         "title": "Docker-Verwaltung",

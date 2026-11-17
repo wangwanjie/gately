@@ -185,7 +185,7 @@
       },
       {
         "title": "Redes y túneles",
-        "text": "Supervisa los túneles de Tailscale, NetBird, frp (frpc / frps) y cloudflared como procesos gestionados, con instalación, actualización, reversión y desinstalación en línea."
+        "text": "Supervisa los túneles de Tailscale, NetBird, EasyTier, frp (frpc / frps) y cloudflared como procesos gestionados, con instalación, actualización, reversión y desinstalación en línea."
       },
       {
         "title": "Gestión de Docker",

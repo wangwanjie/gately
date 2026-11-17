@@ -185,7 +185,7 @@
       },
       {
         "title": "組網與穿透",
-        "text": "以行程託管方式整合 Tailscale、NetBird、frp（frpc / frps）與 cloudflared 通道，支援線上安裝、更新、回滾與解除安裝。"
+        "text": "以行程託管方式整合 Tailscale、NetBird、EasyTier、frp（frpc / frps）與 cloudflared 通道，支援線上安裝、更新、回滾與解除安裝。"
       },
       {
         "title": "Docker 管理",
