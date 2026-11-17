@@ -1,6 +1,6 @@
 # 在线演示镜像：官方 Gately 程序 + 演示数据生成器。构建上下文为仓库根目录：
 #   docker build -f deploy/demo/Dockerfile -t gately-demo .
-# 基础镜像可用构建参数 GATELY_IMAGE 指定版本，例如 ghcr.io/wangwanjie/gately:v0.6.6.6
+# 基础镜像可用构建参数 GATELY_IMAGE 指定版本，例如 ghcr.io/wangwanjie/gately:v0.6.8
 ARG GATELY_IMAGE=ghcr.io/wangwanjie/gately:latest
 
 FROM golang:1.26.11-alpine AS gen

@@ -345,8 +345,8 @@ make lint     # gofmt, go vet, 프런트엔드 타입 검사
 
 - Gately는 1.0 이전 버전입니다. 버전 번호는 최대 네 부분이며(예: `v0.6.6.6`), 마이너 버전의 후속 릴리스에서는 마지막 부분이 올라갑니다.
 - `v*` 태그마다 [릴리스 워크플로](../../.github/workflows/release.yml)가 실행되어 바이너리, OpenWrt와 fnOS 패키지, 멀티 아키텍처 Docker 이미지를 빌드하고 산출물에 서명합니다. 이미지에는 버전 태그와 `latest`가 붙으며, `latest`는 항상 최신 릴리스를 가리킵니다.
-- 릴리스는 자주 나옵니다. 2026년 10월 17일부터 11월 15일까지 버전 태그가 55개였습니다. [GitHub Releases](https://github.com/wangwanjie/gately/releases)는 릴리스 노트를 모듈별로 묶고 업그레이드 안내를 표시하며, 공식 사이트의 [변경 내역](https://gately.cn/ko/news/)에 공지가 있습니다.
-- 보안 수정은 최신 버전에만 제공됩니다([SECURITY.md](../../SECURITY.md)). 운영 환경에서는 `ghcr.io/wangwanjie/gately:v0.6.6.6` 같은 이미지 태그를 고정하고, 업그레이드 전에 릴리스 노트를 읽고, 설정 이력으로 설정을 되돌리세요.
+- 릴리스는 자주 나옵니다. 2026년 10월 17일부터 11월 17일까지 버전 태그가 56개였습니다. [GitHub Releases](https://github.com/wangwanjie/gately/releases)는 릴리스 노트를 모듈별로 묶고 업그레이드 안내를 표시하며, 공식 사이트의 [변경 내역](https://gately.cn/ko/news/)에 공지가 있습니다.
+- 보안 수정은 최신 버전에만 제공됩니다([SECURITY.md](../../SECURITY.md)). 운영 환경에서는 `ghcr.io/wangwanjie/gately:v0.6.8` 같은 이미지 태그를 고정하고, 업그레이드 전에 릴리스 노트를 읽고, 설정 이력으로 설정을 되돌리세요.
 
 ## 기여
 

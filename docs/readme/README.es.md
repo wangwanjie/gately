@@ -345,8 +345,8 @@ Las etiquetas de compilación personalizada, las pruebas que requieren una confi
 
 - Gately está por debajo de la 1.0. Los números de versión tienen hasta cuatro partes (por ejemplo `v0.6.6.6`); la última parte aumenta en las versiones de seguimiento de una versión menor.
 - Cada etiqueta `v*` ejecuta el [flujo de publicación](../../.github/workflows/release.yml), que compila los binarios, los paquetes de OpenWrt y fnOS y la imagen Docker multiarquitectura, y firma los artefactos. Las imágenes se etiquetan con la versión y con `latest`, que siempre apunta a la versión más reciente.
-- Las versiones son frecuentes: 55 etiquetas de versión entre el 17 de octubre y el 15 de noviembre de 2026. Las [versiones de GitHub](https://github.com/wangwanjie/gately/releases) agrupan las notas por módulo e indican los avisos de actualización; el [registro de cambios](https://gately.cn/es/news/) del sitio web recoge los anuncios.
-- Las correcciones de seguridad se publican solo para la última versión ([SECURITY.md](../../SECURITY.md)). En producción, fija una etiqueta de imagen como `ghcr.io/wangwanjie/gately:v0.6.6.6`, lee las notas de la versión antes de actualizar y usa el historial de configuración para revertir un ajuste.
+- Las versiones son frecuentes: 56 etiquetas de versión entre el 17 de octubre y el 17 de noviembre de 2026. Las [versiones de GitHub](https://github.com/wangwanjie/gately/releases) agrupan las notas por módulo e indican los avisos de actualización; el [registro de cambios](https://gately.cn/es/news/) del sitio web recoge los anuncios.
+- Las correcciones de seguridad se publican solo para la última versión ([SECURITY.md](../../SECURITY.md)). En producción, fija una etiqueta de imagen como `ghcr.io/wangwanjie/gately:v0.6.8`, lee las notas de la versión antes de actualizar y usa el historial de configuración para revertir un ajuste.
 
 ## Contribuir
 
