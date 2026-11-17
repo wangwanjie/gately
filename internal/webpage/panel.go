@@ -79,9 +79,12 @@ type PanelLayout struct {
 	// IconSize 为图标边长（像素），Columns 为宽屏每行最多的链接数，MobileColumns 为手机每行的链接数，
 	// Gap 为链接间距（像素），MaxWidth 为内容最大宽度（像素）
 	IconSize, Columns, MobileColumns, Gap, MaxWidth int
+	// HideAppName 为 App 图标样式下不在图标下方显示名称（宽块中的名称照常显示）
+	HideAppName bool
 }
 
-// layoutCSS 把布局写成页面样式与 <html> 的类名：app 为 App 图标样式，lc 为设置了宽屏每行数量，lm 为设置了手机每行数量。
+// layoutCSS 把布局写成页面样式与 <html> 的类名：app 为 App 图标样式，lc 为设置了宽屏每行数量，lm 为设置了手机每行数量，
+// an 为 App 图标样式下不显示名称（访客在页面上切换到图标样式时同样生效）。
 // 写入样式的只有收紧到范围内的整数；手机每行数量要写进 repeat() 的次数，只能由服务端按样式分别输出。
 func layoutCSS(l PanelLayout) (css string, classes []string) {
 	clamp := func(v, lo, hi int) int {
@@ -94,6 +97,9 @@ func layoutCSS(l PanelLayout) (css string, classes []string) {
 	gap, width := clamp(l.Gap, 4, 48), clamp(l.MaxWidth, 640, 3840)
 	if l.Style == "app" {
 		classes = append(classes, "app")
+	}
+	if l.HideAppName {
+		classes = append(classes, "an")
 	}
 	var vars []string
 	if icon > 0 {
@@ -112,11 +118,19 @@ func layoutCSS(l PanelLayout) (css string, classes []string) {
 	if len(vars) > 0 {
 		css = ":root{" + strings.Join(vars, ";") + "}"
 	}
+	// App 图标样式每行只有一个时，1×2、2×2 的块跨两列会撑出多余的一列，改为占一列
+	if cols == 1 {
+		css += "@media (min-width:641px){html.app.lc .grid .card.wd,html.app.lc .grid .card.xl{grid-column:span 1}}"
+	}
 	if mcols > 0 {
 		classes = append(classes, "lm")
 		// 卡片样式的网格以半张大卡片为一格（小卡片占一格），所以是 2 倍
 		css += "@media (max-width:640px){html.lm .grid{grid-template-columns:repeat(" + strconv.Itoa(mcols*2) + ",minmax(0,1fr))}" +
-			"html.lm.app .grid{grid-template-columns:repeat(" + strconv.Itoa(mcols) + ",minmax(0,1fr))}}"
+			"html.lm.app .grid{grid-template-columns:repeat(" + strconv.Itoa(mcols) + ",minmax(0,1fr))}"
+		if mcols == 1 {
+			css += "html.lm.app .grid .card.wd,html.lm.app .grid .card.xl{grid-column:span 1}"
+		}
+		css += "}"
 	}
 	return css, classes
 }
@@ -143,8 +157,9 @@ type PanelLink struct {
 	Href   string
 	NewTab bool
 	Icon   PanelIcon
-	// Small 为小卡片：只显示图标，名称在悬停时提示；HideName、HideDesc 只对大卡片生效
-	Small, HideName, HideDesc bool
+	// Small 为 1×1：卡片样式下只显示图标（名称在悬停时提示），App 图标样式下与默认相同；
+	// Wide 为 1×2：卡片样式下与默认相同，App 图标样式下为横向宽块；Big 为 2×2 大块。HideName、HideDesc 对 1×1 以外的尺寸生效
+	Small, Wide, Big, HideName, HideDesc bool
 	// Locked 表示链接只对登录访客显示，已登录的访客在卡片上看到锁标记
 	Locked bool
 	// Alts 为其他访问方式（如 IPv6、frp、STUN、Cloudflare）：页面中不显示，点击链接时由脚本与主地址一起列在选择列表中，始终在新标签页打开
@@ -323,11 +338,11 @@ const panelSrc = `<!doctype html>
 </header>
 <main>
 {{range .Groups}}<section class="grp">{{if .Name}}<h2><button class="fold" type="button" data-g="{{.Name}}" aria-expanded="true" title="{{$.T.foldHint}}">{{$.ChevronIcon}}{{.Name}}</button>{{if $.GroupCount}}<span class="n">{{len .Links}}</span>{{end}}</h2>{{end}}<div class="grid">
-{{range .Links}}<div class="card{{if .Small}} sm{{end}}{{if .Href}} link{{else}} off{{end}}{{if .Alts}} multi{{end}}" data-s="{{.Search}}" data-k="{{.Key}}"{{if not .Href}} title="{{$.T.off}}"{{end}}>
+{{range .Links}}<div class="card{{if .Small}} sm{{end}}{{if .Wide}} wd{{end}}{{if .Big}} xl{{end}}{{if .Href}} link{{else}} off{{end}}{{if .Alts}} multi{{end}}" data-s="{{.Search}}" data-k="{{.Key}}"{{if not .Href}} title="{{$.T.off}}"{{end}}>
 {{if .Locked}}<svg class="lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>{{$.T.locked}}</title><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>{{end}}
 {{if .Href}}<a class="hit" href="{{.Href}}"{{if .NewTab}} target="_blank" rel="noopener noreferrer"{{end}} title="{{.Name}}" aria-label="{{.Name}}"{{if .Alts}} aria-haspopup="dialog"{{end}}></a>{{else if .Alts}}<button class="hit" type="button" title="{{.Name}}" aria-label="{{.Name}}" aria-haspopup="dialog"></button>{{end}}
 <span class="icw">{{with .Icon}}{{if and .Image .Class}}<span class="ic tile {{.Class}}"><img src="{{.Image}}" alt="" loading="lazy"></span>{{else if .Image}}<span class="ic img"><img src="{{.Image}}" alt="" loading="lazy" referrerpolicy="no-referrer"></span>{{else}}<span class="ic {{.Class}}">{{.Text}}</span>{{end}}{{end}}{{if and $.AltBadge .Alts}}<span class="mb" title="{{.AddrTitle}}">{{.AddrCount}}</span>{{end}}</span>
-{{if not .Small}}<span class="tx">{{if not .HideName}}<span class="nm">{{.Name}}</span>{{end}}{{if not .Href}}<span class="ds">{{$.T.off}}</span>{{else if .HideDesc}}{{else if .Description}}<span class="ds">{{.Description}}</span>{{else if .Address}}<span class="ds mono">{{.Address}}</span>{{end}}</span>{{end}}
+{{if .Small}}{{if not .HideName}}<span class="tx"><span class="nm">{{.Name}}</span></span>{{end}}{{else}}<span class="tx">{{if not .HideName}}<span class="nm">{{.Name}}</span>{{end}}{{if not .Href}}<span class="ds">{{$.T.off}}</span>{{else if .HideDesc}}{{else if .Description}}<span class="ds">{{.Description}}</span>{{else if .Address}}<span class="ds mono">{{.Address}}</span>{{end}}</span>{{end}}
 {{if .Alts}}<span class="alts" hidden>{{range .Alts}}{{if .Href}}<a class="alt" href="{{.Href}}" target="_blank" rel="noopener noreferrer" title="{{.Title}}">{{.Name}}</a>{{else}}<span class="alt off" title="{{$.T.off}}">{{.Name}}</span>{{end}}{{end}}</span>{{end}}
 </div>
 {{end}}</div></section>
@@ -360,7 +375,8 @@ type panelLinkData struct {
 	Name, Description, Address string
 	Href                       template.URL
 	NewTab, Locked             bool
-	Small, HideName, HideDesc  bool
+	Small, Wide, Big           bool
+	HideName, HideDesc         bool
 	// AddrCount 为访问地址总数（主地址加其他访问方式），AddrTitle 为角标的提示文字
 	AddrCount int
 	AddrTitle string
@@ -511,8 +527,10 @@ func RenderPanel(r *http.Request, v PanelView) ([]byte, string) {
 				alts = append(alts, panelAltData{Name: a.Name, Href: template.URL(a.Href), Title: altTitle(a.Href)})
 			}
 			search := strings.ToLower(strings.Join(words, " "))
+			// 标题与描述都隐藏时只剩图标，按 1×1 显示
+			small := l.Small || (l.HideName && l.HideDesc)
 			gd.Links = append(gd.Links, panelLinkData{Name: l.Name, Description: l.Description, Address: l.Address,
-				Href: template.URL(l.Href), NewTab: l.NewTab, Locked: l.Locked, Small: l.Small || (l.HideName && l.HideDesc), HideName: l.HideName, HideDesc: l.HideDesc,
+				Href: template.URL(l.Href), NewTab: l.NewTab, Locked: l.Locked, Small: small, Wide: l.Wide && !small, Big: l.Big && !small, HideName: l.HideName, HideDesc: l.HideDesc,
 				AddrCount: len(alts) + 1, AddrTitle: strings.ReplaceAll(texts["addrCount"], "{n}", strconv.Itoa(len(alts)+1)), Key: linkKey(g.Name, l.Name), Search: search, Icon: icon(l.Icon, l.Name), Alts: alts})
 		}
 		total += len(gd.Links)

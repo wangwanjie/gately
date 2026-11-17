@@ -112,10 +112,7 @@
   "authOnlyHelp": "Les visiteurs non connectés ne voient pas ce lien (ni son nom ni son adresse ne sont envoyés). Le site doit utiliser l’authentification web avec « N’exiger l’authentification que pour les chemins marqués Obligatoire ci-dessous » coché pour que les visiteurs non connectés ouvrent le panneau et trouvent le bouton de connexion ; sur les sites qui exigent la connexion partout, tous les visiteurs sont déjà connectés.",
   "bgBlur": "Flou de l’arrière-plan",
   "bgReset": "Rétablir l’arrière-plan par défaut",
-  "cardSize": "Taille de la carte",
-  "sizeLarge": "Grande",
-  "sizeSmall": "Petite",
-  "sizeSmallHelp": "Une petite carte n’affiche que l’icône ; le nom apparaît au survol.",
+  "cardSize": "Taille",
   "showName": "Afficher le titre",
   "showDesc": "Afficher la description",
   "tabTitle": "Titre de l’onglet",
@@ -153,6 +150,8 @@
   "groupCountHelp": "Affiche le nombre de liens à côté du titre de chaque groupe.",
   "altBadge": "Pastille d’adresses",
   "altBadgeHelp": "Les liens ayant d’autres accès affichent leur nombre total d’adresses au coin supérieur droit de l’icône. Dans tous les cas, un clic sur ces liens affiche la liste des adresses.",
+  "appName": "Noms des icônes",
+  "appNameHelp": "Affiche le nom sous chaque icône dans le style icônes d'app, y compris quand le visiteur passe aux icônes sur la page. Les noms des tuiles larges 1×2 restent toujours affichés.",
   "lockMark": "Marque de cadenas",
   "lockMarkHelp": "Les visiteurs connectés voient un cadenas sur les liens visibles uniquement après connexion ; désactivez pour le masquer. Les visiteurs non connectés ne voient jamais ces liens.",
   "skinSwitch": "Bouton de thème",
@@ -160,5 +159,11 @@
   "langSwitch": "Sélecteur de langue",
   "langSwitchHelp": "Affiche un menu de langue en haut à droite. Désactivé (par défaut), la page suit la langue du navigateur du visiteur.",
   "bgPreview": "Aperçu",
-  "bgPreviewHelp": "Le flou et le voile se mettent à jour quand vous déplacez les curseurs ; la page complète est dans l'onglet Aperçu."
+  "bgPreviewHelp": "Le flou et le voile se mettent à jour quand vous déplacez les curseurs ; la page complète est dans l'onglet Aperçu.",
+  "sizeHelp1x1": "1×1 : icône seule ; le nom s'affiche au survol.",
+  "sizeHelp1x1App": "1×1 : icône avec le nom en dessous.",
+  "sizeHelp1x2": "1×2 : icône avec titre et description.",
+  "sizeHelp1x2App": "1×2 : une tuile large avec l'icône à gauche, le nom et la description à droite.",
+  "sizeHelp2x2": "2×2 : un grand bloc de deux lignes et deux colonnes, avec une icône agrandie et le titre et la description en dessous.",
+  "sizeHelp2x2App": "2×2 : une grande icône sur deux lignes et deux colonnes, avec le nom en dessous."
 }

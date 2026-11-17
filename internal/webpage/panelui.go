@@ -68,6 +68,12 @@ html.nosc{overflow:hidden}
 .card{min-height:72px}
 .card.sm{grid-column:span 1;flex-direction:column;justify-content:center;padding:12px 6px}
 .card.sm .ic{--s:calc(var(--is,40px) + 4px)}
+.card.sm .tx{display:none}
+.card.xl{grid-row:span 2;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:16px 14px;text-align:center}
+.card.xl .ic{--s:calc(var(--is,40px) * 1.6)}
+.card.xl .tx{align-items:center;max-width:100%}
+.card.xl .nm{max-width:100%;font-size:15px}
+.card.xl .ds{max-width:100%;white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .tx{justify-content:center}
 .acts{display:flex;align-items:center;gap:10px}
 .top .sbox{margin-left:auto}
@@ -105,6 +111,7 @@ button.btn{font:inherit;cursor:pointer}
 .acts .skin .sp{position:fixed;top:var(--pop-top,64px);bottom:auto;left:auto;right:16px;width:min(372px,calc(100vw - 32px));max-height:calc(100vh - var(--pop-top,64px) - 16px)}
 .card.sm{padding:10px 4px}
 .card.sm .ic{--s:calc(var(--is,34px) + 6px)}
+.card.xl .ic{--s:calc(var(--is,34px) * 1.6)}
 .card{min-height:64px}
 }
 @media (prefers-reduced-motion:reduce){.eng svg,.fold svg{transition:none}}
@@ -135,6 +142,23 @@ html.app .nm{max-width:100%;font-size:12.5px;font-weight:500;line-height:1.35}
 html.app .ds{display:none}
 html.hasbg.app .nm{text-shadow:0 1px 3px var(--bg),0 0 1px var(--bg)}
 html.app .card .lock{top:1px;right:auto;left:max(1px,calc(50% - var(--is,64px) / 2 - 6px));width:16px;height:16px;padding:2px;border-radius:50%;background:var(--card);color:var(--muted);box-shadow:0 1px 4px rgba(0,0,0,.25)}
+html.app .grid .card.sm .tx{display:flex}
+html.app.an .grid .card:not(.wd) .tx{display:none}
+html.app .grid .card.wd,html.app .grid .card.wd.link:hover{grid-column:span 2;flex-direction:row;align-self:start;align-items:center;gap:10px;height:var(--is,64px);padding:0 12px 0 0;border-radius:calc(var(--is,64px) * .24);background:color-mix(in srgb,var(--card) 72%,transparent);box-shadow:0 8px 18px -12px rgba(0,0,0,.55);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);text-align:left}
+html.app .grid .card.wd.link:hover,html.app .grid .card.wd.multi:hover{transform:translateY(-3px);background:color-mix(in srgb,var(--hover) 84%,transparent);box-shadow:0 14px 26px -14px rgba(0,0,0,.6)}
+html.app .card.wd .icw{width:var(--is,64px);height:100%}
+html.app .grid .card.wd .ic,html.app .grid .card.wd:hover .ic,html.app .grid .card.wd:hover .mb{box-shadow:none;transform:none}
+html.app .card.wd .tx{flex:1;width:auto;min-width:0;align-items:flex-start}
+html.app .card.wd .nm{font-size:13.5px;font-weight:600}
+html.app .card.wd .ds{display:block;max-width:100%}
+html.hasbg.app .card.wd .nm{text-shadow:none}
+html.app .card.wd .lock{top:6px;right:6px;left:auto}
+html.app .grid .card.xl{grid-column:span 2;grid-row:span 2;justify-content:center}
+html.app .card.xl .icw{width:min(calc(var(--is,64px) * 2),100%)}
+html.app .card.xl .ic{--s:calc(var(--is,64px) * 2)}
+html.app .card.xl .nm{font-size:13.5px;font-weight:600}
+html.app .card.xl .ds{display:none}
+html.app .card.xl .lock{left:max(1px,calc(50% - var(--is,64px) - 6px))}
 .card.multi .hit{cursor:pointer}
 .st .seg{gap:6px}
 .st .seg .sb{flex:1}
@@ -171,6 +195,12 @@ html.app .card .icw{width:min(var(--is,56px),100%)}
 html.app .card .ic{--s:var(--is,56px)}
 html.app .card .lock{left:max(1px,calc(50% - var(--is,56px) / 2 - 6px))}
 html.app .nm{font-size:12px}
+html.app .grid .card.wd,html.app .grid .card.wd.link:hover{height:var(--is,56px);border-radius:calc(var(--is,56px) * .24)}
+html.app .card.wd .icw{width:var(--is,56px)}
+html.app .card.wd .nm{font-size:13px}
+html.app .card.xl .icw{width:min(calc(var(--is,56px) * 2),100%)}
+html.app .card.xl .ic{--s:calc(var(--is,56px) * 2)}
+html.app .card.xl .lock{left:max(1px,calc(50% - var(--is,56px) - 6px))}
 .chm.in::before{background:rgba(0,0,0,.42)}
 .chp,.chm.up .chp{left:0;right:0;top:auto;bottom:0;width:auto;max-width:none;max-height:78vh;padding:6px 10px calc(12px + env(safe-area-inset-bottom));border:0;border-top:1px solid var(--line);border-radius:20px 20px 0 0;opacity:1;transform:translateY(100%);transition:transform .28s cubic-bezier(.2,.8,.2,1)}
 .chp::before{content:"";display:block;width:38px;height:4px;margin:4px auto 6px;border-radius:2px;background:var(--line)}

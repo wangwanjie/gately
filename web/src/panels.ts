@@ -20,13 +20,43 @@ export interface PanelLink {
   color: string
   sameTab: boolean
   hide: boolean
-  // size 为卡片尺寸：空为大卡片（图标加标题、描述），small 为小卡片（只显示图标）
-  size: '' | 'small'
-  // hideName、hideDesc 只对大卡片生效：隐藏标题、隐藏描述
+  // size 为尺寸（行×列）：空为默认（卡片样式 1×2、App 图标样式 1×1），small 为 1×1，wide 为 1×2，big 为 2×2
+  size: LinkSize
+  // hideName、hideDesc 对 1×1 以外的尺寸生效：隐藏标题、隐藏描述
   hideName: boolean
   hideDesc: boolean
   // authOnly 为 true 时只对已登录的访客显示（未登录时页面中没有该链接）
   authOnly: boolean
+}
+
+export type LinkSize = '' | 'small' | 'wide' | 'big'
+// SizeChoice 为界面上的尺寸选项（行×列），按面板样式与保存的 size 互相换算，见 sizeChoice、sizeValue
+export type SizeChoice = '1x1' | '1x2' | '2x2'
+export const SIZE_CHOICES: readonly SizeChoice[] = ['1x1', '1x2', '2x2']
+
+// sizeChoice 返回链接在某种样式下显示的尺寸：默认尺寸在卡片样式下是 1×2，在 App 图标样式下是 1×1
+export function sizeChoice(size: LinkSize | undefined, style: Panel['cardStyle']): SizeChoice {
+  switch (size) {
+    case 'small':
+      return '1x1'
+    case 'wide':
+      return '1x2'
+    case 'big':
+      return '2x2'
+  }
+  return style === 'app' ? '1x1' : '1x2'
+}
+
+// sizeValue 把界面上选的尺寸换回保存的值：与当前样式的默认尺寸相同时保存为空（默认），
+// 这样升级前的链接（都是默认尺寸）在两种样式下保持原样，访客切换样式时也各自使用该样式的默认尺寸
+export function sizeValue(choice: SizeChoice, style: Panel['cardStyle']): LinkSize {
+  if (choice === '2x2') {
+    return 'big'
+  }
+  if (choice === sizeChoice('', style)) {
+    return ''
+  }
+  return choice === '1x1' ? 'small' : 'wide'
 }
 
 // PanelEngine 是页面搜索框可选的搜索引擎，url 用 {q} 代表关键词
@@ -71,7 +101,8 @@ export interface Panel {
   // groupCount 为在分组标题旁显示链接数；altBadge 为在有多个访问地址的链接图标右上角显示地址数，都默认关闭
   groupCount: boolean
   altBadge: boolean
-  // hideLock 为已登录访客不显示锁标记
+  // hideAppName 为 App 图标样式下不显示图标下方的名称；hideLock 为已登录访客不显示锁标记
+  hideAppName: boolean
   hideLock: boolean
   // showLang 为显示语言切换（默认不显示）；hideSkin 为不显示换肤按钮（默认显示）
   showLang: boolean
@@ -176,7 +207,7 @@ export function moveEngine(engines: PanelEngine[], def: number, i: number, delta
 }
 
 export function emptyPanel(): Panel {
-  return { name: '', enable: true, title: '', subtitle: '', icon: '', tabTitle: '', favicon: '', description: '', footer: '', footerUrl: '', hideFooter: false, theme: '', skin: '', engines: [], defaultEngine: 0, background: '', bgDim: 0, bgBlur: 0, cardStyle: '', iconSize: 0, columns: 0, mobileColumns: 0, gap: 0, maxWidth: 0, groupCount: false, altBadge: false, hideLock: false, showLang: false, hideSkin: false, lanCidrs: [], links: [], remark: '' }
+  return { name: '', enable: true, title: '', subtitle: '', icon: '', tabTitle: '', favicon: '', description: '', footer: '', footerUrl: '', hideFooter: false, theme: '', skin: '', engines: [], defaultEngine: 0, background: '', bgDim: 0, bgBlur: 0, cardStyle: '', iconSize: 0, columns: 0, mobileColumns: 0, gap: 0, maxWidth: 0, groupCount: false, altBadge: false, hideAppName: false, hideLock: false, showLang: false, hideSkin: false, lanCidrs: [], links: [], remark: '' }
 }
 
 export function emptyLink(group = ''): PanelLink {
@@ -212,6 +243,7 @@ export function toPanel(v: PanelView | Panel): Panel {
     maxWidth: v.maxWidth ?? 0,
     groupCount: v.groupCount ?? false,
     altBadge: v.altBadge ?? false,
+    hideAppName: v.hideAppName ?? false,
     hideLock: v.hideLock ?? false,
     showLang: v.showLang ?? false,
     hideSkin: v.hideSkin ?? false,

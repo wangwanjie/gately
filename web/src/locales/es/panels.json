@@ -112,10 +112,7 @@
   "authOnlyHelp": "Los visitantes sin sesión no ven este enlace (no se envían ni su nombre ni su dirección). El sitio necesita autenticación web con «Exigir autenticación solo en las rutas marcadas como Obligatoria más abajo» activado para que los visitantes sin sesión abran el panel y vean el botón de inicio de sesión; en sitios que exigen sesión para todo, todos los visitantes ya la tienen.",
   "bgBlur": "Desenfoque del fondo",
   "bgReset": "Restaurar fondo predeterminado",
-  "cardSize": "Tamaño de la tarjeta",
-  "sizeLarge": "Grande",
-  "sizeSmall": "Pequeña",
-  "sizeSmallHelp": "Una tarjeta pequeña solo muestra el icono; el nombre aparece al pasar el ratón.",
+  "cardSize": "Tamaño",
   "showName": "Mostrar título",
   "showDesc": "Mostrar descripción",
   "tabTitle": "Título de la pestaña",
@@ -153,6 +150,8 @@
   "groupCountHelp": "Muestra el número de enlaces junto al título de cada grupo.",
   "altBadge": "Insignia de direcciones",
   "altBadgeHelp": "Los enlaces con otras formas de acceso muestran el total de direcciones en la esquina superior derecha del icono. En cualquier caso, al hacer clic aparece la lista de direcciones para elegir.",
+  "appName": "Nombres de iconos",
+  "appNameHelp": "Muestra el nombre bajo cada icono en el estilo de iconos de app, también cuando el visitante cambia a iconos en la página. Los nombres dentro de los bloques anchos 1×2 se muestran siempre.",
   "lockMark": "Marca de candado",
   "lockMarkHelp": "Los visitantes con sesión iniciada ven un candado en los enlaces visibles solo tras iniciar sesión; desactívalo para ocultarlo. Quien no ha iniciado sesión nunca ve esos enlaces.",
   "skinSwitch": "Botón de tema",
@@ -160,5 +159,11 @@
   "langSwitch": "Selector de idioma",
   "langSwitchHelp": "Muestra un menú de idioma arriba a la derecha. Desactivado (predeterminado), la página sigue el idioma del navegador del visitante.",
   "bgPreview": "Vista previa",
-  "bgPreviewHelp": "El desenfoque y la capa se actualizan al mover los controles; la página completa está en la pestaña Vista previa."
+  "bgPreviewHelp": "El desenfoque y la capa se actualizan al mover los controles; la página completa está en la pestaña Vista previa.",
+  "sizeHelp1x1": "1×1: solo el icono; el nombre aparece al pasar el ratón.",
+  "sizeHelp1x1App": "1×1: icono con el nombre debajo.",
+  "sizeHelp1x2": "1×2: icono con título y descripción.",
+  "sizeHelp1x2App": "1×2: un bloque ancho con el icono a la izquierda y el nombre y la descripción a la derecha.",
+  "sizeHelp2x2": "2×2: un bloque grande de dos filas y dos columnas, con el icono ampliado y el título y la descripción debajo.",
+  "sizeHelp2x2App": "2×2: un icono grande de dos filas y dos columnas, con el nombre debajo."
 }
