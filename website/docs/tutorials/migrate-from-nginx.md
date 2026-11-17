@@ -1,10 +1,10 @@
 ---
-description: 从 nginx 或 Nginx Proxy Manager 迁移到 Gately：导入 nginx -T 输出、与 nginx 并行验证、逐站切换与回滚。包含 NPM 生成的配置能否导入的实测结论。
+description: 从 nginx 或 Nginx Proxy Manager 迁移到 Gately：导入 nginx -T 输出（NPM 在容器内执行）、与 nginx 并行验证、逐站切换与回滚，以及 NPM 各项设置的转换结果。
 ---
 
 # 从 nginx 或 Nginx Proxy Manager 迁移
 
-已有的 nginx 站点可以直接导入 Gately，转换成监听与站点，先并行验证再切换，出问题随时退回 nginx。Nginx Proxy Manager（NPM）生成的配置用变量写后端地址，现有导入转换不了，需要按清单手动建站，文中给出了清单与对照表。
+已有的 nginx 站点可以直接导入 Gately，转换成监听与站点，先并行验证再切换，出问题随时退回 nginx。Nginx Proxy Manager（NPM）生成的配置同样直接导入，代理主机、重定向主机、访问列表、强制 HTTPS 等设置会一并转换。
 
 ## 适用场景与前提
 
@@ -95,41 +95,40 @@ curl -I --resolve nas.example.com:8443:127.0.0.1 https://nas.example.com:8443/
 
 ## 步骤：Nginx Proxy Manager
 
-NPM 在 `/data/nginx/proxy_host/*.conf` 里用 `set $server`、`set $port` 与 `proxy_pass $forward_scheme://$server:$port$request_uri;` 写后端。导入预览会把这样的站点标为「不导入：没有可转换的反向代理…」，并提示 `proxy_pass … 使用了变量，无法转换`，所以 NPM 的代理主机需要手动建站。重定向主机（`return 301 $forward_scheme://…`）同样含变量。
+NPM 生成的就是 nginx 配置，导入方式与上面相同，只是 `nginx -T` 要在 NPM 容器里执行。
 
-1. 在 NPM 所在主机列出每个域名与后端，路径是 NPM 数据卷里的 `nginx/proxy_host`：
+1. 在 NPM 所在主机导出配置（把 `npm` 换成 NPM 的容器名，`docker ps` 可以查到）：
 
    ```bash
-   for f in /data/nginx/proxy_host/*.conf; do
-     awk '/^[[:space:]]*server_name/{sub(/^[[:space:]]*server_name[[:space:]]+/,"");sub(/;.*/,"");d=$0}
-          /set \$forward_scheme/{gsub(";","");s=$3}
-          /set \$server[[:space:]]/{gsub(/[";]/,"");h=$3}
-          /set \$port/{gsub(";","");p=$3}
-          END{print d" -> "s"://"h":"p}' "$f"
-   done
+   docker exec npm nginx -T > npm-nginx-T.txt
    ```
 
-   输出类似 `nas.example.com -> http://192.168.1.10:5000`。NPM 在 Docker 里时，先用 `docker exec` 进容器执行，或把数据卷挂到宿主机后在宿主机执行；
-2. 按每一行在「Web 服务」里添加监听与站点：域名填输出左侧，类型「反向代理」，后端地址填右侧；
-3. 对照下表补上 NPM 页面里勾选过的项目；
-4. 之后的验证、切换与回滚与上面完全相同。
+   也可以只复制 NPM 数据卷里 `nginx/proxy_host/*.conf`、`nginx/redirection_host/*.conf`、`nginx/dead_host/*.conf` 的内容，缺少的 NPM 自带片段会自动补全；
+2. 在「导入 nginx」里粘贴并预览。NPM 自带的默认页、443 兜底与管理界面（81 端口）不会出现在预览里；
+3. 证书：预览会提示证书文件在 NPM 容器内的路径，按上面「3. 准备证书」处理。用「读取文件」时，路径要换成宿主机上 NPM 数据卷的位置，例如 `./letsencrypt/live/npm-1/fullchain.pem`，Gately 在 Docker 中时先把该目录挂载进容器；
+4. 导入后补齐访问列表的用户（见下表），之后的验证、切换与回滚与上面完全相同。
 
-| NPM 里的设置 | Gately 里的做法 |
+NPM 里的设置导入后的样子：
+
+| NPM 里的设置 | 导入后 |
 | --- | --- |
-| Scheme / Forward Hostname / Port | 站点的「后端地址」，如 `http://192.168.1.10:5000`；后端是 https 且证书自签名时勾选「跳过后端证书校验」 |
-| Websockets Support | 反向代理自动支持，无需设置 |
-| Block Common Exploits | 站点「安全」页选一个 [WAF 实例](/docs/modules/waf)，先用「仅检测」观察 |
-| Force SSL、HTTP/2 | 监听的「HTTP 端口」填 80 并选「跳转到 HTTPS」；HTTP/2 在 HTTPS 上自动协商 |
-| HSTS | 站点「请求头」页添加响应头 `Strict-Transport-Security: max-age=63072000` |
-| Access List 的 IP 规则 | 站点「安全」页的「IP 访问控制」白名单或黑名单 |
-| Access List 的用户名密码 | 「基本认证」或「网页认证」，用户需要在 Gately 里重新设置密码 |
-| Redirection Host | 类型「重定向」的站点 |
-| Streams | [端口转发](/docs/modules/portforward) |
-| 404 Host | 默认站点，类型「固定文本」或「断开连接」 |
-| Advanced 里的自定义 nginx 配置 | 逐条看是否有对应的站点选项，没有的先不迁移该站点 |
-| SSL 证书（Let's Encrypt） | 在 Gately 的「SSL 证书」重新签发，或用「读取文件」指向 `/etc/letsencrypt/live/npm-N/` 下的文件 |
+| Proxy Host 的 Scheme / Forward Hostname / Port | 反向代理站点的后端地址，如 `http://192.168.1.10:5000`；https 后端不校验证书，与 NPM 相同 |
+| Custom Locations | 分路径后端，Forward Hostname 里带的路径会转换为「去掉路径前缀」 |
+| Websockets Support、HTTP/2 Support | 无需设置，Gately 自动支持 |
+| Force SSL | 80 端口上的同名站点跳转到 `https://{host}`（保留路径） |
+| HSTS Enabled / HSTS Subdomains | 响应头 `Strict-Transport-Security` |
+| Cache Assets | 站点缓存：css、js、图片、字体等静态资源缓存 30 分钟，其他路径不缓存 |
+| Block Common Exploits | 不导入，预览提示一次；需要时在站点「安全」页选一个 [WAF 实例](/docs/modules/waf)，先用「仅检测」观察 |
+| Access List 的 IP 规则 | 站点的 IP 白名单或黑名单 |
+| Access List 的用户名密码 | 使用共享用户的基本认证；NPM 的密码文件不会读取，需要在 Gately 里重新添加用户，补齐前任何人都无法通过 |
+| Access List 的 Satisfy Any | 只导入认证，名单内的 IP 也需要登录（Gately 不支持按 IP 免认证），预览会列出这些 IP |
+| Redirection Host | 重定向站点，HTTP 状态码与「保留路径」一并转换 |
+| 404 Host | 返回 404 的固定内容站点 |
+| Default Site（404、444、跳转） | 80 端口监听的默认站点 |
+| Streams | 不导入，在[端口转发](/docs/modules/portforward)中配置 |
+| SSL 证书（Let's Encrypt 或自定义） | 不导入，见第 3 步 |
 
-NPM 的数据卷里还有 `letsencrypt` 目录，证书文件在 `live/npm-N/` 下，N 是 NPM 内部编号。
+仍然转换不了的内容：Advanced 里写的自定义 nginx 配置中，Gately 没有对应功能的指令会列在预览的「未转换的指令」里，或给出提示；正则 `location`、`if` 中设置的变量、Lua 等也无法转换。这些站点导入后逐个核对，必要时在站点里手动调整。
 
 ## 验证
 
@@ -140,11 +139,11 @@ NPM 的数据卷里还有 `letsencrypt` 目录，证书文件在 `live/npm-N/` �
 
 ## 常见问题
 
-**预览里「不导入」，原因是没有可转换的内容。** 站点只用了变量写后端（NPM 的典型写法）、正则 `location` 或 Lua 等。手动建站，参考上面的对照表。
+**预览里「不导入」，原因是没有可转换的内容。** 站点的后端用了无法静态确定的变量（例如在 `if` 中设置或来自多项 `map`）、正则 `location` 或 Lua 等。手动建站，参考上面的对照表。
 
 **监听启动失败，提示端口被占用。** nginx 还在占用端口。先停 nginx，或把 Gately 的监听改到别的端口。
 
-**导入时提示缺少证书。** 证书不随配置导入，按步骤 3 添加。
+**导入时提示缺少证书。** 证书不随配置导入，按步骤 3 添加。NPM 的证书在其数据卷的 `letsencrypt/live/npm-N/` 或 `data/custom_ssl/npm-N/` 下，N 是 NPM 内部的证书编号。
 
 **站点启用后返回 502。** 后端地址在 Gately 所在的网络里不可达（Docker 部署要用 `--network host` 或可路由的地址），或后端是 https 自签名证书，勾选「跳过后端证书校验」。
 
