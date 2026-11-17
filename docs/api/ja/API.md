@@ -1540,6 +1540,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `hits` | マップ of integer |
 | `openPorts` | integer |
 | `reason` | string |
+| `redirect` | boolean |
 | `trapPorts` | string |
 | `trapSkipped` | 配列 of integer |
 | `version` | string |
@@ -2068,6 +2069,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `listenAddress` | string |
 | `listenPorts` | string |
 | `maxConnections` | integer |
+| `maxConnsPerSource` | integer |
 | `mode` | string |
 | `name` | string |
 | `protocols` | 配列 of string |
@@ -2119,6 +2121,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `listenAddress` | string |
 | `listenPorts` | string |
 | `maxConnections` | integer |
+| `maxConnsPerSource` | integer |
 | `name` | string |
 | `protocols` | 配列 of string |
 | `proxyProtocol` | string |
@@ -2384,6 +2387,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `name` | string |
 | `outboundThreshold` | integer |
 | `paranoia` | integer |
+| `regexPrefilter` | boolean |
 | `remark` | string |
 | `ruleSets` | 配列 of `waf.RuleSet` |
 | `safeline` | `waf.SafeLine` |

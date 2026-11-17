@@ -1247,6 +1247,9 @@
           "reason": {
             "type": "string"
           },
+          "redirect": {
+            "type": "boolean"
+          },
           "trapPorts": {
             "type": "string"
           },
@@ -2492,6 +2495,9 @@
           "maxConnections": {
             "type": "integer"
           },
+          "maxConnsPerSource": {
+            "type": "integer"
+          },
           "mode": {
             "type": "string"
           },
@@ -2641,6 +2647,9 @@
             "type": "string"
           },
           "maxConnections": {
+            "type": "integer"
+          },
+          "maxConnsPerSource": {
             "type": "integer"
           },
           "name": {
@@ -3347,6 +3356,9 @@
           },
           "paranoia": {
             "type": "integer"
+          },
+          "regexPrefilter": {
+            "type": "boolean"
           },
           "remark": {
             "type": "string"
@@ -44081,7 +44093,7 @@
     },
     "/api/system/upgrade": {
       "post": {
-        "description": "僅登入工作階段（管理員）可用，只支援 Linux 二進位部署。在背景下載與本機平台對應的發佈包，核對 checksums.txt 中的 SHA-256 並試執行新程式，替換執行檔後重新啟動；舊版本保留為同目錄下的 `\u003c檔名\u003e.old`。立即回傳 202，進度見 `GET /api/system/upgrade/status`。自訂建置回傳 409：線上升級下載的是完整版本，請到 https://build.gately.cn 用相同選項產生新版本後用上傳介面升級。\n\n**僅限登入工作階段使用，API 權杖無法存取此介面。**",
+        "description": "僅登入工作階段（管理員）可用，只支援 Linux 二進位部署。在背景下載與本機平台對應的發佈包，用內建於程式的公鑰驗證 checksums.txt 的 minisign 簽章（checksums.txt.minisig，簽章無效時拒絕升級，簽章上線前的版本沒有該檔案時照常升級），再核對其中的 SHA-256 並試執行新程式，替換執行檔後重新啟動；舊版本保留為同目錄下的 `\u003c檔名\u003e.old`。立即回傳 202，進度見 `GET /api/system/upgrade/status`。自訂建置回傳 409：線上升級下載的是完整版本，請到 https://build.gately.cn 用相同選項產生新版本後用上傳介面升級。\n\n**僅限登入工作階段使用，API 權杖無法存取此介面。**",
         "responses": {
           "200": {
             "description": "成功"
@@ -44173,7 +44185,7 @@
     },
     "/api/system/upgrade/status": {
       "get": {
-        "description": "僅登入工作階段可用。`state` 依序為 `checking`、`downloading`、`verifying`、`installing`、`restarting`；失敗時為 `failed` 並在 `error` 中說明原因，被取消時為 `canceled`。`downloaded` / `total` 為升級包已下載與總位元組數。\n\n**僅限登入工作階段使用，API 權杖無法存取此介面。**",
+        "description": "僅登入工作階段可用。`state` 依序為 `checking`、`downloading`、`verifying`、`installing`、`restarting`；失敗時為 `failed` 並在 `error` 中說明原因，被取消時為 `canceled`。`downloaded` / `total` 為升級包已下載與總位元組數。`unsigned` 為 true 表示該版本沒有發布簽章，僅核對了 SHA-256。\n\n**僅限登入工作階段使用，API 權杖無法存取此介面。**",
         "responses": {
           "200": {
             "description": "成功"

@@ -298,7 +298,7 @@
     ],
     "moreFaq": "その他の質問 →",
     "finalTitle": "今日から試してみませんか",
-    "finalDesc": "無料でオープンソース、入れればすぐ使えます。困ったときは Telegram グループへどうぞ。",
+    "finalDesc": "無料でオープンソース、入れればすぐ使えます。困ったときは GitHub Discussions の Q&A へ（回答は検索できます）。すぐ話したいときは Telegram グループへどうぞ。",
     "starOnGithub": "GitHub で Star を付ける",
     "telegramScan": "スマートフォンでスキャンして Telegram グループに参加",
     "worksWith": "対応プラットフォームと連携",

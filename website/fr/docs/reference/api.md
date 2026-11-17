@@ -4,7 +4,7 @@ Toutes les API utilisées par l'interface de gestion de Gately peuvent être app
 
 ## Jetons d'API
 
-Chemin dans l'interface : groupe « Système » de la barre latérale → « Jetons d'API ».
+Chemin dans l'interface : dans « Système → Paramètres » de la barre latérale, onglet « Compte et sécurité », cliquez sur « Gérer les jetons d'API » dans la carte « Jetons d'API » (`#/api-tokens`).
 
 ### Créer un jeton
 
@@ -94,7 +94,7 @@ Créez un jeton distinct pour chaque script, ne cochez que les permissions néce
 
 ### La page de documentation dans l'interface
 
-Groupe « Système » de la barre latérale → « Documentation de l'API ». La page affiche l'URL de base et les explications d'authentification, liste toutes les API par groupe fonctionnel et permet de rechercher par chemin ou par résumé. Le développement d'une API affiche la permission requise, les paramètres, les champs du corps de la requête et un exemple curl copiable. Les API qui nécessitent une session de connexion sont marquées « Session de connexion uniquement » et n'ont pas d'exemple curl.
+Cliquez sur « Voir la documentation de l'API » dans la carte « Jetons d'API » de « Système → Paramètres → Compte et sécurité », ou ouvrez « Documentation de l'API » dans le menu utilisateur en haut à droite (`#/api-docs`). La page affiche l'URL de base et les explications d'authentification, liste toutes les API par groupe fonctionnel et permet de rechercher par chemin ou par résumé. Le développement d'une API affiche la permission requise, les paramètres, les champs du corps de la requête et un exemple curl copiable. Les API qui nécessitent une session de connexion sont marquées « Session de connexion uniquement » et n'ont pas d'exemple curl.
 
 ### Obtenir le document OpenAPI
 

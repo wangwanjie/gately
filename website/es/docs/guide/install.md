@@ -208,7 +208,7 @@ El resultado se guarda en `update-check.json` en el directorio de configuración
 Las instalaciones binarias en Linux (systemd, contenedores LXC de PVE, OpenWrt desplegado manualmente, etc.) pueden actualizarse en línea desde la página Acerca de del panel: pulsa «Buscar actualizaciones» y, si hay una versión nueva, «Actualizar ahora». También sirve para los contenedores LXC creados en PVE a partir de la imagen OCI, sin necesidad de borrarlos y recrearlos. Gately hará lo siguiente:
 
 1. Descargar desde GitHub el `gately_<versión>_linux_<arquitectura>.tar.gz` de esta plataforma;
-2. Verificar su SHA-256 con el `checksums.txt` de la misma versión;
+2. Descargar `checksums.txt` y `checksums.txt.minisig` de la misma versión, verificar la firma con la clave pública integrada en el programa y después comprobar el SHA-256. Una firma no válida o de una clave desconocida rechaza la actualización; las versiones publicadas antes de introducir la firma no tienen archivo de firma y se actualizan con un aviso de que no están firmadas (consulta [Verificar versiones](/es/docs/guide/verify));
 3. Probar el nuevo binario con `-version` para confirmar que se ejecuta en esta máquina;
 4. Reemplazar el ejecutable y reiniciar con los mismos argumentos, conservando la versión anterior como `gately.old` en el mismo directorio.
 

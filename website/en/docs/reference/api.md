@@ -4,7 +4,7 @@ Every API used by Gately's management UI can be called over HTTP. Scripts and au
 
 ## API tokens
 
-UI path: sidebar "System" group → "API Tokens".
+UI path: sidebar "System → Settings", then "Manage API tokens" on the "API tokens" card under "Account & Security" (`#/api-tokens`).
 
 ### Create a token
 
@@ -94,7 +94,7 @@ Create a separate token for each script, select only the permissions it needs, a
 
 ### The docs page in the management UI
 
-Sidebar "System" group → "API Docs". The page shows the Base URL and authentication notes, lists all endpoints grouped by feature, and supports searching by path or summary. Expanding an endpoint shows the required permission, parameters, request body fields and a copyable curl example. Endpoints that need a login session are marked "Login session only" and have no curl example.
+Click "View API docs" on the "API tokens" card under "System → Settings → Account & Security", or open "API Docs" from the user menu in the top right (`#/api-docs`). The page shows the Base URL and authentication notes, lists all endpoints grouped by feature, and supports searching by path or summary. Expanding an endpoint shows the required permission, parameters, request body fields and a copyable curl example. Endpoints that need a login session are marked "Login session only" and have no curl example.
 
 ### Get the OpenAPI document
 

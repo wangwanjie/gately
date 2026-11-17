@@ -1,6 +1,8 @@
 {
   "title": "Importar configuración de nginx",
   "intro": "Pega bloques server o ejecuta el siguiente comando en el host de nginx y pega la salida completa (incluye los archivos de include). Podrás revisar el resultado antes de importar; los dominios existentes se omiten.",
+  "npmIntro": "Nginx Proxy Manager: ejecuta el siguiente comando en el host de NPM (con el nombre del contenedor de NPM) y pega la salida completa.",
+  "npmCommand": "docker exec <contenedor-npm> nginx -T",
   "readFile": "Leer desde archivo",
   "preview": "Vista previa",
   "import": "Importar {count} sitios",

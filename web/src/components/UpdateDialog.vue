@@ -48,6 +48,8 @@
       <el-steps :active="stepIndex" :process-status="phase === 'failed' ? 'error' : 'process'" finish-status="success" align-center class="steps">
         <el-step v-for="s in steps" :key="s" :title="s" />
       </el-steps>
+      <!-- 目标版本没有发布签名：只核对 SHA-256，继续升级但提示来源无法确认 -->
+      <el-alert v-if="unsigned" type="warning" :title="t('about.upgrade.unsigned')" :closable="false" show-icon class="unsigned" />
       <template v-if="phase !== 'failed'">
         <el-progress :percentage="percent" :indeterminate="indeterminate" :duration="2" :show-text="!indeterminate" :stroke-width="10" class="bar" />
         <div class="phase">
@@ -107,6 +109,7 @@ const total = ref(0)
 const speed = ref(0)
 const uploadPct = ref(0)
 const error = ref('')
+const unsigned = ref(false)
 const overlay = ref<InstanceType<typeof RestartOverlay>>()
 const canceling = ref(false)
 let timer: number | undefined
@@ -184,6 +187,7 @@ function resetProgress(k: 'online' | 'upload') {
   canceling.value = false
   mode.value = 'progress'
   error.value = ''
+  unsigned.value = false
   downloaded.value = 0
   total.value = 0
   speed.value = 0
@@ -213,6 +217,7 @@ function apply(st: UpgradeStatus) {
   }
   downloaded.value = st.downloaded
   total.value = st.total
+  unsigned.value = !!st.unsigned
   const now = Date.now()
   if (st.state === 'downloading') {
     if (lastSample.at && now > lastSample.at) {
@@ -511,6 +516,9 @@ defineExpose({ showRelease, upload, resume })
 }
 .steps {
   margin: 6px 0 22px;
+}
+.unsigned {
+  margin-bottom: 14px;
 }
 .bar {
   margin-bottom: 10px;

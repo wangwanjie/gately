@@ -1,6 +1,8 @@
 {
   "title": "nginx 설정 가져오기",
   "intro": "server 블록을 붙여넣거나, nginx 호스트에서 아래 명령을 실행해 전체 출력을 붙여넣으세요(include된 파일도 포함됩니다). 가져오기 전에 변환 결과를 미리 볼 수 있으며 이미 있는 도메인은 건너뜁니다.",
+  "npmIntro": "Nginx Proxy Manager: NPM 호스트에서 아래 명령을 실행하고(NPM 컨테이너 이름으로 바꾸세요) 전체 출력을 붙여넣으세요.",
+  "npmCommand": "docker exec <NPM 컨테이너 이름> nginx -T",
   "readFile": "파일에서 읽기",
   "preview": "미리 보기",
   "import": "사이트 {count}개 가져오기",

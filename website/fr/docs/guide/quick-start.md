@@ -22,6 +22,8 @@ Installez plutôt l'application native : elle s'ouvre depuis l'icône du bureau 
 
 Ouvrez `http://<ip-de-l-appareil>:16680` dans un navigateur. Le nom d'utilisateur est `admin` et le mot de passe par défaut est `gately.cn`. Ce mot de passe est public : après la connexion, une boîte de dialogue demande de le remplacer par un nouveau mot de passe d'au moins 10 caractères, difficile à deviner, avant de pouvoir continuer.
 
+La barre latérale de l'interface d'administration liste toutes les pages par groupe. Appuyez sur Ctrl+K (⌘K sur macOS) ou cliquez sur le champ de recherche en haut de la barre latérale pour ouvrir la recherche globale : elle mène par son nom à une page ou à un onglet de page, et recherche aussi les domaines des sites, les règles de redirection de ports, les enregistrements DDNS et les domaines des certificats. Sur mobile, touchez l'icône de recherche de la barre supérieure.
+
 ## 3. Appliquer un durcissement de base
 
 Dès la connexion, ouvrez « Paramètres » et :

@@ -6,8 +6,8 @@ body:
   - type: markdown
     attributes:
       value: |
-        One feature per issue; split unrelated ideas into separate issues. Check the [roadmap](https://github.com/wangwanjie/gately/blob/main/docs/en/ROADMAP.md) first.
-        每个 issue 只提一个功能，互不相关的想法请分开提。提交前请先看[路线图](https://github.com/wangwanjie/gately/blob/main/docs/ROADMAP.md)。
+        One feature per issue; split unrelated ideas into separate issues. **Usage questions** go to [Discussions Q&A](https://github.com/wangwanjie/gately/discussions/categories/q-a) (the [Telegram group](https://t.me/gately_chat) is there for instant chat). Check the [roadmap](https://github.com/wangwanjie/gately/blob/main/docs/en/ROADMAP.md) first.
+        **使用问题**请到 [Discussions Q&A](https://github.com/wangwanjie/gately/discussions/categories/q-a) 提问（即时交流可用 [Telegram 群](https://t.me/gately_chat)）。每个 issue 只提一个功能，互不相关的想法请分开提。提交前请先看[路线图](https://github.com/wangwanjie/gately/blob/main/docs/ROADMAP.md)。
   - type: checkboxes
     id: checks
     attributes:

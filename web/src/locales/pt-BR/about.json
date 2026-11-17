@@ -37,6 +37,7 @@
     "later": "Depois",
     "retry": "Tentar novamente",
     "failed": "Falha na atualização",
+    "unsigned": "Esta versão não tem assinatura (checksums.txt.minisig): só é possível verificar o SHA-256, não a origem. Assim são as versões publicadas antes da introdução da assinatura.",
     "progressTitle": "Atualizando para {version}",
     "keepOpen": "Mantenha esta página aberta; o Gately reinicia e recarrega automaticamente ao terminar.",
     "steps": {

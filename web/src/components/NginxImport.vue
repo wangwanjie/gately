@@ -3,6 +3,9 @@
     <template v-if="!report">
       <div class="form-help intro">{{ t('nginxImport.intro') }}</div>
       <pre class="cmd mono">nginx -T</pre>
+      <!-- Nginx Proxy Manager 运行在容器里，在容器内执行 nginx -T 取完整配置 -->
+      <div class="form-help intro">{{ t('nginxImport.npmIntro') }}</div>
+      <pre class="cmd mono">{{ t('nginxImport.npmCommand') }}</pre>
       <el-input v-model="config" type="textarea" :rows="14" class="mono" :placeholder="PLACEHOLDER" />
       <div class="row">
         <label class="file-pick"><Upload :size="14" />{{ t('nginxImport.readFile') }}<input type="file" accept=".conf,.txt,text/plain" @change="readFile" /></label>

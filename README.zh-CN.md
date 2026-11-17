@@ -25,7 +25,7 @@
 
 | 你现在在用 | Gately 里对应 |
 | --- | --- |
-| nginx、Nginx Proxy Manager | Web 服务：反向代理、静态站点、重定向、HTTP/3、按站点的访问控制；可导入 nginx 配置 |
+| nginx、Nginx Proxy Manager | Web 服务：反向代理、静态站点、重定向、HTTP/3、按站点的访问控制；可导入 nginx 与 Nginx Proxy Manager 的配置 |
 | acme.sh、certbot | SSL 证书：DNS-01 / HTTP-01、泛域名、自动续期与分发 |
 | ddns-go、DDNS 脚本 | 动态域名：30+ 服务商，IPv4 / IPv6 |
 | haproxy 按 SNI 分流、sslh | 协议分流：HTTPS、SSH、RDP 等共用一个端口 |
@@ -353,7 +353,7 @@ make lint     # gofmt、go vet、前端类型检查
 
 ## 交流群
 
-提问和分享配置请到 [GitHub Discussions](https://github.com/wangwanjie/gately/discussions)；日常交流在 Telegram 群：[t.me/gately_chat](https://t.me/gately_chat)，也可以用手机扫描二维码加入：
+提问请到 [GitHub Discussions Q&A](https://github.com/wangwanjie/gately/discussions/categories/q-a)，回答可被搜索，分享配置也请发在 Discussions；即时交流请加 Telegram 群：[t.me/gately_chat](https://t.me/gately_chat)，也可以用手机扫描二维码加入：
 
 <a href="https://t.me/gately_chat"><img src="docs/images/telegram-qr.svg" alt="扫码加入 Gately Telegram 群" width="160"></a>
 

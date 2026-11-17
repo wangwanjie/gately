@@ -134,7 +134,7 @@ For "Fixed text" sites, `Content-Type` can be picked from common types or typed 
 
 ### Navigation panels {#nav-panel}
 
-The left menu item “Web → Navigation panels” (`#/webpanels`) manages the panel library. Each panel is a set of grouped links. Add a Web service site of type “Navigation panel”, choose the panel, and the site's root path (`/` or `/index.html`) shows the page; other paths return 404. The site's authentication, IP access control, country filter and WAF apply as usual. A start page is usually for yourself, so turn on web authentication or an IP allowlist. Changes to a panel take effect as soon as they are saved, without restarting the listener.
+The “Navigation panels” tab at the top of the sidebar page “Web → Web Services” (`#/web/panels`) manages the panel library. Each panel is a set of grouped links. Add a Web service site of type “Navigation panel”, choose the panel, and the site's root path (`/` or `/index.html`) shows the page; other paths return 404. The site's authentication, IP access control, country filter and WAF apply as usual. A start page is usually for yourself, so turn on web authentication or an IP allowlist. Changes to a panel take effect as soon as they are saved, without restarting the listener.
 
 - **Links**: each link has a name, group, description, internet address and optional LAN address, icon and color, and can open in the same tab or be hidden. Groups appear in the order they first occur in the list; the editor can move a whole group up or down. “Add from Web service sites” lists sites that have a concrete address (the first non-wildcard domain with the listener's access scheme and port; listeners reached through protocol routing or port forwarding use the forwarded entry port) and adds the checked ones as links, keeping the site group as the link group.
 - **Other access methods**: a service often has several entry points, such as direct IPv6, frp, STUN or a Cloudflare tunnel. Each link can have up to 8 more access methods (names up to 20 characters; addresses and variables as above). They appear as small links on the card, open in a new tab and are shown to LAN and internet visitors alike; one whose variable has no value yet is shown struck through as unavailable. When the main address is unavailable the other access methods can still be clicked, and search also matches their names.
@@ -649,7 +649,7 @@ Read-only accounts and read-only tokens can view the list; closing and banning n
 
 ### Network topology {#topology}
 
-**Web → Topology** in the side menu is a page of its own (`#/webtopology`); the **Topology** button in the Web Services page header opens it too. It lays out Internet → Gately → listeners → sites / listener actions → backends / outcomes, refreshes every 2 seconds, pauses while the page is in the background, and the canvas follows the light or dark mode of the current skin:
+The **Topology** tab at the top of the sidebar page **Web → Web Services** (`#/web/topology`) shows the topology; the **Topology** button in the Web Services page header opens it too. It lays out Internet → Gately → listeners → sites / listener actions → backends / outcomes, refreshes every 2 seconds, pauses while the page is in the background, and the canvas follows the light or dark mode of the current skin:
 
 - **Nodes**: listeners show their address and running state, in red when they failed to start; sites show how they match (exact, wildcard, any domain, default site), QPS and requests in progress; reverse proxy sites expand into all their backends, including path-based and per-user backends (marked with their path or users), with unavailable backends in red; redirect, static file, fixed text and close-connection sites each lead to one outcome node. A default site that closes connections, plain HTTP requests redirected on an HTTPS port (301 / 308) and the 404 returned when no site matches and no default site is enabled are expected behavior and shown in gray. Disabled listeners and sites are listed too, shown as not running.
 - **Links**: width grows with QPS, and links carrying traffic show a flowing animation. With more than 120 links only the highlighted path is animated, and nothing is animated when the system asks for reduced motion.
@@ -671,7 +671,7 @@ All numbers come from this instance's in-memory counters: they reset on restart,
 
 ### Visitor audit {#visitor-audit}
 
-The sidebar entry "Web → Visitor audit" (`#/webvisitors`) summarizes access to all sites by visitor address: who visited which sites and paths, when, under which identity, and how often they were blocked. Every site is counted, including the default site and requests that match no site, regardless of whether the site has access logging enabled; with [trusted proxies](#real-ip) configured, the real visitor address is recorded.
+The "Visitor audit" tab at the top of the sidebar page "Web → Web Services" (`#/web/visitors`) summarizes access to all sites by visitor address: who visited which sites and paths, when, under which identity, and how often they were blocked. Every site is counted, including the default site and requests that match no site, regardless of whether the site has access logging enabled; with [trusted proxies](#real-ip) configured, the real visitor address is recorded.
 
 - **Summary and trend**: pick the range in the page header (today, 7 days, 30 days, the whole retention period). The cards show visitors (and new visitors), requests, blocked requests and their share, visitors that passed site authentication, visitors currently banned and scanner-like addresses; click a card to filter by it, click again to clear. In the daily bar chart the bar height is the request count and the red part is blocked requests; click or hover a day to see its visitors, requests and blocks.
 - **List**: each visitor shows the country code (with a GeoIP database imported; private and local addresses show "LAN"), requests and blocks in the range, the most visited sites, identities, first and last visit, and the last request (status, method, path, domain and User-Agent). Search by address, identity, site, domain, path or User-Agent; filter by "With blocked requests", "Authenticated", "Administrators", "Banned", "Scanner-like" and site; sort by last visit, most requests, most blocked or first visit. Sites with the same name on two listeners carry the listener name.
@@ -720,7 +720,24 @@ Except for `gately_listener_requests_total`, metrics carry the labels `listener`
 - `client_body_timeout` and `send_timeout` become the site's [visitor timeouts](#client-timeouts), for every site type;
 - `auth_request` becomes forward auth: the auth endpoint comes from the `proxy_pass` of the auth subrequest location (`set` variables are supported) and the login redirect from `error_page 401 =302`, so common Authelia setups convert directly. When it is enabled only in some locations, the site's "Authentication scope" is limited to those paths, which become path rules set to "Authentication required";
 - `auth_basic` becomes basic authentication with shared users. nginx user files are not read, so nobody can get through until you add the users;
+- `set` variables used in `proxy_pass` and redirect targets are substituted, with a `set` in the location taking precedence over one in the server; a trailing `$request_uri` means the request path is forwarded unchanged. Variables assigned inside `if` or whose value depends on the request still cannot be converted, and the preview says so;
 - Configure TCP/UDP forwarding from `stream` in [Port Forwarding](/en/docs/modules/portforward). Certificates are not imported: when an HTTPS site has no certificate, the preview lists the certificate files nginx uses, and you can add them by file path on the [SSL Certificates](/en/docs/modules/ssl) page.
+
+### Import Nginx Proxy Manager {#import-npm}
+
+Configs generated by Nginx Proxy Manager (NPM) import directly. On the NPM host run the command below (use the name of the NPM container) and paste the full output into "Import nginx":
+
+```bash
+docker exec <npm-container> nginx -T
+```
+
+You can also paste only the site files from NPM's data directory, such as `nginx/proxy_host/*.conf` and `nginx/redirection_host/*.conf`; the NPM snippets they include are filled in automatically.
+
+- Proxy hosts become reverse proxy sites with the backend taken from `set $forward_scheme`, `set $server` and `set $port`; redirection hosts become redirect sites, 404 hosts become fixed-content sites returning 404, and custom locations become per-path backends.
+- Force SSL becomes a site on the HTTP port that redirects to HTTPS, HSTS becomes a response header, Cache Assets becomes a 30-minute cache for static assets (other paths are not cached), and Websockets Support and HTTP/2 need no setting.
+- Access List IP rules become an IP allowlist or blocklist, and usernames and passwords become basic auth with shared users; add the users again in Gately. "Satisfy Any" lets listed IPs in without a password in nginx; Gately cannot exempt IPs from authentication, so only the authentication is imported and the preview lists those IPs.
+- Block Common Exploits is not imported and the preview mentions it once; for similar protection choose a [WAF instance](/en/docs/modules/waf) on the site's Security tab. NPM's own default page, 443 fallback and admin interface (port 81) are skipped. Configure Streams in [Port Forwarding](/en/docs/modules/portforward).
+- Certificates are not imported. The files are inside the NPM container under `/etc/letsencrypt/live/npm-N/` (Let's Encrypt) or `/data/custom_ssl/npm-N/` (custom certificates), which are the `letsencrypt` and `data` directories NPM mounts on the host. Add them on the [Certificates](/en/docs/modules/ssl) page with the source "Read from file" (mount those directories first when Gately runs in Docker), or issue new ones.
 
 ## Replacing haproxy and nginx
 

@@ -6,8 +6,8 @@ body:
   - type: markdown
     attributes:
       value: |
-        **Usage questions** (how to configure, which option to use) go to the [Telegram group](https://t.me/gately_chat) for a faster answer. **Security vulnerabilities** go to [private reporting](https://github.com/wangwanjie/gately/security/advisories/new).
-        **使用问题**（怎么配置、该用哪个选项）请到 [Telegram 群](https://t.me/gately_chat)，回复更快。**安全漏洞**请走[私密报告](https://github.com/wangwanjie/gately/security/advisories/new)。
+        **Usage questions** (how to configure, which option to use) go to [Discussions Q&A](https://github.com/wangwanjie/gately/discussions/categories/q-a), where answers stay searchable (the [Telegram group](https://t.me/gately_chat) is there for instant chat). **Security vulnerabilities** go to [private reporting](https://github.com/wangwanjie/gately/security/advisories/new).
+        **使用问题**（怎么配置、该用哪个选项）请到 [Discussions Q&A](https://github.com/wangwanjie/gately/discussions/categories/q-a) 提问，回答可被搜索（即时交流可用 [Telegram 群](https://t.me/gately_chat)）。**安全漏洞**请走[私密报告](https://github.com/wangwanjie/gately/security/advisories/new)。
 
         One problem per issue. / 每个 issue 只写一个问题。
   - type: checkboxes

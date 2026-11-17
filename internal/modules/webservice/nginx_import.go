@@ -85,6 +85,8 @@ type nginxSiteDraft struct {
 	site Site
 	// plainRedirect 为该 server 块配置了 error_page 497
 	plainRedirect bool
+	// npmExploits 为该站点开启了 NPM 的 Block Common Exploits
+	npmExploits bool
 }
 
 // nginxListen 是一条 listen 指令解析后的结果。
@@ -161,8 +163,9 @@ func importNginx(text string, existing []Listener, certs CertSource) (*NginxImpo
 	upstreams := map[string]*nginxUpstream{}
 	var servers []*ngDirective
 	httpGzip := false
-	// mapDefaults 为 http 级 map 指令的默认值，用于近似解析跳转地址中的变量
-	mapDefaults := map[string]string{}
+	// maps 为 http 级 map 指令的取值，用于解析跳转地址、proxy_pass 与响应头中的变量
+	maps := &nginxMaps{defaults: map[string]string{}, consts: map[string]string{}, scheme: map[string]map[string]string{}}
+	npm := isNPMConfig(text)
 	// 递归收集 upstream 与 server；stream 块内的是 TCP/UDP 转发，提示改用端口转发
 	var walk func(list []*ngDirective, ctx string)
 	walk = func(list []*ngDirective, ctx string) {
@@ -177,27 +180,32 @@ func importNginx(text string, existing []Listener, certs CertSource) (*NginxImpo
 					rep.Warnings = append(rep.Warnings, fmt.Sprintf("%s：TCP/UDP 转发的 server 块请在端口转发中配置", d.where()))
 					continue
 				}
+				// NPM 容器自带的占位页、443 兜底与管理界面不是用户的站点，不列出
+				if npm && isNPMBuiltinServer(d) {
+					continue
+				}
 				servers = append(servers, d)
 			case d.Name == "gzip" && d.arg(0) == "on" && ctx == "http":
 				httpGzip = true
 			case d.Name == "map" && d.isBlock() && len(d.Args) == 2:
-				for _, x := range d.Block {
-					if x.Name == "default" {
-						mapDefaults[strings.TrimPrefix(d.Args[1], "$")] = x.arg(0)
-					}
-				}
+				maps.addMap(d)
 			case d.isBlock() && (d.Name == "http" || d.Name == "events"):
 				walk(d.Block, d.Name)
 			}
 		}
 	}
 	walk(root, "")
+	if len(servers) == 0 && npm {
+		return nil, errors.New("没有找到 Nginx Proxy Manager 的站点。请在 NPM 容器中执行 nginx -T 后粘贴完整输出")
+	}
 	if len(servers) == 0 {
 		return nil, errors.New("没有找到 server 块。请粘贴站点配置，或在 nginx 所在主机执行 nginx -T 后粘贴完整输出")
 	}
 
 	plans := map[string]*NginxListenerPlan{}
 	var order []string
+	// npmExploits 表示有站点开启了 NPM 的 Block Common Exploits，只在报告中提示一次
+	npmExploits := false
 	for _, srv := range servers {
 		listens, lw := parseNginxListens(srv)
 		for _, l := range listens {
@@ -210,8 +218,9 @@ func importNginx(text string, existing []Listener, certs CertSource) (*NginxImpo
 			}
 			p.HTTP3 = p.HTTP3 || l.quic
 			p.ProxyProtocol = p.ProxyProtocol || l.proxyProtocol
-			draft := convertNginxServer(srv, l, upstreams, httpGzip, mapDefaults)
+			draft := convertNginxServer(srv, l, upstreams, httpGzip, maps, npm)
 			draft.plan.Warnings = append(slices.Clone(lw), draft.plan.Warnings...)
+			npmExploits = npmExploits || draft.npmExploits
 			if l.tls && hasNginxPlainRedirect(srv) {
 				p.plainRedirect = true
 				draft.plainRedirect = true
@@ -308,6 +317,9 @@ func importNginx(text string, existing []Listener, certs CertSource) (*NginxImpo
 						}
 					}
 				}
+				if hint := npmCertHint(pl.CertFiles); hint != "" && len(pl.CertMissing) > 0 {
+					pl.Warnings = append(pl.Warnings, hint)
+				}
 			}
 			if pl.Skipped != "" {
 				rep.Skipped++
@@ -318,6 +330,9 @@ func importNginx(text string, existing []Listener, certs CertSource) (*NginxImpo
 		}
 		rep.Listeners = append(rep.Listeners, *p)
 		rep.plans = append(rep.plans, p)
+	}
+	if npmExploits {
+		rep.Warnings = append(rep.Warnings, "Nginx Proxy Manager 的「Block Common Exploits」未导入：需要类似防护时，在站点「安全」页选择 WAF 实例")
 	}
 	return rep, nil
 }
@@ -483,11 +498,12 @@ func isDigits(s string) bool {
 }
 
 // convertNginxServer 把一个 server 块按指定监听转换为站点。
-func convertNginxServer(srv *ngDirective, l nginxListen, upstreams map[string]*nginxUpstream, httpGzip bool, mapDefaults map[string]string) nginxSiteDraft {
+func convertNginxServer(srv *ngDirective, l nginxListen, upstreams map[string]*nginxUpstream, httpGzip bool, maps *nginxMaps, npm bool) nginxSiteDraft {
 	pl := &NginxSitePlan{Source: srv.where()}
 	site := Site{Enable: true, AccessLog: true, Compress: httpGzip}
-	conv := &nginxConverter{plan: pl, site: &site, upstreams: upstreams, tls: l.tls, mapDefaults: mapDefaults,
-		vars: map[string]string{}, authVars: map[string]bool{}}
+	conv := &nginxConverter{plan: pl, site: &site, upstreams: upstreams, tls: l.tls, maps: maps, mapDefaults: maps.defaults,
+		vars: map[string]string{}, authVars: map[string]bool{}, npm: npm, srvVars: topSetVars(srv.Block), dynVars: map[string]bool{}}
+	ifSetVars(srv.Block, false, conv.dynVars)
 
 	// 域名
 	var names []string
@@ -544,7 +560,7 @@ func convertNginxServer(srv *ngDirective, l nginxListen, upstreams map[string]*n
 		}
 	}
 	pl.Ignored = conv.ignoredList()
-	return nginxSiteDraft{plan: pl, site: site}
+	return nginxSiteDraft{plan: pl, site: site, npmExploits: conv.npmExploits}
 }
 
 // nginxConverter 保存转换一个站点时的上下文。
@@ -566,6 +582,15 @@ type nginxConverter struct {
 	// authPrefixes 为只在部分路径上启用 auth_request 的 location；为空且 authRequest 非空表示整站认证
 	authPrefixes []string
 	authSiteWide bool
+	// maps 为 http 级 map 的取值；srvVars 为 server 块中顶层 set 定义的变量，dynVars 为在 if 块中赋值、随请求变化的变量
+	maps    *nginxMaps
+	srvVars map[string]string
+	dynVars map[string]bool
+	// npm 表示配置由 Nginx Proxy Manager 生成；npmForceSSL、npmAssets、npmExploits 记录站点用到的 NPM 片段
+	npm         bool
+	npmForceSSL bool
+	npmAssets   bool
+	npmExploits bool
 }
 
 func (c *nginxConverter) warn(format string, args ...any) {
@@ -638,6 +663,13 @@ func (c *nginxConverter) convert(srv *ngDirective) {
 	var rootLoc *ngDirective
 	var others []*ngDirective
 	for _, d := range srv.Block {
+		// NPM 的片段（强制 HTTPS、缓存静态资源、拦截常见攻击、ACME 验证路径）整体对应 Gately 的设置，不逐条转换
+		if c.npm {
+			if n := npmSnippet(d.File); n != "" {
+				c.noteNPMSnippet(n)
+				continue
+			}
+		}
 		if d.Name != "location" || !d.isBlock() {
 			continue
 		}
@@ -659,6 +691,14 @@ func (c *nginxConverter) convert(srv *ngDirective) {
 			_, p := locationMatch(o)
 			c.warn("站点直接断开连接，location %s 未导入", p)
 		}
+		return
+	}
+	// NPM 的「Force SSL」：HTTP 端口上整站跳转到 HTTPS（与 nginx 一样先于 location 生效，location 不必再导入）；
+	// HTTPS 端口上不起作用
+	if c.npmForceSSL && !c.tls {
+		s := c.site
+		s.Type, s.RedirectTo, s.RedirectCode, s.KeepPath = TypeRedirect, "https://"+hostPlaceholder, 301, true
+		c.collectCommon(srv.Block)
 		return
 	}
 	// server 级的 return / rewrite 跳转先于 location 生效
@@ -694,6 +734,10 @@ func (c *nginxConverter) convert(srv *ngDirective) {
 	if c.site.Type == TypeProxy {
 		// location / 中的设置优先，没有时继承 server 级
 		c.applyProxyTimeouts(main, srv.Block)
+		// NPM 的「Cache Assets」：静态资源缓存 30 分钟
+		if c.npmAssets {
+			c.site.Cache = npmAssetCache()
+		}
 	}
 	c.applyClientTimeouts(main, srv.Block)
 	for _, o := range others {
@@ -821,9 +865,17 @@ func (c *nginxConverter) applyForwardAuth(locs []*ngDirective) {
 func (c *nginxConverter) collectCommon(list []*ngDirective) {
 	s := c.site
 	var allows, denies []string
-	denyAll := false
+	denyAll, satisfyAny := false, false
 	for _, d := range list {
+		if c.npm {
+			if n := npmSnippet(d.File); n != "" {
+				c.noteNPMSnippet(n)
+				continue
+			}
+		}
 		switch d.Name {
+		case "satisfy":
+			satisfyAny = d.arg(0) == "any"
 		case "add_header":
 			if h, ok := c.headerLine(d, "add_header"); ok {
 				s.ResponseHeaders = append(s.ResponseHeaders, h)
@@ -863,6 +915,9 @@ func (c *nginxConverter) collectCommon(list []*ngDirective) {
 			c.ignore(d.Name)
 		}
 	}
+	if satisfyAny && s.BasicAuth {
+		allows, denies, denyAll = c.satisfyAnyAuth(allows)
+	}
 	switch {
 	case denyAll && len(allows) > 0:
 		s.IPMode, s.IPList = IPModeWhitelist, append(s.IPList, allows...)
@@ -875,11 +930,30 @@ func (c *nginxConverter) collectCommon(list []*ngDirective) {
 	s.ResponseHeaders = uniqueList(s.ResponseHeaders)
 }
 
+// satisfyAnyAuth 处理与基本认证一起出现的 satisfy any：nginx 中来自允许地址的访客免密码、其他访客输入密码即可，
+// deny 的地址也能凭密码访问。Gately 不支持按 IP 免认证，只导入认证：允许的地址也需要登录，其他访客与 nginx 相同，
+// 访问范围不会因此扩大。返回清空后的 allow、deny 与 deny all。
+func (c *nginxConverter) satisfyAnyAuth(allows []string) ([]string, []string, bool) {
+	if len(allows) > 0 {
+		c.warn("satisfy any：%s 在 nginx 中不用密码即可访问，Gately 不支持按 IP 免认证，导入后这些地址同样需要登录", strings.Join(allows, ", "))
+	}
+	return nil, nil, false
+}
+
 // headerLine 把 add_header / proxy_set_header 转为 "Key: Value"；值含 nginx 变量时无法转换。
 func (c *nginxConverter) headerLine(d *ngDirective, kind string) (string, bool) {
 	k, v := d.arg(0), d.arg(1)
 	if k == "" {
 		return "", false
+	}
+	// 按 $scheme 取值的 map（如 NPM 的 add_header Strict-Transport-Security $hsts_header）在每个监听上的值是确定的；
+	// 取值为空时 nginx 不输出这个响应头
+	if name, ok := strings.CutPrefix(v, "$"); ok {
+		if e, found := c.maps.scheme[name]; found {
+			if v = schemeValue(e, c.tls); v == "" {
+				return "", false
+			}
+		}
 	}
 	// proxy_set_header Range $http_range 只是把客户端的同名请求头原样传给后端，Gately 默认就会转发
 	if kind == "proxy_set_header" && strings.EqualFold(v, "$http_"+strings.ReplaceAll(k, "-", "_")) {
@@ -935,7 +1009,7 @@ func (c *nginxConverter) applyRedirect(list []*ngDirective) bool {
 		default:
 			continue
 		}
-		target, keep, ok := c.redirectTarget(to)
+		target, keep, ok := c.redirectTarget(to, list)
 		if !ok {
 			return false
 		}
@@ -947,7 +1021,9 @@ func (c *nginxConverter) applyRedirect(list []*ngDirective) bool {
 }
 
 // redirectTarget 把 nginx 跳转地址转换为 Gately 的跳转目标：$host 换为 {host}，结尾的 $request_uri 换为“保留路径”。
-func (c *nginxConverter) redirectTarget(to string) (string, bool, bool) {
+// loc 为跳转所在 location 的指令，其中的 set 与 server 中的 set 一起用于替换变量。
+func (c *nginxConverter) redirectTarget(to string, loc []*ngDirective) (string, bool, bool) {
+	to = c.staticValue(to, loc)
 	keep := false
 	for _, suffix := range []string{"$request_uri", "$uri$is_args$args", "$uri?$args", "$uri"} {
 		if strings.HasSuffix(to, suffix) {
@@ -1027,10 +1103,24 @@ func (c *nginxConverter) applyText(list []*ngDirective) bool {
 }
 
 // proxyTargets 把 proxy_pass 地址转换为后端列表；uri 为 proxy_pass 中主机之后的路径部分。
-func (c *nginxConverter) proxyTargets(pass string) (targets []string, uri, policy string, ok bool) {
-	if reNginxVar.MatchString(pass) {
-		c.warn("proxy_pass %s 使用了变量，无法转换", pass)
-		return nil, "", "", false
+// loc 为 proxy_pass 所在 location 的指令，其中的 set 优先于 server 中的 set（与 nginx 的作用域一致）。
+func (c *nginxConverter) proxyTargets(pass string, loc []*ngDirective) (targets []string, uri, policy string, ok bool) {
+	raw := pass
+	hasVar := reNginxVar.MatchString(pass)
+	if hasVar {
+		// 先代入 set 等能静态确定的变量（如 NPM 的 $forward_scheme://$server:$port$request_uri）
+		pass = c.staticValue(pass, loc)
+		// 结尾的 $request_uri 是访客的原始请求 URI，nginx 原样发给后端，与不写路径相同
+		for _, suffix := range []string{"$request_uri", "$uri$is_args$args"} {
+			if strings.HasSuffix(pass, suffix) {
+				pass = strings.TrimSuffix(pass, suffix)
+				break
+			}
+		}
+		if reNginxVar.MatchString(pass) {
+			c.warn("proxy_pass %s 使用了变量，无法转换", raw)
+			return nil, "", "", false
+		}
 	}
 	u, err := url.Parse(pass)
 	if err != nil || (u.Scheme != "http" && u.Scheme != "https") || u.Host == "" {
@@ -1040,6 +1130,10 @@ func (c *nginxConverter) proxyTargets(pass string) (targets []string, uri, polic
 	uri = u.Path
 	if u.RawQuery != "" {
 		uri += "?" + u.RawQuery
+	}
+	if hasVar && uri != "" {
+		// 含变量的 proxy_pass 带路径时，nginx 把整个请求 URI 换成这个路径，不含变量时只替换 location 的前缀
+		c.warn("proxy_pass %s 含变量且带路径 %s：nginx 会把每个请求的路径都换成它，导入后只替换 location 的前缀，请确认", raw, uri)
 	}
 	if up, found := c.upstreams[u.Host]; found {
 		for _, w := range up.warns {
@@ -1068,7 +1162,7 @@ func (c *nginxConverter) applyProxy(list []*ngDirective) bool {
 	if pass == nil {
 		return false
 	}
-	targets, uri, policy, ok := c.proxyTargets(pass.arg(0))
+	targets, uri, policy, ok := c.proxyTargets(pass.arg(0), list)
 	if !ok {
 		return false
 	}
@@ -1095,7 +1189,7 @@ func (c *nginxConverter) applyProxyOptions(list []*ngDirective, headers *[]strin
 			k := strings.ToLower(d.arg(0))
 			v := d.arg(1)
 			switch k {
-			case "x-forwarded-for", "x-real-ip", "x-forwarded-proto", "x-forwarded-host", "x-forwarded-port", "forwarded":
+			case "x-forwarded-for", "x-real-ip", "x-forwarded-proto", "x-forwarded-scheme", "x-forwarded-host", "x-forwarded-port", "forwarded":
 				if site {
 					s.ForwardedHeaders = true
 				}
@@ -1103,7 +1197,8 @@ func (c *nginxConverter) applyProxyOptions(list []*ngDirective, headers *[]strin
 				// Gately 自动处理 WebSocket 升级
 			case "host":
 				switch v {
-				case "$host", "$http_host", "$host:$server_port":
+				// $forward_host 是新版 NPM 定义的变量：访客请求的域名（带非标准端口），与 $host 等价
+				case "$host", "$http_host", "$host:$server_port", "$forward_host":
 				case "$proxy_host", "$upstream_addr":
 					if site {
 						s.UseTargetHost = true
@@ -1332,9 +1427,13 @@ func (c *nginxConverter) convertLocation(d *ngDirective) {
 	}
 	// 访问控制
 	var allows, denies []string
-	denyAll := false
+	denyAll, satisfyAny, basicAuth := false, false, false
 	for _, x := range d.Block {
 		switch x.Name {
+		case "satisfy":
+			satisfyAny = x.arg(0) == "any"
+		case "auth_basic":
+			basicAuth = x.arg(0) != "off"
 		case "allow":
 			if x.arg(0) != "all" {
 				allows = append(allows, x.arg(0))
@@ -1346,6 +1445,16 @@ func (c *nginxConverter) convertLocation(d *ngDirective) {
 				denies = append(denies, x.arg(0))
 			}
 		}
+	}
+	if basicAuth {
+		// 站点已开启基本认证时路径同样受保护；否则只有这个路径要认证，需要用户自行设置
+		if !s.BasicAuth {
+			c.warn("location %s 的 auth_basic 未导入，请在站点中为该路径设置认证", p)
+		}
+		if satisfyAny {
+			allows, denies, denyAll = c.satisfyAnyAuth(allows)
+		}
+		handled = true
 	}
 	if denyAll || len(denies) > 0 {
 		if mod == "=" {
@@ -1366,7 +1475,7 @@ func (c *nginxConverter) convertLocation(d *ngDirective) {
 			code, _ := strconv.Atoi(x.arg(0))
 			switch {
 			case code >= 300 && code < 400 && len(x.Args) >= 2:
-				if to, keep, ok := c.redirectTarget(x.arg(1)); ok {
+				if to, keep, ok := c.redirectTarget(x.arg(1), d.Block); ok {
 					pattern := "^" + regexp.QuoteMeta(prefix)
 					if mod == "=" {
 						pattern += "$"
@@ -1401,7 +1510,7 @@ func (c *nginxConverter) convertLocation(d *ngDirective) {
 			c.warn("站点不是反向代理，location %s 的 proxy_pass 未导入", p)
 			return
 		}
-		targets, uri, _, ok := c.proxyTargets(pass.arg(0))
+		targets, uri, _, ok := c.proxyTargets(pass.arg(0), d.Block)
 		if !ok {
 			return
 		}
@@ -1437,6 +1546,13 @@ func (c *nginxConverter) convertLocation(d *ngDirective) {
 		}
 		c.applyProxyOptions(d.Block, &loc.RequestHeaders, false)
 		c.warnLocationTimeouts(p, d.Block)
+		// 后端证书校验按站点设置。站点自身的后端都不是 https 时，分路径的 https 后端按 nginx 的默认
+		// （proxy_ssl_verify off）不校验证书，例如 NPM 的自定义 location 指向自签名证书的后端
+		isHTTPS := func(t string) bool { return strings.HasPrefix(t, "https://") }
+		verify := slices.ContainsFunc(d.Block, func(x *ngDirective) bool { return x.Name == "proxy_ssl_verify" && x.arg(0) == "on" })
+		if !verify && !slices.ContainsFunc(s.Targets, isHTTPS) && slices.ContainsFunc(loc.Targets, isHTTPS) {
+			s.InsecureSkipVerify = true
+		}
 		if len(loc.Targets) > 0 || len(loc.RequestHeaders) > 0 || loc.StripPrefix {
 			s.Locations = append(s.Locations, loc)
 		}

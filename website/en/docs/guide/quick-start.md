@@ -22,6 +22,8 @@ Install the native app instead: it opens from the desktop icon through the fnOS 
 
 Open `http://<device-ip>:16680` in a browser. The username is `admin` and the default password is `gately.cn`. The default password is public: after signing in, a password change dialog opens, and you can continue only after setting a new password of at least 10 characters that is hard to guess.
 
+The sidebar of the management UI lists every page by group. Press Ctrl+K (⌘K on macOS) or click the search box at the top of the sidebar to open global search: it jumps to pages and their tabs by name and also finds site domains, port forwarding rules, DDNS records and certificate domains. On a phone, tap the search icon in the top bar.
+
 ## 3. Apply basic hardening
 
 Right after signing in, go to "Settings" and:

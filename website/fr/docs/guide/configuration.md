@@ -50,7 +50,7 @@ Chaque page de module permet l'installation, la mise à jour et le retour arriè
 
 ## Journaux d'exécution
 
-Les journaux d'exécution du système et de chaque module sont écrits par défaut dans `logs/` du répertoire de configuration ; ils restent donc consultables dans la page des journaux système et dans chaque module après un redémarrage ou une mise à jour :
+Les journaux d'exécution du système et de chaque module sont écrits par défaut dans `logs/` du répertoire de configuration ; ils restent donc consultables dans l'onglet « Journaux système » de la page « Système → Journaux » et dans chaque module après un redémarrage ou une mise à jour :
 
 - Un fichier JSON Lines par source : `logs/<ID du module>.log`, et `logs/gately.log` pour le système. Au démarrage, les entrées les plus récentes, dans la limite de « Lignes de journal conservées », sont restaurées depuis le fichier ;
 - Les nouvelles entrées sont écrites par lots, au plus 1 seconde plus tard. Un fichier qui dépasse la limite (2 Mo par défaut) est renouvelé en `.1` et seul ce fichier précédent est conservé : chaque source occupe au plus le double de la limite ;
@@ -64,7 +64,7 @@ Les journaux d'exécution du système et de chaque module sont écrits par défa
 
 ### Consulter et filtrer {#log-filter}
 
-La page Journaux système et la carte de journaux en bas de chaque page de module utilisent le même visionneur. Les conditions suivantes se combinent ; les modifications s'appliquent immédiatement et seules les nouvelles entrées correspondantes sont ajoutées :
+L'onglet « Journaux système » de la page « Journaux » et la carte de journaux en bas de chaque page de module utilisent le même visionneur. Les conditions suivantes se combinent ; les modifications s'appliquent immédiatement et seules les nouvelles entrées correspondantes sont ajoutées :
 
 - Niveau et source (la liste déroulante propose toutes les sources de la configuration du module et celles apparues dans les journaux, par exemple tous les écouteurs du Service Web, y compris ceux encore sans accès ou dont les journaux sont seulement sur disque ; la saisie directe reste possible) ;
 - Mots-clés : les termes séparés par des espaces doivent tous correspondre, les guillemets doubles regroupent une expression, un `-` initial exclut un terme, par exemple `GET "timeout" -debug` ; les correspondances sont surlignées. Si l'interface est dans une autre langue, recherchez avec le texte traduit affiché à l'écran ;

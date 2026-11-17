@@ -1247,6 +1247,9 @@
           "reason": {
             "type": "string"
           },
+          "redirect": {
+            "type": "boolean"
+          },
           "trapPorts": {
             "type": "string"
           },
@@ -2492,6 +2495,9 @@
           "maxConnections": {
             "type": "integer"
           },
+          "maxConnsPerSource": {
+            "type": "integer"
+          },
           "mode": {
             "type": "string"
           },
@@ -2641,6 +2647,9 @@
             "type": "string"
           },
           "maxConnections": {
+            "type": "integer"
+          },
+          "maxConnsPerSource": {
             "type": "integer"
           },
           "name": {
@@ -3347,6 +3356,9 @@
           },
           "paranoia": {
             "type": "integer"
+          },
+          "regexPrefilter": {
+            "type": "boolean"
           },
           "remark": {
             "type": "string"
@@ -44081,7 +44093,7 @@
     },
     "/api/system/upgrade": {
       "post": {
-        "description": "Solo sesión (administrador) y solo instalaciones binarias en Linux. Descarga en segundo plano el paquete de esta plataforma, verifica su SHA-256 con checksums.txt, prueba el nuevo binario, reemplaza el ejecutable y reinicia. La versión anterior se conserva como `\u003cnombre de archivo\u003e.old` en el mismo directorio. Devuelve 202 de inmediato; el progreso está en `GET /api/system/upgrade/status`. Las compilaciones personalizadas devuelven 409: la actualización en línea descarga la edición completa, así que genera una nueva versión con las mismas opciones en https://build.gately.cn y actualiza con el endpoint de subida.\n\n**Solo disponible para sesiones de inicio de sesión; los tokens de API no pueden acceder a este endpoint.**",
+        "description": "Solo sesión (administrador) y solo instalaciones binarias en Linux. Descarga en segundo plano el paquete de esta plataforma, verifica la firma minisign de checksums.txt (checksums.txt.minisig) con la clave pública integrada (una firma no válida rechaza la actualización; las versiones anteriores a la firma no tienen ese archivo y se actualizan igualmente), verifica su SHA-256 con checksums.txt, prueba el nuevo binario, reemplaza el ejecutable y reinicia. La versión anterior se conserva como `\u003cnombre de archivo\u003e.old` en el mismo directorio. Devuelve 202 de inmediato; el progreso está en `GET /api/system/upgrade/status`. Las compilaciones personalizadas devuelven 409: la actualización en línea descarga la edición completa, así que genera una nueva versión con las mismas opciones en https://build.gately.cn y actualiza con el endpoint de subida.\n\n**Solo disponible para sesiones de inicio de sesión; los tokens de API no pueden acceder a este endpoint.**",
         "responses": {
           "200": {
             "description": "Correcto"
@@ -44173,7 +44185,7 @@
     },
     "/api/system/upgrade/status": {
       "get": {
-        "description": "Solo sesión. `state` pasa por `checking`, `downloading`, `verifying`, `installing` y `restarting`; si falla es `failed` y `error` indica el motivo, y es `canceled` si se cancela. `downloaded` / `total` son los bytes descargados y totales del paquete de actualización.\n\n**Solo disponible para sesiones de inicio de sesión; los tokens de API no pueden acceder a este endpoint.**",
+        "description": "Solo sesión. `state` pasa por `checking`, `downloading`, `verifying`, `installing` y `restarting`; si falla es `failed` y `error` indica el motivo, y es `canceled` si se cancela. `downloaded` / `total` son los bytes descargados y totales del paquete de actualización. `unsigned` es true cuando la versión no tiene firma y solo se comprobó su SHA-256.\n\n**Solo disponible para sesiones de inicio de sesión; los tokens de API no pueden acceder a este endpoint.**",
         "responses": {
           "200": {
             "description": "Correcto"
