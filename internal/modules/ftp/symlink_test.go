@@ -100,7 +100,7 @@ func TestSymlinkEscape(t *testing.T) {
 	if err := m.Init(module.Env{Store: st, Logs: logbuf.New(20, log.New(io.Discard, "", 0))}); err != nil {
 		t.Fatal(err)
 	}
-	m.settings = Settings{Enable: true, ListenIP: "127.0.0.1", Port: port, Users: []User{
+	m.settings = Settings{Enable: true, ListenIP: "127.0.0.1", Port: port, PassiveStart: pasvStart, PassiveEnd: pasvStart + pasvSpan, Users: []User{
 		{Name: "single", Password: "p", Root: root},
 		{Name: "multi", Password: "p", Mounts: []mountfs.Mount{{Name: "m", Path: root}}},
 	}}

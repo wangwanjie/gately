@@ -38,7 +38,7 @@ func TestFTPSharedUsers(t *testing.T) {
 	}); err != nil {
 		t.Fatal(err)
 	}
-	m.settings = Settings{Enable: true, ListenIP: "127.0.0.1", Port: port, SharedUsers: true,
+	m.settings = Settings{Enable: true, ListenIP: "127.0.0.1", Port: port, PassiveStart: pasvStart, PassiveEnd: pasvStart + pasvSpan, SharedUsers: true,
 		Users: []User{{Name: "rw", Password: "p1", Root: t.TempDir()}}}
 	if err := m.settings.Validate(); err != nil {
 		t.Fatal(err)
@@ -143,7 +143,7 @@ func TestFTPSharedUsersDisconnect(t *testing.T) {
 		t.Fatal(err)
 	}
 	m.mu.Lock()
-	m.settings = Settings{Enable: true, ListenIP: "127.0.0.1", Port: port, SharedUsers: true}
+	m.settings = Settings{Enable: true, ListenIP: "127.0.0.1", Port: port, PassiveStart: pasvStart, PassiveEnd: pasvStart + pasvSpan, SharedUsers: true}
 	if err := m.settings.Validate(); err != nil {
 		m.mu.Unlock()
 		t.Fatal(err)
@@ -207,7 +207,7 @@ func TestFTPListenLogCountsSharedUsers(t *testing.T) {
 	}); err != nil {
 		t.Fatal(err)
 	}
-	m.settings = Settings{Enable: true, ListenIP: "127.0.0.1", Port: port, SharedUsers: true,
+	m.settings = Settings{Enable: true, ListenIP: "127.0.0.1", Port: port, PassiveStart: pasvStart, PassiveEnd: pasvStart + pasvSpan, SharedUsers: true,
 		Users: []User{{Name: "rw", Password: "p1", Root: root}}}
 	m.mu.Lock()
 	m.restartLocked()

@@ -53,7 +53,7 @@ func TestFTPLogin(t *testing.T) {
 	if err := m.Init(module.Env{Store: st, Logs: logbuf.New(20, log.New(io.Discard, "", 0))}); err != nil {
 		t.Fatal(err)
 	}
-	m.settings = Settings{Enable: true, ListenIP: "127.0.0.1", Port: port, Users: []User{
+	m.settings = Settings{Enable: true, ListenIP: "127.0.0.1", Port: port, PassiveStart: pasvStart, PassiveEnd: pasvStart + pasvSpan, Users: []User{
 		{Name: "rw", Password: "p1", Root: t.TempDir()},
 	}}
 	if err := m.settings.Validate(); err != nil {
@@ -160,7 +160,7 @@ func TestFTPMounts(t *testing.T) {
 	if err := m.Init(module.Env{Store: st, Logs: logbuf.New(20, log.New(io.Discard, "", 0))}); err != nil {
 		t.Fatal(err)
 	}
-	m.settings = Settings{Enable: true, ListenIP: "127.0.0.1", Port: port, Users: []User{
+	m.settings = Settings{Enable: true, ListenIP: "127.0.0.1", Port: port, PassiveStart: pasvStart, PassiveEnd: pasvStart + pasvSpan, Users: []User{
 		{Name: "u", Password: "p", Root: "/ignored", Mounts: []mountfs.Mount{{Name: "data", Path: rw}, {Name: "docs", Path: ro, ReadOnly: true}}},
 	}}
 	if err := m.settings.Validate(); err != nil {

@@ -33,7 +33,7 @@ func startFTP(t *testing.T, l fspermtest.Layout, users []User, shared []fileuser
 	ln, _ := net.Listen("tcp4", "127.0.0.1:0")
 	port := ln.Addr().(*net.TCPAddr).Port
 	ln.Close()
-	if err := l.Store.Save(ID, Settings{Enable: true, ListenIP: "127.0.0.1", Port: port, SharedUsers: len(shared) > 0, Users: users}); err != nil {
+	if err := l.Store.Save(ID, Settings{Enable: true, ListenIP: "127.0.0.1", Port: port, PassiveStart: pasvStart, PassiveEnd: pasvStart + pasvSpan, SharedUsers: len(shared) > 0, Users: users}); err != nil {
 		t.Fatal(err)
 	}
 	if len(shared) > 0 {
