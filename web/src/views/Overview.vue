@@ -905,6 +905,8 @@ onBeforeUnmount(() => {
 }
 .service {
   flex: 1;
+  /* 只开启少数模块（如首启只选了一两个使用场景）时行数很少，限制每行的拉伸高度，余下空白留在卡片底部 */
+  max-height: 56px;
   display: flex;
   align-items: center;
   gap: 10px;
