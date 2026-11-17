@@ -8,6 +8,19 @@
         <div class="brand-sub">{{ t('sideNav.brandSub') }}</div>
       </div>
     </div>
+    <!-- 全局搜索入口：点击打开命令面板，快捷键 Ctrl/⌘+K -->
+    <div class="search-row">
+      <el-tooltip :content="searchLabel" placement="right" :disabled="!collapsed" :show-after="200">
+        <button type="button" class="search-btn" :aria-label="searchLabel" aria-haspopup="dialog" data-test="nav-search" @click="$emit('search')">
+          <Search :size="16" class="nav-icon" aria-hidden="true" />
+          <template v-if="!collapsed">
+            <span class="search-text">{{ t('palette.open') }}</span>
+            <!-- 手机抽屉里没有实体键盘，不显示快捷键 -->
+            <kbd v-if="!collapsible" class="search-kbd">{{ shortcut }}</kbd>
+          </template>
+        </button>
+      </el-tooltip>
+    </div>
     <div class="groups">
       <div v-for="g in visibleNavGroups" :key="g.titleKey" class="group">
         <!-- 手机抽屉里分组可折叠，默认只展开当前页面所在的分组 -->
@@ -37,19 +50,23 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { ChevronRight } from 'lucide-vue-next'
+import { ChevronRight, Search } from 'lucide-vue-next'
 import AppLogo from './AppLogo.vue'
 import { navByPath, navGroups, visibleNavGroups } from '../nav'
 
 // collapsible 为分组是否可折叠（手机抽屉）
 const props = defineProps<{ collapsed?: boolean; collapsible?: boolean }>()
-defineEmits<{ navigate: [] }>()
+defineEmits<{ navigate: []; search: [] }>()
 
 const route = useRoute()
 const { t } = useI18n()
+
+// 快捷键提示按系统显示：macOS / iOS 为 ⌘K，其他为 Ctrl K
+const shortcut = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent) ? '⌘K' : 'Ctrl K'
+const searchLabel = computed(() => `${t('palette.open')} (${shortcut})`)
 
 function isActive(path: string) {
   return route.path === path || route.path.startsWith(path + '/')
@@ -113,6 +130,54 @@ function toggleGroup(key: string) {
 .brand-sub {
   font-size: 11px;
   color: var(--el-text-color-secondary);
+}
+.search-row {
+  padding: 2px 10px 6px;
+  flex-shrink: 0;
+}
+.search-btn {
+  width: 100%;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 8px 0 10px;
+  border: 1px solid var(--g-border);
+  border-radius: 8px;
+  background: var(--el-bg-color);
+  color: var(--el-text-color-secondary);
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.search-btn:hover {
+  border-color: var(--el-color-primary-light-5);
+  color: var(--el-text-color-regular);
+}
+.search-btn:focus-visible {
+  outline: 2px solid var(--el-color-primary);
+  outline-offset: 1px;
+}
+.collapsed .search-btn {
+  justify-content: center;
+  padding: 0;
+}
+.search-text {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.search-kbd {
+  flex-shrink: 0;
+  padding: 1px 5px;
+  border: 1px solid var(--g-border);
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 11px;
+  background: var(--el-fill-color-light);
 }
 .groups {
   flex: 1;

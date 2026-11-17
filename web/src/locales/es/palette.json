@@ -1,0 +1,17 @@
+{
+  "open": "Buscar",
+  "ariaLabel": "Búsqueda global",
+  "placeholder": "Buscar páginas, sitios, reglas, certificados…",
+  "empty": "Sin resultados",
+  "loading": "Cargando datos de configuración…",
+  "hintSelect": "Seleccionar",
+  "hintOpen": "Abrir",
+  "hintClose": "Cerrar",
+  "kinds": {
+    "page": "Páginas",
+    "site": "Sitios",
+    "forward": "Reenvío de puertos",
+    "ddns": "DNS dinámico",
+    "cert": "Certificados SSL"
+  }
+}

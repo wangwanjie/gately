@@ -1,0 +1,17 @@
+{
+  "open": "Rechercher",
+  "ariaLabel": "Recherche globale",
+  "placeholder": "Rechercher des pages, sites, règles, certificats…",
+  "empty": "Aucun résultat",
+  "loading": "Chargement des données de configuration…",
+  "hintSelect": "Sélectionner",
+  "hintOpen": "Ouvrir",
+  "hintClose": "Fermer",
+  "kinds": {
+    "page": "Pages",
+    "site": "Sites",
+    "forward": "Redirection de ports",
+    "ddns": "DNS dynamique",
+    "cert": "Certificats SSL"
+  }
+}

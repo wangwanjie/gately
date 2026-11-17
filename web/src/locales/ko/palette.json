@@ -1,0 +1,17 @@
+{
+  "open": "검색",
+  "ariaLabel": "전체 검색",
+  "placeholder": "페이지, 사이트, 규칙, 인증서 검색…",
+  "empty": "일치하는 결과가 없습니다",
+  "loading": "설정 데이터를 불러오는 중…",
+  "hintSelect": "선택",
+  "hintOpen": "열기",
+  "hintClose": "닫기",
+  "kinds": {
+    "page": "페이지",
+    "site": "사이트",
+    "forward": "포트 포워딩",
+    "ddns": "동적 DNS",
+    "cert": "SSL 인증서"
+  }
+}

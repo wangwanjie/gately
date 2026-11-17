@@ -3,14 +3,14 @@
     <!-- 键盘与读屏用户跳过侧边栏的导航项，直接进入正文；平时隐藏，获得焦点时显示 -->
     <a href="#main-content" class="skip-link" @click.prevent="skipToContent">{{ t('layout.skipToContent') }}</a>
     <aside v-if="!isMobile" class="aside">
-      <SideNav :collapsed="collapsed" />
+      <SideNav :collapsed="collapsed" @search="paletteOpen = true" />
       <button class="collapse-btn" :title="collapsed ? t('layout.expandSidebar') : t('layout.collapseSidebar')" @click="toggleCollapse">
         <PanelLeftOpen v-if="collapsed" :size="18" />
         <PanelLeftClose v-else :size="18" />
       </button>
     </aside>
     <el-drawer v-else v-model="drawer" direction="ltr" size="260px" :with-header="false" class="nav-drawer">
-      <SideNav collapsible @navigate="drawer = false" />
+      <SideNav collapsible @navigate="drawer = false" @search="openPaletteFromDrawer" />
     </el-drawer>
 
     <div class="main">
@@ -31,6 +31,10 @@
           </template>
         </div>
         <div class="header-right">
+          <!-- 手机上侧边栏收在抽屉里，顶栏放全局搜索入口 -->
+          <button v-if="isMobile" class="icon-btn" :aria-label="t('palette.open')" aria-haspopup="dialog" data-test="header-search" @click="paletteOpen = true">
+            <Search :size="20" />
+          </button>
           <LocaleSwitcher :remember="role === 'admin'" />
           <ThemePicker />
           <el-dropdown trigger="click" popper-class="user-popper" @command="onCommand" @visible-change="lockScroll">
@@ -62,9 +66,14 @@
           <!-- 自动检查发现新版本或当前版本受安全问题影响时提示 -->
           <UpdateBanner :is-admin="role === 'admin'" />
         </div>
-        <router-view />
+        <!-- pageKey 只在命令面板跳到当前页面并带新参数时变化，让只在挂载时读取参数的页面重新挂载 -->
+        <router-view v-slot="{ Component }">
+          <component :is="Component" :key="pageKey" />
+        </router-view>
       </main>
     </div>
+    <!-- 全局搜索（命令面板） -->
+    <CommandPalette v-model="paletteOpen" />
     <!-- 首次使用引导的接口只对管理员开放，读取到角色后才挂载 -->
     <Onboarding v-if="sessionRole === 'admin' && !passwordIssue" />
     <!-- 默认密码或强度不足的密码：必须先修改，对话框无法关闭 -->
@@ -81,12 +90,14 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { ElMessageBox } from 'element-plus'
-import { BookOpen, Braces, ChevronDown, ChevronRight, KeyRound, LogOut, Menu, PanelLeftClose, PanelLeftOpen, Settings } from 'lucide-vue-next'
+import { BookOpen, Braces, ChevronDown, ChevronRight, KeyRound, LogOut, Menu, PanelLeftClose, PanelLeftOpen, Search, Settings } from 'lucide-vue-next'
 import { docsUrl } from '../docsUrl'
 import { api } from '../api'
 import { bannerLevel, fixTarget, SEC_SNOOZE_KEY, SEC_SNOOZE_MS, snoozeKey } from '../security'
 import { loadSecurity, securityStatus as secStatus } from '../composables/useSecurity'
 import SideNav from '../components/SideNav.vue'
+import CommandPalette from '../components/CommandPalette.vue'
+import { isPaletteShortcut, pageKey, paletteOpen } from '../composables/usePalette'
 import AppLogo from '../components/AppLogo.vue'
 import ThemePicker from '../components/ThemePicker.vue'
 import LocaleSwitcher from '../components/LocaleSwitcher.vue'
@@ -169,6 +180,24 @@ async function onCommand(cmd: string) {
     window.open(docsUrl(locale.value, '/docs/' + (pageDoc() || 'guide/quick-start')), '_blank', 'noopener')
   }
 }
+
+// 从手机抽屉里的搜索框打开命令面板：先收起抽屉，避免两层遮罩叠在一起
+function openPaletteFromDrawer() {
+  drawer.value = false
+  paletteOpen.value = true
+}
+
+// Ctrl/⌘+K 打开或关闭命令面板；焦点在 Web 终端里时只响应 ⌘K（Ctrl+K 留给 Shell）
+function onGlobalKeydown(e: KeyboardEvent) {
+  const inTerminal = e.target instanceof Element && !!e.target.closest('.xterm')
+  if (!isPaletteShortcut(e, inTerminal)) {
+    return
+  }
+  e.preventDefault()
+  paletteOpen.value = !paletteOpen.value
+}
+onMounted(() => window.addEventListener('keydown', onGlobalKeydown))
+onBeforeUnmount(() => window.removeEventListener('keydown', onGlobalKeydown))
 
 // skipToContent 把焦点移到正文（hash 路由下不能用锚点跳转）
 const mainEl = ref<HTMLElement>()
@@ -300,6 +329,10 @@ onMounted(async () => {
   align-items: center;
   gap: 8px;
   min-width: 0;
+}
+/* 右侧按钮不压缩，空间不足时由左侧页面名省略显示 */
+.header-right {
+  flex-shrink: 0;
 }
 .crumb {
   font-size: 14px;
