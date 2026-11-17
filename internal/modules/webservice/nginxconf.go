@@ -1,6 +1,7 @@
 package webservice
 
 import (
+	"errors"
 	"fmt"
 	"path"
 	"sort"
@@ -55,6 +56,9 @@ const (
 	nginxIncludeDepth = 16
 	// nginxMaxDirectives 为展开后指令总数的上限，远高于实际的 nginx 配置（大型站点的 nginx -T 也只有几千到几万条）
 	nginxMaxDirectives = 200000
+	// nginxMaxIncludeWork 为展开 include 时与文件名比对的总次数上限：每条 include 都要与全部文件逐个匹配，
+	// 文件很多又层层重复包含时，展开次数未到上限，匹配的工作量也会大到让解析长时间占满 CPU
+	nginxMaxIncludeWork = 5000000
 )
 
 // parseNginx 解析 nginx 配置文本。支持 nginx -T 的输出：按“# configuration file 路径:”标记拆成多个文件分别解析，
@@ -128,15 +132,19 @@ func parseNginx(text string) (out []*ngDirective, warns []string, err error) {
 	// total 为已展开的指令数，超过上限即放弃；cycles 记录已提示过的循环包含
 	active := map[string]bool{}
 	total := 0
+	// work 为已进行的文件名比对次数，超过 nginxMaxIncludeWork 即放弃
+	work := 0
 	cycles := map[string]bool{}
 	var expand func(list []*ngDirective, depth int) []*ngDirective
 	expand = func(list []*ngDirective, depth int) []*ngDirective {
 		var res []*ngDirective
 		for _, d := range list {
-			if total > nginxMaxDirectives {
+			if total > nginxMaxDirectives || work > nginxMaxIncludeWork {
 				return res
 			}
 			if d.Name == "include" && !d.isBlock() && depth < nginxIncludeDepth {
+				// 按全部文件计入匹配工作量（按路径结尾再匹配一次时再计一次）
+				work += len(files)
 				pattern := d.arg(0)
 				if !path.IsAbs(pattern) && prefix != "" {
 					pattern = path.Join(prefix, pattern)
@@ -150,6 +158,7 @@ func parseNginx(text string) (out []*ngDirective, warns []string, err error) {
 				// 相对路径按主配置目录找不到时，再按路径结尾匹配：nginx 以 -p 或 -c 指定了其他前缀时，
 				// 相对 include 是相对于该前缀的，nginx -T 中的文件路径与主配置目录不一致
 				if len(matched) == 0 && !path.IsAbs(d.arg(0)) {
+					work += len(files)
 					matched = matchIncludeSuffix(d.arg(0), files)
 				}
 				if len(matched) == 0 && npm {
@@ -208,6 +217,9 @@ func parseNginx(text string) (out []*ngDirective, warns []string, err error) {
 				out = append(out, expandFile(f)...)
 			}
 		}
+	}
+	if work > nginxMaxIncludeWork {
+		return nil, nil, errors.New("include 展开时需要比对的文件过多，无法导入：请检查是否有文件被层层重复包含")
 	}
 	if total > nginxMaxDirectives {
 		return nil, nil, fmt.Errorf("include 展开后的配置超过 %d 条指令，无法导入：请检查是否有文件被层层重复包含", nginxMaxDirectives)

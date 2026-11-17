@@ -579,6 +579,7 @@
   "frp、Cloudflare 隧道、Tailscale、NetBird、EasyTier 与 File Browser 提供，无需请求体。停止该模块的全部进程，把配置（包括程序路径与下载代理）恢复为默认值，并删除 Gately 为它生成的文件：frp 的配置文件、File Browser 各实例的数据目录（用户、分享链接与缓存）、Tailscale 默认状态目录中的登录状态（Gately 托管的 tailscaled 运行中时先退出登录；自定义状态目录与系统已有的 tailscaled 不处理）、NetBird 默认状态目录中的登录状态与密钥（Gately 托管的守护进程运行中时先退出登录，本机会从组网中删除；自定义状态目录与系统已有的 NetBird 服务不处理）。旧配置保存在配置历史中，可以恢复；安装的程序不受影响，卸载使用 `DELETE /api/{module}/install`。": "提供給 frp、Cloudflare 通道、Tailscale、NetBird、EasyTier 與 File Browser，無需請求內容。停止該模組的全部程序，把設定（包括程式路徑與下載代理）還原為預設值，並刪除 Gately 為它產生的檔案：frp 的設定檔、File Browser 各執行個體的資料目錄（使用者、分享連結與快取）、Tailscale 預設狀態目錄中的登入狀態（Gately 代管的 tailscaled 執行中時先登出；自訂狀態目錄與系統既有的 tailscaled 不處理）、NetBird 預設狀態目錄中的登入狀態與金鑰（Gately 代管的常駐程式執行中時先登出，本機會從組網中移除；自訂狀態目錄與系統既有的 NetBird 服務不處理）。舊設定保存在設定歷史中，可以還原；已安裝的程式不受影響，解除安裝請使用 `DELETE /api/{module}/install`。",
   "http / https 代理需要填写自定义域名或子域名": "http / https 代理需要填寫自訂網域或子網域",
   "include 展开后的配置超过 %d 条指令，无法导入：请检查是否有文件被层层重复包含": "include 展開後的設定超過 %d 條指令，無法匯入：請檢查是否有檔案被層層重複包含",
+  "include 展开时需要比对的文件过多，无法导入：请检查是否有文件被层层重复包含": "include 展開時需要比對的檔案過多，無法匯入：請檢查是否有檔案被層層重複包含",
   "iptables 的 recent 模块每个来源最多记录 %d 次连接，扫描检测阈值 %d 按 %d 处理": "iptables 的 recent 模組每個來源最多記錄 %d 次連線，掃描偵測閾值 %d 按 %d 處理",
   "iptables 规则已被清除": "iptables 規則已被清除",
   "javascript: 等脚本链接": "javascript: 等腳本連結",
