@@ -67,7 +67,7 @@ func TestSelfServicePasswordChangeKeepsService(t *testing.T) {
 	if w.Code != http.StatusOK {
 		t.Fatalf("保存共享用户失败: %d %s", w.Code, w.Body.String())
 	}
-	m.settings = Settings{Enable: true, ListenIP: "127.0.0.1", Port: port, SharedUsers: true,
+	m.settings = Settings{Enable: true, ListenIP: "127.0.0.1", Port: port, PassiveStart: pasvStart, PassiveEnd: pasvStart + pasvSpan, SharedUsers: true,
 		Users: []User{{Name: "local", Password: "lp", Root: t.TempDir()}}}
 	if err := m.settings.Validate(); err != nil {
 		t.Fatal(err)
