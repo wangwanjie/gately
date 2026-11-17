@@ -298,6 +298,45 @@ export function linksFromSites(sites: readonly ImportSite[], existing: readonly 
   return out
 }
 
+// ---- 从 Sun-Panel 导入 ----
+
+// mergeLinks 把导入的链接并入已有链接：同名分组的链接接在该组末尾，新分组排在最后；skipDuplicates 时跳过地址已存在的链接
+// （包括导入内容中重复的地址）。超过 MAX_LINKS 的部分不加入，overflow 为未加入的数量
+export function mergeLinks(existing: readonly PanelLink[], incoming: readonly PanelLink[], skipDuplicates: boolean): { links: PanelLink[]; added: number; duplicates: number; overflow: number } {
+  const seen = new Set(existing.map((l) => l.url))
+  let links = [...existing]
+  let added = 0
+  let duplicates = 0
+  let overflow = 0
+  for (const l of incoming) {
+    if (skipDuplicates && seen.has(l.url)) {
+      duplicates++
+      continue
+    }
+    if (links.length >= MAX_LINKS) {
+      overflow++
+      continue
+    }
+    seen.add(l.url)
+    links = insertLink(links, { ...emptyLink(), ...l, alts: [...(l.alts ?? [])] }).links
+    added++
+  }
+  return { links, added, duplicates, overflow }
+}
+
+// freeName 返回未被占用的名称：base 未被占用时原样返回，否则依次加上 2、3……
+export function freeName(base: string, taken: Iterable<string>): string {
+  const used = new Set([...taken].map((n) => n.trim()))
+  if (!used.has(base)) {
+    return base
+  }
+  for (let n = 2; ; n++) {
+    if (!used.has(`${base} ${n}`)) {
+      return `${base} ${n}`
+    }
+  }
+}
+
 // ---- 图标 ----
 
 export type IconKind = 'none' | 'builtin' | 'image' | 'text'

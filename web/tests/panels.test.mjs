@@ -3,7 +3,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
   emptyLink, groupLinks, moveLink, moveGroup, insertLink, importableSites, linksFromSites, iconKind, safeIconSrc,
-  initial, paletteColor, textIconOk, hasVars, toPanel,
+  initial, paletteColor, textIconOk, hasVars, toPanel, mergeLinks, freeName, MAX_LINKS,
 } from '../src/panels.ts'
 
 const L = (name, group = '') => ({ ...emptyLink(group), name, url: `https://${name}.example.com` })
@@ -201,4 +201,40 @@ test('toPanel 补全页脚字段', () => {
   assert.deepEqual([p.footer, p.footerUrl, p.hideFooter], ['', '', false])
   const q = toPanel({ ...p, footer: '© x', footerUrl: 'https://e.com', hideFooter: true })
   assert.deepEqual([q.footer, q.footerUrl, q.hideFooter], ['© x', 'https://e.com', true])
+})
+
+test('mergeLinks 并入导入的链接：同名分组接在组尾，可跳过重复地址，超过上限的不加入', () => {
+  const existing = [L('a', 'x'), L('b', 'y')]
+  const incoming = [L('c', 'x'), L('a', 'z'), L('d', 'z'), L('d', 'w')]
+  const r = mergeLinks(existing, incoming, true)
+  // a 与已有地址重复、第二个 d 与导入内容中的 d 重复，都跳过
+  assert.deepEqual(names(r.links), ['a', 'c', 'b', 'd'])
+  assert.deepEqual(r.links.map((l) => l.group), ['x', 'x', 'y', 'z'])
+  assert.equal(r.added, 2)
+  assert.equal(r.duplicates, 2)
+  assert.equal(r.overflow, 0)
+  // 不跳过时全部加入；原数组不被修改
+  const all = mergeLinks(existing, incoming, false)
+  assert.equal(all.added, 4)
+  assert.equal(existing.length, 2)
+  // 上限
+  const many = Array.from({ length: MAX_LINKS - 1 }, (_, i) => L(`m${i}`))
+  const over = mergeLinks(many, [L('p1'), L('p2'), L('p3')], true)
+  assert.equal(over.links.length, MAX_LINKS)
+  assert.equal(over.added, 1)
+  assert.equal(over.overflow, 2)
+})
+
+test('mergeLinks 补齐缺少的字段并复制其他访问方式', () => {
+  const alts = [{ name: 'IPv6', url: 'https://[2001:db8::1]' }]
+  const r = mergeLinks([], [{ name: 'n', group: '', url: 'https://n.example.com', alts }], false)
+  assert.equal(r.links[0].hide, false)
+  assert.equal(r.links[0].size, '')
+  assert.deepEqual(r.links[0].alts, alts)
+  assert.notEqual(r.links[0].alts, alts)
+})
+
+test('freeName 未占用时原样返回，否则依次编号', () => {
+  assert.equal(freeName('Sun-Panel', ['Home']), 'Sun-Panel')
+  assert.equal(freeName('Sun-Panel', ['Sun-Panel', ' Sun-Panel 2 ']), 'Sun-Panel 3')
 })
