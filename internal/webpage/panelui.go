@@ -120,7 +120,8 @@ button.btn{font:inherit;cursor:pointer}
 // panelLayoutStyleCSS 为链接样式与布局，以及多地址链接的选择列表（.chm 遮罩、.chp 列表，手机上为底部抽屉）；
 // .mb 为多地址角标，.icw 为图标容器（角标相对图标定位）。
 // html.app 为 App 图标样式，html.lc 为设置了宽屏每行数量（按 --cols 算出每格最小宽度，窗口变窄时每行自动减少）。
-// 手机每行数量（html.lm）由服务端按设置输出。图标边长用 --s（各样式的默认值不同），--is 为面板或访客设置的大小。
+// 手机每行数量（html.lm）由服务端按设置输出。图标样式的基础规则在悬停时（.card.link:hover）把卡片重置为占一列，
+// 1×2、2×2 的规则必须同时写上悬停状态，否则悬停时块缩小、鼠标移出又恢复，来回跳动；宽块悬停也不位移，避免鼠标在边缘时抖动。图标边长用 --s（各样式的默认值不同），--is 为面板或访客设置的大小。
 const panelLayoutStyleCSS = `
 @media (min-width:641px){
 html.lc .grid{grid-template-columns:repeat(auto-fill,minmax(max(80px,calc((100% - (var(--cols) * 2 - 1) * var(--gap,12px)) / (var(--cols) * 2))),1fr))}
@@ -145,7 +146,7 @@ html.app .card .lock{top:1px;right:auto;left:max(1px,calc(50% - var(--is,64px) /
 html.app .grid .card.sm .tx{display:flex}
 html.app.an .grid .card:not(.wd) .tx{display:none}
 html.app .grid .card.wd,html.app .grid .card.wd.link:hover{grid-column:span 2;flex-direction:row;align-self:start;align-items:center;gap:10px;height:var(--is,64px);padding:0 12px 0 0;border-radius:calc(var(--is,64px) * .24);background:color-mix(in srgb,var(--card) 72%,transparent);box-shadow:0 8px 18px -12px rgba(0,0,0,.55);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);text-align:left}
-html.app .grid .card.wd.link:hover,html.app .grid .card.wd.multi:hover{transform:translateY(-3px);background:color-mix(in srgb,var(--hover) 84%,transparent);box-shadow:0 14px 26px -14px rgba(0,0,0,.6)}
+html.app .grid .card.wd.link:hover,html.app .grid .card.wd.multi:hover{transform:none;background:color-mix(in srgb,var(--hover) 84%,transparent);box-shadow:0 14px 26px -14px rgba(0,0,0,.6)}
 html.app .card.wd .icw{width:var(--is,64px);height:100%}
 html.app .grid .card.wd .ic,html.app .grid .card.wd:hover .ic,html.app .grid .card.wd:hover .mb{box-shadow:none;transform:none}
 html.app .card.wd .tx{flex:1;width:auto;min-width:0;align-items:flex-start}
@@ -153,7 +154,7 @@ html.app .card.wd .nm{font-size:13.5px;font-weight:600}
 html.app .card.wd .ds{display:block;max-width:100%}
 html.hasbg.app .card.wd .nm{text-shadow:none}
 html.app .card.wd .lock{top:6px;right:6px;left:auto}
-html.app .grid .card.xl{grid-column:span 2;grid-row:span 2;justify-content:center}
+html.app .grid .card.xl,html.app .grid .card.xl.link:hover{grid-column:span 2;grid-row:span 2;justify-content:center}
 html.app .card.xl .icw{width:min(calc(var(--is,64px) * 2),100%)}
 html.app .card.xl .ic{--s:calc(var(--is,64px) * 2)}
 html.app .card.xl .nm{font-size:13.5px;font-weight:600}
