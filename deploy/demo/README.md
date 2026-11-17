@@ -19,7 +19,7 @@
    DEMO_ADMIN_PASSWORD='换成强密码' docker compose up -d --build
    ```
 
-   固定基础镜像版本：`docker compose build --build-arg GATELY_IMAGE=ghcr.io/wangwanjie/gately:v0.6.6.6`。
+   固定基础镜像版本：`docker compose build --build-arg GATELY_IMAGE=ghcr.io/wangwanjie/gately:v0.6.8`。
 3. 容器只在 `127.0.0.1:16680` 提供管理界面，根文件系统只读，以非 root 用户运行，内存 256 MB、CPU 0.5 核、日志 10 MB × 3。
 4. 在前面加 HTTPS 反向代理，对外域名 `demo.gately.cn`。
 

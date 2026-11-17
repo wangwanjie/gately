@@ -345,8 +345,8 @@ Tags de build personalizado, testes que exigem preparação extra, requisitos pa
 
 - O Gately ainda está abaixo da versão 1.0. Os números de versão têm até quatro partes (por exemplo `v0.6.6.6`); a última parte aumenta nos releases de acompanhamento de uma versão menor.
 - Cada tag `v*` executa o [workflow de release](../../.github/workflows/release.yml), que compila os binários, os pacotes OpenWrt e fnOS e a imagem Docker multiarquitetura, e assina os artefatos. As imagens recebem a tag da versão e `latest`, que sempre aponta para o release mais recente.
-- Os releases são frequentes: 55 tags de versão entre 17 de outubro e 15 de novembro de 2026. Os [GitHub Releases](https://github.com/wangwanjie/gately/releases) agrupam as notas por módulo e destacam avisos de atualização; o [changelog](https://gately.cn/pt-BR/news/) no site traz os comunicados.
-- As correções de segurança saem apenas para a versão mais recente ([SECURITY.md](../../SECURITY.md)). Em produção, fixe uma tag de imagem como `ghcr.io/wangwanjie/gately:v0.6.6.6`, leia as notas do release antes de atualizar e use o histórico de configuração para reverter uma configuração.
+- Os releases são frequentes: 56 tags de versão entre 17 de outubro e 17 de novembro de 2026. Os [GitHub Releases](https://github.com/wangwanjie/gately/releases) agrupam as notas por módulo e destacam avisos de atualização; o [changelog](https://gately.cn/pt-BR/news/) no site traz os comunicados.
+- As correções de segurança saem apenas para a versão mais recente ([SECURITY.md](../../SECURITY.md)). Em produção, fixe uma tag de imagem como `ghcr.io/wangwanjie/gately:v0.6.8`, leia as notas do release antes de atualizar e use o histórico de configuração para reverter uma configuração.
 
 ## Contribuição
 
