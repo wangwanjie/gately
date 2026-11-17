@@ -1,0 +1,20 @@
+# Caddy + coraza-caddy：网络写法与 suts/caddy/Caddyfile 一致；WAF 指令放在 /etc/caddy/waf.caddy，开关由 start.sh 挂载不同文件
+{
+	auto_https off
+	admin off
+	order coraza_waf first
+	# 规则命中日志写到容器内文件，写日志的开销留在被测容器的 cgroup 内
+	log {
+		output file /tmp/caddy.log
+		level WARN
+	}
+}
+http://bench.test:{$BENCH_HP} {
+	import /etc/caddy/waf.caddy
+	reverse_proxy {$BENCH_BACKEND}
+}
+https://bench.test:{$BENCH_SP} {
+	tls /certs/bench.crt /certs/bench.key
+	import /etc/caddy/waf.caddy
+	reverse_proxy {$BENCH_BACKEND}
+}

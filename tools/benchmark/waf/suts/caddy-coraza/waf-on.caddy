@@ -1,0 +1,20 @@
+# coraza-caddy 文档推荐的 CRS 用法；与 Gately 对齐：拦截模式、PL1、入站阈值 5（CRS 默认值）、
+# 检查请求体（上限 12.5 MB，超限拒绝，来自 coraza.conf-recommended）、不检查响应体、关闭审计日志。
+# SecDebugLogLevel 0：coraza-caddy 默认把 Coraza 调试日志接到 Caddy 日志（级别 info），每个正常请求也会写 3 行
+# “key not found in collection” 警告；Gately 不接调试日志（Coraza 默认 Noop），这里关掉以免日志开销左右对比。
+# 规则命中日志（WAF rule violation）不受影响，照常写入。
+# 没有加 Gately 额外做的调整（正则预过滤、930120 不查 JSON 字段名、放行 Expect 头），这些差异在 README 中说明。
+coraza_waf {
+	load_owasp_crs
+	directives `
+		Include @coraza.conf-recommended
+		SecRuleEngine On
+		SecResponseBodyAccess Off
+		SecAuditEngine Off
+		SecDebugLogLevel 0
+		Include @crs-setup.conf.example
+		SecAction "id:900000,phase:1,pass,t:none,nolog,setvar:tx.blocking_paranoia_level=1"
+		SecAction "id:900110,phase:1,pass,t:none,nolog,setvar:tx.inbound_anomaly_score_threshold=5,setvar:tx.outbound_anomaly_score_threshold=4"
+		Include @owasp_crs/*.conf
+	`
+}

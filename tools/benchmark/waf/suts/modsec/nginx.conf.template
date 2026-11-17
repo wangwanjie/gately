@@ -1,0 +1,34 @@
+# nginx + ModSecurity v3 + CRS：替换官方镜像的 nginx.conf 模板，网络与代理写法与 suts/nginx/nginx.conf 一致
+# （2 个 worker、到源站的 keepalive 连接池）。${BENCH_*} 由镜像入口的 envsubst 替换。
+load_module modules/ngx_http_modsecurity_module.so;
+worker_processes 2;
+worker_rlimit_nofile 200000;
+pid /tmp/nginx.pid;
+# 规则命中日志写到容器内文件，写日志的开销留在被测容器的 cgroup 内（写 stderr 会转嫁给 dockerd）
+error_log /tmp/nginx-error.log warn;
+events { worker_connections 12000; }
+http {
+  access_log off;
+  keepalive_requests 1000000;
+  client_max_body_size 64m;
+  upstream be { server ${BENCH_BACKEND}; keepalive 64; }
+  # 开启 WAF 时为 “modsecurity on; modsecurity_rules_file ...;”，关闭时为空（不加载规则）
+  ${BENCH_MODSEC_CONF}
+  server {
+    listen ${BENCH_HP};
+    listen ${BENCH_SP} ssl;
+    http2 on;
+    server_name bench.test;
+    ssl_certificate /certs/bench.crt;
+    ssl_certificate_key /certs/bench.key;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    location / {
+      proxy_pass http://be;
+      proxy_http_version 1.1;
+      proxy_set_header Connection "";
+      proxy_set_header Host $host;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header X-Forwarded-Proto $scheme;
+    }
+  }
+}
