@@ -6,6 +6,12 @@
   "editRule": "编辑规则",
   "moduleOffTitle": "端口转发模块已停用",
   "empty": "暂无规则，可添加或在「设置 → 备份与迁移」中导入 Lucky 配置",
+  "templates": {
+    "title": "从常见场景开始：",
+    "ssh": "转发 NAS 的 SSH",
+    "rdp": "Windows 远程桌面",
+    "web": "设备的网页管理界面"
+  },
   "unnamed": "未命名",
   "listen": "监听",
   "target": "目标",

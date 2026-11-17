@@ -6,6 +6,12 @@
   "moduleOffTitle": "动态域名模块已停用",
   "moduleOffDesc": "模块停用期间不会检查 IP，也不会更新任何解析记录；启用后各任务按自身开关运行。",
   "empty": "暂无任务，可添加或在「设置 → 备份与迁移」中导入 Lucky 配置",
+  "templates": {
+    "title": "从常见场景开始：",
+    "cloudflare4": "Cloudflare 家宽 IPv4",
+    "alidns46": "阿里云 IPv4 + IPv6",
+    "dnspod6": "DNSPod 仅 IPv6"
+  },
   "lastCheck": "上次检查",
   "nextCheck": "下次检查",
   "noRecords": "没有解析记录",

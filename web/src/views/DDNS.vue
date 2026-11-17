@@ -13,6 +13,14 @@
     <ModuleBanner v-if="moduleOff" :title="t('ddns.moduleOffTitle')" :desc="t('ddns.moduleOffDesc')" :loading="enabling" @enable="enableModule" />
 
     <GroupedList :gl="gl" :error="loadError" @retry="settingsLoaded ? load() : init()" :loading="loading" :compact="compact" :empty-text="t('ddns.empty')" :empty-image-size="120" :count-text="(n: number) => t('ddns.groupCount', { count: n })">
+      <template #empty>
+        <div class="tpl-empty">
+          <div class="tpl-empty-title">{{ t('ddns.templates.title') }}</div>
+          <div class="tpl-empty-list">
+            <el-button v-for="tp in DDNS_TEMPLATES" :key="tp.id" :data-tpl="tp.id" @click="openTemplate(tp)">{{ t(`ddns.templates.${tp.id}`) }}</el-button>
+          </div>
+        </div>
+      </template>
       <template #item="{ it, item: tk, sorting, bind }">
         <EntityCard
           v-bind="bind"
@@ -284,6 +292,7 @@ import { ArrowUpDown, ChevronsDownUp, ChevronsUpDown, CopyPlus, Globe, ListPlus,
 import { api, errorText } from '../api'
 import GroupHeader from '../components/GroupHeader.vue'
 import GroupedList from '../components/GroupedList.vue'
+import { DDNS_TEMPLATES, type DDNSTemplate } from '../emptyTemplates'
 import GroupInput from '../components/GroupInput.vue'
 import ListTools from '../components/ListTools.vue'
 import SortCheck from '../components/SortCheck.vue'
@@ -698,6 +707,23 @@ function openEditor(tk?: TaskView, copy = false) {
   void nextTick(() => formRef.value?.clearValidate())
 }
 
+// openTemplate 按场景模板打开新建表单：预填服务商、IPv4 / IPv6 获取与对应类型的解析记录，域名与凭据由用户填写
+function openTemplate(tp: DDNSTemplate) {
+  openEditor()
+  editing.value.name = t(`ddns.templates.${tp.id}`)
+  if (providers.value.some((p) => p.name === tp.provider)) {
+    editing.value.provider = tp.provider
+  }
+  editing.value.records = []
+  editing.value.ipv4.enable = false
+  editing.value.ipv6.enable = false
+  for (const ty of tp.types) {
+    addRecord(ty)
+  }
+  editing.value.ipv4.enable = tp.ipv4
+  editing.value.ipv6.enable = tp.ipv6
+}
+
 function onProviderChange() {
   extra.value = {}
 }
@@ -979,6 +1005,21 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+/* 空状态的场景模板按钮 */
+.tpl-empty-title {
+  margin-bottom: 10px;
+  font-size: 13px;
+  color: var(--el-text-color-secondary);
+}
+.tpl-empty-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+.tpl-empty-list .el-button {
+  margin-left: 0;
+}
 /* 主域名未填的记录：输入框标红 */
 .is-error-cell :deep(.el-input__wrapper) {
   box-shadow: 0 0 0 1px var(--el-color-danger) inset;
