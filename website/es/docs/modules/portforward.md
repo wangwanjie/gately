@@ -45,6 +45,8 @@ Al importar desde Lucky también se convierte el modo seguro de la regla: el mod
 - Conectar el tráfico IPv6 con IPv4;
 - Configurar un backend principal y otro de reserva para un mismo servicio.
 
+Con la lista de reglas vacía puedes empezar desde un caso común: «SSH a un NAS», «Escritorio remoto de Windows» o «Página de administración web de un dispositivo»; cada uno abre un formulario de regla ya rellenado.
+
 ## Abrir puerto en el cortafuegos {#auto-firewall}
 
 Con «Abrir puerto en el cortafuegos» activado, Gately permite en el cortafuegos de este host solo los puertos en los que la regla escucha: los puertos consecutivos se unen en una sola regla, TCP / UDP e IPv4 / IPv6 siguen los protocolos de la regla y, con una dirección de escucha indicada, solo se permiten las conexiones a esa dirección. Se retira al desactivar o eliminar la regla. Consulta [Servicios web · Abrir puerto en el cortafuegos](/es/docs/modules/web#auto-firewall) para saber cuándo usarlo, los cortafuegos compatibles y cómo permitir puertos a mano.
