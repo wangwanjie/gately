@@ -16,6 +16,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/wangwanjie/gately/internal/banlist"
 	"github.com/wangwanjie/gately/internal/demo"
 	"github.com/wangwanjie/gately/internal/modules/registry"
 	"github.com/wangwanjie/gately/tools/demo/gen"
@@ -32,7 +33,13 @@ func newDemoApp(t *testing.T, portBase int) (*App, *httptest.Server) {
 		t.Fatal(err)
 	}
 	mods, certs := registry.New()
-	t.Cleanup(func() { demo.Set(false) })
+	t.Cleanup(func() {
+		demo.Set(false)
+		// 演示封禁表装入了进程共用的封禁表，清掉以免影响其他测试
+		for _, e := range banlist.Default.List() {
+			banlist.Default.Unban(e.Key)
+		}
+	})
 	a, err := New(Options{ConfigDir: dir, Modules: mods, Certs: certs, Requires: registry.Requires(), Absent: registry.Absent(),
 		InitialPassword: demoTestAdminPassword, Demo: true})
 	if err != nil {
