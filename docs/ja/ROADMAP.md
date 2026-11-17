@@ -38,6 +38,11 @@ internal/modules/registry/  モジュール登録：オプションのモジュ�
 tools/custombuild/     カスタムビルド：modules.json に従ってビルドタグ、言語、Docker のビルド引数を換算してパッケージ化
 modules.json           オプションのモジュール、依存関係、サイズ見積もり、言語レベル、ビルドターゲットとプリセット（build.gately.cn が読み込む）
 internal/luckyimport/  Lucky .lkcf の復号とフィールドマッピング
+internal/releasesig/   リリース署名：埋め込みのリリース公開鍵（ローテーション用の予備枠付き）、オンラインアップグレード前に checksums.txt の minisign 署名を検証
+internal/minisign/     minisign 互換の Ed25519 公開鍵、署名、暗号化秘密鍵の形式
+tools/sign/            リリース鍵の生成、checksums.txt の署名と検証
+internal/demo/         デモモード（-demo / GATELY_DEMO=1）：書き込みと外部への通信を止める読み取り専用の公開インスタンス
+tools/demo/            デモデータ生成ツール；deploy/demo/ はデモインスタンスのイメージと compose
 web/                   フロントエンドプロジェクト、ビルド成果物は web/embed.go で埋め込み
 ```
 
