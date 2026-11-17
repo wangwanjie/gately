@@ -83,6 +83,13 @@ const (
 	PanelSizeBig   = "big"
 )
 
+// 多地址链接（有其他访问方式）的点击方式：PanelAltClickChooser 为点击弹出地址选择；
+// PanelAltClickDirect 为点击直接打开当前网络（内网或外网）的默认地址，右键或长按时弹出地址选择。
+const (
+	PanelAltClickChooser = ""
+	PanelAltClickDirect  = "direct"
+)
+
 // panelLangCookie 记录访客在页面上选择的语言，没有时按浏览器的 Accept-Language。
 const panelLangCookie = "gately_panel_lang"
 
@@ -155,9 +162,10 @@ type Panel struct {
 	MaxWidth int `json:"maxWidth"`
 	// GroupCount 为在分组标题旁显示链接数，默认不显示
 	GroupCount bool `json:"groupCount"`
-	// AltBadge 为在有多个访问地址（主地址加其他访问方式）的链接图标右上角显示地址数，默认不显示。
-	// 无论是否显示角标，点击这类链接都会弹出地址选择列表
+	// AltBadge 为在有多个访问地址（主地址加其他访问方式）的链接图标右上角显示地址数，默认不显示
 	AltBadge bool `json:"altBadge"`
+	// AltClick 为多地址链接的点击方式：空为点击弹出地址选择，direct 为点击直接打开默认地址、右键或长按弹出地址选择
+	AltClick string `json:"altClick"`
 	// HideAppName 为 App 图标样式下不在图标下方显示名称（1×2 宽块中的名称照常显示），默认显示
 	HideAppName bool `json:"hideAppName"`
 	// HideLock 为已登录访客不显示“登录后可见”链接上的锁标记，默认显示
@@ -570,6 +578,11 @@ func (p *Panel) validateLayout() error {
 	default:
 		return fmt.Errorf("不支持的链接样式 %q", p.CardStyle)
 	}
+	switch p.AltClick {
+	case PanelAltClickChooser, PanelAltClickDirect:
+	default:
+		return fmt.Errorf("不支持的多地址点击方式 %q", p.AltClick)
+	}
 	inRange := func(v, lo, hi int) bool {
 		return v == 0 || (v >= lo && v <= hi)
 	}
@@ -809,7 +822,7 @@ func linkAddress(u *url.URL) string {
 func (p *compiledPanel) view(q redirectRequest, lan, forced, preview, authed bool) webpage.PanelView {
 	v := webpage.PanelView{Title: p.Title, Subtitle: p.Subtitle, Theme: p.Theme, Skin: p.Skin, LAN: lan, Forced: forced, Preview: preview, BgDim: p.BgDim, BgBlur: p.BgBlur,
 		Layout:     webpage.PanelLayout{Style: p.CardStyle, IconSize: p.IconSize, Columns: p.Columns, MobileColumns: p.MobileColumns, Gap: p.Gap, MaxWidth: p.MaxWidth, HideAppName: p.HideAppName},
-		GroupCount: p.GroupCount, AltBadge: p.AltBadge, ShowLang: p.ShowLang, HideSkin: p.HideSkin}
+		GroupCount: p.GroupCount, AltBadge: p.AltBadge, AltDirect: p.AltClick == PanelAltClickDirect, ShowLang: p.ShowLang, HideSkin: p.HideSkin}
 	for _, e := range p.Engines {
 		v.Engines = append(v.Engines, webpage.PanelEngine{Name: e.Name, URL: e.URL})
 	}

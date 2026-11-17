@@ -68,6 +68,8 @@ type PanelView struct {
 	Layout PanelLayout
 	// GroupCount 为在分组标题旁显示链接数；AltBadge 为在有多个访问地址的链接图标右上角显示地址数
 	GroupCount, AltBadge bool
+	// AltDirect 为多地址链接点击时直接打开默认地址，右键或长按才弹出地址选择；为 false 时点击弹出地址选择
+	AltDirect bool
 	// ShowLang 为显示语言切换；HideSkin 为不显示换肤按钮，此时页面固定用面板设置的皮肤，不读取访客保存的选择
 	ShowLang, HideSkin bool
 }
@@ -223,6 +225,7 @@ var panelTexts = map[string]string{
 	"primary":       "默认地址",
 	"pickAddr":      "选择访问地址",
 	"addrCount":     "{n} 个访问地址",
+	"moreAddr":      "右键或长按可选择其他访问地址",
 }
 
 // panelPalette 为未指定颜色时按名称挑选的图标底色，深浅主题下白字都清晰可读。
@@ -340,7 +343,7 @@ const panelSrc = `<!doctype html>
 {{range .Groups}}<section class="grp">{{if .Name}}<h2><button class="fold" type="button" data-g="{{.Name}}" aria-expanded="true" title="{{$.T.foldHint}}">{{$.ChevronIcon}}{{.Name}}</button>{{if $.GroupCount}}<span class="n">{{len .Links}}</span>{{end}}</h2>{{end}}<div class="grid">
 {{range .Links}}<div class="card{{if .Small}} sm{{end}}{{if .Wide}} wd{{end}}{{if .Big}} xl{{end}}{{if .Href}} link{{else}} off{{end}}{{if .Alts}} multi{{end}}" data-s="{{.Search}}" data-k="{{.Key}}"{{if not .Href}} title="{{$.T.off}}"{{end}}>
 {{if .Locked}}<svg class="lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>{{$.T.locked}}</title><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>{{end}}
-{{if .Href}}<a class="hit" href="{{.Href}}"{{if .NewTab}} target="_blank" rel="noopener noreferrer"{{end}} title="{{.Name}}" aria-label="{{.Name}}"{{if .Alts}} aria-haspopup="dialog"{{end}}></a>{{else if .Alts}}<button class="hit" type="button" title="{{.Name}}" aria-label="{{.Name}}" aria-haspopup="dialog"></button>{{end}}
+{{if .Href}}<a class="hit" href="{{.Href}}"{{if .NewTab}} target="_blank" rel="noopener noreferrer"{{end}} title="{{.HitTitle}}" aria-label="{{.Name}}"{{if and .Alts (not $.AltDirect)}} aria-haspopup="dialog"{{end}}></a>{{else if .Alts}}<button class="hit" type="button" title="{{.Name}}" aria-label="{{.Name}}" aria-haspopup="dialog"></button>{{end}}
 <span class="icw">{{with .Icon}}{{if and .Image .Class}}<span class="ic tile {{.Class}}"><img src="{{.Image}}" alt="" loading="lazy"></span>{{else if .Image}}<span class="ic img"><img src="{{.Image}}" alt="" loading="lazy" referrerpolicy="no-referrer"></span>{{else}}<span class="ic {{.Class}}">{{.Text}}</span>{{end}}{{end}}{{if and $.AltBadge .Alts}}<span class="mb" title="{{.AddrTitle}}">{{.AddrCount}}</span>{{end}}</span>
 {{if .Small}}{{if not .HideName}}<span class="tx"><span class="nm">{{.Name}}</span></span>{{end}}{{else}}<span class="tx">{{if not .HideName}}<span class="nm">{{.Name}}</span>{{end}}{{if not .Href}}<span class="ds">{{$.T.off}}</span>{{else if .HideDesc}}{{else if .Description}}<span class="ds">{{.Description}}</span>{{else if .Address}}<span class="ds mono">{{.Address}}</span>{{end}}</span>{{end}}
 {{if .Alts}}<span class="alts" hidden>{{range .Alts}}{{if .Href}}<a class="alt" href="{{.Href}}" target="_blank" rel="noopener noreferrer" title="{{.Title}}">{{.Name}}</a>{{else}}<span class="alt off" title="{{$.T.off}}">{{.Name}}</span>{{end}}{{end}}</span>{{end}}
@@ -377,6 +380,8 @@ type panelLinkData struct {
 	NewTab, Locked             bool
 	Small, Wide, Big           bool
 	HideName, HideDesc         bool
+	// HitTitle 为链接的悬停提示：名称；点击直接打开的多地址链接加上“右键或长按选择其他地址”的提示
+	HitTitle string
 	// AddrCount 为访问地址总数（主地址加其他访问方式），AddrTitle 为角标的提示文字
 	AddrCount int
 	AddrTitle string
@@ -529,7 +534,11 @@ func RenderPanel(r *http.Request, v PanelView) ([]byte, string) {
 			search := strings.ToLower(strings.Join(words, " "))
 			// 标题与描述都隐藏时只剩图标，按 1×1 显示
 			small := l.Small || (l.HideName && l.HideDesc)
-			gd.Links = append(gd.Links, panelLinkData{Name: l.Name, Description: l.Description, Address: l.Address,
+			hitTitle := l.Name
+			if v.AltDirect && len(alts) > 0 && l.Href != "" {
+				hitTitle += " - " + texts["moreAddr"]
+			}
+			gd.Links = append(gd.Links, panelLinkData{Name: l.Name, Description: l.Description, Address: l.Address, HitTitle: hitTitle,
 				Href: template.URL(l.Href), NewTab: l.NewTab, Locked: l.Locked, Small: small, Wide: l.Wide && !small, Big: l.Big && !small, HideName: l.HideName, HideDesc: l.HideDesc,
 				AddrCount: len(alts) + 1, AddrTitle: strings.ReplaceAll(texts["addrCount"], "{n}", strconv.Itoa(len(alts)+1)), Key: linkKey(g.Name, l.Name), Search: search, Icon: icon(l.Icon, l.Name), Alts: alts})
 		}
@@ -591,12 +600,14 @@ func RenderPanel(r *http.Request, v PanelView) ([]byte, string) {
 		Lang    string            `json:"lang"`
 		Bg      map[string]any    `json:"bg"`
 		Logout  string            `json:"logout"`
+		// Direct 为多地址链接点击直接打开默认地址，右键或长按弹出地址选择
+		Direct bool `json:"direct"`
 		// Layout 为面板设置的链接样式（card 或 app）与图标大小（0 为默认），访客在页面设置中可以另选
 		Layout struct {
 			Style string `json:"style"`
 			Icon  int    `json:"icon"`
 		} `json:"layout"`
-	}{Logout: v.LogoutURL, T: Localize(lang, panelTexts), Engines: []uiEngine{}, Def: v.DefaultEngine, Lang: lang, Bg: map[string]any{"has": v.Background != "", "dim": dim, "blur": blur}}
+	}{Logout: v.LogoutURL, Direct: v.AltDirect, T: Localize(lang, panelTexts), Engines: []uiEngine{}, Def: v.DefaultEngine, Lang: lang, Bg: map[string]any{"has": v.Background != "", "dim": dim, "blur": blur}}
 	engineName := Localize(lang, panelTexts)["local"]
 	for i, e := range v.Engines {
 		ui.Engines = append(ui.Engines, uiEngine{N: e.Name, U: e.URL})
@@ -632,7 +643,7 @@ func RenderPanel(r *http.Request, v PanelView) ([]byte, string) {
 		"Lang": lang, "T": Localize(lang, panelTexts), "Nonce": nonce,
 		"Title": v.Title, "TabTitle": tabTitle, "MetaDesc": v.Description, "Subtitle": v.Subtitle, "Icon": head, "Favicon": favicon, "GridIcon": template.HTML(panelGridIcon),
 		"Theme": theme, "Groups": groups,
-		"SkinCSS": template.CSS(skinCSS(skin)), "Skins": skinScriptData(lang, skin, theme, v.HideSkin), "HideSkin": v.HideSkin, "SkinT": skinLangTexts(lang).UI, "SkinIcon": template.HTML(skinIconPalette), "Empty": total == 0, "Colors": colors,
+		"SkinCSS": template.CSS(skinCSS(skin)), "Skins": skinScriptData(lang, skin, theme, v.HideSkin), "HideSkin": v.HideSkin, "AltDirect": v.AltDirect, "SkinT": skinLangTexts(lang).UI, "SkinIcon": template.HTML(skinIconPalette), "Empty": total == 0, "Colors": colors,
 		"LAN": v.LAN, "Switchable": v.Switchable, "Forced": v.Forced, "Preview": v.Preview,
 	}
 	var buf bytes.Buffer

@@ -208,6 +208,13 @@
               <el-switch v-model="editing.altBadge" data-test="layout-alt-badge" />
               <div class="form-help">{{ t('panels.altBadgeHelp') }}</div>
             </el-form-item>
+            <el-form-item :label="t('panels.altClick')">
+              <el-radio-group v-model="editing.altClick" data-test="layout-alt-click">
+                <el-radio-button value="">{{ t('panels.altClickChooser') }}</el-radio-button>
+                <el-radio-button value="direct">{{ t('panels.altClickDirect') }}</el-radio-button>
+              </el-radio-group>
+              <div class="form-help">{{ editing.altClick === 'direct' ? t('panels.altClickDirectHelp') : t('panels.altClickChooserHelp') }}</div>
+            </el-form-item>
             <el-form-item :label="t('panels.appName')">
               <el-switch :model-value="!editing.hideAppName" data-test="layout-app-name" @update:model-value="(v: string | number | boolean) => (editing.hideAppName = !v)" />
               <div class="form-help">{{ t('panels.appNameHelp') }}</div>
@@ -736,7 +743,7 @@ function layoutPlaceholder(key: LayoutField): string {
   return d ? t('panels.layoutDefault', { n: d }) : t('panels.layoutAuto')
 }
 function resetLayout() {
-  Object.assign(editing.value, { cardStyle: '', iconSize: 0, columns: 0, mobileColumns: 0, gap: 0, maxWidth: 0, groupCount: false, altBadge: false, hideAppName: false, hideLock: false })
+  Object.assign(editing.value, { cardStyle: '', iconSize: 0, columns: 0, mobileColumns: 0, gap: 0, maxWidth: 0, groupCount: false, altBadge: false, altClick: '', hideAppName: false, hideLock: false })
 }
 // sizeLabel 把尺寸写成 1×2 的形式（行×列）
 function sizeLabel(c: SizeChoice): string {
