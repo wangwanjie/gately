@@ -253,6 +253,9 @@ func TestPorkbun(t *testing.T) {
 				return
 			}
 			_, _ = w.Write([]byte(`{"status":"SUCCESS","records":[{"id":"1","content":"` + value + `","ttl":"600"}]}`))
+		case "/dns/retrieve/example.com":
+			// 按名称查不到时会列出整个域名核对一次
+			_, _ = w.Write([]byte(`{"status":"SUCCESS","records":[]}`))
 		case "/dns/create/example.com":
 			if body["name"] != "vpn" {
 				t.Errorf("name 错误: %v", body)

@@ -161,13 +161,18 @@ type porkbun struct {
 }
 
 type porkbunResp struct {
-	Status  string `json:"status"`
-	Message string `json:"message"`
-	Records []struct {
-		ID      string `json:"id"`
-		Content string `json:"content"`
-		TTL     string `json:"ttl"`
-	} `json:"records"`
+	Status  string          `json:"status"`
+	Message string          `json:"message"`
+	Records []porkbunRecord `json:"records"`
+}
+
+type porkbunRecord struct {
+	ID string `json:"id"`
+	// Name 为完整域名（读取时返回 FQDN，写入时只传主机记录）
+	Name    string `json:"name"`
+	Type    string `json:"type"`
+	Content string `json:"content"`
+	TTL     string `json:"ttl"`
 }
 
 func (p *porkbun) post(ctx context.Context, path string, extra map[string]any) (*porkbunResp, error) {
@@ -197,16 +202,60 @@ func (p *porkbun) post(ctx context.Context, path string, extra map[string]any) (
 	return &out, nil
 }
 
-func (p *porkbun) Upsert(ctx context.Context, r Record) (string, error) {
-	sub := r.Sub
+// porkbunSub 返回 Porkbun 接口使用的主机记录：根域名为空串，统一小写。
+// Porkbun 保存记录时会把名称转成小写，按名称查询却区分大小写，主机记录带大写字母时会查不到已有记录。
+func porkbunSub(r Record) string {
+	sub := strings.ToLower(strings.TrimSpace(r.Sub))
 	if sub == "@" {
-		sub = ""
+		return ""
 	}
+	return sub
+}
+
+// porkbunNameTypePath 返回 retrieveByNameType / editByNameType 等接口的路径后缀。
+func porkbunNameTypePath(r Record) string {
 	suffix := "/" + r.Zone + "/" + r.Type
-	if sub != "" {
+	if sub := porkbunSub(r); sub != "" {
 		suffix += "/" + url.PathEscape(sub)
 	}
-	cur, err := p.post(ctx, "/dns/retrieveByNameType"+suffix, nil)
+	return suffix
+}
+
+// find 查询同名同类型的记录。retrieveByNameType 返回空时再列出整个域名的记录按名称核对一次：
+// 该接口偶有查不到已有记录的情况，直接创建会报“记录已存在”并每轮重试（issue #99）。
+// 只有记录不存在、需要创建时才多一次请求，正常同步不受影响。
+func (p *porkbun) find(ctx context.Context, r Record) ([]porkbunRecord, error) {
+	cur, err := p.post(ctx, "/dns/retrieveByNameType"+porkbunNameTypePath(r), nil)
+	if err != nil {
+		return nil, err
+	}
+	if len(cur.Records) > 0 {
+		return cur.Records, nil
+	}
+	all, err := p.post(ctx, "/dns/retrieve/"+r.Zone, nil)
+	if err != nil {
+		return nil, err
+	}
+	fqdn := strings.ToLower(r.Zone)
+	if sub := porkbunSub(r); sub != "" {
+		fqdn = sub + "." + fqdn
+	}
+	var out []porkbunRecord
+	for _, rec := range all.Records {
+		if strings.EqualFold(rec.Type, r.Type) && strings.EqualFold(strings.TrimSuffix(rec.Name, "."), fqdn) {
+			out = append(out, rec)
+		}
+	}
+	return out, nil
+}
+
+// porkbunDuplicate 判断创建失败是否因为同名同类型同值的记录已存在，此时服务商处已是目标值。
+func porkbunDuplicate(err error) bool {
+	return err != nil && strings.Contains(strings.ToLower(err.Error()), "name, type, and content already exists")
+}
+
+func (p *porkbun) Upsert(ctx context.Context, r Record) (string, error) {
+	recs, err := p.find(ctx, r)
 	if err != nil {
 		return "", err
 	}
@@ -215,16 +264,22 @@ func (p *porkbun) Upsert(ctx context.Context, r Record) (string, error) {
 	if ttl < 600 {
 		ttl = 600
 	}
-	if len(cur.Records) > 0 {
-		if cur.Records[0].Content == r.Value && (r.TTL == 0 || cur.Records[0].TTL == strconv.Itoa(ttl)) {
+	if len(recs) > 0 {
+		// IPv6 可能以不同写法返回，按地址比较
+		if sameValue(r.Type, recs[0].Content, r.Value) && (r.TTL == 0 || recs[0].TTL == strconv.Itoa(ttl)) {
 			return ActionUnchanged, nil
 		}
-		if _, err := p.post(ctx, "/dns/editByNameType"+suffix, map[string]any{"content": r.Value, "ttl": strconv.Itoa(ttl)}); err != nil {
+		if _, err := p.post(ctx, "/dns/editByNameType"+porkbunNameTypePath(r), map[string]any{"content": r.Value, "ttl": strconv.Itoa(ttl)}); err != nil {
 			return "", err
 		}
 		return ActionUpdated, nil
 	}
-	if _, err := p.post(ctx, "/dns/create/"+r.Zone, map[string]any{"name": sub, "type": r.Type, "content": r.Value, "ttl": strconv.Itoa(ttl)}); err != nil {
+	_, err = p.post(ctx, "/dns/create/"+r.Zone, map[string]any{"name": porkbunSub(r), "type": r.Type, "content": r.Value, "ttl": strconv.Itoa(ttl)})
+	if porkbunDuplicate(err) {
+		// 两次查询都没找到却提示已存在：记录已经是目标值，按无需更新处理，避免每轮报错重试
+		return ActionUnchanged, nil
+	}
+	if err != nil {
 		return "", err
 	}
 	return ActionCreated, nil

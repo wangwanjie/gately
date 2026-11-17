@@ -326,16 +326,12 @@ func (g *godaddy) removeRecord(ctx context.Context, r Record, _ remoteRecord) er
 // ---- Porkbun ----
 
 func (p *porkbun) findRecords(ctx context.Context, r Record) ([]remoteRecord, error) {
-	suffix := "/" + r.Zone + "/" + r.Type
-	if r.RR() != "@" {
-		suffix += "/" + url.PathEscape(r.RR())
-	}
-	cur, err := p.post(ctx, "/dns/retrieveByNameType"+suffix, nil)
+	recs, err := p.find(ctx, r)
 	if err != nil {
 		return nil, err
 	}
-	out := make([]remoteRecord, 0, len(cur.Records))
-	for _, rec := range cur.Records {
+	out := make([]remoteRecord, 0, len(recs))
+	for _, rec := range recs {
 		out = append(out, remoteRecord{id: rec.ID, values: []string{rec.Content}})
 	}
 	return out, nil
