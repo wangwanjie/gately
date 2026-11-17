@@ -1,0 +1,30 @@
+# 前置反向代理是 v0.6.8.1 及更早的 Gately 时叠加使用，说明见 README.md「前置是 Gately 时的 Cookie 改名」：
+#   docker compose -f docker-compose.yml -f docker-compose.cookie.yml up -d --build
+# 演示实例不再直接发布端口，改由 Cookie 改名代理监听 127.0.0.1:${DEMO_PORT}（默认 16680）。
+services:
+  gately-demo:
+    ports: !reset []
+
+  gately-demo-cookie:
+    image: nginx:1.29-alpine
+    container_name: gately-demo-cookie
+    restart: unless-stopped
+    depends_on:
+      - gately-demo
+    ports:
+      - "127.0.0.1:${DEMO_PORT:-16680}:8080"
+    volumes:
+      - ./cookie-rename.nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    read_only: true
+    tmpfs:
+      - /var/cache/nginx
+      - /var/run
+      - /tmp
+    mem_limit: 64m
+    cpus: 0.25
+    pids_limit: 64
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
