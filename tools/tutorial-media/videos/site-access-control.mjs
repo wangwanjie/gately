@@ -1,0 +1,61 @@
+// 视频：站点访问控制与登录认证（网页认证 + 共享用户、IP 白名单、国家过滤、认证用户页）
+import { record } from '../video.mjs'
+
+await record('site-access-control', {
+  title: '站点访问控制与登录认证',
+  summary: '给对外开放的站点加上登录页、IP 与地区限制',
+  steps: ['编辑站点，打开「安全」页', '开启网页认证并使用共享用户', '设置 IP 白名单与国家过滤', '在「认证用户」页管理账号']
+}, async (v) => {
+  const { page } = v
+  await v.go('web', 1200)
+  const site = page.locator('.site').filter({ hasText: 'photos.example.com' }).first()
+  await v.step('第 1 步')
+  await v.cap('在「Web 服务」找到要保护的站点（这里是相册 photos.example.com），点「编辑」')
+  await v.click(site.getByRole('button', { name: '编辑', exact: true }))
+  const d = page.locator('.el-dialog:visible').last()
+  const item = (label) => d.locator('.el-form-item').filter({ has: page.locator('.el-form-item__label', { hasText: new RegExp('^\\s*' + label + '\\s*$') }) }).first()
+  await v.cap('切到「安全」页：认证、IP 访问控制、国家过滤、WAF 都在这里')
+  await v.click(d.locator('.el-tabs__item', { hasText: '安全' }))
+  await v.step('第 2 步')
+  await v.cap('勾选「网页认证」，访客会先看到 Gately 的登录页，登录后才能访问应用')
+  await v.point(item('认证').getByText('网页认证（浏览器显示登录页）'))
+  await v.sleep(2200)
+  await v.cap('勾选「使用共享用户」：一个账号可在多个站点通用，支持 TOTP 两步验证与单点登录')
+  await v.point(item('共享用户').locator('.el-checkbox').first())
+  await v.sleep(2500)
+  await v.cap('也可以在「用户」里写站点自己的账号，每行一个「用户名:密码」，保存时转为 bcrypt 哈希')
+  await v.point(item('用户').locator('textarea').first())
+  await v.sleep(2500)
+  await v.step('第 3 步')
+  await v.cap('「IP 访问控制」选白名单：只有列出的地址能访问，适合只给家里和公司开放')
+  const ip = item('IP 访问控制')
+  await ip.scrollIntoViewIfNeeded()
+  await v.sleep(600)
+  await v.click(ip.getByText('白名单', { exact: true }))
+  await v.sleep(800)
+  const ta = ip.locator('textarea:visible').first()
+  if (await ta.count()) {
+    await v.type(ta, '192.168.1.0/24\n203.0.113.18', 60)
+  }
+  await v.sleep(1200)
+  await v.cap('「国家过滤」按访客 IP 所属国家放行或拒绝，例如只允许中国大陆访问')
+  const cf = item('国家过滤')
+  await cf.scrollIntoViewIfNeeded()
+  await v.sleep(500)
+  await v.click(cf.getByText('仅允许', { exact: true }))
+  await v.sleep(2200)
+  await v.cap('「拒绝方式」可选返回 403 或直接断开连接，不给扫描器任何响应')
+  const rj = item('拒绝方式')
+  await rj.scrollIntoViewIfNeeded()
+  await v.point(rj)
+  await v.sleep(2500)
+  await v.cap('点「保存」后立即生效，不需要重启')
+  await v.click(d.getByRole('button', { name: '保存', exact: true }))
+  await v.sleep(2000)
+  await v.step('第 4 步')
+  await v.go('webusers', 1500)
+  await v.cap('「Web → 认证用户」集中管理共享用户：密码、TOTP、所属分组，以及能访问哪些站点')
+  await v.sleep(5000)
+  await v.scroll(400)
+  await v.sleep(2500)
+})
