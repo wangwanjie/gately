@@ -4,7 +4,7 @@ Jede von der Verwaltungsoberfläche von Gately genutzte API lässt sich per HTTP
 
 ## API-Token
 
-Pfad in der Oberfläche: Seitenleistengruppe „System“ → „API-Tokens“.
+Pfad in der Oberfläche: Seitenleiste „System → Einstellungen“, dort unter „Konto & Sicherheit“ in der Karte „API-Tokens“ auf „API-Tokens verwalten“ klicken (`#/api-tokens`).
 
 ### Token erstellen
 
@@ -94,7 +94,7 @@ Erstellen Sie für jedes Skript ein eigenes Token, wählen Sie nur die benötigt
 
 ### Die Doku-Seite in der Verwaltungsoberfläche
 
-Seitenleistengruppe „System“ → „API-Dokumentation“. Die Seite zeigt die Basis-URL und Hinweise zur Authentifizierung, listet alle Endpunkte nach Funktion gruppiert auf und unterstützt die Suche nach Pfad oder Kurzbeschreibung. Ein aufgeklappter Endpunkt zeigt die erforderliche Berechtigung, Parameter, Felder des Anfragekörpers und ein kopierbares curl-Beispiel. Endpunkte, die eine Anmeldesitzung brauchen, sind mit „Nur Anmeldesitzung“ gekennzeichnet und haben kein curl-Beispiel.
+In der Karte „API-Tokens“ unter „System → Einstellungen → Konto & Sicherheit“ auf „API-Dokumentation ansehen“ klicken oder im Benutzermenü oben rechts „API-Dokumentation“ wählen (`#/api-docs`). Die Seite zeigt die Basis-URL und Hinweise zur Authentifizierung, listet alle Endpunkte nach Funktion gruppiert auf und unterstützt die Suche nach Pfad oder Kurzbeschreibung. Ein aufgeklappter Endpunkt zeigt die erforderliche Berechtigung, Parameter, Felder des Anfragekörpers und ein kopierbares curl-Beispiel. Endpunkte, die eine Anmeldesitzung brauchen, sind mit „Nur Anmeldesitzung“ gekennzeichnet und haben kein curl-Beispiel.
 
 ### OpenAPI-Dokument abrufen
 

@@ -2,7 +2,7 @@
 
 ## WebDAV
 
-Configurez-le dans « Service WebDAV » du groupe « Services de fichiers » de la barre latérale.
+Configurez-le dans l'onglet « WebDAV » de la page « Services de fichiers → Partage de fichiers » de la barre latérale.
 
 | Champ | Par défaut | Description |
 | --- | --- | --- |
@@ -27,7 +27,7 @@ Chaque utilisateur peut être associé à un seul répertoire, ou monter plusieu
 
 ## FTP
 
-Configurez-le dans « Service FTP » du groupe « Services de fichiers ». FTP et FTPS sont pris en charge.
+Configurez-le dans l'onglet « FTP » de la page « Services de fichiers → Partage de fichiers ». FTP et FTPS sont pris en charge.
 
 | Champ | Par défaut | Description |
 | --- | --- | --- |
@@ -47,7 +47,7 @@ Configurez-le dans « Service FTP » du groupe « Services de fichiers ». FTP e
 
 ## SMB
 
-Configurez-le dans « Service SMB » du groupe « Services de fichiers » pour partager des répertoires locaux avec l’Explorateur Windows, le Finder de macOS, Linux et les clients SMB des téléphones et téléviseurs. L’implémentation du protocole est intégrée à Gately (basée sur [gosamba](https://github.com/ahmetozer/gosamba)) et prend en charge SMB 2.0.2 à 3.1.1, l’authentification NTLMv2 et la signature, avec un chiffrement SMB 3 obligatoire en option ; SMB 1 n’est pas pris en charge. Disponible uniquement sous Linux et macOS.
+Configurez-le dans l'onglet « SMB » de la page « Services de fichiers → Partage de fichiers » pour partager des répertoires locaux avec l’Explorateur Windows, le Finder de macOS, Linux et les clients SMB des téléphones et téléviseurs. L’implémentation du protocole est intégrée à Gately (basée sur [gosamba](https://github.com/ahmetozer/gosamba)) et prend en charge SMB 2.0.2 à 3.1.1, l’authentification NTLMv2 et la signature, avec un chiffrement SMB 3 obligatoire en option ; SMB 1 n’est pas pris en charge. Disponible uniquement sous Linux et macOS.
 
 | Champ | Par défaut | Description |
 | --- | --- | --- |
@@ -78,20 +78,20 @@ Pour diagnostiquer un client qui n'arrive pas à se connecter ou à s'authentifi
 
 ## Utilisateurs partagés {#shared-users}
 
-WebDAV, FTP et SMB partagent une liste d’« utilisateurs partagés » avec les mêmes champs que les utilisateurs locaux de chaque service (nom, mot de passe, `root` et `readOnly`, ou `mounts`), enregistrée dans `fileusers.json` du répertoire de configuration. Ils se gèrent sur la page « Utilisateurs partagés de fichiers » du groupe « Services de fichiers » de la barre latérale, et l’enregistrement s’applique aux trois services ; les utilisateurs locaux de chaque service ne changent pas. Le haut de la page indique si chaque service autorise les utilisateurs partagés et liste ceux qui portent le même nom qu’un utilisateur local ou que SMB ne peut pas utiliser.
+WebDAV, FTP et SMB partagent une liste d’« utilisateurs partagés » avec les mêmes champs que les utilisateurs locaux de chaque service (nom, mot de passe, `root` et `readOnly`, ou `mounts`), enregistrée dans `fileusers.json` du répertoire de configuration. Ils se gèrent dans l'onglet « Utilisateurs partagés » de la page « Services de fichiers → Partage de fichiers » de la barre latérale, et l’enregistrement s’applique aux trois services ; les utilisateurs locaux de chaque service ne changent pas. Le haut de la page indique si chaque service autorise les utilisateurs partagés et liste ceux qui portent le même nom qu’un utilisateur local ou que SMB ne peut pas utiliser.
 
-- Chaque service décide seul d’accepter ou non les utilisateurs partagés : activez « Autoriser les utilisateurs partagés » dans la carte « Utilisateurs partagés » de la page du service (champ `sharedUsers`) et enregistrez, et les utilisateurs partagés peuvent se connecter à ce service ; la carte liste aussi les utilisateurs partagés enregistrés, et « Gérer les utilisateurs partagés » ouvre la page « Utilisateurs partagés de fichiers » ;
+- Chaque service décide seul d’accepter ou non les utilisateurs partagés : activez « Autoriser les utilisateurs partagés » dans la carte « Utilisateurs partagés » de l'onglet du service (champ `sharedUsers`) et enregistrez, et les utilisateurs partagés peuvent se connecter à ce service ; la carte liste aussi les utilisateurs partagés enregistrés, et « Gérer les utilisateurs partagés » ouvre l'onglet « Utilisateurs partagés » ;
 - Si un utilisateur local porte le même nom, seul l'utilisateur local est vérifié (sans distinction de casse pour SMB) ;
 - Les noms d'utilisateurs partagés doivent être uniques sans distinction de casse et ne peuvent pas contenir de deux-points ;
 - Les modifications des utilisateurs partagés s'appliquent immédiatement : WebDAV utilise les nouveaux paramètres à la requête suivante ; si seuls des mots de passe changent, FTP et SMB continuent de fonctionner et ne ferment que les connexions des utilisateurs dont le mot de passe a changé (ces clients se reconnectent avec le nouveau mot de passe, les autres utilisateurs ne sont pas touchés) ; ajouter ou supprimer des utilisateurs ou modifier les répertoires ou le mode lecture seule redémarre FTP et SMB, et les clients connectés doivent se reconnecter ;
 - Interrupteur activé et avec au moins un utilisateur partagé, le service peut être activé sans utilisateur local ;
 - Un service activé uniquement avec des utilisateurs partagés doit garder après une modification un utilisateur partagé capable de se connecter (pour SMB, un utilisateur utilisable par SMB), sinon la modification est refusée ;
 - Si `fileusers.json` est cassé à la main (mot de passe vide, répertoire qui n'est pas un chemin absolu…), aucun utilisateur partagé ne peut se connecter et la page l'indique ; corrigez puis enregistrez pour les rétablir ;
-- SMB n’accepte que des mots de passe en clair, et les noms d’utilisateur et de partage doivent respecter les règles de caractères de SMB ; les utilisateurs partagés qui ne les respectent pas sont signalés sur la page « Utilisateurs partagés de fichiers », sur la page SMB et dans le journal d’exécution, puis ignorés, tandis que WebDAV et FTP peuvent toujours les utiliser.
+- SMB n’accepte que des mots de passe en clair, et les noms d’utilisateur et de partage doivent respecter les règles de caractères de SMB ; les utilisateurs partagés qui ne les respectent pas sont signalés dans l'onglet « Utilisateurs partagés », dans l'onglet « SMB » et dans le journal d’exécution, puis ignorés, tandis que WebDAV et FTP peuvent toujours les utiliser.
 
 L’API est `GET` / `PUT /api/fileusers`, qui demande la permission `fileusers:read` / `fileusers:write` pour les jetons d’API ; `services` dans la réponse indique comment chaque service les utilise. Les anciens `GET` / `PUT /api/<service>/shared-users` de chaque service sont obsolètes mais fonctionnent toujours et lisent et écrivent la même liste : la lecture utilise la permission de lecture du service, et une modification exige à la fois `webdav:write`, `ftp:write` et `smb:write`.
 
-**Changement de mot de passe en libre-service** : activez Changement de mot de passe en libre-service sur la page Utilisateurs partagés de fichiers et enregistrez ; les utilisateurs partagés peuvent alors changer leur mot de passe sur `https://domaine-du-site/__gately_auth/password` de n'importe quel site du service web avec authentification web, en saisissant le nom d'utilisateur, le mot de passe actuel et le nouveau (8 à 128 caractères). WebDAV, FTP et SMB utilisent aussitôt le nouveau mot de passe (FTP et SMB ne redémarrent pas, ils ne ferment que les connexions ouvertes de cet utilisateur, et le client se reconnecte avec le nouveau mot de passe). Les mots de passe en clair restent en clair et les hachages bcrypt restent hachés ; un mot de passe actuel erroné compte dans la même limitation et le même bannissement automatique que la connexion web. L'interrupteur est stocké dans `selfService` de `fileusers.json`, avec le même nom de champ dans l'API. Pour les utilisateurs partagés de connexion web, voir [le changement de mot de passe du service web](/fr/docs/modules/web#self-service-password).
+**Changement de mot de passe en libre-service** : activez Changement de mot de passe en libre-service dans l'onglet « Utilisateurs partagés » de la page « Partage de fichiers » et enregistrez ; les utilisateurs partagés peuvent alors changer leur mot de passe sur `https://domaine-du-site/__gately_auth/password` de n'importe quel site du service web avec authentification web, en saisissant le nom d'utilisateur, le mot de passe actuel et le nouveau (8 à 128 caractères). WebDAV, FTP et SMB utilisent aussitôt le nouveau mot de passe (FTP et SMB ne redémarrent pas, ils ne ferment que les connexions ouvertes de cet utilisateur, et le client se reconnecte avec le nouveau mot de passe). Les mots de passe en clair restent en clair et les hachages bcrypt restent hachés ; un mot de passe actuel erroné compte dans la même limitation et le même bannissement automatique que la connexion web. L'interrupteur est stocké dans `selfService` de `fileusers.json`, avec le même nom de champ dans l'API. Pour les utilisateurs partagés de connexion web, voir [le changement de mot de passe du service web](/fr/docs/modules/web#self-service-password).
 
 ## File Browser {#filebrowser}
 
@@ -239,7 +239,7 @@ Exécutez des commandes ou envoyez des requêtes HTTP selon un calendrier cron.
 
 - La page « Vue d'ensemble » affiche les informations de l'hôte : modèle de CPU, utilisation et charge, mémoire, disque, adresses des interfaces réseau et débits en direct, IPv4 et IPv6 publiques (cliquez pour copier), l'état du service de chaque module et, pour le processus Gately, sa version, son commit, sa date de build, son heure de démarrage, son PID, son CPU, sa mémoire résidente, son tas Go et son nombre de goroutines ;
 - Lorsque Gately gère des programmes externes (frp, Tailscale, NetBird, tunnel Cloudflare, File Browser), la page « Vue d'ensemble » comporte aussi une carte « Processus gérés » qui liste chaque processus avec son module et son instance, le nom du programme, le PID, la durée d'activité, le nombre de redémarrages, le CPU et la mémoire résidente, les totaux figurant dans l'en-tête ; cliquez sur une ligne pour ouvrir son module. Seul le processus lui-même est compté, pas les enfants qu'il lance, et les chemins et arguments de lancement ne sont pas affichés ;
-- La page « Journaux système » rassemble les journaux de tous les modules, y compris les enregistrements d'exécution de modules tels que Docker, FTP et Tâches planifiées.
+- L'onglet « Journaux système » de la page « Journaux » rassemble les journaux de tous les modules, y compris les enregistrements d'exécution de modules tels que Docker, FTP et Tâches planifiées.
 
 ## Thèmes
 

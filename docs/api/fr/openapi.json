@@ -1247,6 +1247,9 @@
           "reason": {
             "type": "string"
           },
+          "redirect": {
+            "type": "boolean"
+          },
           "trapPorts": {
             "type": "string"
           },
@@ -2492,6 +2495,9 @@
           "maxConnections": {
             "type": "integer"
           },
+          "maxConnsPerSource": {
+            "type": "integer"
+          },
           "mode": {
             "type": "string"
           },
@@ -2641,6 +2647,9 @@
             "type": "string"
           },
           "maxConnections": {
+            "type": "integer"
+          },
+          "maxConnsPerSource": {
             "type": "integer"
           },
           "name": {
@@ -3347,6 +3356,9 @@
           },
           "paranoia": {
             "type": "integer"
+          },
+          "regexPrefilter": {
+            "type": "boolean"
           },
           "remark": {
             "type": "string"
@@ -44081,7 +44093,7 @@
     },
     "/api/system/upgrade": {
       "post": {
-        "description": "Session (administrateur) uniquement, installations binaires Linux uniquement. Télécharge en arrière-plan le paquet de cette plateforme, vérifie son SHA-256 avec checksums.txt, teste le nouveau binaire, remplace l’exécutable puis redémarre. La version précédente est conservée sous `\u003cnom de fichier\u003e.old` dans le même répertoire. Renvoie 202 immédiatement ; la progression est disponible via `GET /api/system/upgrade/status`. Les versions personnalisées renvoient 409 : la mise à niveau en ligne télécharge l’édition complète ; générez une nouvelle version avec les mêmes options sur https://build.gately.cn puis mettez à niveau via le point de terminaison de téléversement.\n\n**Disponible uniquement pour les sessions de connexion ; les jetons d'API ne peuvent pas accéder à ce point d'accès.**",
+        "description": "Session (administrateur) uniquement, installations binaires Linux uniquement. Télécharge en arrière-plan le paquet de cette plateforme, vérifie la signature minisign de checksums.txt (checksums.txt.minisig) avec la clé publique intégrée (une signature invalide fait refuser la mise à niveau ; les versions antérieures à la signature n’ont pas ce fichier et sont mises à niveau quand même), vérifie son SHA-256 avec checksums.txt, teste le nouveau binaire, remplace l’exécutable puis redémarre. La version précédente est conservée sous `\u003cnom de fichier\u003e.old` dans le même répertoire. Renvoie 202 immédiatement ; la progression est disponible via `GET /api/system/upgrade/status`. Les versions personnalisées renvoient 409 : la mise à niveau en ligne télécharge l’édition complète ; générez une nouvelle version avec les mêmes options sur https://build.gately.cn puis mettez à niveau via le point de terminaison de téléversement.\n\n**Disponible uniquement pour les sessions de connexion ; les jetons d'API ne peuvent pas accéder à ce point d'accès.**",
         "responses": {
           "200": {
             "description": "Succès"
@@ -44173,7 +44185,7 @@
     },
     "/api/system/upgrade/status": {
       "get": {
-        "description": "Session uniquement. `state` passe par `checking`, `downloading`, `verifying`, `installing` puis `restarting` ; en cas d’échec il vaut `failed` et `error` donne la raison, et `canceled` en cas d’annulation. `downloaded` / `total` sont les octets téléchargés et totaux du paquet de mise à niveau.\n\n**Disponible uniquement pour les sessions de connexion ; les jetons d'API ne peuvent pas accéder à ce point d'accès.**",
+        "description": "Session uniquement. `state` passe par `checking`, `downloading`, `verifying`, `installing` puis `restarting` ; en cas d’échec il vaut `failed` et `error` donne la raison, et `canceled` en cas d’annulation. `downloaded` / `total` sont les octets téléchargés et totaux du paquet de mise à niveau. `unsigned` vaut true quand la version n’a pas de signature et que seul son SHA-256 a été vérifié.\n\n**Disponible uniquement pour les sessions de connexion ; les jetons d'API ne peuvent pas accéder à ce point d'accès.**",
         "responses": {
           "200": {
             "description": "Succès"

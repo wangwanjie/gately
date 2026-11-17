@@ -4,7 +4,7 @@ Todas as APIs usadas pela interface de administração do Gately podem ser chama
 
 ## Tokens de API
 
-Caminho na interface: grupo "Sistema" da barra lateral → "Tokens de API".
+Caminho na interface: "Sistema → Configurações" na barra lateral; em "Conta e segurança", no cartão "Tokens de API", clique em "Gerenciar tokens de API" (`#/api-tokens`).
 
 ### Criar um token
 
@@ -94,7 +94,7 @@ Crie um token separado para cada script, selecione apenas as permissões necess�
 
 ### A página de documentação na interface de administração
 
-Grupo "Sistema" da barra lateral → "Documentação da API". A página mostra a Base URL e as observações de autenticação, lista todos os endpoints agrupados por recurso e permite pesquisar por caminho ou resumo. Expandir um endpoint mostra a permissão necessária, os parâmetros, os campos do corpo da requisição e um exemplo de curl que pode ser copiado. Endpoints que exigem uma sessão com login são marcados como "Somente sessão de login" e não têm exemplo de curl.
+No cartão "Tokens de API" em "Sistema → Configurações → Conta e segurança", clique em "Ver documentação da API", ou escolha "Documentação da API" no menu do usuário no canto superior direito (`#/api-docs`). A página mostra a Base URL e as observações de autenticação, lista todos os endpoints agrupados por recurso e permite pesquisar por caminho ou resumo. Expandir um endpoint mostra a permissão necessária, os parâmetros, os campos do corpo da requisição e um exemplo de curl que pode ser copiado. Endpoints que exigem uma sessão com login são marcados como "Somente sessão de login" e não têm exemplo de curl.
 
 ### Obter o documento OpenAPI
 

@@ -208,7 +208,7 @@ O resultado fica salvo em `update-check.json` no diretório de configuração e,
 Instalações binárias no Linux (systemd, contêineres LXC do PVE, OpenWrt implantado manualmente etc.) podem ser atualizadas online pela página Sobre do painel: clique em "Verificar atualizações" e, havendo versão nova, em "Atualizar agora". Isso vale também para contêineres LXC criados no PVE a partir da imagem OCI, sem precisar apagá-los e recriá-los. O Gately vai:
 
 1. Baixar do GitHub o `gately_<versão>_linux_<arquitetura>.tar.gz` desta plataforma;
-2. Conferir o SHA-256 com o `checksums.txt` da mesma versão;
+2. Baixar `checksums.txt` e `checksums.txt.minisig` da mesma versão, verificar a assinatura com a chave pública embutida no programa e depois conferir o SHA-256. Assinatura inválida ou de chave desconhecida recusa a atualização; versões publicadas antes da introdução da assinatura não têm arquivo de assinatura e atualizam com um aviso de que não são assinadas (veja [Verificar versões](/pt-BR/docs/guide/verify));
 3. Executar o novo binário em teste com `-version` para confirmar que roda nesta máquina;
 4. Substituir o executável e reiniciar com os mesmos argumentos, guardando a versão anterior como `gately.old` no mesmo diretório.
 

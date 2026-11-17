@@ -208,7 +208,7 @@ Gately 默认每 12 小时访问一次 GitHub，读取 Gately 的发布列表与
 Linux 二进制部署（systemd、PVE LXC 容器、手动部署的 OpenWrt 等）可以在管理界面的「关于」页在线升级：点击「检查更新」，发现新版本后点击「立即升级」。在 PVE 中用 OCI 镜像创建的 LXC 容器同样适用，无需删除重建。Gately 会依次：
 
 1. 从 GitHub 下载与本机平台对应的 `gately_<版本>_linux_<架构>.tar.gz`；
-2. 对照同一版本的 `checksums.txt` 校验 SHA-256；
+2. 下载同一版本的 `checksums.txt` 与 `checksums.txt.minisig`，用编进程序的公钥验证签名，再核对 SHA-256。签名无效或来自未知密钥时拒绝升级；签名上线之前发布的版本没有签名文件，照常升级但提示该版本未签名（见 [校验发布产物](/docs/guide/verify)）；
 3. 以 `-version` 试运行新程序，确认能在本机执行；
 4. 替换可执行文件并以相同参数重启，旧版本保留为同目录下的 `gately.old`。
 

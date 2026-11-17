@@ -50,7 +50,7 @@ Cada página de módulo permite instalar, actualizar y revertir en línea: los p
 
 ## Registros de ejecución
 
-Los registros de ejecución del sistema y de cada módulo se escriben por defecto en `logs/` dentro del directorio de configuración, así que siguen disponibles en la página de registros del sistema y en la de cada módulo después de reiniciar o actualizar:
+Los registros de ejecución del sistema y de cada módulo se escriben por defecto en `logs/` dentro del directorio de configuración, así que siguen disponibles en la pestaña «Registros del sistema» de la página «Sistema → Registros» y en la página de cada módulo después de reiniciar o actualizar:
 
 - Un archivo JSON Lines por origen: `logs/<ID del módulo>.log`, y los del sistema en `logs/gately.log`. Al arrancar se restauran desde el archivo las entradas más recientes, hasta «Líneas de registro conservadas»;
 - Las entradas nuevas se escriben por lotes con un retraso máximo de 1 segundo. Cuando un archivo supera el límite (2 MB por defecto) se rota a `.1` y solo se conserva ese archivo anterior, de modo que cada origen ocupa como máximo el doble del límite;
@@ -64,7 +64,7 @@ Los registros de ejecución del sistema y de cada módulo se escriben por defect
 
 ### Ver y filtrar {#log-filter}
 
-La página Registros del sistema y la tarjeta de registros al final de cada página de módulo usan el mismo visor. Las siguientes condiciones se pueden combinar; los cambios se aplican al instante y solo se añaden las entradas nuevas que coinciden:
+La pestaña «Registros del sistema» de la página «Registros» y la tarjeta de registros al final de cada página de módulo usan el mismo visor. Las siguientes condiciones se pueden combinar; los cambios se aplican al instante y solo se añaden las entradas nuevas que coinciden:
 
 - Nivel y origen (la lista desplegable muestra todos los orígenes de la configuración del módulo y los que han aparecido en los registros, por ejemplo todas las escuchas del Servicio web, incluidas las que aún no tienen accesos o cuyos registros solo están en disco; también se puede escribir uno);
 - Palabras clave: los términos separados por espacios deben coincidir todos, las comillas dobles agrupan una frase y un `-` inicial excluye un término, por ejemplo `GET "timeout" -debug`; las coincidencias se resaltan. Si la interfaz está en otro idioma, busque con el texto traducido que ve en pantalla;

@@ -2,6 +2,7 @@
   "login": "登录",
   "groups": {
     "network": "网络",
+    "security": "安全",
     "tunnel": "组网与穿透",
     "web": "Web",
     "storage": "文件服务",
@@ -35,6 +36,9 @@
     "stun": {
       "title": "STUN 穿透",
       "desc": "NAT1 网络下无公网 IP 穿透"
+    },
+    "mesh": {
+      "title": "组网"
     },
     "tailscale": {
       "title": "Tailscale",
@@ -85,6 +89,9 @@
       "title": "存储挂载",
       "desc": "挂载本地目录、远程 WebDAV 或 SMB 共享，在线管理文件"
     },
+    "files": {
+      "title": "文件共享"
+    },
     "webdav": {
       "title": "WebDAV 服务",
       "desc": "WebDAV 文件共享服务"
@@ -133,6 +140,9 @@
       "title": "性能监控",
       "desc": "性能趋势与阈值告警"
     },
+    "logsHub": {
+      "title": "日志"
+    },
     "logs": {
       "title": "系统日志"
     },
@@ -154,5 +164,12 @@
     "about": {
       "title": "关于"
     }
+  },
+  "tabs": {
+    "webSites": "站点",
+    "webdav": "WebDAV",
+    "ftp": "FTP",
+    "smb": "SMB",
+    "fileusers": "共享用户"
   }
 }

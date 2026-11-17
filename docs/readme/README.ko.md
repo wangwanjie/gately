@@ -353,7 +353,7 @@ make lint     # gofmt, go vet, 프런트엔드 타입 검사
 
 ## 커뮤니티
 
-질문과 사용 환경 공유는 [GitHub Discussions](https://github.com/wangwanjie/gately/discussions)에서, 가벼운 대화는 Telegram 그룹 [t.me/gately_chat](https://t.me/gately_chat)에서 나눠 주세요.
+질문은 [GitHub Discussions Q&A](https://github.com/wangwanjie/gately/discussions/categories/q-a)에 올려 주세요(답변을 검색할 수 있습니다). 사용 환경 공유도 Discussions에서, 바로 대화하려면 Telegram 그룹 [t.me/gately_chat](https://t.me/gately_chat)에서 나눠 주세요.
 
 버그는 [GitHub Issues](https://github.com/wangwanjie/gately/issues)에 등록하고 [진단 패키지](../ko/DIAGNOSTICS.md)(설정 → 진단)를 첨부해 주세요. 진단 패키지는 로컬에서 생성되며 비밀번호, 토큰, 도메인, 실제 IP를 포함하지 않습니다. 보안 문제는 [SECURITY.md](../../SECURITY.md)에 안내된 대로 비공개로 알려 주세요.
 

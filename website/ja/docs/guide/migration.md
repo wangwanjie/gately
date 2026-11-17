@@ -5,7 +5,7 @@
 Gately は Lucky の `.lkcf` 設定ファイル、または Lucky の「設定のバックアップ」でエクスポートしたサイト全体の zip を直接読み込み、ルール、タスク、証明書を移行できます。移行中に Lucky をアンインストールする必要はなく、両方を並行して動かしながらモジュール単位で切り替えられます。
 
 ::: tip nginx からの移行
-このページでは Lucky からの移行を説明します。既存の nginx サイトは「Web サービス → nginx をインポート」で直接インポートできます。[Web サービス · nginx 設定のインポート](/ja/docs/modules/web#import-nginx) を参照してください。
+このページでは Lucky からの移行を説明します。既存の nginx サイトは「Web サービス → nginx をインポート」で直接インポートできます。[Web サービス · nginx 設定のインポート](/ja/docs/modules/web#import-nginx) を参照してください。Nginx Proxy Manager の設定も同じようにインポートできます。[Nginx Proxy Manager のインポート](/ja/docs/modules/web#import-npm) を参照してください。
 :::
 
 ## 1. 準備

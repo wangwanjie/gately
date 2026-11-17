@@ -1,6 +1,8 @@
 {
   "title": "导入 nginx 配置",
   "intro": "粘贴 server 块，或在 nginx 所在主机执行下面的命令并粘贴完整输出（会包含 include 的文件）。导入前先预览转换结果，已存在的域名会跳过。",
+  "npmIntro": "Nginx Proxy Manager：在 NPM 所在主机执行下面的命令（换成 NPM 的容器名），粘贴完整输出。",
+  "npmCommand": "docker exec <NPM 容器名> nginx -T",
   "readFile": "从文件读取",
   "preview": "预览",
   "import": "导入 {count} 个站点",

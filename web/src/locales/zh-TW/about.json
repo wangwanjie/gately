@@ -37,6 +37,7 @@
     "later": "稍後",
     "retry": "重試",
     "failed": "升級失敗",
+    "unsigned": "此版本沒有發布簽章（checksums.txt.minisig），只能核對 SHA-256，無法確認來源。簽章上線之前發布的版本都是如此。",
     "progressTitle": "正在升級到 {version}",
     "keepOpen": "請保持頁面開啟，升級完成後會自動重新啟動並重新整理。",
     "steps": {

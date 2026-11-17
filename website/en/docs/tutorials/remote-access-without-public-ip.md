@@ -91,7 +91,7 @@ STUN punches through NAT to obtain a public address and port, and outside connec
 
 ### Steps
 
-1. Open "Networking & Tunnels → STUN Traversal" and click "Add rule".
+1. Open "Network → STUN Traversal" and click "Add rule".
 2. On the "Basic" tab enter: Rule name `nas`, Traversal type `TCP`, a fixed "Channel local port" such as `50443` (`0` is random and changes on every start), the NAS's LAN address as "Target address" and the service port as "Target port".
 3. On a router or a Linux host with a firewall, turn on "Open firewall port". System firewalls that do not use nftables or iptables, such as fnOS's, need the port opened in the system settings by hand.
 4. Save. The "Public address" on the rule card shows the IP and port obtained; click it to copy.

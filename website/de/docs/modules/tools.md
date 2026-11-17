@@ -2,7 +2,7 @@
 
 ## WebDAV
 
-Konfiguration unter „WebDAV-Dienst“ in der Seitenleistengruppe „Dateidienste“.
+Konfiguration im Tab „WebDAV“ der Seite „Dateidienste → Dateifreigabe“ in der Seitenleiste.
 
 | Feld | Standard | Beschreibung |
 | --- | --- | --- |
@@ -27,7 +27,7 @@ Jeder Benutzer kann auf ein Verzeichnis abgebildet werden oder mehrere Verzeichn
 
 ## FTP
 
-Konfiguration unter „FTP-Dienst“ in der Gruppe „Dateidienste“. FTP und FTPS werden unterstützt.
+Konfiguration im Tab „FTP“ der Seite „Dateidienste → Dateifreigabe“. FTP und FTPS werden unterstützt.
 
 | Feld | Standard | Beschreibung |
 | --- | --- | --- |
@@ -47,7 +47,7 @@ Konfiguration unter „FTP-Dienst“ in der Gruppe „Dateidienste“. FTP und F
 
 ## SMB
 
-Konfiguration unter „SMB-Dienst“ in der Gruppe „Dateidienste“; damit werden lokale Verzeichnisse für den Windows-Explorer, den macOS-Finder, Linux sowie SMB-Clients auf Smartphones und Fernsehern freigegeben. Die Protokollimplementierung ist in Gately eingebaut (basierend auf [gosamba](https://github.com/ahmetozer/gosamba)) und unterstützt SMB 2.0.2 bis 3.1.1, NTLMv2-Authentifizierung und Signierung sowie optional erzwungene SMB-3-Verschlüsselung; SMB 1 wird nicht unterstützt. Nur unter Linux und macOS verfügbar.
+Konfiguration im Tab „SMB“ der Seite „Dateidienste → Dateifreigabe“; damit werden lokale Verzeichnisse für den Windows-Explorer, den macOS-Finder, Linux sowie SMB-Clients auf Smartphones und Fernsehern freigegeben. Die Protokollimplementierung ist in Gately eingebaut (basierend auf [gosamba](https://github.com/ahmetozer/gosamba)) und unterstützt SMB 2.0.2 bis 3.1.1, NTLMv2-Authentifizierung und Signierung sowie optional erzwungene SMB-3-Verschlüsselung; SMB 1 wird nicht unterstützt. Nur unter Linux und macOS verfügbar.
 
 | Feld | Standard | Beschreibung |
 | --- | --- | --- |
@@ -78,20 +78,20 @@ Wenn Clients keine Verbindung bekommen oder die Anmeldung scheitert, die Umgebun
 
 ## Gemeinsame Benutzer {#shared-users}
 
-WebDAV, FTP und SMB teilen sich eine Liste „gemeinsamer Benutzer“ mit denselben Feldern wie die lokalen Benutzer jedes Dienstes (Name, Passwort, `root` und `readOnly` oder `mounts`), gespeichert in `fileusers.json` im Konfigurationsverzeichnis. Sie werden auf der Seite „Gemeinsame Dateibenutzer“ in der Gruppe „Dateidienste“ der Seitenleiste verwaltet, und Speichern gilt für alle drei Dienste; die lokalen Benutzer jedes Dienstes bleiben unverändert. Oben auf der Seite steht, ob jeder Dienst gemeinsame Benutzer erlaubt, und welche gemeinsamen Benutzer denselben Namen wie ein lokaler Benutzer haben oder für SMB nicht nutzbar sind.
+WebDAV, FTP und SMB teilen sich eine Liste „gemeinsamer Benutzer“ mit denselben Feldern wie die lokalen Benutzer jedes Dienstes (Name, Passwort, `root` und `readOnly` oder `mounts`), gespeichert in `fileusers.json` im Konfigurationsverzeichnis. Sie werden im Tab „Gemeinsame Benutzer“ der Seite „Dateidienste → Dateifreigabe“ in der Seitenleiste verwaltet, und Speichern gilt für alle drei Dienste; die lokalen Benutzer jedes Dienstes bleiben unverändert. Oben auf der Seite steht, ob jeder Dienst gemeinsame Benutzer erlaubt, und welche gemeinsamen Benutzer denselben Namen wie ein lokaler Benutzer haben oder für SMB nicht nutzbar sind.
 
-- Jeder Dienst entscheidet selbst, ob er gemeinsame Benutzer akzeptiert: „Gemeinsame Benutzer erlauben“ in der Karte „Gemeinsame Benutzer“ der Dienstseite einschalten (Feld `sharedUsers`) und speichern, dann können sich gemeinsame Benutzer bei diesem Dienst anmelden; die Karte listet auch die gespeicherten gemeinsamen Benutzer, und „Gemeinsame Benutzer verwalten“ öffnet die Seite „Gemeinsame Dateibenutzer“;
+- Jeder Dienst entscheidet selbst, ob er gemeinsame Benutzer akzeptiert: „Gemeinsame Benutzer erlauben“ in der Karte „Gemeinsame Benutzer“ im Tab des jeweiligen Dienstes einschalten (Feld `sharedUsers`) und speichern, dann können sich gemeinsame Benutzer bei diesem Dienst anmelden; die Karte listet auch die gespeicherten gemeinsamen Benutzer, und „Gemeinsame Benutzer verwalten“ öffnet den Tab „Gemeinsame Benutzer“;
 - Hat ein lokaler Benutzer denselben Namen, wird nur der lokale Benutzer geprüft (bei SMB ohne Groß-/Kleinschreibung);
 - Namen gemeinsamer Benutzer müssen unabhängig von Groß-/Kleinschreibung eindeutig sein und dürfen keinen Doppelpunkt enthalten;
 - Änderungen an gemeinsamen Benutzern gelten sofort: WebDAV prüft ab der nächsten Anfrage mit den neuen Einstellungen; ändern sich nur Passwörter, laufen FTP und SMB weiter und trennen nur die Verbindungen der Benutzer mit geändertem Passwort (diese Clients verbinden sich mit dem neuen Passwort neu, andere Benutzer bleiben unberührt); Hinzufügen oder Entfernen von Benutzern sowie geänderte Verzeichnisse oder Schreibschutz-Einstellungen starten FTP und SMB neu, und verbundene Clients müssen sich neu verbinden;
 - Mit eingeschaltetem Schalter und mindestens einem gemeinsamen Benutzer lässt sich der Dienst ohne lokale Benutzer aktivieren;
 - Ein Dienst, der nur mit gemeinsamen Benutzern aktiviert ist, muss nach einer Änderung noch einen gemeinsamen Benutzer haben, der sich anmelden kann (bei SMB einen für SMB nutzbaren), sonst wird die Änderung abgelehnt;
 - Wird `fileusers.json` von Hand beschädigt (etwa ein leeres Passwort oder ein Verzeichnis ohne absoluten Pfad), kann sich kein gemeinsamer Benutzer anmelden und die Seite zeigt einen Hinweis; korrigieren und speichern stellt sie wieder her;
-- SMB akzeptiert nur Klartext-Passwörter, und Benutzer- und Freigabenamen müssen die Zeichenregeln von SMB einhalten; gemeinsame Benutzer, die das nicht tun, werden auf der Seite „Gemeinsame Dateibenutzer“, der SMB-Seite und im Laufzeitprotokoll gemeldet und übersprungen, WebDAV und FTP können sie weiterhin nutzen.
+- SMB akzeptiert nur Klartext-Passwörter, und Benutzer- und Freigabenamen müssen die Zeichenregeln von SMB einhalten; gemeinsame Benutzer, die das nicht tun, werden im Tab „Gemeinsame Benutzer“, im Tab „SMB“ und im Laufzeitprotokoll gemeldet und übersprungen, WebDAV und FTP können sie weiterhin nutzen.
 
 Die API ist `GET` / `PUT /api/fileusers`, für API-Token mit der Berechtigung `fileusers:read` / `fileusers:write`; `services` in der Antwort zeigt, wie jeder Dienst sie nutzt. Die bisherigen `GET` / `PUT /api/<Dienst>/shared-users` der einzelnen Dienste sind veraltet, funktionieren aber weiter und lesen und schreiben dieselbe Liste: Lesen nutzt die Leseberechtigung des Dienstes, eine Änderung braucht `webdav:write`, `ftp:write` und `smb:write` zusammen.
 
-**Passwort selbst ändern**: Aktivieren Sie auf der Seite Gemeinsame Dateibenutzer die Option Passwort selbst ändern und speichern Sie; gemeinsame Benutzer können ihr Passwort dann unter `https://site-domain/__gately_auth/password` auf jeder Webdienst-Site mit Web-Authentifizierung ändern, indem sie Benutzername, aktuelles und neues Passwort (8–128 Zeichen) eingeben. WebDAV, FTP und SMB verwenden sofort das neue Passwort (FTP und SMB starten nicht neu, sie trennen nur die angemeldeten Verbindungen dieses Benutzers, und der Client verbindet sich mit dem neuen Passwort neu). Klartext-Passwörter bleiben im Klartext, bcrypt-Hashes bleiben gehasht; ein falsches aktuelles Passwort zählt zur selben Ratenbegrenzung und automatischen Sperre wie die Web-Anmeldung. Der Schalter wird als `selfService` in `fileusers.json` gespeichert, im API mit demselben Feldnamen. Für gemeinsame Benutzer der Web-Anmeldung siehe [Passwort selbst ändern im Webdienst](/de/docs/modules/web#self-service-password).
+**Passwort selbst ändern**: Aktivieren Sie im Tab „Gemeinsame Benutzer“ der Seite „Dateifreigabe“ die Option Passwort selbst ändern und speichern Sie; gemeinsame Benutzer können ihr Passwort dann unter `https://site-domain/__gately_auth/password` auf jeder Webdienst-Site mit Web-Authentifizierung ändern, indem sie Benutzername, aktuelles und neues Passwort (8–128 Zeichen) eingeben. WebDAV, FTP und SMB verwenden sofort das neue Passwort (FTP und SMB starten nicht neu, sie trennen nur die angemeldeten Verbindungen dieses Benutzers, und der Client verbindet sich mit dem neuen Passwort neu). Klartext-Passwörter bleiben im Klartext, bcrypt-Hashes bleiben gehasht; ein falsches aktuelles Passwort zählt zur selben Ratenbegrenzung und automatischen Sperre wie die Web-Anmeldung. Der Schalter wird als `selfService` in `fileusers.json` gespeichert, im API mit demselben Feldnamen. Für gemeinsame Benutzer der Web-Anmeldung siehe [Passwort selbst ändern im Webdienst](/de/docs/modules/web#self-service-password).
 
 ## File Browser {#filebrowser}
 
@@ -239,7 +239,7 @@ Führen Sie Befehle aus oder senden Sie HTTP-Anfragen nach einem Cron-Zeitplan.
 
 - Die Seite „Übersicht“ zeigt Host-Informationen: CPU-Modell, Auslastung und Last, Arbeitsspeicher, Datenträger, Adressen der Netzwerkschnittstellen und Live-Raten, öffentliche IPv4 und IPv6 (zum Kopieren anklicken), den Dienststatus jedes Moduls sowie für den Gately-Prozess Version, Commit, Build-Zeit, Startzeit, PID, CPU, resident Memory, Go-Heap und Anzahl der Goroutinen;
 - Wenn Gately externe Programme verwaltet (frp, Tailscale, NetBird, Cloudflare-Tunnel, File Browser), zeigt die Seite „Übersicht“ zusätzlich die Karte „Verwaltete Prozesse“ mit Modul und Instanz, Programmname, PID, Laufzeit, Anzahl der Neustarts, CPU und resident Memory jedes Prozesses und den Summen in der Kartenüberschrift; ein Klick auf eine Zeile öffnet das Modul. Gezählt wird nur der Prozess selbst, nicht die von ihm gestarteten Kindprozesse, und Pfade und Startargumente werden nicht angezeigt;
-- Die Seite „Systemprotokolle“ sammelt die Logs aller Module, einschließlich der Laufzeitprotokolle von Modulen wie Docker, FTP und geplanten Aufgaben.
+- Der Tab „Systemprotokolle“ der Seite „Protokolle“ sammelt die Logs aller Module, einschließlich der Laufzeitprotokolle von Modulen wie Docker, FTP und geplanten Aufgaben.
 
 ## Designs
 

@@ -22,6 +22,8 @@
   "modeDetect": "仅检测（只记录日志）",
   "paranoia": "偏执等级",
   "paranoiaHelp": "越高越严格，误报也越多，建议从 1 开始",
+  "regexPrefilter": "正则预过滤",
+  "regexPrefilterHelp": "开启后先用关键字快速排除不可能命中的正则，可降低约 16% 的检测 CPU。已知在默认防护等级下，CRS 回归用例 942220 #2 的一条样例会漏判；需要完整检测时可关闭",
   "inbound": "入站阈值",
   "outbound": "出站阈值",
   "bodyCheck": "请求体检查",

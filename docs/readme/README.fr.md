@@ -353,7 +353,7 @@ Les issues et les pull requests sont les bienvenues. La liste de contrôle pour 
 
 ## Communauté
 
-Posez vos questions et partagez votre installation dans les [GitHub Discussions](https://github.com/wangwanjie/gately/discussions) ; les échanges informels ont lieu dans le groupe Telegram [t.me/gately_chat](https://t.me/gately_chat).
+Posez vos questions dans [GitHub Discussions Q&A](https://github.com/wangwanjie/gately/discussions/categories/q-a), où les réponses restent consultables, et partagez votre installation dans Discussions ; pour échanger en direct, rejoignez le groupe Telegram [t.me/gately_chat](https://t.me/gately_chat).
 
 Les bugs se signalent dans [GitHub Issues](https://github.com/wangwanjie/gately/issues), avec un [paquet de diagnostic](../fr/DIAGNOSTICS.md) en pièce jointe (Paramètres → Diagnostic). Il est généré localement et ne contient ni mots de passe, ni jetons, ni domaines, ni IP réelles. Signalez les problèmes de sécurité en privé, comme décrit dans [SECURITY.md](../../SECURITY.md).
 

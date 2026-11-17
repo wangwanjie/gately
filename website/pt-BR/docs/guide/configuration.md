@@ -50,7 +50,7 @@ A página de cada módulo permite instalar, atualizar e reverter online; o progr
 
 ## Logs de execução
 
-Os logs de execução do sistema e de cada módulo são gravados por padrão em `logs/` no diretório de configuração, então continuam disponíveis na página de logs do sistema e na de cada módulo depois de reiniciar ou atualizar:
+Os logs de execução do sistema e de cada módulo são gravados por padrão em `logs/` no diretório de configuração, então continuam disponíveis na aba "Logs do sistema" da página "Sistema → Logs" e na página de cada módulo depois de reiniciar ou atualizar:
 
 - Um arquivo JSON Lines por origem: `logs/<ID do módulo>.log`, e os do sistema em `logs/gately.log`. Na inicialização, as entradas mais recentes, até "Linhas de log retidas", são restauradas do arquivo;
 - Novas entradas são gravadas em lote com no máximo 1 segundo de atraso. Quando um arquivo passa do limite (2 MB por padrão), ele é rotacionado para `.1` e só esse arquivo anterior é mantido, então cada origem ocupa no máximo o dobro do limite;
@@ -64,7 +64,7 @@ Os logs de execução do sistema e de cada módulo são gravados por padrão em 
 
 ### Visualizar e filtrar {#log-filter}
 
-A página Logs do sistema e o cartão de logs no fim de cada página de módulo usam o mesmo visualizador. As condições abaixo podem ser combinadas; as mudanças valem na hora e só entram as novas entradas que correspondem:
+A aba "Logs do sistema" da página "Logs" e o cartão de logs no fim de cada página de módulo usam o mesmo visualizador. As condições abaixo podem ser combinadas; as mudanças valem na hora e só entram as novas entradas que correspondem:
 
 - Nível e origem (a lista mostra todas as origens da configuração do módulo e as que já apareceram nos logs, por exemplo todos os listeners do Serviço Web, inclusive os que ainda não tiveram acesso ou cujos logs estão só em disco; também dá para digitar);
 - Palavras-chave: termos separados por espaço devem corresponder todos, aspas duplas agrupam uma frase e um `-` inicial exclui um termo, por exemplo `GET "timeout" -debug`; as correspondências ficam destacadas. Com a interface em outro idioma, pesquise pelo texto traduzido que aparece na tela;

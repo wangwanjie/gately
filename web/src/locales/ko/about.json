@@ -37,6 +37,7 @@
     "later": "나중에",
     "retry": "다시 시도",
     "failed": "업그레이드 실패",
+    "unsigned": "이 버전에는 릴리스 서명(checksums.txt.minisig)이 없어 SHA-256만 확인할 수 있고 출처는 확인할 수 없습니다. 서명 도입 전에 발행된 버전은 모두 이렇습니다.",
     "progressTitle": "{version}(으)로 업그레이드 중",
     "keepOpen": "이 페이지를 열어 두세요. 완료되면 자동으로 재시작하고 새로고침합니다.",
     "steps": {

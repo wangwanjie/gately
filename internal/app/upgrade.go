@@ -28,13 +28,14 @@ import (
 	"github.com/wangwanjie/gately/internal/i18n"
 	"github.com/wangwanjie/gately/internal/logbuf"
 	"github.com/wangwanjie/gately/internal/outbound"
+	"github.com/wangwanjie/gately/internal/releasesig"
 	"github.com/wangwanjie/gately/internal/version"
 )
 
 // ---- 在线升级 ----
 //
 // 只在 Linux 二进制部署（systemd、PVE LXC、手动安装的 OpenWrt 等）中开放：下载与本机平台对应的发布包，
-// 核对 checksums.txt 中的 SHA-256，试运行新二进制确认能在本机执行并读出版本号，
+// 先用编进程序的公钥验证 checksums.txt 的 minisign 签名（checksums.txt.minisig），再核对其中的 SHA-256，试运行新二进制确认能在本机执行并读出版本号，
 // 再原地替换可执行文件并以相同参数重启。旧版本保留为同目录下的 <文件名>.old，便于手动回滚。
 // Docker 镜像、飞牛 fnOS 安装包与 OpenWrt 的 ipk / apk 安装包分别由镜像更新、应用中心与包管理器负责升级，
 // 不提供在线升级：原地替换会让包管理器记录的版本与实际运行的版本不一致。
@@ -70,6 +71,8 @@ var (
 	packagedExecutable = "/usr/bin/gately"
 	opkgControlFile    = "/usr/lib/opkg/info/gately.control"
 	apkInstalledDB     = "/lib/apk/db/installed"
+	// upgradeTrustedKeys 为验证发布签名的受信公钥
+	upgradeTrustedKeys = releasesig.TrustedKeys()
 )
 
 // upgradeReasonText 是拒绝在线升级时返回的说明。
@@ -491,6 +494,8 @@ type upgradeStatus struct {
 	Total      int64     `json:"total"`
 	Error      string    `json:"error,omitempty"`
 	StartedAt  time.Time `json:"startedAt"`
+	// Unsigned 为目标版本没有发布签名（签名上线之前的版本）：只核对 SHA-256，界面据此显示警告
+	Unsigned bool `json:"unsigned,omitempty"`
 }
 
 // setUpgradeStatus 在锁内修改升级进度。
@@ -604,6 +609,9 @@ func (a *App) downloadAndInstall(ctx context.Context, exe string) (string, error
 	if err != nil {
 		return "", err
 	}
+	if err := a.verifyReleaseSignature(ctx, client, rel, sumData); err != nil {
+		return "", err
+	}
 	want, ok := checksumFor(sumData, name)
 	if !ok {
 		return "", fmt.Errorf("checksums.txt 中没有 %s 的校验值", name)
@@ -638,6 +646,27 @@ func (a *App) downloadAndInstall(ctx context.Context, exe string) (string, error
 	}
 	a.setUpgradeStatus(func(st *upgradeStatus) { st.State = upgradeStateInstalling })
 	return installBinary(ctx, exe, bin)
+}
+
+// verifyReleaseSignature 验证 checksums.txt 的发布签名：有签名文件时必须由受信公钥签名，否则拒绝升级；
+// 没有签名文件的版本（签名上线之前发布）允许继续，但在进度与系统日志中给出警告。
+func (a *App) verifyReleaseSignature(ctx context.Context, client *http.Client, rel *releaseInfo, sumData []byte) error {
+	asset := rel.asset(releasesig.SignatureFile)
+	if asset == nil {
+		a.setUpgradeStatus(func(st *upgradeStatus) { st.Unsigned = true })
+		a.sysLogs.Add(logbuf.LevelWarn, "system", fmt.Sprintf("版本 %s 没有发布签名（%s），只核对 SHA-256 后继续升级", rel.TagName, releasesig.SignatureFile))
+		return nil
+	}
+	sig, err := downloadBytes(ctx, client, asset.URL, 64<<10, nil)
+	if err != nil {
+		return err
+	}
+	id, err := releasesig.Verify(upgradeTrustedKeys, sumData, sig)
+	if err != nil {
+		return fmt.Errorf("checksums.txt 的签名验证失败，已拒绝升级: %v", err)
+	}
+	a.sysLogs.Add(logbuf.LevelInfo, "system", fmt.Sprintf("已验证版本 %s 的发布签名（密钥 %s）", rel.TagName, id))
+	return nil
 }
 
 // handleUpgradeUpload 用上传的升级包（发布页的 tar.gz 或解压后的 gately 二进制）升级。

@@ -121,6 +121,8 @@ func parseNginx(text string) (out []*ngDirective, warns []string, err error) {
 	if len(segs) > 0 && segs[0].file != "" {
 		prefix = path.Dir(segs[0].file)
 	}
+	// Nginx Proxy Manager 的配置：只粘贴了站点文件、没有 conf.d/include 下的片段时，用内置的片段代替
+	npm := isNPMConfig(text)
 	included := map[string]bool{}
 	// active 为正在展开的文件（展开栈）：文件包含自己或相互包含时不再展开，nginx 遇到这种配置也无法启动；
 	// total 为已展开的指令数，超过上限即放弃；cycles 记录已提示过的循环包含
@@ -143,6 +145,18 @@ func parseNginx(text string) (out []*ngDirective, warns []string, err error) {
 				for _, f := range files {
 					if ok, _ := path.Match(pattern, f); ok && f != "" {
 						matched = append(matched, f)
+					}
+				}
+				// 相对路径按主配置目录找不到时，再按路径结尾匹配：nginx 以 -p 或 -c 指定了其他前缀时，
+				// 相对 include 是相对于该前缀的，nginx -T 中的文件路径与主配置目录不一致
+				if len(matched) == 0 && !path.IsAbs(d.arg(0)) {
+					matched = matchIncludeSuffix(d.arg(0), files)
+				}
+				if len(matched) == 0 && npm {
+					if body := npmBuiltinSnippet(d.arg(0)); body != nil {
+						total += len(body)
+						res = append(res, body...)
+						continue
 					}
 				}
 				// nginx 按文件名顺序处理通配符匹配到的文件

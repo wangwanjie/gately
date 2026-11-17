@@ -228,6 +228,24 @@ jobs:
           rm -f "$RUNNER_TEMP/win.p12" "$RUNNER_TEMP/win-chain.pem"
       - name: 生成校验和
         run: cd dist && sha256sum *.tar.gz *.fpk *.ipk *.apk > checksums.txt
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      # 用 minisign 格式的 Ed25519 私钥给 checksums.txt 签名，生成 checksums.txt.minisig；在线升级先用编进程序的公钥验证它。
+      # 需要仓库 Secrets：GATELY_SIGNING_KEY（tools/sign keygen 生成的 gately.key 的完整内容）与 GATELY_SIGNING_KEY_PASSWORD（其口令）。
+      # 未配置时跳过并留下警告：Release 不带 .minisig，在线升级照常进行但提示该版本未签名
+      - name: 签名校验和文件（minisign）
+        env:
+          GATELY_SIGNING_KEY: ${{ secrets.GATELY_SIGNING_KEY }}
+          GATELY_SIGNING_KEY_PASSWORD: ${{ secrets.GATELY_SIGNING_KEY_PASSWORD }}
+        run: |
+          if [ -z "$GATELY_SIGNING_KEY" ]; then
+            echo "::warning title=checksums.txt 未签名::没有配置 GATELY_SIGNING_KEY，本次 Release 不带 checksums.txt.minisig，在线升级会提示该版本未签名"
+            exit 0
+          fi
+          go run ./tools/sign sign -t "gately ${GITHUB_REF_NAME} checksums.txt $(date -u +%Y-%m-%dT%H:%M:%SZ)" dist/checksums.txt
+          # 用编进程序的受信公钥再验证一次：私钥与代码中的公钥不匹配时中止发布，避免发出在线升级一律拒绝的签名
+          go run ./tools/sign verify dist/checksums.txt
       - uses: sigstore/cosign-installer@v3
       - name: 签名校验和文件（cosign 无密钥）
         run: |

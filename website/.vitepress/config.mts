@@ -6,6 +6,7 @@ import { FALLBACK_CODE, sidebarGroups, siteLocales, type SiteLocale } from './i1
 
 const SITE = 'https://gately.cn'
 const REPO = 'https://github.com/wangwanjie/gately'
+const QA = `${REPO}/discussions/categories/q-a`
 const TELEGRAM = 'https://t.me/gately_chat'
 const here = dirname(fileURLToPath(import.meta.url))
 
@@ -200,7 +201,7 @@ function buildThemeConfig(loc: SiteLocale, pack: any): DefaultTheme.Config & Rec
     langMenuLabel: ui.langMenuLabel,
     footer: {
       message: ui.footerMessage,
-      copyright: `© 2026 Gately Contributors · <a href="${REPO}" target="_blank" rel="noreferrer">GitHub</a> · <a href="${p}/feed.xml">RSS</a> · <span class="tg-foot"><a href="${TELEGRAM}" target="_blank" rel="noreferrer">Telegram</a><span class="tg-pop"><img src="/telegram-qr.svg" alt="Telegram QR" width="140" height="140" loading="lazy"></span></span>`
+      copyright: `© 2026 Gately Contributors · <a href="${REPO}" target="_blank" rel="noreferrer">GitHub</a> · <a href="${p}/feed.xml">RSS</a> · <a href="${QA}" target="_blank" rel="noreferrer">Q&amp;A</a> · <span class="tg-foot"><a href="${TELEGRAM}" target="_blank" rel="noreferrer">Telegram</a><span class="tg-pop"><img src="/telegram-qr.svg" alt="Telegram QR" width="140" height="140" loading="lazy"></span></span>`
     },
     // 文档页顶部的 AI 翻译提示；首页、下载、赞助文案较大，改由 transformPageData 只注入到用到它们的页面
     aiNotice: ui.aiNotice

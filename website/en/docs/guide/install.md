@@ -206,7 +206,7 @@ The result is saved in `update-check.json` in the config directory and is re-eva
 Linux binary installs (systemd, PVE LXC containers, manual OpenWrt installs and so on) can upgrade online from the About page of the admin UI: click "Check for Updates", then "Upgrade now" when a new version is found. This also works for LXC containers created in PVE from the OCI image, so there is no need to delete and recreate them. Gately will:
 
 1. Download `gately_<version>_linux_<arch>.tar.gz` for this platform from GitHub;
-2. Verify its SHA-256 against the `checksums.txt` of the same release;
+2. Download `checksums.txt` and `checksums.txt.minisig` of the same release, verify the signature with the public key built into the program, then check the SHA-256. An invalid signature or one from an unknown key refuses the upgrade; releases published before signing was introduced have no signature file and upgrade with a warning that they are unsigned (see [Verifying release artifacts](/en/docs/guide/verify));
 3. Test-run the new binary with `-version` to make sure it runs on this machine;
 4. Replace the executable and restart with the same arguments, keeping the previous version as `gately.old` in the same directory.
 

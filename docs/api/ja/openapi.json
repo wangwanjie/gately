@@ -1247,6 +1247,9 @@
           "reason": {
             "type": "string"
           },
+          "redirect": {
+            "type": "boolean"
+          },
           "trapPorts": {
             "type": "string"
           },
@@ -2492,6 +2495,9 @@
           "maxConnections": {
             "type": "integer"
           },
+          "maxConnsPerSource": {
+            "type": "integer"
+          },
           "mode": {
             "type": "string"
           },
@@ -2641,6 +2647,9 @@
             "type": "string"
           },
           "maxConnections": {
+            "type": "integer"
+          },
+          "maxConnsPerSource": {
             "type": "integer"
           },
           "name": {
@@ -3347,6 +3356,9 @@
           },
           "paranoia": {
             "type": "integer"
+          },
+          "regexPrefilter": {
+            "type": "boolean"
           },
           "remark": {
             "type": "string"
@@ -44081,7 +44093,7 @@
     },
     "/api/system/upgrade": {
       "post": {
-        "description": "ログインセッション（管理者）のみ利用可能で、Linux バイナリ導入のみ対応。このプラットフォーム用のリリースパッケージをバックグラウンドでダウンロードし、checksums.txt の SHA-256 を照合して新しいバイナリを試験実行し、実行ファイルを置き換えて再起動します。旧バージョンは同じディレクトリに `\u003cファイル名\u003e.old` として保存されます。すぐに 202 を返し、進捗は `GET /api/system/upgrade/status` で確認できます。カスタムビルドでは 409 を返します。オンラインアップグレードでダウンロードされるのはフル版のため、https://build.gately.cn で同じオプションの新バージョンを生成し、アップロード API でアップグレードしてください。\n\n**ログインセッションでのみ利用できます。API トークンではこのエンドポイントにアクセスできません。**",
+        "description": "ログインセッション（管理者）のみ利用可能で、Linux バイナリ導入のみ対応。このプラットフォーム用のリリースパッケージをバックグラウンドでダウンロードし、組み込みの公開鍵で checksums.txt の minisign 署名（checksums.txt.minisig）を検証し（署名が無効ならアップグレードを拒否し、署名導入前のバージョンでこのファイルがない場合はそのまま続行）、checksums.txt の SHA-256 を照合して新しいバイナリを試験実行し、実行ファイルを置き換えて再起動します。旧バージョンは同じディレクトリに `\u003cファイル名\u003e.old` として保存されます。すぐに 202 を返し、進捗は `GET /api/system/upgrade/status` で確認できます。カスタムビルドでは 409 を返します。オンラインアップグレードでダウンロードされるのはフル版のため、https://build.gately.cn で同じオプションの新バージョンを生成し、アップロード API でアップグレードしてください。\n\n**ログインセッションでのみ利用できます。API トークンではこのエンドポイントにアクセスできません。**",
         "responses": {
           "200": {
             "description": "成功"
@@ -44173,7 +44185,7 @@
     },
     "/api/system/upgrade/status": {
       "get": {
-        "description": "ログインセッションのみ利用可能。`state` は `checking`、`downloading`、`verifying`、`installing`、`restarting` の順に進み、失敗すると `failed` になり `error` に理由が入ります。取消された場合は `canceled` です。`downloaded` / `total` はアップグレードパッケージのダウンロード済みバイト数と総バイト数です。\n\n**ログインセッションでのみ利用できます。API トークンではこのエンドポイントにアクセスできません。**",
+        "description": "ログインセッションのみ利用可能。`state` は `checking`、`downloading`、`verifying`、`installing`、`restarting` の順に進み、失敗すると `failed` になり `error` に理由が入ります。取消された場合は `canceled` です。`downloaded` / `total` はアップグレードパッケージのダウンロード済みバイト数と総バイト数です。`unsigned` が true の場合、そのバージョンにはリリース署名がなく SHA-256 のみ照合しています。\n\n**ログインセッションでのみ利用できます。API トークンではこのエンドポイントにアクセスできません。**",
         "responses": {
           "200": {
             "description": "成功"

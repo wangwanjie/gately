@@ -353,7 +353,7 @@ Issues и pull request приветствуются. Требования к к�
 
 ## Сообщество
 
-Задавайте вопросы и делитесь своими настройками в [GitHub Discussions](https://github.com/wangwanjie/gately/discussions); неформальное общение — в группе Telegram [t.me/gately_chat](https://t.me/gately_chat).
+Задавайте вопросы в [GitHub Discussions Q&A](https://github.com/wangwanjie/gately/discussions/categories/q-a), где ответы можно найти поиском, и делитесь настройками в Discussions; для живого общения есть группа Telegram [t.me/gately_chat](https://t.me/gately_chat).
 
 Об ошибках сообщайте в [GitHub Issues](https://github.com/wangwanjie/gately/issues) и прикладывайте [диагностический пакет](../ru/DIAGNOSTICS.md) (Настройки → Диагностика). Он создаётся локально и не содержит паролей, токенов, доменов и реальных IP-адресов. О проблемах безопасности сообщайте приватно, как описано в [SECURITY.md](../../SECURITY.md).
 

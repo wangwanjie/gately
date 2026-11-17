@@ -74,6 +74,10 @@
           <el-slider v-model="editing.paranoia" :min="1" :max="4" show-stops class="slider" />
           <span class="help">{{ t('waf.paranoiaHelp') }}</span>
         </el-form-item>
+        <el-form-item :label="t('waf.regexPrefilter')">
+          <el-switch v-model="editing.regexPrefilter" />
+          <div class="help block">{{ t('waf.regexPrefilterHelp') }}</div>
+        </el-form-item>
         <el-form-item :label="t('waf.inbound')"><el-input-number v-model="editing.inboundThreshold" :min="1" :max="100" /></el-form-item>
         <el-form-item :label="t('waf.outbound')"><el-input-number v-model="editing.outboundThreshold" :min="1" :max="100" /></el-form-item>
         <el-divider content-position="left">{{ t('waf.bodyCheck') }}</el-divider>
@@ -217,6 +221,8 @@ interface Instance {
   bodyLimitAction: string
   skipBodyPaths: string
   webdav: boolean
+  // regexPrefilter 为正则预过滤开关，存量配置没有此字段，按开启处理
+  regexPrefilter?: boolean
   safeline: SafeLine
   remark: string
 }
@@ -265,7 +271,7 @@ const copyFrom = ref<CopySource | null>(null)
 const polling = usePolling(load, 5000)
 
 function empty(): Instance {
-  return { name: '', enable: true, mode: 'block', paranoia: 1, inboundThreshold: 5, outboundThreshold: 4, ruleSets: [{ enable: true, remark: t('waf.defaultRuleSetRemark'), type: 'crs', param: '' }], bodyLimitMB: 0, bodyLimitAction: 'reject', skipBodyPaths: '', webdav: false, safeline: emptySafeLine(), remark: '' }
+  return { name: '', enable: true, mode: 'block', paranoia: 1, inboundThreshold: 5, outboundThreshold: 4, ruleSets: [{ enable: true, remark: t('waf.defaultRuleSetRemark'), type: 'crs', param: '' }], bodyLimitMB: 0, bodyLimitAction: 'reject', skipBodyPaths: '', webdav: false, regexPrefilter: true, safeline: emptySafeLine(), remark: '' }
 }
 
 function emptySafeLine(): SafeLine {
@@ -326,6 +332,7 @@ function openEditor(row?: InstanceView, copy = false) {
     editing.value.bodyLimitAction = editing.value.bodyLimitAction || 'reject'
     editing.value.skipBodyPaths = editing.value.skipBodyPaths ?? ''
     editing.value.bodyLimitMB = editing.value.bodyLimitMB ?? 0
+    editing.value.regexPrefilter = editing.value.regexPrefilter ?? true
     editing.value.safeline = { ...emptySafeLine(), ...(editing.value.safeline ?? {}) }
   } else {
     editing.value = empty()

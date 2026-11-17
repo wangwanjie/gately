@@ -1,0 +1,17 @@
+{
+  "open": "検索",
+  "ariaLabel": "グローバル検索",
+  "placeholder": "ページ、サイト、ルール、証明書を検索…",
+  "empty": "一致する結果はありません",
+  "loading": "設定データを読み込み中…",
+  "hintSelect": "選択",
+  "hintOpen": "開く",
+  "hintClose": "閉じる",
+  "kinds": {
+    "page": "ページ",
+    "site": "サイト",
+    "forward": "ポート転送",
+    "ddns": "ダイナミック DNS",
+    "cert": "SSL 証明書"
+  }
+}

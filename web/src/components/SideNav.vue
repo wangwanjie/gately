@@ -8,35 +8,97 @@
         <div class="brand-sub">{{ t('sideNav.brandSub') }}</div>
       </div>
     </div>
+    <!-- 全局搜索入口：点击打开命令面板，快捷键 Ctrl/⌘+K -->
+    <div class="search-row">
+      <el-tooltip :content="searchLabel" placement="right" :disabled="!collapsed" :show-after="200">
+        <button type="button" class="search-btn" :aria-label="searchLabel" aria-haspopup="dialog" data-test="nav-search" @click="$emit('search')">
+          <Search :size="16" class="nav-icon" aria-hidden="true" />
+          <template v-if="!collapsed">
+            <span class="search-text">{{ t('palette.open') }}</span>
+            <!-- 手机抽屉里没有实体键盘，不显示快捷键 -->
+            <kbd v-if="!collapsible" class="search-kbd">{{ shortcut }}</kbd>
+          </template>
+        </button>
+      </el-tooltip>
+    </div>
     <div class="groups">
       <div v-for="g in visibleNavGroups" :key="g.titleKey" class="group">
-        <div v-if="g.titleKey && !collapsed" class="group-title">{{ t(g.titleKey) }}</div>
+        <!-- 手机抽屉里分组可折叠，默认只展开当前页面所在的分组 -->
+        <button
+          v-if="g.titleKey && !collapsed && collapsible"
+          type="button"
+          class="group-title group-toggle"
+          :aria-expanded="isOpen(g.titleKey)"
+          @click="toggleGroup(g.titleKey)"
+        >
+          <span>{{ t(g.titleKey) }}</span>
+          <ChevronRight :size="14" class="group-chevron" :class="{ open: isOpen(g.titleKey) }" aria-hidden="true" />
+        </button>
+        <div v-else-if="g.titleKey && !collapsed" class="group-title">{{ t(g.titleKey) }}</div>
         <div v-else-if="g.titleKey" class="group-sep" />
-        <el-tooltip v-for="it in g.items" :key="it.path" :content="t(it.titleKey)" placement="right" :disabled="!collapsed" :show-after="200">
-          <router-link :to="it.path" class="nav-item" :class="{ active: isActive(it.path) }" @click="$emit('navigate')">
-            <component :is="it.icon" :size="18" :stroke-width="isActive(it.path) ? 2.2 : 1.9" class="nav-icon" />
-            <span v-if="!collapsed" class="nav-text">{{ t(it.titleKey) }}</span>
-          </router-link>
-        </el-tooltip>
+        <template v-if="!collapsible || !g.titleKey || isOpen(g.titleKey)">
+          <el-tooltip v-for="it in g.items" :key="it.path" :content="t(it.titleKey)" placement="right" :disabled="!collapsed" :show-after="200">
+            <router-link :to="it.path" class="nav-item" :class="{ active: isActive(it.path) }" @click="$emit('navigate')">
+              <component :is="it.icon" :size="18" :stroke-width="isActive(it.path) ? 2.2 : 1.9" class="nav-icon" />
+              <span v-if="!collapsed" class="nav-text">{{ t(it.titleKey) }}</span>
+            </router-link>
+          </el-tooltip>
+        </template>
       </div>
     </div>
   </nav>
 </template>
 
 <script setup lang="ts">
+import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { ChevronRight, Search } from 'lucide-vue-next'
 import AppLogo from './AppLogo.vue'
-import { visibleNavGroups } from '../nav'
+import { navByPath, navGroups, visibleNavGroups } from '../nav'
 
-defineProps<{ collapsed?: boolean }>()
-defineEmits<{ navigate: [] }>()
+// collapsible 为分组是否可折叠（手机抽屉）
+const props = defineProps<{ collapsed?: boolean; collapsible?: boolean }>()
+defineEmits<{ navigate: []; search: [] }>()
 
 const route = useRoute()
 const { t } = useI18n()
 
+// 快捷键提示按系统显示：macOS / iOS 为 ⌘K，其他为 Ctrl K
+const shortcut = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent) ? '⌘K' : 'Ctrl K'
+const searchLabel = computed(() => `${t('palette.open')} (${shortcut})`)
+
 function isActive(path: string) {
   return route.path === path || route.path.startsWith(path + '/')
+}
+
+// currentGroup 返回当前页面所在分组的键名（不在任何分组时为空串）
+function currentGroup(): string {
+  const item = navByPath(route.path)
+  return navGroups.find((g) => item && g.items.includes(item))?.titleKey ?? ''
+}
+
+// 展开的分组：每次切换页面后重置为只展开当前分组
+const openGroups = ref(new Set<string>([currentGroup()]))
+watch(
+  () => route.path,
+  () => {
+    openGroups.value = new Set([currentGroup()])
+  },
+)
+
+function isOpen(key: string) {
+  return !props.collapsible || openGroups.value.has(key)
+}
+
+function toggleGroup(key: string) {
+  const next = new Set(openGroups.value)
+  if (next.has(key)) {
+    next.delete(key)
+  } else {
+    next.add(key)
+  }
+  openGroups.value = next
 }
 </script>
 
@@ -69,6 +131,54 @@ function isActive(path: string) {
   font-size: 11px;
   color: var(--el-text-color-secondary);
 }
+.search-row {
+  padding: 2px 10px 6px;
+  flex-shrink: 0;
+}
+.search-btn {
+  width: 100%;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 8px 0 10px;
+  border: 1px solid var(--g-border);
+  border-radius: 8px;
+  background: var(--el-bg-color);
+  color: var(--el-text-color-secondary);
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.search-btn:hover {
+  border-color: var(--el-color-primary-light-5);
+  color: var(--el-text-color-regular);
+}
+.search-btn:focus-visible {
+  outline: 2px solid var(--el-color-primary);
+  outline-offset: 1px;
+}
+.collapsed .search-btn {
+  justify-content: center;
+  padding: 0;
+}
+.search-text {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.search-kbd {
+  flex-shrink: 0;
+  padding: 1px 5px;
+  border: 1px solid var(--g-border);
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 11px;
+  background: var(--el-fill-color-light);
+}
 .groups {
   flex: 1;
   overflow-y: auto;
@@ -81,6 +191,33 @@ function isActive(path: string) {
   color: var(--el-text-color-secondary);
   letter-spacing: 0.5px;
   padding: 14px 10px 6px;
+}
+.group-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  /* 手指点击区域不小于 40px */
+  min-height: 40px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  margin-top: 4px;
+  border-radius: 8px;
+}
+.group-toggle:focus-visible {
+  outline: 2px solid var(--el-color-primary);
+  outline-offset: -2px;
+}
+.group-chevron {
+  transition: transform 0.15s;
+}
+.group-chevron.open {
+  transform: rotate(90deg);
 }
 .group-sep {
   height: 1px;

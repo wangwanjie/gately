@@ -1,0 +1,17 @@
+{
+  "open": "搜尋",
+  "ariaLabel": "全域搜尋",
+  "placeholder": "搜尋頁面、站點、規則、憑證…",
+  "empty": "沒有符合的結果",
+  "loading": "正在載入設定資料…",
+  "hintSelect": "選擇",
+  "hintOpen": "開啟",
+  "hintClose": "關閉",
+  "kinds": {
+    "page": "頁面",
+    "site": "站點",
+    "forward": "連接埠轉送",
+    "ddns": "動態網域",
+    "cert": "SSL 憑證"
+  }
+}

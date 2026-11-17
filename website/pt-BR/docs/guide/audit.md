@@ -4,7 +4,7 @@ O Gately guarda chaves de DNS e chaves privadas de certificados, então deve ser
 
 ## Log de auditoria
 
-Em "Sistema → Log de auditoria", na barra lateral, as operações abaixo aparecem em ordem cronológica inversa, com filtro por categoria e busca por caminho, usuário ou IP:
+Na aba "Log de auditoria" da página "Sistema → Logs", na barra lateral, as operações abaixo aparecem em ordem cronológica inversa, com filtro por categoria e busca por caminho, usuário ou IP:
 
 | Categoria | O que é registrado |
 | --- | --- |
@@ -23,7 +23,7 @@ Cada registro contém horário, autor (nome de usuário ou `api-token:<nome do t
 
 Antes de sobrescrever um arquivo de configuração, o Gately salva o conteúdo antigo como uma versão em `history/<nome>/` dentro do diretório de configuração, mantendo as 30 versões mais recentes de cada configuração. `account.json` (credenciais da conta) e `tokens.json` (tokens) não têm histórico.
 
-Em "Sistema → Histórico de configuração":
+Na aba "Histórico de configuração" da página "Sistema → Logs":
 
 1. Escolha o arquivo de configuração e veja o horário e o tamanho de cada versão salva;
 2. Clique em "Comparar" para ver as diferenças linha a linha entre essa versão e a configuração atual;
