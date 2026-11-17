@@ -152,5 +152,7 @@
   "groupCount": "Contagem por grupo",
   "groupCountHelp": "Mostra o número de links ao lado do título de cada grupo.",
   "altBadge": "Selo de endereços",
-  "altBadgeHelp": "Links com outras formas de acesso mostram o total de endereços no canto superior direito do ícone. De qualquer forma, clicar nesses links abre a lista de endereços para escolher."
+  "altBadgeHelp": "Links com outras formas de acesso mostram o total de endereços no canto superior direito do ícone. De qualquer forma, clicar nesses links abre a lista de endereços para escolher.",
+  "bgPreview": "Pré-visualização",
+  "bgPreviewHelp": "O desfoque e a camada mudam ao arrastar os controles; veja a página completa na aba Pré-visualização."
 }

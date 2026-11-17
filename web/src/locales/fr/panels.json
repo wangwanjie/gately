@@ -152,5 +152,7 @@
   "groupCount": "Nombre par groupe",
   "groupCountHelp": "Affiche le nombre de liens à côté du titre de chaque groupe.",
   "altBadge": "Pastille d’adresses",
-  "altBadgeHelp": "Les liens ayant d’autres accès affichent leur nombre total d’adresses au coin supérieur droit de l’icône. Dans tous les cas, un clic sur ces liens affiche la liste des adresses."
+  "altBadgeHelp": "Les liens ayant d’autres accès affichent leur nombre total d’adresses au coin supérieur droit de l’icône. Dans tous les cas, un clic sur ces liens affiche la liste des adresses.",
+  "bgPreview": "Aperçu",
+  "bgPreviewHelp": "Le flou et le voile se mettent à jour quand vous déplacez les curseurs ; la page complète est dans l'onglet Aperçu."
 }
