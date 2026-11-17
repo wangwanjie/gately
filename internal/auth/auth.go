@@ -138,6 +138,16 @@ const accountKey = "__account__"
 // bcryptSem 限制同时进行的 bcrypt 校验数量，避免未认证请求打满 CPU。
 var bcryptSem = make(chan struct{}, 4)
 
+// passwordCost 为管理账号密码哈希的 bcrypt 代价。
+var passwordCost = bcrypt.DefaultCost
+
+// SetPasswordCostForTesting 调低管理账号密码哈希的代价，只供测试使用：
+// -race 下每次默认代价的哈希要数百毫秒，几百个用例各自建账号、登录会让包测试逼近超时。
+// 已有哈希仍按其自身的代价校验，不受影响。
+func SetPasswordCostForTesting(cost int) {
+	passwordCost = cost
+}
+
 // limitKey 返回限流键：IPv6 按 /64 聚合，避免攻击者在一个网段内轮换地址。
 func limitKey(ip string) string {
 	a, err := netip.ParseAddr(ip)
@@ -272,7 +282,7 @@ func (m *Manager) EnsureInitialized() (initial string, err error) {
 			initial = DefaultPassword
 			password = DefaultPassword
 		}
-		hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+		hash, err := bcrypt.GenerateFromPassword([]byte(password), passwordCost)
 		if err != nil {
 			return "", err
 		}
@@ -452,7 +462,7 @@ func (m *Manager) ChangeCredentials(oldPassword, newUsername, newPassword string
 			return errors.New("用户名与附加账号重复")
 		}
 	}
-	hash, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	hash, err := bcrypt.GenerateFromPassword([]byte(newPassword), passwordCost)
 	if err != nil {
 		return err
 	}
@@ -959,7 +969,7 @@ func (m *Manager) AddUser(username, password string) error {
 	if len(m.acc.Users) >= maxUsers {
 		return errors.New("附加账号数量已达上限")
 	}
-	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), passwordCost)
 	if err != nil {
 		return err
 	}
@@ -979,7 +989,7 @@ func (m *Manager) SetUserPassword(username, password string) error {
 	}
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), passwordCost)
 	if err != nil {
 		return err
 	}
