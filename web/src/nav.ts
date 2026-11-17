@@ -85,7 +85,6 @@ export const navGroups: NavGroup[] = [
       { path: '/portforward', titleKey: 'nav.items.portforward.title', icon: ArrowLeftRight, moduleId: 'portforward', descKey: 'nav.items.portforward.desc' },
       { path: '/protoroute', titleKey: 'nav.items.protoroute.title', icon: Split, moduleId: 'protoroute', descKey: 'nav.items.protoroute.desc' },
       { path: '/ddns', titleKey: 'nav.items.ddns.title', icon: Globe, moduleId: 'ddns', descKey: 'nav.items.ddns.desc' },
-      { path: '/stun', titleKey: 'nav.items.stun.title', icon: Radar, moduleId: 'stun', descKey: 'nav.items.stun.desc' },
     ],
   },
   {
@@ -116,6 +115,7 @@ export const navGroups: NavGroup[] = [
       { path: '/mesh/easytier', titleKey: 'nav.items.easytier.title', icon: Cable, moduleId: 'easytier', descKey: 'nav.items.easytier.desc', hub: '/mesh' },
       { path: '/frp', titleKey: 'nav.items.frp.title', icon: Waypoints, moduleId: 'frp', descKey: 'nav.items.frp.desc' },
       { path: '/cloudflared', titleKey: 'nav.items.cloudflared.title', icon: Cloud, moduleId: 'cloudflared', descKey: 'nav.items.cloudflared.desc' },
+      { path: '/stun', titleKey: 'nav.items.stun.title', icon: Radar, moduleId: 'stun', descKey: 'nav.items.stun.desc' },
     ],
   },
   {
