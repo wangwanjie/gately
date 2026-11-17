@@ -1,8 +1,17 @@
 import { watch } from 'vue'
 import { createRouter, createWebHashHistory } from 'vue-router'
 import { i18n, t } from './i18n'
-import { absentModules, disabledModules, pathEnabled, sessionRole } from './nav'
+import { absentModules, disabledModules, fallbackPath, pathEnabled, sessionRole } from './nav'
+import { firstTab, legacyRoutes } from './navRoutes'
+// 汇总页外壳按需加载，与其他页面一致
+const Hub = () => import('./views/Hub.vue')
 import { clearClips } from './components/terminal/clipboard'
+
+// hubLanding 返回打开汇总页时的落点：第一个可进入的标签。首次进入时模块状态可能尚未读取，
+// 落到的标签若不可进入，由下面的路由守卫再换到可进入的标签
+function hubLanding(hub: string): string {
+  return firstTab(hub, pathEnabled) || '/overview'
+}
 
 const router = createRouter({
   // 使用 hash 路由，避免反向代理子路径部署时刷新 404
@@ -17,16 +26,57 @@ const router = createRouter({
         { path: 'overview', name: 'overview', component: () => import('./views/Overview.vue'), meta: { titleKey: 'nav.items.overview.title' } },
         { path: 'ddns', name: 'ddns', component: () => import('./views/DDNS.vue'), meta: { titleKey: 'nav.items.ddns.title' } },
         { path: 'stun', name: 'stun', component: () => import('./views/STUN.vue'), meta: { titleKey: 'nav.items.stun.title' } },
-        { path: 'tailscale', name: 'tailscale', component: () => import('./views/Tailscale.vue'), meta: { titleKey: 'nav.items.tailscale.title' } },
-        { path: 'netbird', name: 'netbird', component: () => import('./views/NetBird.vue'), meta: { titleKey: 'nav.items.netbird.title' } },
-        { path: 'easytier', name: 'easytier', component: () => import('./views/EasyTier.vue'), meta: { titleKey: 'nav.items.easytier.title' } },
         { path: 'frp', name: 'frp', component: () => import('./views/Frp.vue'), meta: { titleKey: 'nav.items.frp.title' } },
         { path: 'cloudflared', name: 'cloudflared', component: () => import('./views/Cloudflared.vue'), meta: { titleKey: 'nav.items.cloudflared.title' } },
+        // 汇总页：原页面组件原样作为标签内容，标签栏由 Hub.vue 渲染（见 navRoutes.ts）
+        {
+          path: 'web',
+          component: Hub,
+          meta: { hub: '/web' },
+          children: [
+            { path: '', name: 'web', component: () => import('./views/Web.vue'), meta: { titleKey: 'nav.items.web.title' } },
+            { path: 'topology', name: 'webtopology', component: () => import('./views/WebTopologyPage.vue'), meta: { titleKey: 'nav.items.webtopology.title' } },
+            { path: 'visitors', name: 'webvisitors', component: () => import('./views/WebVisitors.vue'), meta: { titleKey: 'nav.items.webvisitors.title' } },
+            { path: 'panels', name: 'webpanels', component: () => import('./views/WebPanels.vue'), meta: { titleKey: 'nav.items.webpanels.title' } },
+          ],
+        },
+        {
+          path: 'mesh',
+          component: Hub,
+          meta: { hub: '/mesh' },
+          children: [
+            { path: '', name: 'mesh', redirect: () => hubLanding('/mesh') },
+            { path: 'tailscale', name: 'tailscale', component: () => import('./views/Tailscale.vue'), meta: { titleKey: 'nav.items.tailscale.title' } },
+            { path: 'netbird', name: 'netbird', component: () => import('./views/NetBird.vue'), meta: { titleKey: 'nav.items.netbird.title' } },
+            { path: 'easytier', name: 'easytier', component: () => import('./views/EasyTier.vue'), meta: { titleKey: 'nav.items.easytier.title' } },
+          ],
+        },
+        {
+          path: 'files',
+          component: Hub,
+          meta: { hub: '/files' },
+          children: [
+            { path: '', name: 'files', redirect: () => hubLanding('/files') },
+            { path: 'webdav', name: 'webdav', component: () => import('./views/WebDAV.vue'), meta: { titleKey: 'nav.items.webdav.title' } },
+            { path: 'ftp', name: 'ftp', component: () => import('./views/FTP.vue'), meta: { titleKey: 'nav.items.ftp.title' } },
+            { path: 'smb', name: 'smb', component: () => import('./views/SMB.vue'), meta: { titleKey: 'nav.items.smb.title' } },
+            { path: 'users', name: 'fileusers', component: () => import('./views/FileServiceUsers.vue'), meta: { titleKey: 'nav.items.fileusers.title' } },
+          ],
+        },
+        {
+          path: 'logs',
+          component: Hub,
+          meta: { hub: '/logs' },
+          children: [
+            { path: '', name: 'logsHub', redirect: () => hubLanding('/logs') },
+            { path: 'system', name: 'logs', component: () => import('./views/Logs.vue'), meta: { titleKey: 'nav.items.logs.title' } },
+            { path: 'audit', name: 'audit', component: () => import('./views/Audit.vue'), meta: { titleKey: 'nav.items.audit.title' } },
+            { path: 'history', name: 'history', component: () => import('./views/History.vue'), meta: { titleKey: 'nav.items.history.title' } },
+          ],
+        },
+        // 合并前的旧地址：重定向到新位置，查询参数与锚点原样保留
+        ...Object.entries(legacyRoutes).map(([from, to]) => ({ path: from.slice(1), redirect: to })),
         { path: 'ssl', name: 'ssl', component: () => import('./views/SSL.vue'), meta: { titleKey: 'nav.items.ssl.title' } },
-        { path: 'web', name: 'web', component: () => import('./views/Web.vue'), meta: { titleKey: 'nav.items.web.title' } },
-        { path: 'webtopology', name: 'webtopology', component: () => import('./views/WebTopologyPage.vue'), meta: { titleKey: 'nav.items.webtopology.title' } },
-        { path: 'webvisitors', name: 'webvisitors', component: () => import('./views/WebVisitors.vue'), meta: { titleKey: 'nav.items.webvisitors.title' } },
-        { path: 'webpanels', name: 'webpanels', component: () => import('./views/WebPanels.vue'), meta: { titleKey: 'nav.items.webpanels.title' } },
         { path: 'webusers', name: 'webusers', component: () => import('./views/WebUsers.vue'), meta: { titleKey: 'nav.items.webusers.title' } },
         { path: 'portforward', name: 'portforward', component: () => import('./views/PortForward.vue'), meta: { titleKey: 'nav.items.portforward.title' } },
         { path: 'protoroute', name: 'protoroute', component: () => import('./views/ProtoRoute.vue'), meta: { titleKey: 'nav.items.protoroute.title' } },
@@ -36,19 +86,12 @@ const router = createRouter({
         { path: 'wol', name: 'wol', component: () => import('./views/WOL.vue'), meta: { titleKey: 'nav.items.wol.title' } },
         { path: 'terminal', name: 'terminal', component: () => import('./views/Terminal.vue'), meta: { titleKey: 'nav.items.terminal.title' } },
         { path: 'docker', name: 'docker', component: () => import('./views/Docker.vue'), meta: { titleKey: 'nav.items.docker.title' } },
-        { path: 'webdav', name: 'webdav', component: () => import('./views/WebDAV.vue'), meta: { titleKey: 'nav.items.webdav.title' } },
         { path: 'storage', name: 'storage', component: () => import('./views/Storage.vue'), meta: { titleKey: 'nav.items.storage.title' } },
-        { path: 'ftp', name: 'ftp', component: () => import('./views/FTP.vue'), meta: { titleKey: 'nav.items.ftp.title' } },
-        { path: 'smb', name: 'smb', component: () => import('./views/SMB.vue'), meta: { titleKey: 'nav.items.smb.title' } },
         { path: 'filebrowser', name: 'filebrowser', component: () => import('./views/FileBrowser.vue'), meta: { titleKey: 'nav.items.filebrowser.title' } },
-        { path: 'fileusers', name: 'fileusers', component: () => import('./views/FileServiceUsers.vue'), meta: { titleKey: 'nav.items.fileusers.title' } },
         { path: 'cron', name: 'cron', component: () => import('./views/Cron.vue'), meta: { titleKey: 'nav.items.cron.title' } },
         { path: 'nettools', name: 'nettools', component: () => import('./views/NetTools.vue'), meta: { titleKey: 'nav.items.nettools.title' } },
         { path: 'notify', name: 'notify', component: () => import('./views/Notify.vue'), meta: { titleKey: 'nav.items.notify.title' } },
         { path: 'perf', name: 'perf', component: () => import('./views/Perf.vue'), meta: { titleKey: 'nav.items.perf.title' } },
-        { path: 'logs', name: 'logs', component: () => import('./views/Logs.vue'), meta: { titleKey: 'nav.items.logs.title' } },
-        { path: 'audit', name: 'audit', component: () => import('./views/Audit.vue'), meta: { titleKey: 'nav.items.audit.title' } },
-        { path: 'history', name: 'history', component: () => import('./views/History.vue'), meta: { titleKey: 'nav.items.history.title' } },
         { path: 'api-tokens', name: 'api-tokens', component: () => import('./views/ApiTokens.vue'), meta: { titleKey: 'nav.items.apiTokens.title' } },
         { path: 'api-docs', name: 'api-docs', component: () => import('./views/ApiDocs.vue'), meta: { titleKey: 'nav.items.apiDocs.title' } },
         { path: 'settings', name: 'settings', component: () => import('./views/Settings.vue'), meta: { titleKey: 'nav.items.settings.title' } },
@@ -109,9 +152,9 @@ router.beforeEach(async (to) => {
     }
     sessionChecked = true
   }
-  // 已关闭模块的页面不可访问，直接回到总览（首次进入时模块状态尚未加载，由 Layout 加载后再检查一次）
+  // 已关闭模块的页面不可访问：汇总页里换到第一个可见标签，其余回到总览（首次进入时模块状态尚未加载，由 Layout 加载后再检查一次）
   if (!pathEnabled(to.path)) {
-    return '/overview'
+    return fallbackPath(to.path)
   }
 })
 

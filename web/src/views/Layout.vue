@@ -1,6 +1,6 @@
 <template>
   <div class="layout" :class="{ collapsed }">
-    <!-- 键盘与读屏用户跳过约 40 个导航项，直接进入正文；平时隐藏，获得焦点时显示 -->
+    <!-- 键盘与读屏用户跳过侧边栏的导航项，直接进入正文；平时隐藏，获得焦点时显示 -->
     <a href="#main-content" class="skip-link" @click.prevent="skipToContent">{{ t('layout.skipToContent') }}</a>
     <aside v-if="!isMobile" class="aside">
       <SideNav :collapsed="collapsed" />
@@ -46,6 +46,8 @@
                 <el-dropdown-item v-if="role === 'admin'" command="password" :icon="KeyRound">{{ t('layout.changePassword') }}</el-dropdown-item>
                 <el-dropdown-item v-if="role === 'admin'" command="settings" :icon="Settings">{{ t('layout.systemSettings') }}</el-dropdown-item>
                 <el-dropdown-item command="docs" :icon="BookOpen">{{ t('common.docs') }}</el-dropdown-item>
+                <!-- API 文档不在侧边栏显示，只读账号进不了设置页，从这里打开 -->
+                <el-dropdown-item command="apidocs" :icon="Braces">{{ t('nav.items.apiDocs.title') }}</el-dropdown-item>
                 <el-dropdown-item command="logout" :icon="LogOut" divided>{{ t('layout.logout') }}</el-dropdown-item>
               </el-dropdown-menu>
             </template>
@@ -79,7 +81,7 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { ElMessageBox } from 'element-plus'
-import { BookOpen, ChevronDown, ChevronRight, KeyRound, LogOut, Menu, PanelLeftClose, PanelLeftOpen, Settings } from 'lucide-vue-next'
+import { BookOpen, Braces, ChevronDown, ChevronRight, KeyRound, LogOut, Menu, PanelLeftClose, PanelLeftOpen, Settings } from 'lucide-vue-next'
 import { docsUrl } from '../docsUrl'
 import { api } from '../api'
 import { bannerLevel, fixTarget, SEC_SNOOZE_KEY, SEC_SNOOZE_MS, snoozeKey } from '../security'
@@ -88,7 +90,7 @@ import SideNav from '../components/SideNav.vue'
 import AppLogo from '../components/AppLogo.vue'
 import ThemePicker from '../components/ThemePicker.vue'
 import LocaleSwitcher from '../components/LocaleSwitcher.vue'
-import { absentModules, disabledModules, groupByPath, pathEnabled, sessionRole } from '../nav'
+import { absentModules, disabledModules, fallbackPath, groupByPath, pathEnabled, sessionRole } from '../nav'
 import { useIsMobile } from '../composables/useIsMobile'
 import { useScrollLock } from '../composables/useScrollLock'
 
@@ -160,6 +162,8 @@ async function onCommand(cmd: string) {
     router.push({ path: '/settings', query: { tab: 'account' } })
   } else if (cmd === 'settings') {
     router.push('/settings')
+  } else if (cmd === 'apidocs') {
+    router.push('/api-docs')
   } else if (cmd === 'docs') {
     // 官网文档：当前页面有对应的模块文档时打开它，否则打开文档首页
     window.open(docsUrl(locale.value, '/docs/' + (pageDoc() || 'guide/quick-start')), '_blank', 'noopener')
@@ -222,9 +226,9 @@ onMounted(async () => {
     // 第三方登录、飞牛桌面入口等整页跳转进入时后端拿不到界面语言，这里上报一次；语言没变时后端不写文件
     api.put('/api/account/ui-language', { language: locale.value }).catch(() => undefined)
   }
-  // 直接通过链接打开了已关闭模块的页面时，加载模块状态后再跳回总览
+  // 直接通过链接打开了已关闭模块的页面时，加载模块状态后再换到汇总页里可见的标签或总览
   if (!pathEnabled(route.path)) {
-    router.replace('/overview')
+    router.replace(fallbackPath(route.path))
   }
 })
 </script>

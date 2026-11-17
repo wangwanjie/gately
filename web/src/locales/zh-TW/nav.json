@@ -2,6 +2,7 @@
   "login": "登入",
   "groups": {
     "network": "網路",
+    "security": "安全",
     "tunnel": "組網與穿透",
     "web": "Web",
     "storage": "檔案服務",
@@ -35,6 +36,9 @@
     "stun": {
       "title": "STUN 穿透",
       "desc": "NAT1 網路下無公網 IP 穿透"
+    },
+    "mesh": {
+      "title": "組網"
     },
     "tailscale": {
       "title": "Tailscale",
@@ -85,6 +89,9 @@
       "title": "儲存掛載",
       "desc": "掛載本機目錄、遠端 WebDAV 或 SMB 共用，線上管理檔案"
     },
+    "files": {
+      "title": "檔案共用"
+    },
     "webdav": {
       "title": "WebDAV 服務",
       "desc": "WebDAV 檔案分享服務"
@@ -133,6 +140,9 @@
       "title": "效能監控",
       "desc": "效能趨勢與門檻告警"
     },
+    "logsHub": {
+      "title": "日誌"
+    },
     "logs": {
       "title": "系統日誌"
     },
@@ -154,5 +164,12 @@
     "about": {
       "title": "關於"
     }
+  },
+  "tabs": {
+    "webSites": "站點",
+    "webdav": "WebDAV",
+    "ftp": "FTP",
+    "smb": "SMB",
+    "fileusers": "共用使用者"
   }
 }

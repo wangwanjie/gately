@@ -2,6 +2,7 @@
   "login": "로그인",
   "groups": {
     "network": "네트워크",
+    "security": "보안",
     "tunnel": "연결 및 터널링",
     "web": "Web",
     "storage": "파일 서비스",
@@ -35,6 +36,9 @@
     "stun": {
       "title": "STUN 홀 펀칭",
       "desc": "NAT1 환경에서 공인 IP 없이 외부 접속"
+    },
+    "mesh": {
+      "title": "메시 VPN"
     },
     "tailscale": {
       "title": "Tailscale",
@@ -85,6 +89,9 @@
       "title": "스토리지 마운트",
       "desc": "로컬 디렉터리, 원격 WebDAV 또는 SMB 공유를 마운트하고 온라인으로 파일 관리"
     },
+    "files": {
+      "title": "파일 공유"
+    },
     "webdav": {
       "title": "WebDAV 서비스",
       "desc": "WebDAV 파일 공유 서비스"
@@ -133,6 +140,9 @@
       "title": "성능 모니터링",
       "desc": "성능 추이와 임계값 경보"
     },
+    "logsHub": {
+      "title": "로그"
+    },
     "logs": {
       "title": "시스템 로그"
     },
@@ -154,5 +164,12 @@
     "about": {
       "title": "정보"
     }
+  },
+  "tabs": {
+    "webSites": "사이트",
+    "webdav": "WebDAV",
+    "ftp": "FTP",
+    "smb": "SMB",
+    "fileusers": "공유 사용자"
   }
 }
