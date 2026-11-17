@@ -1,6 +1,6 @@
 {
   "title": "Gemeinsame Benutzer",
-  "cardDesc": "Gemeinsam für WebDAV, FTP und SMB, verwaltet auf der Seite Gemeinsame Dateibenutzer",
+  "cardDesc": "Gemeinsam für WebDAV, FTP und SMB, verwaltet im Tab Gemeinsame Benutzer der Seite Dateifreigabe",
   "usersDesc": "Speichern gilt sofort für WebDAV, FTP und SMB",
   "enable": "Gemeinsame Benutzer erlauben",
   "count": "{count} gemeinsame Benutzer",

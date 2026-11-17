@@ -1,6 +1,6 @@
 {
   "title": "共享用户",
-  "cardDesc": "WebDAV、FTP、SMB 共用，在「文件共享用户」页面统一维护",
+  "cardDesc": "WebDAV、FTP、SMB 共用，在「文件共享」页的「共享用户」标签统一维护",
   "usersDesc": "保存后 WebDAV、FTP、SMB 同时生效",
   "enable": "允许共享用户登录",
   "count": "共 {count} 个共享用户",
