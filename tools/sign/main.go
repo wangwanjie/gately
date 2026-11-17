@@ -44,6 +44,9 @@ func main() {
 	}
 }
 
+// keygenKDF 为生成私钥时的口令派生参数，默认与 minisign -G 相同；测试中改小以免每次派生耗时数秒。
+var keygenKDF = minisign.DefaultKDF
+
 func usage() {
 	fmt.Fprintln(os.Stderr, "用法: sign keygen -dir <目录> | sign sign [-key 文件] [-password-file 文件] [-t 受信说明] <文件> | sign verify [-pub 公钥] <文件>")
 	os.Exit(2)
@@ -78,7 +81,7 @@ func keygen(args []string) error {
 	if err != nil {
 		return err
 	}
-	sk, err := minisign.EncodeSecretKey(k, password, minisign.DefaultKDF, rand.Reader)
+	sk, err := minisign.EncodeSecretKey(k, password, keygenKDF, rand.Reader)
 	if err != nil {
 		return err
 	}
