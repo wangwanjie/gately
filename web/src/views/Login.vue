@@ -63,6 +63,15 @@
           <p class="sub">{{ t('login.subtitle') }}</p>
         </header>
 
+        <!-- 演示实例：一键以只读演示账号进入，无需密码 -->
+        <div v-if="demoEnabled" class="demo-card">
+          <el-button type="primary" size="large" class="demo-btn" :loading="demoBusy" @click="enterDemo">
+            <Eye v-if="!demoBusy" :size="16" />{{ t('login.demoEnter') }}
+          </el-button>
+          <p class="demo-hint">{{ t('login.demoHint') }}</p>
+          <div v-if="passwordLogin" class="third-title"><span>{{ t('login.demoOrAdmin') }}</span></div>
+        </div>
+
         <p v-if="!passwordLogin" class="pw-off-note"><LockKeyhole :size="15" />{{ t('login.passwordLoginOff') }}</p>
         <el-form v-if="passwordLogin" :model="form" label-position="top" size="large" class="login-form" @submit.prevent="submit">
           <el-form-item :label="t('login.username')">
@@ -163,7 +172,7 @@ import { nextTick, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
-import { LoaderCircle, ArrowLeft, Fingerprint, ArrowLeftRight, ArrowRight, KeyRound, LockKeyhole, Server, ShieldCheck, UserRound } from 'lucide-vue-next'
+import { LoaderCircle, ArrowLeft, Eye, Fingerprint, ArrowLeftRight, ArrowRight, KeyRound, LockKeyhole, Server, ShieldCheck, UserRound } from 'lucide-vue-next'
 import { api, ApiError } from '../api'
 import AppLogo from '../components/AppLogo.vue'
 import ThemePicker from '../components/ThemePicker.vue'
@@ -186,6 +195,26 @@ const providers = ref<{ key: string; name: string; type: string; url: string }[]
 // 可凭飞牛登录态登录的飞牛用户名（仅经飞牛统一网关访问且已开启时由后端返回）
 const fnosUser = ref('')
 const fnosBusy = ref(false)
+
+// 在线演示模式：登录页提供只读演示账号一键进入
+const demoEnabled = ref(false)
+const demoBusy = ref(false)
+
+async function enterDemo() {
+  if (demoBusy.value) {
+    return
+  }
+  demoBusy.value = true
+  try {
+    await api.post('/api/login/demo', {})
+    const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/overview'
+    router.replace(redirect)
+  } catch (e) {
+    ElMessage.error((e as Error).message)
+  } finally {
+    demoBusy.value = false
+  }
+}
 
 // 正在跳转的第三方登录方式；非空时按钮显示进度并禁止重复点击
 const redirecting = ref('')
@@ -212,6 +241,11 @@ if (typeof route.query.oauthError === 'string') {
 }
 
 onMounted(async () => {
+  try {
+    demoEnabled.value = (await api.get<{ enabled: boolean }>('/api/demo')).enabled
+  } catch {
+    // 演示信息获取失败时按普通登录页显示
+  }
   try {
     const r = await api.get<{ providers: typeof providers.value; fnosUser?: string; passwordLogin?: boolean }>('/api/login/providers')
     providers.value = r.providers ?? []
@@ -600,6 +634,19 @@ h2 {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 10px;
+}
+.demo-card {
+  margin-bottom: 18px;
+}
+.demo-btn {
+  width: 100%;
+  font-weight: 600;
+}
+.demo-hint {
+  margin: 8px 0 14px;
+  font-size: 12.5px;
+  color: var(--el-text-color-secondary);
+  text-align: center;
 }
 .third-btn {
   display: flex;
