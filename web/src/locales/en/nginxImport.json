@@ -1,6 +1,8 @@
 {
   "title": "Import nginx config",
   "intro": "Paste server blocks, or run the command below on the nginx host and paste the full output (it includes the files pulled in by include). You can review the result before importing; domains that already exist are skipped.",
+  "npmIntro": "Nginx Proxy Manager: run the command below on the NPM host (use the name of the NPM container) and paste the full output.",
+  "npmCommand": "docker exec <npm-container> nginx -T",
   "readFile": "Read from file",
   "preview": "Preview",
   "import": "Import {count} sites",

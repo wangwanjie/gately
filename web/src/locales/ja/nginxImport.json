@@ -1,6 +1,8 @@
 {
   "title": "nginx 設定をインポート",
   "intro": "server ブロックを貼り付けるか、nginx のホストで下のコマンドを実行して出力全体を貼り付けてください（include されたファイルも含まれます）。インポート前に変換結果を確認でき、既存のドメインはスキップされます。",
+  "npmIntro": "Nginx Proxy Manager：NPM のホストで下のコマンドを実行し（NPM のコンテナー名に置き換え）、出力全体を貼り付けてください。",
+  "npmCommand": "docker exec <NPM コンテナー名> nginx -T",
   "readFile": "ファイルから読み込む",
   "preview": "プレビュー",
   "import": "{count} 件のサイトをインポート",

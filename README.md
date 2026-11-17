@@ -25,7 +25,7 @@ Gately sits at the edge of a home network or a server and handles the path from 
 
 | You run today | In Gately |
 | --- | --- |
-| nginx or Nginx Proxy Manager | Web services: reverse proxy, static sites, redirects, HTTP/3, per-site access rules; imports nginx config |
+| nginx or Nginx Proxy Manager | Web services: reverse proxy, static sites, redirects, HTTP/3, per-site access rules; imports nginx config and imports Nginx Proxy Manager configs |
 | certbot / acme.sh | ACME certificates with DNS-01 and HTTP-01, wildcard, automatic renewal and deployment |
 | ddns-go or DDNS scripts | Dynamic DNS for 30+ providers, IPv4 and IPv6 |
 | haproxy SNI routing / sslh | Protocol routing: HTTPS, SSH, RDP and more share one port |

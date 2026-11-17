@@ -720,7 +720,24 @@ curl -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/webservice/m
 - `client_body_timeout` と `send_timeout` はサイトの[訪問者のタイムアウト](#client-timeouts)に変換され、すべてのサイト種別に適用されます；
 - `auth_request` はフォワード認証に変換されます。認証 URL は認証サブリクエストの location の `proxy_pass`（`set` 変数に対応）から、ログインのリダイレクト先は `error_page 401 =302` から取得するため、Authelia のよくある書き方はそのまま変換できます。一部の location でのみ有効な場合は「認証必須」にしたパスのみ認証する設定に変換されます。
 - `auth_basic` は共有ユーザーを使う Basic 認証に変換されます。nginx のユーザーファイルは読み込まれないため、ユーザーを追加するまでは誰も認証を通過できません。
+- `proxy_pass` とリダイレクト先で `set` で定義した変数は代入されます。location 内の `set` が server 内の `set` より優先され、末尾の `$request_uri` はリクエストパスをそのまま転送するのと同じです。`if` 内で代入される変数やリクエストごとに値が変わる変数は引き続き変換できず、プレビューに表示されます。
 - `stream` 内の TCP/UDP 転送は [ポート転送](/ja/docs/modules/portforward) で設定してください。証明書はインポートされません。HTTPS サイトに証明書がない場合、プレビューには nginx が使っている証明書ファイルが表示されるので、[SSL 証明書](/ja/docs/modules/ssl) ページでファイルパスから追加できます。
+
+### Nginx Proxy Manager のインポート {#import-npm}
+
+Nginx Proxy Manager（NPM）が生成した設定はそのままインポートできます。NPM のホストで次のコマンドを実行し（NPM のコンテナー名に置き換え）、出力全体を「nginx をインポート」に貼り付けます。
+
+```bash
+docker exec <NPM コンテナー名> nginx -T
+```
+
+NPM のデータディレクトリにある `nginx/proxy_host/*.conf`、`nginx/redirection_host/*.conf` などのサイトファイルだけを貼り付けることもできます。足りない NPM 組み込みのスニペットは自動で補います。
+
+- プロキシホストはリバースプロキシのサイトになり、バックエンドは `set $forward_scheme`、`set $server`、`set $port` から取ります。リダイレクトホストはリダイレクトのサイト、404 ホストは 404 を返す固定内容のサイト、カスタム location はパスごとのバックエンドになります。
+- Force SSL は HTTP ポートで HTTPS へリダイレクトするサイト、HSTS はレスポンスヘッダー、Cache Assets は静的ファイルの 30 分キャッシュ（ほかのパスはキャッシュしない）になります。Websockets Support と HTTP/2 は設定不要です。
+- Access List の IP ルールは IP の許可リストまたは拒否リストに、ユーザー名とパスワードは共有ユーザーを使う Basic 認証になります。ユーザーは Gately で追加し直してください。「Satisfy Any」は nginx ではリスト内の IP がパスワードなしで入れる設定ですが、Gately は IP による認証免除に対応していないため認証だけをインポートし、プレビューにその IP を表示します。
+- Block Common Exploits はインポートせず、プレビューで一度だけ案内します。同様の保護が必要な場合はサイトの「セキュリティ」タブで [WAF インスタンス](/ja/docs/modules/waf) を選択してください。NPM 組み込みのデフォルトページ、443 のフォールバック、管理画面（ポート 81）はスキップします。Streams は [ポート転送](/ja/docs/modules/portforward) で設定してください。
+- 証明書はインポートされません。ファイルは NPM コンテナー内の `/etc/letsencrypt/live/npm-N/`（Let's Encrypt）または `/data/custom_ssl/npm-N/`（カスタム証明書）にあり、ホストでは NPM がマウントしている `letsencrypt` と `data` ディレクトリです。[証明書](/ja/docs/modules/ssl) ページでソースに「ファイルから読み込み」を選んで追加するか（Gately が Docker で動いている場合は先にこれらのディレクトリをマウント）、新しく発行してください。
 
 ## haproxy と nginx の置き換え
 

@@ -720,7 +720,24 @@ curl -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/webservice/m
 - `client_body_timeout` 与 `send_timeout` 转换为站点的[访客超时](#client-timeouts)，各类站点都适用；
 - `auth_request` 会转换为转发认证：认证地址取自认证子请求 location 的 `proxy_pass`（支持 `set` 变量），登录跳转取自 `error_page 401 =302`，Authelia 的常见写法可以直接转换；只在部分 location 启用时转换为「仅对指定路径认证」；
 - `auth_basic` 转换为使用共享用户的基本认证，nginx 的用户文件不会被读取，补齐用户前任何人都无法通过；
+- `proxy_pass` 与跳转地址中用 `set` 定义的变量会代入，location 中的 `set` 优先于 server 中的；结尾的 `$request_uri` 等同于原样转发请求路径。在 `if` 中赋值、或取值随请求变化的变量仍无法转换，预览中会提示；
 - `stream` 中的 TCP/UDP 转发请在[端口转发](/docs/modules/portforward)中配置；证书不会导入，HTTPS 站点缺少证书时预览会列出 nginx 使用的证书文件，可在[证书](/docs/modules/ssl)页按文件路径添加。
+
+### 导入 Nginx Proxy Manager {#import-npm}
+
+Nginx Proxy Manager（NPM）生成的配置可以直接导入。在 NPM 所在主机执行下面的命令（换成 NPM 的容器名），把完整输出粘贴到「导入 nginx」：
+
+```bash
+docker exec <NPM 容器名> nginx -T
+```
+
+也可以只粘贴 NPM 数据目录里 `nginx/proxy_host/*.conf`、`nginx/redirection_host/*.conf` 等站点文件，缺少的 NPM 自带片段会自动补全。
+
+- 代理主机转换为反向代理站点，后端取自 `set $forward_scheme`、`set $server`、`set $port`；重定向主机转换为重定向站点，404 主机转换为返回 404 的固定内容站点；自定义 location 转换为分路径后端；
+- Force SSL 转换为 HTTP 端口上跳转到 HTTPS 的站点，HSTS 转换为响应头，Cache Assets 转换为静态资源缓存 30 分钟（其他路径不缓存），Websockets Support 与 HTTP/2 无需设置；
+- Access List 的 IP 规则转换为 IP 白名单或黑名单，用户名密码转换为使用共享用户的基本认证，需要在 Gately 里重新添加用户。「Satisfy Any」在 nginx 中表示名单内的 IP 免密码，Gately 不支持按 IP 免认证，只导入认证，预览会列出这些 IP；
+- Block Common Exploits 不导入，预览会提示一次，需要类似防护时在站点「安全」页选择 [WAF 实例](/docs/modules/waf)；NPM 自带的默认页、443 兜底与管理界面（81 端口）会跳过；Streams 请在[端口转发](/docs/modules/portforward)中配置；
+- 证书不会导入：证书文件在 NPM 容器内的 `/etc/letsencrypt/live/npm-N/`（Let's Encrypt）或 `/data/custom_ssl/npm-N/`（自定义证书），对应宿主机上 NPM 挂载的 `letsencrypt` 与 `data` 目录。可在[证书](/docs/modules/ssl)页添加证书，来源选「读取文件」（Gately 在 Docker 中时先把这些目录挂载进来），或直接重新签发。
 
 ## 替换 haproxy 与 nginx
 

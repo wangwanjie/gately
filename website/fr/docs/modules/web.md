@@ -720,7 +720,24 @@ Le bouton « Importer nginx » en haut de la page convertit des sites nginx exis
 - `client_body_timeout` et `send_timeout` deviennent les [délais des visiteurs](#client-timeouts) du site, pour tous les types de site ;
 - `auth_request` est converti en authentification déléguée : l'adresse de vérification est reprise du `proxy_pass` de la location de la sous-requête d'authentification (variables `set` prises en charge), et la redirection de connexion de `error_page 401 =302` ; les configurations Authelia courantes se convertissent directement. Si l'authentification n'est active que sur certaines location, le « Périmètre d'authentification » est limité aux chemins concernés ;
 - `auth_basic` est converti en authentification Basic avec les utilisateurs partagés ; le fichier d'utilisateurs de nginx n'est pas lu, et personne ne peut passer tant que les utilisateurs n'ont pas été ajoutés ;
+- Les variables définies par `set` dans `proxy_pass` et les cibles de redirection sont substituées, un `set` de la location l'emportant sur celui du server ; un `$request_uri` final revient à transmettre le chemin sans modification. Les variables affectées dans un `if` ou dont la valeur dépend de la requête restent non convertibles, et l'aperçu le signale ;
 - Les redirections TCP/UDP du bloc `stream` se configurent dans la [Redirection de ports](/fr/docs/modules/portforward) ; les certificats ne sont pas importés : quand un site HTTPS n'a pas de certificat, l'aperçu indique les fichiers de certificat utilisés par nginx, que vous pouvez ajouter par chemin de fichier dans la page [Certificats](/fr/docs/modules/ssl).
+
+### Importer Nginx Proxy Manager {#import-npm}
+
+La configuration générée par Nginx Proxy Manager (NPM) s'importe directement. Sur l'hôte NPM, exécutez la commande ci-dessous (avec le nom du conteneur NPM) et collez la sortie complète dans « Importer nginx » :
+
+```bash
+docker exec <conteneur-npm> nginx -T
+```
+
+Vous pouvez aussi coller uniquement les fichiers de site du répertoire de données de NPM, comme `nginx/proxy_host/*.conf` et `nginx/redirection_host/*.conf` ; les fragments propres à NPM manquants sont complétés automatiquement.
+
+- Les proxy hosts deviennent des sites de proxy inverse dont le backend provient de `set $forward_scheme`, `set $server` et `set $port` ; les redirection hosts deviennent des sites de redirection, les 404 hosts des sites à contenu fixe renvoyant 404, et les locations personnalisées des backends par chemin.
+- Force SSL devient un site sur le port HTTP qui redirige vers HTTPS, HSTS un en-tête de réponse et Cache Assets un cache de 30 minutes pour les ressources statiques (les autres chemins ne sont pas mis en cache) ; Websockets Support et HTTP/2 ne demandent aucun réglage.
+- Les règles IP d'Access List deviennent une liste d'autorisation ou de blocage, et les utilisateurs et mots de passe une authentification Basic avec les utilisateurs partagés ; ajoutez de nouveau les utilisateurs dans Gately. « Satisfy Any » laisse entrer sans mot de passe les IP de la liste dans nginx ; Gately ne permet pas d'exempter des IP de l'authentification, seule l'authentification est donc importée et l'aperçu indique ces IP.
+- Block Common Exploits n'est pas importé et l'aperçu le signale une fois ; pour une protection similaire, choisissez une [instance WAF](/fr/docs/modules/waf) dans l'onglet Sécurité du site. La page par défaut, le serveur de repli 443 et l'interface d'administration (port 81) de NPM sont ignorés. Les Streams se configurent dans la [Redirection de ports](/fr/docs/modules/portforward).
+- Les certificats ne sont pas importés. Les fichiers se trouvent dans le conteneur NPM sous `/etc/letsencrypt/live/npm-N/` (Let's Encrypt) ou `/data/custom_ssl/npm-N/` (certificats personnalisés), c'est-à-dire les répertoires `letsencrypt` et `data` que NPM monte sur l'hôte. Ajoutez-les dans la page [Certificats](/fr/docs/modules/ssl) avec la source « Lire depuis un fichier » (montez d'abord ces répertoires si Gately tourne dans Docker), ou émettez-en de nouveaux.
 
 ## Remplacer haproxy et nginx
 
