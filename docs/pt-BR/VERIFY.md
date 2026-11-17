@@ -45,6 +45,7 @@ A atualização online das instalações binárias no Linux ("Atualizar agora") 
 
 - Assinatura inválida, de chave desconhecida ou `checksums.txt` alterado: a atualização é recusada, a janela de atualização e o log do sistema mostram o motivo e o programa instalado permanece como está;
 - A versão não tem `checksums.txt.minisig` (publicada antes da introdução da assinatura): a atualização prossegue, e a janela de atualização e o log do sistema avisam que a versão não é assinada e que só o SHA-256 foi verificado.
+- Uma versão v0.6.8 ou posterior sem `checksums.txt.minisig`: desde a v0.6.8 todas as versões são assinadas, então a falta do arquivo de assinatura indica que a página de publicação pode ter sido alterada, e a atualização online a recusa. Para instalá-la mesmo assim, baixe-a da página de publicação e use "Enviar pacote de atualização".
 
 O programa reserva uma segunda posição de chave pública para a troca de chaves: a nova chave pública é primeiro embutida em uma versão e publicada nesta página, e só as versões seguintes são assinadas com ela, então as instalações existentes continuam atualizando. "Enviar pacote de atualização" não verifica assinaturas; confira o arquivo com os passos acima antes de enviar. As atualizações da imagem Docker contam com as assinaturas cosign da imagem descritas abaixo.
 
