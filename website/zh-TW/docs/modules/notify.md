@@ -25,7 +25,7 @@
 
 | 類型 | 必填欄位 | 選填欄位 |
 | --- | --- | --- |
-| Webhook | 請求網址 | 請求方法（預設 GET，可選 GET、POST、PUT、PATCH）、請求標頭（每行 `Key: Value`）、請求本文、成功判定內容、逾時（秒，預設 20）、略過憑證驗證 |
+| Webhook | 請求網址 | 請求方法（介面新建時預設 POST，可選 GET、POST、PUT、PATCH；經 API 建立且未填寫時按 GET）、請求標頭（每行 `Key: Value`）、請求本文（GET 時不顯示也不發送）。成功判定內容、逾時（秒，預設 20）與略過憑證驗證只能經 API 設定（`webhook.successContent`、`webhook.timeout`、`webhook.insecureSkipVerify`），介面不顯示 |
 | Telegram | Bot Token、Chat ID | API 網址（留空使用 `https://api.telegram.org`） |
 | Bark | 裝置 Key | 服務網址（留空使用 `https://api.day.app`） |
 | 企業微信 | 機器人網址 | 無 |
@@ -135,9 +135,10 @@ WAF 攔截和上游狀態變動可能頻繁發生，建議為這類規則設定 
 | `process.exited` | 子程序異常結束 | 錯誤 | 由 Gately 託管的子程序異常結束並將自動重新啟動，來源為該程序的日誌名稱 |
 | `backup.done` | 備份：完成 | 資訊 | 排程或手動備份全部目的地成功，見 [設定備份](/zh-TW/docs/modules/backup) |
 | `backup.failed` | 備份：失敗 | 錯誤 | 備份打包失敗，或任一目的地寫入失敗 |
-| `auth.failed` | 驗證：連續失敗 | 警告 | 管理後台登入失敗，附帶 `ip` 欄位 |
+| `auth.failed` | 驗證：連續失敗 | 警告 | 管理後台每次登入失敗（密碼、兩步驟驗證碼或 Passkey 驗證不通過）都會發布，附帶 `ip` 欄位；不想每次都收到時，在規則裡設定「靜默(秒)」，或交給入侵防護依次數封鎖 |
 | `fileauth.failed` | 檔案服務：登入失敗 | 警告 | WebDAV、FTP、SMB 登入失敗，或因失敗次數過多被拒絕，來源為服務名稱，附帶 `ip`、`service`（`WebDAV`、`FTP` 或 `SMB`）欄位，提交了使用者名稱時還有 `user` 欄位。同一來源每 5 秒最多發布一次，入侵防護可依此計數封鎖，見[入侵防護](/zh-TW/docs/modules/guard) |
 | `auth.banned` | 驗證：IP 已被封鎖 | 警告 | Web 服務驗證連續失敗觸發自動封鎖 |
+| `auth.flood` | 認證：疑似分散式暴力破解 | 警告 | 10 分鐘內來自陌生位址（從未成功登入過的位址）的管理後台登入失敗達到「陌生位址失敗額度」（預設 20 次），此後陌生位址的密碼登入暫時受限，曾成功登入過的位址不受影響；窗口期內只發布一次，見[安全模型](/zh-TW/docs/guide/security) |
 | `guard.banned` | 入侵防護：IP 已被封鎖 | 警告 | 日誌規則、誘餌連接埠或連接埠掃描偵測封鎖了 IP 或網段，附帶 `ip` 與 `reason` 欄位（一次封鎖多個位址時還有 `count`） |
 | `knock.opened` | 連接埠敲門：敲門成功 | 資訊 | 連接埠敲門認證通過並放行來源位址，附帶 `ip`、`rule`、`ports` 欄位，見[連接埠敲門](/zh-TW/docs/modules/knock) |
 | `knock.failed` | 連接埠敲門：敲門被拒絕 | 警告 | 經協定分流 TCP 連線提交的敲門封包未通過認證或被規則拒絕（重放、時間戳過期、請求的連接埠不在允許範圍、使用者不符等）。附帶 `ip`、`reason`、`via`（`tcp`）欄位，同一來源每 5 秒最多記一次，入侵防護可依此計數封鎖。UDP 來源位址可以偽造（含重放的合法封包），經 UDP 傳來的敲門被拒絕時只計數、寫紀錄，不發布此事件 |
