@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"syscall"
 	"testing"
 	"time"
 
@@ -37,15 +38,19 @@ func TestHandshakeListener(t *testing.T) {
 		t.Fatalf("应监听两个不同的端口: %+v", h.ports)
 	}
 	c, err := net.Dial("tcp4", "127.0.0.1:"+strconv.Itoa(h.ports.trap))
-	if err != nil {
+	switch {
+	case errors.Is(err, syscall.ECONNRESET):
+		// 握手完成后服务端立即发送 RST；负载高时 RST 先于拨号方确认连接到达，Dial 本身就返回连接被重置
+	case err != nil:
 		t.Fatal(err)
+	default:
+		_ = c.SetReadDeadline(time.Now().Add(2 * time.Second))
+		if _, err := c.Read(make([]byte, 1)); err == nil || errors.Is(err, io.EOF) && runtime.GOOS == "linux" {
+			// Linux 上 SO_LINGER 0 的关闭发送 RST，读到的是连接被重置
+			t.Fatalf("连接应被立即重置: %v", err)
+		}
+		c.Close()
 	}
-	_ = c.SetReadDeadline(time.Now().Add(2 * time.Second))
-	if _, err := c.Read(make([]byte, 1)); err == nil || errors.Is(err, io.EOF) && runtime.GOOS == "linux" {
-		// Linux 上 SO_LINGER 0 的关闭发送 RST，读到的是连接被重置
-		t.Fatalf("连接应被立即重置: %v", err)
-	}
-	c.Close()
 	if x := <-got; x.kind != hsTrap || x.src != netip.MustParseAddr("127.0.0.1") {
 		t.Fatalf("回调不符: %+v", x)
 	}
