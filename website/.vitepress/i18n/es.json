@@ -91,7 +91,7 @@
   "home": {
     "pill": "Gratis y de código abierto · Apache-2.0",
     "announce": {
-      "text": "v0.6.8.1: corrige el error de formato de siteCerts al añadir un sitio y el «Sitio no encontrado» con certificados comodín en varios dominios →",
+      "text": "v0.6.8.1: corrige el error al añadir un sitio y el «Sitio no encontrado» con certificados comodín, además de tamaños de enlace y obtención de iconos en el panel de navegación →",
       "link": "/es/news/v0.6.8.1"
     },
     "titleLine1": "Una sola puerta de entrada para tus servicios autoalojados",

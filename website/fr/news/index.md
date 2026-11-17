@@ -9,7 +9,7 @@ Les annonces des versions majeures sont listées ci-dessous. Consultez [GitHub R
 
 ## [v0.6.8.1](/fr/news/v0.6.8.1)
 
-17 novembre 2026 · Corrige l'erreur de format siteCerts à l'ajout ou à la modification d'un site en v0.6.8 ; lorsqu'un certificat générique couvre plusieurs domaines que le routage par protocole envoie vers différents Gately, le « Site introuvable » causé par la réutilisation de connexion du navigateur devient un 421 qui le pousse à se reconnecter.
+17 novembre 2026 · Corrige l'erreur de format siteCerts à l'ajout ou à la modification d'un site en v0.6.8 ; lorsqu'un certificat générique couvre plusieurs domaines que le routage par protocole envoie vers différents Gately, le « Site introuvable » causé par la réutilisation de connexion du navigateur devient un 421 qui le pousse à se reconnecter ; le panneau de navigation gagne les tailles de lien 1×1 / 1×2 / 2×2, l’ouverture directe des liens à plusieurs adresses, la récupération des icônes de lien et des commutateurs de page.
 
 ## [v0.6.8](/fr/news/v0.6.8)
 

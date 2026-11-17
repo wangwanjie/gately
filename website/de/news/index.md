@@ -9,7 +9,7 @@ Unten stehen die Ankündigungen zu wichtigen Releases. Alle Änderungen und Down
 
 ## [v0.6.8.1](/de/news/v0.6.8.1)
 
-17. November 2026 · Behebt den siteCerts-Formatfehler beim Hinzufügen oder Bearbeiten einer Site in v0.6.8; bei Wildcard-Zertifikaten mit mehreren Domains, die das Protokoll-Routing an verschiedene Gately-Instanzen weiterleitet, wird das durch Verbindungswiederverwendung des Browsers ausgelöste „Website nicht gefunden“ durch ein 421 ersetzt, damit der Browser neu verbindet.
+17. November 2026 · Behebt den siteCerts-Formatfehler beim Hinzufügen oder Bearbeiten einer Site in v0.6.8; bei Wildcard-Zertifikaten mit mehreren Domains, die das Protokoll-Routing an verschiedene Gately-Instanzen weiterleitet, wird das durch Verbindungswiederverwendung des Browsers ausgelöste „Website nicht gefunden“ durch ein 421 ersetzt, damit der Browser neu verbindet; das Navigationspanel erhält die Linkgrößen 1×1 / 1×2 / 2×2, direktes Öffnen von Links mit mehreren Adressen, das Abrufen von Link-Symbolen und Seitenschalter.
 
 ## [v0.6.8](/de/news/v0.6.8)
 
