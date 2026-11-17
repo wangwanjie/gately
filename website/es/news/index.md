@@ -7,6 +7,10 @@ description: Anuncios y notas de cada versión de Gately.
 
 A continuación se listan los anuncios de las versiones principales. Consulta [GitHub Releases](https://github.com/wangwanjie/gately/releases) para ver todos los cambios y las descargas de cada versión.
 
+## [v0.6.8.1](/es/news/v0.6.8.1)
+
+17 de noviembre de 2026 · Corrige el error de formato de siteCerts al añadir o editar un sitio en v0.6.8; cuando un certificado comodín cubre varios dominios que el enrutamiento por protocolo envía a distintos Gately, el «Sitio no encontrado» causado por la reutilización de conexión del navegador pasa a devolver 421 para que el navegador vuelva a conectarse.
+
 ## [v0.6.8](/es/news/v0.6.8)
 
 17 de noviembre de 2026 · Correcciones de seguridad (tokens de escritura que leían el directorio de configuración, redirección del inicio de sesión de terceros en sitios, bloqueo de SMB antes de autenticar y más) y firma de las versiones; búsqueda global, guía de primer uso y asistente rápido de sitios con la barra lateral reducida a 27 entradas; importación de Nginx Proxy Manager y Sun-Panel; diseño del panel de navegación y selector de direcciones; prevención de intrusiones, límite de conexiones en el reenvío de puertos, KCP/QUIC en frps, consultas DNS en paralelo y nivel de registro.

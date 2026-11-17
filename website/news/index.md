@@ -7,6 +7,10 @@ description: Gately 各版本的发布公告与更新说明。
 
 重要版本的发布公告如下，每个版本的完整变更与下载文件见 [GitHub Releases](https://github.com/wangwanjie/gately/releases)。
 
+## [v0.6.8.1](/news/v0.6.8.1)
+
+2026 年 11 月 17 日 · 修复 v0.6.8 添加或编辑站点时提示 siteCerts 格式错误；通配证书多域名经协议分流到不同 Gately 时，浏览器复用连接导致的「站点不存在」改为返回 421 让浏览器重连。
+
 ## [v0.6.8](/news/v0.6.8)
 
 2026 年 11 月 17 日 · 安全修复（写令牌读取配置目录、站点第三方登录回跳、SMB 认证前崩溃等）与发布签名；全局搜索、首次使用引导与快速建站向导，侧边栏精简到 27 项；导入 Nginx Proxy Manager 与 Sun-Panel；导航面板布局与地址选择器；入侵防护、端口转发并发限制、frps KCP/QUIC、DNS 并行查询与日志级别。

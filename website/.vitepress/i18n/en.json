@@ -91,8 +91,8 @@
   "home": {
     "pill": "Free and open source · Apache-2.0",
     "announce": {
-      "text": "v0.6.8 released: security fixes, global search and quick site wizard, NPM / Sun-Panel import, release signing →",
-      "link": "/en/news/v0.6.8"
+      "text": "v0.6.8.1 released: fixes the siteCerts format error when adding a site and \"Site not found\" with wildcard certificates on several domains →",
+      "link": "/en/news/v0.6.8.1"
     },
     "titleLine1": "One gateway for your self-hosted services",
     "titleLine2": "Reverse proxy, HTTPS, DDNS, NAT traversal, WAF and bans, in one binary",

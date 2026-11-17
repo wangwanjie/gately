@@ -91,8 +91,8 @@
   "home": {
     "pill": "开源免费 · Apache-2.0",
     "announce": {
-      "text": "v0.6.8 发布：安全修复、全局搜索与快速建站向导、NPM / Sun-Panel 导入、发布签名 →",
-      "link": "/news/v0.6.8"
+      "text": "v0.6.8.1 发布：修复添加站点提示 siteCerts 格式错误与通配证书多域名「站点不存在」→",
+      "link": "/news/v0.6.8.1"
     },
     "titleLine1": "自托管服务的统一入口",
     "titleLine2": "反向代理、证书、动态域名、穿透、WAF 与封禁，一个程序",
