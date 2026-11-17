@@ -113,6 +113,8 @@ Los Ajustes globales de la cabecera de la página contienen:
 - Crea en tu proveedor DNS una clave de subcuenta limitada a la edición de registros DNS. Evita usar la clave de la cuenta principal;
 - Tras crear una tarea, pulsa «Forzar sincronización» para confirmar que el registro se ha actualizado;
 - Para quitar un registro que ya no necesitas, pulsa el icono de eliminar a la derecha de ese registro en la lista, sin abrir el editor; la tarea mantiene al menos un registro, y cómo eliminar también el registro en el proveedor se explica en [Eliminar registros y tareas](#delete);
+- Con la lista de tareas vacía puedes empezar desde un caso común: «Cloudflare, IPv4 doméstica», «Alibaba Cloud, IPv4 + IPv6» o «DNSPod, solo IPv6»; cada uno abre un formulario de tarea ya rellenado;
+- Los registros de host se guardan y se envían a los proveedores en minúsculas (también en configuraciones antiguas); los valores A / AAAA se comparan como direcciones, así que una IPv6 devuelta en forma expandida o en mayúsculas no cuenta como cambio;
 - La dirección de consulta de IP pública ya no depende de ningún servicio operado por el proyecto y puedes cambiarla en una tarea en cualquier momento.
 
 ## Grupos y orden

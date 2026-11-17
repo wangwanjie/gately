@@ -113,6 +113,8 @@ As Configurações globais no cabeçalho da página contêm:
 - Crie, no provedor de DNS, uma chave de subconta limitada à edição de registros DNS e evite usar a chave da conta principal;
 - Depois de criar uma tarefa, clique em "Forçar sincronização" para confirmar que o registro foi atualizado;
 - Para remover um registro que não é mais necessário, clique no ícone de excluir à direita dele na lista, sem abrir o editor; a tarefa mantém pelo menos um registro, e como excluir também o registro DNS no provedor está em [Excluir registros e tarefas](#delete);
+- Com a lista de tarefas vazia, você pode começar por um caso comum: "Cloudflare, IPv4 residencial", "Alibaba Cloud, IPv4 + IPv6" ou "DNSPod, somente IPv6", que abrem um formulário de tarefa já preenchido;
+- Os registros de host são salvos e enviados aos provedores em minúsculas (inclusive em configurações antigas); os valores A / AAAA são comparados como endereços, então um IPv6 devolvido na forma expandida ou em maiúsculas não conta como mudança;
 - O endereço de consulta do IP público não depende mais de nenhum serviço operado pelo projeto e pode ser trocado em uma tarefa a qualquer momento.
 
 ## Grupos e ordenação
