@@ -106,7 +106,7 @@ func (g *generator) wol() error {
 		"bemfa": obj{},
 		"devices": list(
 			obj{"key": "w-nas", "name": "NAS", "group": "", "enable": true, "macs": []string{"02:00:5e:00:53:01"}, "broadcastIps": []string{"192.0.2.255"}, "port": 9, "repeat": 3,
-				"checkAddr": "192.0.2.10:22", "shutdownMode": "ssh", "remark": "每天夜里休眠"},
+				"checkAddr": "192.0.2.10:22", "shutdownMode": "http", "shutdownHttp": obj{"method": "POST", "url": "http://192.0.2.10:8080/api/shutdown", "headers": []string{}, "body": ""}, "remark": "每天夜里休眠"},
 			obj{"key": "w-pc", "name": "台式机", "group": "", "enable": true, "macs": []string{"02:00:5e:00:53:02"}, "broadcastIps": []string{"192.0.2.255"}, "port": 9, "repeat": 3,
 				"checkAddr": "192.0.2.50:3389", "shutdownMode": "", "remark": ""},
 		),
