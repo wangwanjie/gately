@@ -64,15 +64,15 @@ func TestPanelCardRendering(t *testing.T) {
 	if c := cardOf(t, body, "无描述无地址"); strings.Contains(c, `class="ds`) {
 		t.Errorf("没有描述时地址也应隐藏: %s", c)
 	}
-	// 标题和描述都不显示时没有可放文字的内容，按小卡片显示；有其他访问方式时仍是大卡片
+	// 标题和描述都不显示时没有可放文字的内容，按小卡片显示；其他访问方式不显示在卡片上，有没有都一样
 	if c := cardOf(t, body, "全隐藏"); !strings.Contains(c, `card sm link`) {
 		t.Errorf("标题与描述都隐藏时应按小卡片显示: %s", c)
 	}
-	if c := cardOf(t, body, "全隐藏有入口"); strings.Contains(c, `card sm`) || !strings.Contains(c, `class="alt"`) {
-		t.Errorf("有其他访问方式时保持大卡片: %s", c)
+	if c := cardOf(t, body, "全隐藏有入口"); !strings.Contains(c, `card sm link multi`) || !strings.Contains(c, `<span class="alts" hidden><a class="alt"`) {
+		t.Errorf("有其他访问方式时也按小卡片显示，访问方式留给选择列表: %s", c)
 	}
 	small := cardOf(t, body, "小卡")
-	if !strings.Contains(small, `card sm link`) || strings.Contains(small, `class="nm"`) || strings.Contains(small, "描述E") || strings.Contains(small, `class="alt`) || !strings.Contains(small, `aria-label="小卡"`) {
+	if !strings.Contains(small, `card sm link`) || strings.Contains(small, `class="nm"`) || strings.Contains(small, "描述E") || !strings.Contains(small, `class="alts" hidden`) || !strings.Contains(small, `aria-label="小卡"`) {
 		t.Errorf("小卡片只显示图标，名称在提示中: %s", small)
 	}
 	// 隐藏的标题与描述仍可被页面搜索命中

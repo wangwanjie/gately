@@ -66,6 +66,8 @@ type PanelView struct {
 	Preview bool
 	// Layout 为链接样式与页面布局
 	Layout PanelLayout
+	// GroupCount 为在分组标题旁显示链接数；AltBadge 为在有多个访问地址的链接图标右上角显示地址数
+	GroupCount, AltBadge bool
 }
 
 // PanelLayout 是链接样式与页面布局，数值为 0 时用默认值（随样式而定）。取值已由 Web 服务校验，渲染时再按范围收紧一次。
@@ -143,7 +145,7 @@ type PanelLink struct {
 	Small, HideName, HideDesc bool
 	// Locked 表示链接只对登录访客显示，已登录的访客在卡片上看到锁标记
 	Locked bool
-	// Alts 为其他访问方式（如 IPv6、frp、STUN、Cloudflare），显示为卡片上的小链接，始终在新标签页打开
+	// Alts 为其他访问方式（如 IPv6、frp、STUN、Cloudflare）：页面中不显示，点击链接时由脚本与主地址一起列在选择列表中，始终在新标签页打开
 	Alts []PanelAlt
 }
 
@@ -201,7 +203,9 @@ var panelTexts = map[string]string{
 	"styleCard":     "卡片",
 	"styleApp":      "图标",
 	"iconSize":      "大小",
-	"alts":          "其他访问方式",
+	"primary":       "默认地址",
+	"pickAddr":      "选择访问地址",
+	"addrCount":     "{n} 个访问地址",
 }
 
 // panelPalette 为未指定颜色时按名称挑选的图标底色，深浅主题下白字都清晰可读。
@@ -260,11 +264,9 @@ body{margin:0;min-height:100vh;display:flex;flex-direction:column;background:var
 .card .hit{position:absolute;inset:0;z-index:1;border-radius:inherit}
 .card.link:hover{border-color:var(--brand);background:var(--hover);transform:translateY(-1px)}
 .card .hit:focus-visible{outline:none;box-shadow:0 0 0 4px var(--soft)}
-.card.off>.ic,.card.off .nm,.card.off .ds{opacity:.55}
-.alts{position:relative;z-index:2;display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
-.alt{display:inline-block;max-width:100%;padding:1px 7px;border:1px solid var(--line);border-radius:999px;background:var(--input);color:var(--muted);font-size:11.5px;line-height:17px;text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-a.alt:hover{border-color:var(--brand);color:var(--brand)}
-.alt.off{opacity:.5;text-decoration:line-through;cursor:not-allowed}
+.card.off .icw,.card.off .nm,.card.off .ds{opacity:.55}
+.icw{position:relative;flex:none;display:grid}
+.mb{position:absolute;top:-6px;right:-7px;z-index:2;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--brand);color:#fff;font-size:11px;font-weight:650;line-height:18px;text-align:center;box-shadow:0 0 0 2px var(--card),0 2px 6px -1px rgba(0,0,0,.3);pointer-events:none}
 .ic{--s:var(--is,40px);width:var(--s);height:var(--s);flex:none;border-radius:calc(var(--r-sm) + 1px);display:grid;place-items:center;color:#fff;background:var(--c,var(--brand));font-size:calc(var(--s)*.42);font-weight:650;overflow:hidden}
 .ic.img{background:var(--input);border:1px solid var(--line)}
 .ic img{width:70%;height:70%;object-fit:contain}
@@ -318,13 +320,13 @@ const panelSrc = `<!doctype html>
 </div>{{end}}
 </header>
 <main>
-{{range .Groups}}<section class="grp">{{if .Name}}<h2><button class="fold" type="button" data-g="{{.Name}}" aria-expanded="true" title="{{$.T.foldHint}}">{{$.ChevronIcon}}{{.Name}}</button><span class="n">{{len .Links}}</span></h2>{{end}}<div class="grid">
-{{range .Links}}<div class="card{{if .Small}} sm{{end}}{{if .Href}} link{{else}} off{{end}}" data-s="{{.Search}}" data-k="{{.Key}}"{{if not .Href}} title="{{$.T.off}}"{{end}}>
+{{range .Groups}}<section class="grp">{{if .Name}}<h2><button class="fold" type="button" data-g="{{.Name}}" aria-expanded="true" title="{{$.T.foldHint}}">{{$.ChevronIcon}}{{.Name}}</button>{{if $.GroupCount}}<span class="n">{{len .Links}}</span>{{end}}</h2>{{end}}<div class="grid">
+{{range .Links}}<div class="card{{if .Small}} sm{{end}}{{if .Href}} link{{else}} off{{end}}{{if .Alts}} multi{{end}}" data-s="{{.Search}}" data-k="{{.Key}}"{{if not .Href}} title="{{$.T.off}}"{{end}}>
 {{if .Locked}}<svg class="lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>{{$.T.locked}}</title><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>{{end}}
-{{if .Href}}<a class="hit" href="{{.Href}}"{{if .NewTab}} target="_blank" rel="noopener noreferrer"{{end}} title="{{.Name}}" aria-label="{{.Name}}"></a>{{end}}
-{{if and .Alts (not .Small)}}<details class="am"><summary title="{{$.T.alts}}" aria-label="{{$.T.alts}}">{{$.MoreIcon}}</summary><span class="amp"><span class="t">{{$.T.alts}}</span>{{range .Alts}}{{if .Href}}<a href="{{.Href}}" target="_blank" rel="noopener noreferrer" title="{{.Title}}">{{.Name}}</a>{{else}}<span class="off" title="{{$.T.off}}">{{.Name}}</span>{{end}}{{end}}</span></details>{{end}}
-{{with .Icon}}{{if and .Image .Class}}<span class="ic tile {{.Class}}"><img src="{{.Image}}" alt="" loading="lazy"></span>{{else if .Image}}<span class="ic img"><img src="{{.Image}}" alt="" loading="lazy" referrerpolicy="no-referrer"></span>{{else}}<span class="ic {{.Class}}">{{.Text}}</span>{{end}}{{end}}
-{{if not .Small}}<span class="tx">{{if not .HideName}}<span class="nm">{{.Name}}</span>{{end}}{{if not .Href}}<span class="ds">{{$.T.off}}</span>{{else if .HideDesc}}{{else if .Description}}<span class="ds">{{.Description}}</span>{{else if .Address}}<span class="ds mono">{{.Address}}</span>{{end}}{{if .Alts}}<span class="alts">{{range .Alts}}{{if .Href}}<a class="alt" href="{{.Href}}" target="_blank" rel="noopener noreferrer" title="{{.Title}}">{{.Name}}</a>{{else}}<span class="alt off" title="{{$.T.off}}">{{.Name}}</span>{{end}}{{end}}</span>{{end}}</span>{{end}}
+{{if .Href}}<a class="hit" href="{{.Href}}"{{if .NewTab}} target="_blank" rel="noopener noreferrer"{{end}} title="{{.Name}}" aria-label="{{.Name}}"{{if .Alts}} aria-haspopup="dialog"{{end}}></a>{{else if .Alts}}<button class="hit" type="button" title="{{.Name}}" aria-label="{{.Name}}" aria-haspopup="dialog"></button>{{end}}
+<span class="icw">{{with .Icon}}{{if and .Image .Class}}<span class="ic tile {{.Class}}"><img src="{{.Image}}" alt="" loading="lazy"></span>{{else if .Image}}<span class="ic img"><img src="{{.Image}}" alt="" loading="lazy" referrerpolicy="no-referrer"></span>{{else}}<span class="ic {{.Class}}">{{.Text}}</span>{{end}}{{end}}{{if and $.AltBadge .Alts}}<span class="mb" title="{{.AddrTitle}}">{{.AddrCount}}</span>{{end}}</span>
+{{if not .Small}}<span class="tx">{{if not .HideName}}<span class="nm">{{.Name}}</span>{{end}}{{if not .Href}}<span class="ds">{{$.T.off}}</span>{{else if .HideDesc}}{{else if .Description}}<span class="ds">{{.Description}}</span>{{else if .Address}}<span class="ds mono">{{.Address}}</span>{{end}}</span>{{end}}
+{{if .Alts}}<span class="alts" hidden>{{range .Alts}}{{if .Href}}<a class="alt" href="{{.Href}}" target="_blank" rel="noopener noreferrer" title="{{.Title}}">{{.Name}}</a>{{else}}<span class="alt off" title="{{$.T.off}}">{{.Name}}</span>{{end}}{{end}}</span>{{end}}
 </div>
 {{end}}</div></section>
 {{end}}
@@ -357,10 +359,13 @@ type panelLinkData struct {
 	Href                       template.URL
 	NewTab, Locked             bool
 	Small, HideName, HideDesc  bool
-	Key                        string
-	Search                     string
-	Icon                       panelIconData
-	Alts                       []panelAltData
+	// AddrCount 为访问地址总数（主地址加其他访问方式），AddrTitle 为角标的提示文字
+	AddrCount int
+	AddrTitle string
+	Key       string
+	Search    string
+	Icon      panelIconData
+	Alts      []panelAltData
 }
 
 type panelGroupData struct {
@@ -491,6 +496,7 @@ func RenderPanel(r *http.Request, v PanelView) ([]byte, string) {
 		}
 		return panelIconData{Text: text, Class: colorClass(c)}
 	}
+	texts := Localize(lang, panelTexts)
 	groups := make([]panelGroupData, 0, len(v.Groups))
 	total := 0
 	for _, g := range v.Groups {
@@ -504,7 +510,8 @@ func RenderPanel(r *http.Request, v PanelView) ([]byte, string) {
 			}
 			search := strings.ToLower(strings.Join(words, " "))
 			gd.Links = append(gd.Links, panelLinkData{Name: l.Name, Description: l.Description, Address: l.Address,
-				Href: template.URL(l.Href), NewTab: l.NewTab, Locked: l.Locked, Small: l.Small || (l.HideName && l.HideDesc && len(alts) == 0), HideName: l.HideName, HideDesc: l.HideDesc, Key: linkKey(g.Name, l.Name), Search: search, Icon: icon(l.Icon, l.Name), Alts: alts})
+				Href: template.URL(l.Href), NewTab: l.NewTab, Locked: l.Locked, Small: l.Small || (l.HideName && l.HideDesc), HideName: l.HideName, HideDesc: l.HideDesc,
+				AddrCount: len(alts) + 1, AddrTitle: strings.ReplaceAll(texts["addrCount"], "{n}", strconv.Itoa(len(alts)+1)), Key: linkKey(g.Name, l.Name), Search: search, Icon: icon(l.Icon, l.Name), Alts: alts})
 		}
 		total += len(gd.Links)
 		groups = append(groups, gd)
@@ -599,7 +606,7 @@ func RenderPanel(r *http.Request, v PanelView) ([]byte, string) {
 	}
 	uiJSON, _ := json.Marshal(ui)
 	data := map[string]any{
-		"Engines": engines, "DefaultEngine": v.DefaultEngine, "Background": bg, "BgCSS": bgCSS, "LayoutCSS": template.CSS(layout), "RootClass": strings.Join(rootClass, " "), "MoreIcon": template.HTML(panelMoreIcon), "UIData": template.JS(uiJSON), "EngineName": engineName,
+		"Engines": engines, "DefaultEngine": v.DefaultEngine, "Background": bg, "BgCSS": bgCSS, "LayoutCSS": template.CSS(layout), "GroupCount": v.GroupCount, "AltBadge": v.AltBadge, "RootClass": strings.Join(rootClass, " "), "UIData": template.JS(uiJSON), "EngineName": engineName,
 		"Langs": langs, "ChevronIcon": template.HTML(panelChevronIcon), "GoIcon": template.HTML(panelGoIcon), "LangIcon": template.HTML(panelLangIcon), "HideFooter": v.HideFooter, "Footer": v.Footer, "FooterLink": template.URL(v.FooterURL), "UserInitial": iconInitial(v.User), "User": v.User, "GearIcon": template.HTML(panelGearIcon),
 		"LoginURL": v.LoginURL, "LogoutURL": v.LogoutURL, "Hidden": v.Hidden, "LockIcon": template.HTML(panelLockIcon),
 		"Lang": lang, "T": Localize(lang, panelTexts), "Nonce": nonce,

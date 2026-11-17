@@ -145,6 +145,11 @@ type Panel struct {
 	Gap int `json:"gap"`
 	// MaxWidth 为页面内容的最大宽度（640-3840 像素），0 为默认 1200
 	MaxWidth int `json:"maxWidth"`
+	// GroupCount 为在分组标题旁显示链接数，默认不显示
+	GroupCount bool `json:"groupCount"`
+	// AltBadge 为在有多个访问地址（主地址加其他访问方式）的链接图标右上角显示地址数，默认不显示。
+	// 无论是否显示角标，点击这类链接都会弹出地址选择列表
+	AltBadge bool `json:"altBadge"`
 	// LANCIDRs 为额外视为内网的访客地址（IP 或 CIDR）。回环、私有地址（10/8、172.16/12、192.168/16、fc00::/7）
 	// 与链路本地地址始终视为内网；经 Tailscale、ZeroTier 等组网访问时可在这里加上对应网段
 	LANCIDRs []string `json:"lanCidrs"`
@@ -164,7 +169,7 @@ type PanelLink struct {
 	// 变量暂无值时链接显示为暂不可用；取自请求路径、查询串的变量不支持，见 panelVarAllowed
 	URL    string `json:"url"`
 	LANURL string `json:"lanUrl"`
-	// Alts 为其他访问方式（如 IPv6、frp、STUN、Cloudflare 隧道），显示为卡片上的小链接，内网与外网访客都显示
+	// Alts 为其他访问方式（如 IPv6、frp、STUN、Cloudflare 隧道）：点击链接时与主地址一起列在选择列表中，内网与外网访客都显示
 	Alts []PanelAlt `json:"alts"`
 	// Icon 为内置图标（builtin:编号）、http(s) 图片地址、data:image 内联图片，或不超过 8 个字符的文字（如 emoji），留空时显示名称首字
 	Icon string `json:"icon"`
@@ -787,7 +792,8 @@ func linkAddress(u *url.URL) string {
 // 未登录时“登录后可见”的链接不进入页面，只统计被隐藏的个数。
 func (p *compiledPanel) view(q redirectRequest, lan, forced, preview, authed bool) webpage.PanelView {
 	v := webpage.PanelView{Title: p.Title, Subtitle: p.Subtitle, Theme: p.Theme, Skin: p.Skin, LAN: lan, Forced: forced, Preview: preview, BgDim: p.BgDim, BgBlur: p.BgBlur,
-		Layout: webpage.PanelLayout{Style: p.CardStyle, IconSize: p.IconSize, Columns: p.Columns, MobileColumns: p.MobileColumns, Gap: p.Gap, MaxWidth: p.MaxWidth}}
+		Layout:     webpage.PanelLayout{Style: p.CardStyle, IconSize: p.IconSize, Columns: p.Columns, MobileColumns: p.MobileColumns, Gap: p.Gap, MaxWidth: p.MaxWidth},
+		GroupCount: p.GroupCount, AltBadge: p.AltBadge}
 	for _, e := range p.Engines {
 		v.Engines = append(v.Engines, webpage.PanelEngine{Name: e.Name, URL: e.URL})
 	}

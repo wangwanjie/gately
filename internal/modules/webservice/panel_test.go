@@ -361,13 +361,13 @@ func TestPanelAlts(t *testing.T) {
 		{Name: "NAS", URL: "http://{STUN_none_ADDR}/", Alts: []PanelAlt{{Name: "IPv6", URL: "https://[2001:db8::2]:8443"}, {Name: "STUN", URL: "http://{STUN_frpweb_ADDR}/"}, {Name: "<b>坏</b>", URL: "http://{STUN_none_ADDR}/"}}},
 	}}})
 	body := panelGet(h, "/", "203.0.113.9:4000").Body.String()
-	for _, want := range []string{`class="alt" href="https://[2001:db8::2]:8443"`, `href="http://203.0.113.8:40001/"`, `<span class="alt off"`, "&lt;b&gt;坏&lt;/b&gt;", `class="card off"`} {
+	for _, want := range []string{`class="alt" href="https://[2001:db8::2]:8443"`, `href="http://203.0.113.8:40001/"`, `<span class="alt off"`, "&lt;b&gt;坏&lt;/b&gt;", `class="card off multi"`, `<button class="hit" type="button" title="NAS" aria-label="NAS" aria-haspopup="dialog">`} {
 		if !strings.Contains(body, want) {
 			t.Errorf("页面应包含 %s", want)
 		}
 	}
-	if strings.Contains(body, `class="hit"`) {
-		t.Error("主地址不可用时不应有整卡链接")
+	if strings.Contains(body, `<a class="hit"`) {
+		t.Error("主地址不可用时不应有整卡链接，只有打开选择列表的按钮")
 	}
 }
 
