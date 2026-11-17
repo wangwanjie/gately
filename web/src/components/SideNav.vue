@@ -80,12 +80,17 @@ function currentGroup(): string {
   return navGroups.find((g) => item && g.items.includes(item))?.titleKey ?? ''
 }
 
-// 展开的分组：每次切换页面后重置为只展开当前分组
-const openGroups = ref(new Set<string>([currentGroup()]))
+// 展开的分组：默认全部展开，用户可以手动收起；切换页面时保留手动收起的状态，只确保当前页面所在分组展开
+const openGroups = ref(new Set<string>(navGroups.map((g) => g.titleKey).filter(Boolean)))
 watch(
   () => route.path,
   () => {
-    openGroups.value = new Set([currentGroup()])
+    const cur = currentGroup()
+    if (cur && !openGroups.value.has(cur)) {
+      const next = new Set(openGroups.value)
+      next.add(cur)
+      openGroups.value = next
+    }
   },
 )
 
