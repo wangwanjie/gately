@@ -146,7 +146,7 @@
     "title": "网络",
     "dnsServers": "DNS 服务器",
     "dnsPlaceholder": "留空使用系统 DNS；可输入 IP 或 IP:端口",
-    "dnsHelp": "影响所有出站域名解析（DDNS、Webhook、ACME 等），多个时随机选择并自动故障转移。",
+    "dnsHelp": "影响所有出站域名解析（DDNS、Webhook、ACME 等）。可填 IP、IP:端口、doh{'@'}主机 或 https:// DoH 地址；多个服务器时从最近一次成功的服务器开始查询，它失败或 1 秒内没有结果时并行查询下一个，取最先返回的结果。",
     "updateProxy": "更新代理",
     "updateProxyPlaceholder": "留空直连，例如 http://127.0.0.1:7890",
     "updateProxyHelp": "检查更新与在线升级访问 GitHub 时使用，支持 http://、https:// 与 socks5://；留空时遵循 HTTPS_PROXY 环境变量。",
