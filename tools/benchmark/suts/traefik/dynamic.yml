@@ -1,0 +1,20 @@
+http:
+  routers:
+    plain:
+      rule: "Host(`bench.test`)"
+      entryPoints: [web]
+      service: be
+    secure:
+      rule: "Host(`bench.test`)"
+      entryPoints: [websecure]
+      service: be
+      tls: {}
+  services:
+    be:
+      loadBalancer:
+        servers:
+          - url: "http://127.0.0.1:9000"
+tls:
+  certificates:
+    - certFile: /certs/bench.crt
+      keyFile: /certs/bench.key
