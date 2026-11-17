@@ -5,7 +5,7 @@
 Gately lit directement les fichiers de configuration `.lkcf` de Lucky, ou le zip du site entier exporté par la « sauvegarde de configuration » de Lucky, et migre les règles, les tâches et les certificats. Vous n'avez pas besoin de désinstaller Lucky : les deux peuvent cohabiter et vous basculez module par module.
 
 ::: tip Migrer depuis nginx
-Ce guide porte sur la migration depuis Lucky. Les sites nginx existants s'importent directement via « Services Web → Importer nginx » : voir [Services Web · Importer une configuration nginx](/fr/docs/modules/web#import-nginx).
+Ce guide porte sur la migration depuis Lucky. Les sites nginx existants s'importent directement via « Services Web → Importer nginx » : voir [Services Web · Importer une configuration nginx](/fr/docs/modules/web#import-nginx). La configuration de Nginx Proxy Manager s'importe de la même façon : voir [Importer Nginx Proxy Manager](/fr/docs/modules/web#import-npm).
 :::
 
 ## 1. Préparation
