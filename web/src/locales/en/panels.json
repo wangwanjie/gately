@@ -152,5 +152,7 @@
   "groupCount": "Group counts",
   "groupCountHelp": "Show the number of links next to each group title.",
   "altBadge": "Address count badge",
-  "altBadgeHelp": "Links with other ways to open show their total number of addresses on the icon's top-right corner. Either way, clicking such a link shows the address list to pick from."
+  "altBadgeHelp": "Links with other ways to open show their total number of addresses on the icon's top-right corner. Either way, clicking such a link shows the address list to pick from.",
+  "bgPreview": "Preview",
+  "bgPreviewHelp": "Blur and overlay update as you drag the sliders; see the Preview tab for the full page."
 }

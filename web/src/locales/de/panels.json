@@ -152,5 +152,7 @@
   "groupCount": "Anzahl pro Gruppe",
   "groupCountHelp": "Zeigt die Anzahl der Links neben jedem Gruppentitel.",
   "altBadge": "Adressen-Badge",
-  "altBadgeHelp": "Links mit weiteren Zugängen zeigen die Gesamtzahl ihrer Adressen oben rechts am Symbol. Unabhängig davon öffnet ein Klick auf solche Links die Adressliste zur Auswahl."
+  "altBadgeHelp": "Links mit weiteren Zugängen zeigen die Gesamtzahl ihrer Adressen oben rechts am Symbol. Unabhängig davon öffnet ein Klick auf solche Links die Adressliste zur Auswahl.",
+  "bgPreview": "Vorschau",
+  "bgPreviewHelp": "Unschärfe und Abdeckung ändern sich sofort beim Ziehen der Regler; die ganze Seite zeigt der Tab Vorschau."
 }

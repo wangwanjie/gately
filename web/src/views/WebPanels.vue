@@ -281,6 +281,19 @@
                 <el-slider v-model="editing.bgDim" :min="0" :max="MAX_BG_DIM" :step="5" show-input :show-input-controls="false" class="bg-dim" data-test="bg-dim" />
                 <div class="form-help">{{ t('panels.bgDimHelp') }}</div>
               </el-form-item>
+              <el-form-item :label="t('panels.bgPreview')">
+                <PanelBgPreview
+                  :background="editing.background"
+                  :blur="editing.bgBlur"
+                  :dim="editing.bgDim"
+                  :skin="editing.skin"
+                  :theme="editing.theme"
+                  :card-style="editing.cardStyle"
+                  :title="editing.title || editing.name"
+                  :links="editing.links"
+                />
+                <div class="form-help">{{ t('panels.bgPreviewHelp') }}</div>
+              </el-form-item>
               <el-form-item label=" ">
                 <el-button :icon="RotateCcw" data-test="bg-reset" @click="resetBackground">{{ t('panels.bgReset') }}</el-button>
               </el-form-item>
@@ -420,6 +433,7 @@ import GroupInput from '../components/GroupInput.vue'
 import PanelIcon from '../components/PanelIcon.vue'
 import PanelIconInput from '../components/PanelIconInput.vue'
 import PanelBackgroundInput from '../components/PanelBackgroundInput.vue'
+import PanelBgPreview from '../components/PanelBgPreview.vue'
 import SunPanelImport from '../components/SunPanelImport.vue'
 import { api, ApiError, errorText } from '../api'
 import { isReadonly, moduleEnabled } from '../nav'

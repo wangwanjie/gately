@@ -152,5 +152,7 @@
   "groupCount": "Recuento por grupo",
   "groupCountHelp": "Muestra el número de enlaces junto al título de cada grupo.",
   "altBadge": "Insignia de direcciones",
-  "altBadgeHelp": "Los enlaces con otras formas de acceso muestran el total de direcciones en la esquina superior derecha del icono. En cualquier caso, al hacer clic aparece la lista de direcciones para elegir."
+  "altBadgeHelp": "Los enlaces con otras formas de acceso muestran el total de direcciones en la esquina superior derecha del icono. En cualquier caso, al hacer clic aparece la lista de direcciones para elegir.",
+  "bgPreview": "Vista previa",
+  "bgPreviewHelp": "El desenfoque y la capa se actualizan al mover los controles; la página completa está en la pestaña Vista previa."
 }
