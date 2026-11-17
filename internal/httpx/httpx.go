@@ -2,6 +2,7 @@
 package httpx
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -43,11 +44,28 @@ func Error(w http.ResponseWriter, status int, format string, args ...any) {
 // ReadJSON 解析请求体到 v，拒绝未知字段以尽早暴露前后端不一致。
 // 要求 Content-Type 为 application/json：浏览器跨源发送该类型会触发预检，可阻止表单类 CSRF。
 func ReadJSON(r *http.Request, v any) error {
-	if ct := r.Header.Get("Content-Type"); !strings.HasPrefix(strings.ToLower(ct), "application/json") {
-		return errors.New("Content-Type 必须为 application/json")
+	data, err := ReadBody(r)
+	if err != nil {
+		return err
 	}
-	body := http.MaxBytesReader(nil, r.Body, maxBodyBytes)
-	dec := json.NewDecoder(body)
+	return DecodeJSON(data, v)
+}
+
+// ReadBody 读取 JSON 请求体（检查 Content-Type 与大小上限），供需要先查看原始内容再解析的接口使用，之后用 DecodeJSON 解析。
+func ReadBody(r *http.Request) ([]byte, error) {
+	if ct := r.Header.Get("Content-Type"); !strings.HasPrefix(strings.ToLower(ct), "application/json") {
+		return nil, errors.New("Content-Type 必须为 application/json")
+	}
+	data, err := io.ReadAll(http.MaxBytesReader(nil, r.Body, maxBodyBytes))
+	if err != nil {
+		return nil, fmt.Errorf("请求体格式错误: %w", err)
+	}
+	return data, nil
+}
+
+// DecodeJSON 按与 ReadJSON 相同的规则（拒绝未知字段）把 data 解析到 v。
+func DecodeJSON(data []byte, v any) error {
+	dec := json.NewDecoder(bytes.NewReader(data))
 	dec.DisallowUnknownFields()
 	if err := dec.Decode(v); err != nil {
 		if errors.Is(err, io.EOF) {

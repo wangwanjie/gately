@@ -71,6 +71,11 @@ type Collection[T any] struct {
 	// 把 dst 中仍为占位符的密钥恢复为模板的值，使密钥不必经过浏览器；并清除不应随复制带走的系统维护字段，
 	// 例如已签发的证书、下载记录。只读取 src，不要让 dst 与 src 共用切片或映射；可为 nil
 	Copy func(src, dst *T)
+
+	// viewOnly 为 View 输出结构比条目多出的顶层 JSON 键（运行状态、统计等只读展示字段），首次需要时按类型计算后缓存；
+	// viewOnlyDone 表示已计算。均由 Mu 保护
+	viewOnly     map[string]bool
+	viewOnlyDone bool
 }
 
 // MaxGroupLen 为分组名称的最大字符数。
@@ -197,14 +202,24 @@ func (c *Collection[T]) list(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *Collection[T]) create(w http.ResponseWriter, r *http.Request) {
-	var it T
-	if err := httpx.ReadJSON(r, &it); err != nil {
+	data, err := httpx.ReadBody(r)
+	if err != nil {
 		httpx.Error(w, http.StatusBadRequest, "%v", err)
 		return
 	}
 	// 与修改、复制一样持锁校验：部分模块的校验会读取模块配置（例如 Web 服务检查引用的 IP 列表是否存在）
 	c.Mu.Lock()
 	defer c.Mu.Unlock()
+	// 没有已有条目时无从得知视图结构，此时不忽略任何键（新增的条目通常来自空白表单，不带展示字段）
+	var sample *T
+	if len(*c.Items) > 0 {
+		sample = &(*c.Items)[0]
+	}
+	var it T
+	if err := c.decodeLocked(data, &it, sample); err != nil {
+		httpx.Error(w, http.StatusBadRequest, "%v", err)
+		return
+	}
 	if err := c.Validate(&it); err != nil {
 		httpx.Error(w, http.StatusBadRequest, "%v", err)
 		return
@@ -215,8 +230,8 @@ func (c *Collection[T]) create(w http.ResponseWriter, r *http.Request) {
 // copyItem 以路径中的条目为模板新增：请求体为新条目（通常是在模板基础上修改过的内容），
 // 仍为占位符的密钥由 Copy 沿用模板的值。新条目排在模板之后，其余校验与新增相同。
 func (c *Collection[T]) copyItem(w http.ResponseWriter, r *http.Request) {
-	var it T
-	if err := httpx.ReadJSON(r, &it); err != nil {
+	data, err := httpx.ReadBody(r)
+	if err != nil {
 		httpx.Error(w, http.StatusBadRequest, "%v", err)
 		return
 	}
@@ -231,6 +246,11 @@ func (c *Collection[T]) copyItem(w http.ResponseWriter, r *http.Request) {
 	src := c.Find(key)
 	if src == nil {
 		httpx.Error(w, http.StatusNotFound, "条目不存在")
+		return
+	}
+	var it T
+	if err := c.decodeLocked(data, &it, src); err != nil {
+		httpx.Error(w, http.StatusBadRequest, "%v", err)
 		return
 	}
 	if c.Copy != nil {
@@ -272,8 +292,8 @@ func (c *Collection[T]) insertLocked(w http.ResponseWriter, it T, at int) {
 }
 
 func (c *Collection[T]) update(w http.ResponseWriter, r *http.Request) {
-	var it T
-	if err := httpx.ReadJSON(r, &it); err != nil {
+	data, err := httpx.ReadBody(r)
+	if err != nil {
 		httpx.Error(w, http.StatusBadRequest, "%v", err)
 		return
 	}
@@ -283,6 +303,11 @@ func (c *Collection[T]) update(w http.ResponseWriter, r *http.Request) {
 	i := c.index(key)
 	if i < 0 {
 		httpx.Error(w, http.StatusNotFound, "条目不存在")
+		return
+	}
+	var it T
+	if err := c.decodeLocked(data, &it, &(*c.Items)[i]); err != nil {
+		httpx.Error(w, http.StatusBadRequest, "%v", err)
 		return
 	}
 	old := (*c.Items)[i]
