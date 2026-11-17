@@ -105,7 +105,7 @@
                 <div class="sp-card-name">
                   <span class="ellipsis">{{ links[i].name }}</span>
                   <el-tag v-if="skipDuplicates && dupIndexes.has(i)" size="small" type="info" data-test="sp-dup-tag">{{ t('sunpanelImport.exists') }}</el-tag>
-                  <el-tag v-if="links[i].size === 'small'" size="small" type="info">{{ t('panels.sizeSmall') }}</el-tag>
+                  <el-tag v-if="links[i].size" size="small" type="info">{{ links[i].size === 'small' ? '1×1' : links[i].size === 'wide' ? '1×2' : '2×2' }}</el-tag>
                   <el-tag v-if="links[i].alts.length" size="small">{{ t('panels.altCount', { n: links[i].alts.length }) }}</el-tag>
                 </div>
                 <div class="mono muted ellipsis sp-card-url">{{ links[i].url }}</div>

@@ -112,10 +112,7 @@
   "authOnlyHelp": "Visitors who are not signed in do not see this link (neither its name nor its address is sent). The site needs web authentication with “Require authentication only for paths marked Required below” checked, so signed-out visitors can open the panel and find the sign-in button; on sites that require sign-in for everything all visitors are already signed in.",
   "bgBlur": "Background blur",
   "bgReset": "Restore default background",
-  "cardSize": "Card size",
-  "sizeLarge": "Large",
-  "sizeSmall": "Small",
-  "sizeSmallHelp": "A small card shows only the icon; the name appears on hover.",
+  "cardSize": "Size",
   "showName": "Show title",
   "showDesc": "Show description",
   "tabTitle": "Tab title",
@@ -153,6 +150,8 @@
   "groupCountHelp": "Show the number of links next to each group title.",
   "altBadge": "Address count badge",
   "altBadgeHelp": "Links with other ways to open show their total number of addresses on the icon's top-right corner. Either way, clicking such a link shows the address list to pick from.",
+  "appName": "Icon names",
+  "appNameHelp": "Show the name under each icon in the app icon style, also when visitors switch to icons on the page. Names inside 1×2 wide tiles are always shown.",
   "lockMark": "Lock mark",
   "lockMarkHelp": "Signed-in visitors see a lock on links that are visible only after sign-in; turn off to hide it. Visitors who are not signed in never see such links.",
   "skinSwitch": "Theme button",
@@ -160,5 +159,11 @@
   "langSwitch": "Language switch",
   "langSwitchHelp": "Show a language menu at the top right. When off (the default), the page follows the visitor's browser language.",
   "bgPreview": "Preview",
-  "bgPreviewHelp": "Blur and overlay update as you drag the sliders; see the Preview tab for the full page."
+  "bgPreviewHelp": "Blur and overlay update as you drag the sliders; see the Preview tab for the full page.",
+  "sizeHelp1x1": "1×1: icon only; the name shows on hover.",
+  "sizeHelp1x1App": "1×1: icon with the name below.",
+  "sizeHelp1x2": "1×2: icon with title and description.",
+  "sizeHelp1x2App": "1×2: a wide tile with the icon on the left and the name and description on the right.",
+  "sizeHelp2x2": "2×2: a large block two rows high and two columns wide, with a bigger icon and the title and description below.",
+  "sizeHelp2x2App": "2×2: a big icon two rows high and two columns wide, with the name below."
 }

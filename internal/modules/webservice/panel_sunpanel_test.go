@@ -93,6 +93,10 @@ func TestSunPanelV13RealExport(t *testing.T) {
 	if pt.Icon != "builtin:docker" || pt.Color != "#0db7ed" || pt.SameTab {
 		t.Fatalf("在线图标转换错误: %+v", pt)
 	}
+	// 1.x 没有卡片尺寸，保持默认尺寸
+	if pt.Size != PanelSizeLarge || nas.Size != PanelSizeLarge {
+		t.Fatalf("1.x 的链接应为默认尺寸: %q %q", pt.Size, nas.Size)
+	}
 	if jf := findLink(t, res, "Jellyfin 内置"); jf.Icon != "builtin:jellyfin" {
 		t.Fatalf("simple-icons:jellyfin 应匹配内置图标: %+v", jf)
 	}
@@ -159,15 +163,18 @@ func TestSunPanelV20RealExportWithImages(t *testing.T) {
 	if res.Icons.Inline != 3 {
 		t.Fatalf("内联图标数量错误: %+v", res.Icons)
 	}
-	// 1x1 卡片为小卡片，2x2 与 1x2 为大卡片；打开方式 1 当前页面、2 新窗口
+	// 卡片尺寸 1x1、1x2、2x2 分别转换为 small、wide、big；打开方式 1 当前页面、2 新窗口
 	nas := findLink(t, res, "群晖 NAS")
 	if nas.Size != PanelSizeSmall || !nas.SameTab || nas.Icon != "NAS" || nas.LANURL != "http://192.168.1.10:5000" {
 		t.Fatalf("小卡片转换错误: %+v", nas)
 	}
 	// 2.x 的导出不含卡片描述（Sun-Panel 2.0 导出时没有写入 description）
 	pt := findLink(t, res, "Portainer")
-	if pt.Size != PanelSizeLarge || pt.Icon != "builtin:docker" || pt.Description != "" {
+	if pt.Size != PanelSizeBig || pt.Icon != "builtin:docker" || pt.Description != "" {
 		t.Fatalf("2x2 卡片转换错误: %+v", pt)
+	}
+	if gh := findLink(t, res, "GitHub"); gh.Size != PanelSizeWide {
+		t.Fatalf("1x2 卡片应转换为 wide: %+v", gh)
 	}
 	// 自定义地址转换为其他访问方式；备注（cardDataPrivate.remarks）不导入
 	if len(pt.Alts) != 2 || pt.Alts[0] != (PanelAlt{Name: "IPv6", URL: "https://[2001:db8::5]:9443"}) || pt.Alts[1] != (PanelAlt{Name: "frp", URL: "http://frp.example.com:7000"}) {

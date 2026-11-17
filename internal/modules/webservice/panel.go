@@ -69,10 +69,18 @@ const (
 	PanelStyleApp  = "app"
 )
 
-// 链接卡片的尺寸：默认大卡片（图标加标题、描述），小卡片只显示图标。
+// 链接的尺寸（行×列，与 Sun-Panel 的 1x1、1x2、2x2 对应）：
+//   - PanelSizeLarge 为默认尺寸：卡片样式下为 1×2（图标加标题、描述），App 图标样式下为 1×1（图标加名称）；
+//   - PanelSizeSmall 为 1×1：卡片样式下只显示图标，App 图标样式下与默认相同；
+//   - PanelSizeWide 为 1×2：卡片样式下与默认相同，App 图标样式下为横向的宽块（图标在左，名称与描述在右）；
+//   - PanelSizeBig 为 2×2：两行两列的大块，图标放大，名称（卡片样式下还有描述）在图标下方。
+//
+// 默认尺寸随样式变化，是为了让升级前的面板（链接都是默认尺寸）在两种样式下保持原样。
 const (
 	PanelSizeLarge = ""
 	PanelSizeSmall = "small"
+	PanelSizeWide  = "wide"
+	PanelSizeBig   = "big"
 )
 
 // panelLangCookie 记录访客在页面上选择的语言，没有时按浏览器的 Accept-Language。
@@ -150,6 +158,8 @@ type Panel struct {
 	// AltBadge 为在有多个访问地址（主地址加其他访问方式）的链接图标右上角显示地址数，默认不显示。
 	// 无论是否显示角标，点击这类链接都会弹出地址选择列表
 	AltBadge bool `json:"altBadge"`
+	// HideAppName 为 App 图标样式下不在图标下方显示名称（1×2 宽块中的名称照常显示），默认显示
+	HideAppName bool `json:"hideAppName"`
 	// HideLock 为已登录访客不显示“登录后可见”链接上的锁标记，默认显示
 	HideLock bool `json:"hideLock"`
 	// ShowLang 为在页面右上角显示语言切换，默认不显示（访客按浏览器语言看到页面）
@@ -183,9 +193,9 @@ type PanelLink struct {
 	Color string `json:"color"`
 	// SameTab 为 true 时在当前页打开，默认在新标签页打开
 	SameTab bool `json:"sameTab"`
-	// Size 为卡片尺寸：空为大卡片（图标加标题、描述），small 为小卡片（只显示图标，名称在鼠标悬停时提示）
+	// Size 为尺寸：空为默认（卡片样式 1×2、App 图标样式 1×1），small 为 1×1，wide 为 1×2，big 为 2×2，见 PanelSizeLarge 等
 	Size string `json:"size"`
-	// HideName、HideDesc 只对大卡片生效：隐藏标题、隐藏描述（没有描述时的地址也一并隐藏）
+	// HideName、HideDesc 对 1×1 以外的尺寸生效：隐藏标题、隐藏描述（没有描述时的地址也一并隐藏）
 	HideName bool `json:"hideName"`
 	HideDesc bool `json:"hideDesc"`
 	// AuthOnly 为 true 时只对已登录的访客显示：未登录时页面中没有该链接（地址、名称都不下发）。
@@ -664,7 +674,7 @@ func (l *PanelLink) validate() (int, error) {
 		}
 	}
 	switch l.Size {
-	case PanelSizeLarge, PanelSizeSmall:
+	case PanelSizeLarge, PanelSizeSmall, PanelSizeWide, PanelSizeBig:
 	default:
 		return 0, errors.New("卡片尺寸无效")
 	}
@@ -798,7 +808,7 @@ func linkAddress(u *url.URL) string {
 // 未登录时“登录后可见”的链接不进入页面，只统计被隐藏的个数。
 func (p *compiledPanel) view(q redirectRequest, lan, forced, preview, authed bool) webpage.PanelView {
 	v := webpage.PanelView{Title: p.Title, Subtitle: p.Subtitle, Theme: p.Theme, Skin: p.Skin, LAN: lan, Forced: forced, Preview: preview, BgDim: p.BgDim, BgBlur: p.BgBlur,
-		Layout:     webpage.PanelLayout{Style: p.CardStyle, IconSize: p.IconSize, Columns: p.Columns, MobileColumns: p.MobileColumns, Gap: p.Gap, MaxWidth: p.MaxWidth},
+		Layout:     webpage.PanelLayout{Style: p.CardStyle, IconSize: p.IconSize, Columns: p.Columns, MobileColumns: p.MobileColumns, Gap: p.Gap, MaxWidth: p.MaxWidth, HideAppName: p.HideAppName},
 		GroupCount: p.GroupCount, AltBadge: p.AltBadge, ShowLang: p.ShowLang, HideSkin: p.HideSkin}
 	for _, e := range p.Engines {
 		v.Engines = append(v.Engines, webpage.PanelEngine{Name: e.Name, URL: e.URL})
@@ -837,7 +847,8 @@ func (p *compiledPanel) view(q redirectRequest, lan, forced, preview, authed boo
 			raw = l.LANURL
 		}
 		// 锁标记只出现在已登录访客的页面上（未登录时这类链接不下发），面板可设置不显示
-		link := webpage.PanelLink{Name: l.Name, Description: l.Description, NewTab: !l.SameTab, Icon: panelIcon(l.Icon, l.Color), Locked: l.AuthOnly && !p.HideLock, Small: l.Size == PanelSizeSmall, HideName: l.HideName, HideDesc: l.HideDesc}
+		link := webpage.PanelLink{Name: l.Name, Description: l.Description, NewTab: !l.SameTab, Icon: panelIcon(l.Icon, l.Color), Locked: l.AuthOnly && !p.HideLock,
+			Small: l.Size == PanelSizeSmall, Wide: l.Size == PanelSizeWide, Big: l.Size == PanelSizeBig, HideName: l.HideName, HideDesc: l.HideDesc}
 		// 变量暂无值（例如 STUN 规则还没有公网地址）或展开后不再是允许的地址时，卡片显示为暂不可用
 		if href, ok := expandPanelURL(raw, q); ok {
 			if u, err := url.Parse(href); err == nil {

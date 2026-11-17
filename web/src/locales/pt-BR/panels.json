@@ -112,10 +112,7 @@
   "authOnlyHelp": "Visitantes sem login não veem este link (nem o nome nem o endereço são enviados). O site precisa de autenticação web com “Exigir autenticação apenas nos caminhos marcados como Obrigatória abaixo” marcado para que visitantes sem login abram o painel e vejam o botão de login; em sites que exigem login em tudo, todos os visitantes já estão logados.",
   "bgBlur": "Desfoque do fundo",
   "bgReset": "Restaurar fundo padrão",
-  "cardSize": "Tamanho do cartão",
-  "sizeLarge": "Grande",
-  "sizeSmall": "Pequeno",
-  "sizeSmallHelp": "Um cartão pequeno mostra só o ícone; o nome aparece ao passar o mouse.",
+  "cardSize": "Tamanho",
   "showName": "Mostrar título",
   "showDesc": "Mostrar descrição",
   "tabTitle": "Título da aba",
@@ -153,6 +150,8 @@
   "groupCountHelp": "Mostra o número de links ao lado do título de cada grupo.",
   "altBadge": "Selo de endereços",
   "altBadgeHelp": "Links com outras formas de acesso mostram o total de endereços no canto superior direito do ícone. De qualquer forma, clicar nesses links abre a lista de endereços para escolher.",
+  "appName": "Nomes dos ícones",
+  "appNameHelp": "Mostra o nome sob cada ícone no estilo de ícones de app, também quando o visitante muda para ícones na página. Os nomes dentro dos blocos largos 1×2 aparecem sempre.",
   "lockMark": "Marca de cadeado",
   "lockMarkHelp": "Visitantes conectados veem um cadeado nos links visíveis só após entrar; desative para ocultá-lo. Quem não entrou nunca vê esses links.",
   "skinSwitch": "Botão de tema",
@@ -160,5 +159,11 @@
   "langSwitch": "Seletor de idioma",
   "langSwitchHelp": "Mostra um menu de idioma no canto superior direito. Desativado (padrão), a página segue o idioma do navegador do visitante.",
   "bgPreview": "Pré-visualização",
-  "bgPreviewHelp": "O desfoque e a camada mudam ao arrastar os controles; veja a página completa na aba Pré-visualização."
+  "bgPreviewHelp": "O desfoque e a camada mudam ao arrastar os controles; veja a página completa na aba Pré-visualização.",
+  "sizeHelp1x1": "1×1: só o ícone; o nome aparece ao passar o mouse.",
+  "sizeHelp1x1App": "1×1: ícone com o nome embaixo.",
+  "sizeHelp1x2": "1×2: ícone com título e descrição.",
+  "sizeHelp1x2App": "1×2: um bloco largo com o ícone à esquerda e o nome e a descrição à direita.",
+  "sizeHelp2x2": "2×2: um bloco grande de duas linhas e duas colunas, com o ícone ampliado e o título e a descrição embaixo.",
+  "sizeHelp2x2App": "2×2: um ícone grande de duas linhas e duas colunas, com o nome embaixo."
 }

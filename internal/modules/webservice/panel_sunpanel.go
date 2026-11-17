@@ -51,8 +51,12 @@ var sunPanelImageMax = (maxPanelIconLen - 64) / 4 * 3
 // Sun-Panel 打开方式：1 当前页面，2 新窗口，3 当前页面弹窗（导航面板没有弹窗，改为新标签页）
 const sunPanelOpenSameTab = 1
 
-// Sun-Panel 2.x 卡片尺寸：1 为 1x1（只显示图标），2 为 1x2，4 为 2x2
-const sunPanelCardSmall = 1
+// Sun-Panel 2.x 卡片尺寸：1 为 1x1（只显示图标），2 为 1x2，4 为 2x2；1.x 没有卡片尺寸，记为 0（默认尺寸）
+const (
+	sunPanelCardSmall = 1
+	sunPanelCardWide  = 2
+	sunPanelCardBig   = 4
+)
 
 // Sun-Panel 图标类型
 const (
@@ -293,7 +297,7 @@ func (c *sunPanelConverter) readV1(data []byte) ([]sunPanelGroup, error) {
 	for _, g := range v.Icons {
 		sg := sunPanelGroup{title: g.Title, sort: g.Sort}
 		for _, it := range g.Children {
-			card := sunPanelCard{group: g.Title, title: it.Title, desc: it.Description, url: it.URL, lanURL: it.LANURL, openMethod: it.OpenMethod, cardSize: 2, sort: it.Sort}
+			card := sunPanelCard{group: g.Title, title: it.Title, desc: it.Description, url: it.URL, lanURL: it.LANURL, openMethod: it.OpenMethod, sort: it.Sort}
 			if it.Icon != nil {
 				card.iconType, card.iconSrc, card.iconText, card.bg = it.Icon.ItemType, it.Icon.Src, it.Icon.Text, it.Icon.BackgroundColor
 			}
@@ -473,8 +477,13 @@ func (c *sunPanelConverter) card(group string, sc *sunPanelCard) (PanelLink, boo
 	if sc.openMethod == 3 {
 		c.note(noteIframe, group, label, "")
 	}
-	if sc.cardSize == sunPanelCardSmall {
+	switch sc.cardSize {
+	case sunPanelCardSmall:
 		l.Size = PanelSizeSmall
+	case sunPanelCardWide:
+		l.Size = PanelSizeWide
+	case sunPanelCardBig:
+		l.Size = PanelSizeBig
 	}
 	c.icon(&l, sc, group, label)
 	return l, true

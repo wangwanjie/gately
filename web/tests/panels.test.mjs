@@ -5,6 +5,7 @@ import {
   emptyLink, groupLinks, moveLink, moveGroup, insertLink, importableSites, linksFromSites, iconKind, safeIconSrc,
   initial, paletteColor, textIconOk, hasVars, toPanel, mergeLinks, freeName, MAX_LINKS,
   emptyPanel, layoutDefaults, normalizeLayoutValue, LAYOUT_LIMITS,
+  sizeChoice, sizeValue, SIZE_CHOICES,
 } from '../src/panels.ts'
 
 const L = (name, group = '') => ({ ...emptyLink(group), name, url: `https://${name}.example.com` })
@@ -282,11 +283,32 @@ test('布局：默认值随样式变化，旧配置载入后为默认布局', ()
   assert.deepEqual([app.cardStyle, app.iconSize, app.columns, app.mobileColumns, app.gap, app.maxWidth], ['app', 72, 6, 4, 20, 1600])
 })
 
+test('尺寸：默认尺寸在卡片样式下为 1×2、图标样式下为 1×1，选回默认尺寸时保存为空', () => {
+  assert.deepEqual(SIZE_CHOICES, ['1x1', '1x2', '2x2'])
+  assert.equal(sizeChoice('', ''), '1x2')
+  assert.equal(sizeChoice('', 'app'), '1x1')
+  assert.equal(sizeChoice(undefined, ''), '1x2')
+  for (const style of ['', 'app']) {
+    assert.equal(sizeChoice('small', style), '1x1')
+    assert.equal(sizeChoice('wide', style), '1x2')
+    assert.equal(sizeChoice('big', style), '2x2')
+    // 往返换算：选什么显示什么
+    for (const c of SIZE_CHOICES) {
+      assert.equal(sizeChoice(sizeValue(c, style), style), c)
+    }
+  }
+  assert.deepEqual(['1x1', '1x2', '2x2'].map((c) => sizeValue(c, '')), ['small', '', 'big'])
+  assert.deepEqual(['1x1', '1x2', '2x2'].map((c) => sizeValue(c, 'app')), ['', 'wide', 'big'])
+})
+
 test('开关：旧配置载入后语言切换隐藏、换肤与锁标记显示', () => {
   const old = toPanel({ name: 'x', enable: true, links: [] })
-  assert.deepEqual([old.hideLock, old.showLang, old.hideSkin], [false, false, false])
+  assert.deepEqual([old.hideAppName, old.hideLock, old.showLang, old.hideSkin], [false, false, false, false])
   const p = emptyPanel()
-  assert.deepEqual([p.hideLock, p.showLang, p.hideSkin], [false, false, false])
-  const on = toPanel({ name: 'x', enable: true, links: [], hideLock: true, showLang: true, hideSkin: true })
-  assert.deepEqual([on.hideLock, on.showLang, on.hideSkin], [true, true, true])
+  assert.deepEqual([p.hideAppName, p.hideLock, p.showLang, p.hideSkin], [false, false, false, false])
+  const on = toPanel({ name: 'x', enable: true, links: [], hideAppName: true, hideLock: true, showLang: true, hideSkin: true })
+  assert.deepEqual([on.hideAppName, on.hideLock, on.showLang, on.hideSkin], [true, true, true, true])
+  // 链接尺寸原样保留
+  const q = toPanel({ name: 'x', enable: true, links: [{ ...emptyLink(), name: 'a', url: 'https://a.example.com', size: 'wide' }, { ...emptyLink(), name: 'b', url: 'https://b.example.com', size: 'big' }] })
+  assert.deepEqual(q.links.map((l) => l.size), ['wide', 'big'])
 })

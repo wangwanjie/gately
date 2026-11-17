@@ -104,7 +104,7 @@
                   <span class="ellipsis">{{ editing.links[i].name }}</span>
                   <el-tag v-if="editing.links[i].hide" size="small" type="info">{{ t('panels.hiddenTag') }}</el-tag>
                   <el-tag v-if="editing.links[i].authOnly" size="small" type="warning" data-test="auth-tag"><Lock :size="11" /> {{ t('panels.authOnlyTag') }}</el-tag>
-                  <el-tag v-if="editing.links[i].size === 'small'" size="small" type="info" data-test="size-tag">{{ t('panels.sizeSmall') }}</el-tag>
+                  <el-tag v-if="editing.links[i].size" size="small" type="info" data-test="size-tag">{{ sizeLabel(sizeChoice(editing.links[i].size, editing.cardStyle)) }}</el-tag>
                   <el-tag v-if="editing.links[i].sameTab" size="small" type="info">{{ t('panels.sameTabTag') }}</el-tag>
                   <el-tag v-if="editing.links[i].alts?.length" size="small" :title="editing.links[i].alts.map((a) => a.name).join(' / ')">{{ t('panels.altCount', { n: editing.links[i].alts.length }) }}</el-tag>
                 </div>
@@ -207,6 +207,10 @@
             <el-form-item :label="t('panels.altBadge')">
               <el-switch v-model="editing.altBadge" data-test="layout-alt-badge" />
               <div class="form-help">{{ t('panels.altBadgeHelp') }}</div>
+            </el-form-item>
+            <el-form-item :label="t('panels.appName')">
+              <el-switch :model-value="!editing.hideAppName" data-test="layout-app-name" @update:model-value="(v: string | number | boolean) => (editing.hideAppName = !v)" />
+              <div class="form-help">{{ t('panels.appNameHelp') }}</div>
             </el-form-item>
             <el-form-item :label="t('panels.lockMark')">
               <el-switch :model-value="!editing.hideLock" data-test="layout-lock" @update:model-value="(v: string | number | boolean) => (editing.hideLock = !v)" />
@@ -378,14 +382,13 @@
           <span class="form-help inline-help">{{ link.color ? link.color : iconKind(link.icon) === 'builtin' ? t('panels.colorBuiltin') : t('panels.colorAuto') }}</span>
         </el-form-item>
         <el-form-item :label="t('panels.cardSize')">
-          <el-radio-group v-model="link.size" data-test="link-size">
-            <el-radio-button value="">{{ t('panels.sizeLarge') }}</el-radio-button>
-            <el-radio-button value="small">{{ t('panels.sizeSmall') }}</el-radio-button>
+          <el-radio-group :model-value="linkSize" data-test="link-size" @update:model-value="(v: string | number | boolean | undefined) => (link.size = sizeValue(v as SizeChoice, editing.cardStyle))">
+            <el-radio-button v-for="c in SIZE_CHOICES" :key="c" :value="c" :data-test="'link-size-' + c">{{ sizeLabel(c) }}</el-radio-button>
           </el-radio-group>
-          <div v-if="link.size === 'small'" class="form-help size-help">{{ t('panels.sizeSmallHelp') }}</div>
-          <div v-else class="size-opts">
+          <div class="form-help size-help">{{ sizeHelp }}</div>
+          <div v-if="!(linkSize === '1x1' && editing.cardStyle !== 'app')" class="size-opts">
             <el-checkbox :model-value="!link.hideName" data-test="link-show-name" @change="(v: string | number | boolean) => (link.hideName = !v)">{{ t('panels.showName') }}</el-checkbox>
-            <el-checkbox :model-value="!link.hideDesc" data-test="link-show-desc" @change="(v: string | number | boolean) => (link.hideDesc = !v)">{{ t('panels.showDesc') }}</el-checkbox>
+            <el-checkbox v-if="linkSize !== '1x1'" :model-value="!link.hideDesc" data-test="link-show-desc" @change="(v: string | number | boolean) => (link.hideDesc = !v)">{{ t('panels.showDesc') }}</el-checkbox>
           </div>
         </el-form-item>
         <el-form-item :label="t('panels.options')">
@@ -458,6 +461,10 @@ import { loadForwardSources } from '../forwardSources'
 import {
   DEFAULT_BG_DIM,
   LAYOUT_LIMITS,
+  SIZE_CHOICES,
+  sizeChoice,
+  sizeValue,
+  type SizeChoice,
   layoutDefaults,
   normalizeLayoutValue,
   type LayoutField,
@@ -729,7 +736,11 @@ function layoutPlaceholder(key: LayoutField): string {
   return d ? t('panels.layoutDefault', { n: d }) : t('panels.layoutAuto')
 }
 function resetLayout() {
-  Object.assign(editing.value, { cardStyle: '', iconSize: 0, columns: 0, mobileColumns: 0, gap: 0, maxWidth: 0, groupCount: false, altBadge: false, hideLock: false })
+  Object.assign(editing.value, { cardStyle: '', iconSize: 0, columns: 0, mobileColumns: 0, gap: 0, maxWidth: 0, groupCount: false, altBadge: false, hideAppName: false, hideLock: false })
+}
+// sizeLabel 把尺寸写成 1×2 的形式（行×列）
+function sizeLabel(c: SizeChoice): string {
+  return c.replace('x', '×')
 }
 
 function resetBackground() {
@@ -783,6 +794,20 @@ const altUrlExample = 'https://[2001:db8::2]:8443'
 // engineUrlExample 为搜索地址的示例（花括号写在模板属性里会干扰模板解析）
 const engineUrlExample = 'https://www.google.com/search?q={q}'
 const link = ref<PanelLink>(emptyLink())
+// linkSize 为编辑中的链接在面板当前样式下的尺寸
+const linkSize = computed(() => sizeChoice(link.value.size, editing.value.cardStyle))
+// sizeHelp 说明所选尺寸在面板当前样式下的显示方式
+const sizeHelp = computed(() => {
+  const app = editing.value.cardStyle === 'app'
+  switch (linkSize.value) {
+    case '1x1':
+      return app ? t('panels.sizeHelp1x1App') : t('panels.sizeHelp1x1')
+    case '1x2':
+      return app ? t('panels.sizeHelp1x2App') : t('panels.sizeHelp1x2')
+    default:
+      return app ? t('panels.sizeHelp2x2App') : t('panels.sizeHelp2x2')
+  }
+})
 const linkIndex = ref(-1)
 const palette = ['#0e7c66', '#2563eb', '#7c3aed', '#db2777', '#ea580c', '#b45309', '#15803d', '#0e7490', '#4f46e5', '#dc2626']
 // el-color-picker 清空时给 null，这里换成空字符串（按名称自动挑选颜色）

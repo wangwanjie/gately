@@ -112,10 +112,7 @@
   "authOnlyHelp": "Nicht angemeldete Besucher sehen diesen Link nicht (weder Name noch Adresse werden gesendet). Die Site braucht Web-Authentifizierung mit aktiviertem „Authentifizierung nur für unten als Erforderlich markierte Pfade verlangen“, damit abgemeldete Besucher das Panel öffnen und die Anmeldung finden; auf Sites, die alles schützen, sind alle Besucher bereits angemeldet.",
   "bgBlur": "Hintergrundunschärfe",
   "bgReset": "Standardhintergrund wiederherstellen",
-  "cardSize": "Kartengröße",
-  "sizeLarge": "Groß",
-  "sizeSmall": "Klein",
-  "sizeSmallHelp": "Eine kleine Karte zeigt nur das Symbol; der Name erscheint beim Darüberfahren.",
+  "cardSize": "Größe",
   "showName": "Titel anzeigen",
   "showDesc": "Beschreibung anzeigen",
   "tabTitle": "Tab-Titel",
@@ -153,6 +150,8 @@
   "groupCountHelp": "Zeigt die Anzahl der Links neben jedem Gruppentitel.",
   "altBadge": "Adressen-Badge",
   "altBadgeHelp": "Links mit weiteren Zugängen zeigen die Gesamtzahl ihrer Adressen oben rechts am Symbol. Unabhängig davon öffnet ein Klick auf solche Links die Adressliste zur Auswahl.",
+  "appName": "Symbolnamen",
+  "appNameHelp": "Zeigt im App-Symbol-Stil den Namen unter jedem Symbol, auch wenn Besucher auf der Seite zu Symbolen wechseln. Namen in breiten 1×2-Kacheln werden immer angezeigt.",
   "lockMark": "Schloss-Markierung",
   "lockMarkHelp": "Angemeldete Besucher sehen ein Schloss an Links, die nur nach Anmeldung sichtbar sind; ausschalten, um es zu verbergen. Nicht angemeldete Besucher sehen solche Links nie.",
   "skinSwitch": "Design-Schaltfläche",
@@ -160,5 +159,11 @@
   "langSwitch": "Sprachauswahl",
   "langSwitchHelp": "Zeigt oben rechts ein Sprachmenü. Ausgeschaltet (Standard) folgt die Seite der Browsersprache des Besuchers.",
   "bgPreview": "Vorschau",
-  "bgPreviewHelp": "Unschärfe und Abdeckung ändern sich sofort beim Ziehen der Regler; die ganze Seite zeigt der Tab Vorschau."
+  "bgPreviewHelp": "Unschärfe und Abdeckung ändern sich sofort beim Ziehen der Regler; die ganze Seite zeigt der Tab Vorschau.",
+  "sizeHelp1x1": "1×1: nur das Symbol; der Name erscheint beim Darüberfahren.",
+  "sizeHelp1x1App": "1×1: Symbol mit Namen darunter.",
+  "sizeHelp1x2": "1×2: Symbol mit Titel und Beschreibung.",
+  "sizeHelp1x2App": "1×2: eine breite Kachel mit Symbol links, Name und Beschreibung rechts.",
+  "sizeHelp2x2": "2×2: ein großer Block über zwei Zeilen und zwei Spalten mit vergrößertem Symbol, Titel und Beschreibung darunter.",
+  "sizeHelp2x2App": "2×2: ein großes Symbol über zwei Zeilen und zwei Spalten mit Namen darunter."
 }

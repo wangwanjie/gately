@@ -8,16 +8,16 @@ import (
 	"testing"
 )
 
-// 卡片尺寸：只接受空（大卡片）与 small；标题、描述的隐藏只影响显示，不影响搜索数据。
+// 卡片尺寸：只接受空（默认）、small（1×1）、wide（1×2）与 big（2×2）；标题、描述的隐藏只影响显示，不影响搜索数据。
 func TestPanelLinkSizeValidate(t *testing.T) {
-	for _, sz := range []string{"", "small"} {
+	for _, sz := range []string{"", "small", "wide", "big"} {
 		p := validPanel()
 		p.Links[0].Size = sz
 		if err := p.validate(); err != nil {
 			t.Errorf("尺寸 %q 应通过: %v", sz, err)
 		}
 	}
-	for _, sz := range []string{"large", "Small", "huge", " small"} {
+	for _, sz := range []string{"large", "Small", "huge", " small", "Wide", "2x2", "1x2"} {
 		p := validPanel()
 		p.Links[0].Size = sz
 		if err := p.validate(); err == nil {
@@ -48,6 +48,10 @@ func TestPanelCardRendering(t *testing.T) {
 		{Name: "全隐藏", URL: "https://f.example.com", Description: "描述F", HideName: true, HideDesc: true},
 		{Name: "全隐藏有入口", URL: "https://g.example.com", HideName: true, HideDesc: true, Alts: []PanelAlt{{Name: "IPv6", URL: "https://[2001:db8::1]"}}},
 		{Name: "小卡", URL: "https://e.example.com", Description: "描述E", Size: PanelSizeSmall, Alts: []PanelAlt{{Name: "IPv6", URL: "https://[2001:db8::1]"}}},
+		{Name: "小卡无名", URL: "https://h.example.com", Size: PanelSizeSmall, HideName: true},
+		{Name: "宽块", URL: "https://i.example.com", Description: "描述I", Size: PanelSizeWide},
+		{Name: "大块", URL: "https://j.example.com", Description: "描述J", Size: PanelSizeBig},
+		{Name: "大块全隐藏", URL: "https://k.example.com", Size: PanelSizeBig, HideName: true, HideDesc: true},
 	}}
 	h, _ := panelHandler(t, []Panel{p})
 	body := panelGet(h, "/", "203.0.113.9:1").Body.String()
@@ -71,9 +75,22 @@ func TestPanelCardRendering(t *testing.T) {
 	if c := cardOf(t, body, "全隐藏有入口"); !strings.Contains(c, `card sm link multi`) || !strings.Contains(c, `<span class="alts" hidden><a class="alt"`) {
 		t.Errorf("有其他访问方式时也按小卡片显示，访问方式留给选择列表: %s", c)
 	}
+	// 1×1 输出名称（卡片样式由样式表隐藏、App 图标样式显示在图标下方），不输出描述
 	small := cardOf(t, body, "小卡")
-	if !strings.Contains(small, `card sm link`) || strings.Contains(small, `class="nm"`) || strings.Contains(small, "描述E") || !strings.Contains(small, `class="alts" hidden`) || !strings.Contains(small, `aria-label="小卡"`) {
-		t.Errorf("小卡片只显示图标，名称在提示中: %s", small)
+	if !strings.Contains(small, `card sm link`) || !strings.Contains(small, `<span class="tx"><span class="nm">小卡</span></span>`) || strings.Contains(small, "描述E") || !strings.Contains(small, `class="alts" hidden`) || !strings.Contains(small, `aria-label="小卡"`) {
+		t.Errorf("1×1 只带名称，描述不输出: %s", small)
+	}
+	if c := cardOf(t, body, "小卡无名"); strings.Contains(c, `class="tx"`) {
+		t.Errorf("1×1 隐藏标题时不输出名称: %s", c)
+	}
+	if c := cardOf(t, body, "宽块"); !strings.Contains(c, `card wd link`) || !strings.Contains(c, "描述I") {
+		t.Errorf("1×2 应带 wd 类名、标题与描述: %s", c)
+	}
+	if c := cardOf(t, body, "大块"); !strings.Contains(c, `card xl link`) || !strings.Contains(c, `class="nm">大块`) || !strings.Contains(c, "描述J") {
+		t.Errorf("2×2 应带 xl 类名、标题与描述: %s", c)
+	}
+	if c := cardOf(t, body, "大块全隐藏"); !strings.Contains(c, `card sm link`) || strings.Contains(c, " xl") {
+		t.Errorf("2×2 隐藏标题与描述后只剩图标，按 1×1 显示: %s", c)
 	}
 	// 隐藏的标题与描述仍可被页面搜索命中
 	if m := regexp.MustCompile(`data-s="([^"]*)"`).FindAllStringSubmatch(big+cardOf(t, body, "无标题"), -1); len(m) != 2 || !strings.Contains(m[1][1], "无标题") {
