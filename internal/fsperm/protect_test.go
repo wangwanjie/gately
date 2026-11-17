@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-func mkdir(t *testing.T, parts ...string) string {
+func mkdir(t testing.TB, parts ...string) string {
 	t.Helper()
 	p := filepath.Join(parts...)
 	if err := os.MkdirAll(p, 0o755); err != nil {

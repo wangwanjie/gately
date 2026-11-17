@@ -20,15 +20,23 @@ type Guard struct {
 	resolved []string
 	// stats 为受保护目录的文件信息，列目录时据此快速判断条目是否就是受保护目录；取不到时为 nil
 	stats []os.FileInfo
+	// root 为共享目录（规范化的绝对路径）；rootClear 表示构造时已确认共享目录本身及其各级上级都不是受保护目录，
+	// 按文件对象比较共享目录中的路径时，只需检查共享目录以下的各级
+	root      string
+	rootClear bool
 }
 
 // NewGuard 返回共享目录 root 的屏蔽规则；root 不包含受保护目录时返回 nil。
 // root 本身就是受保护目录或位于其中时同样返回规则（所有路径都被屏蔽），作为保存校验之外的兜底。
 func NewGuard(root string) *Guard {
-	var g Guard
+	g := Guard{root: absClean(root), rootClear: true}
 	for _, dir := range protectedDirs() {
-		if !insideOf(root, dir) && !insideOf(dir, root) {
+		rootInside := insideOf(dir, root)
+		if !insideOf(root, dir) && !rootInside {
 			continue
+		}
+		if rootInside {
+			g.rootClear = false
 		}
 		abs := absClean(dir)
 		g.dirs = append(g.dirs, abs)
@@ -46,14 +54,65 @@ func NewGuard(root string) *Guard {
 }
 
 // Hidden 判断绝对路径 p 是否为受保护目录或位于其中：读取、列出、打开、创建都应拒绝，并按不存在处理。
+//
+// 判断规则与 insideOf 相同（规范化路径、解析符号链接后的路径、文件系统中的实际对象），但文件服务每个操作都要调用，
+// 这里省掉每次重复的工作：受保护目录的解析结果与文件信息用构造时算好的，p 只解析一次，
+// 逐级比较文件对象时只查共享目录以下的各级（共享目录及其上级在构造时已确认不是受保护目录）。
 func (g *Guard) Hidden(p string) bool {
 	if g == nil {
 		return false
 	}
+	ap := absClean(p)
+	if ap == "" {
+		return false
+	}
 	for _, dir := range g.dirs {
-		if insideOf(dir, p) {
+		if lexicalWithin(dir, ap) {
 			return true
 		}
+	}
+	rp := resolve(ap)
+	for _, dir := range g.resolved {
+		if lexicalWithin(dir, rp) {
+			return true
+		}
+	}
+	return g.sameOnPath(ap)
+}
+
+// sameOnPath 判断 p（规范化的绝对路径）或它的某一级上级目录是否与某个受保护目录是同一个文件系统对象，
+// 用于识别同一目录的另一个挂载位置（如 bind mount）。
+func (g *Guard) sameOnPath(p string) bool {
+	wants := make([]os.FileInfo, 0, len(g.stats))
+	for i, st := range g.stats {
+		if st == nil {
+			// 构造时受保护目录还不存在，按当前状态再取一次
+			st, _ = os.Stat(g.dirs[i])
+		}
+		if st != nil {
+			wants = append(wants, st)
+		}
+	}
+	if len(wants) == 0 {
+		return false
+	}
+	stop := ""
+	if g.rootClear && g.root != "" && within(g.root, p) {
+		stop = g.root
+	}
+	for cur := p; cur != stop; {
+		if st, err := os.Stat(cur); err == nil {
+			for _, w := range wants {
+				if os.SameFile(st, w) {
+					return true
+				}
+			}
+		}
+		parent := filepath.Dir(cur)
+		if parent == cur {
+			return false
+		}
+		cur = parent
 	}
 	return false
 }
@@ -64,8 +123,11 @@ func (g *Guard) Touches(p string) bool {
 	if g == nil {
 		return false
 	}
+	if g.Hidden(p) {
+		return true
+	}
 	for _, dir := range g.dirs {
-		if insideOf(dir, p) || insideOf(p, dir) {
+		if insideOf(p, dir) {
 			return true
 		}
 	}
