@@ -1,0 +1,33 @@
+# Caddy 2 认证网关：forward_auth 交给 Authelia（/api/authz/forward-auth），按端口区分认证方式
+#   8443  bench.test       forward_auth + Authelia
+#   8443  auth.bench.test  Authelia 门户
+#   8444  bench.test       不加认证（同一进程的对照组）
+#   8445  bench.test       basic_auth，bcrypt cost 10
+# @BACKEND@、@BCRYPT@ 由 bench.py 替换
+{
+	auto_https off
+	admin off
+}
+https://auth.bench.test:8443 {
+	tls /certs/bench.crt /certs/bench.key
+	reverse_proxy 127.0.0.1:9091
+}
+https://bench.test:8443 {
+	tls /certs/bench.crt /certs/bench.key
+	forward_auth 127.0.0.1:9091 {
+		uri /api/authz/forward-auth
+		copy_headers Remote-User Remote-Groups Remote-Email Remote-Name
+	}
+	reverse_proxy @BACKEND@
+}
+https://bench.test:8444 {
+	tls /certs/bench.crt /certs/bench.key
+	reverse_proxy @BACKEND@
+}
+https://bench.test:8445 {
+	tls /certs/bench.crt /certs/bench.key
+	basic_auth {
+		bench @BCRYPT@
+	}
+	reverse_proxy @BACKEND@
+}
