@@ -11,6 +11,7 @@ import (
 	"net/http/httputil"
 	"net/netip"
 	"net/url"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -774,20 +775,20 @@ func gatelyCookieMatcher(s Site, a *authenticator) func(*http.Cookie) bool {
 
 // stripCookie 从请求中删除指定名称的 Cookie。
 func stripCookie(r *http.Request, names ...string) {
+	stripCookieFunc(r, func(c *http.Cookie) bool {
+		return slices.Contains(names, c.Name)
+	})
+}
+
+// stripCookieFunc 从请求中删除 drop 返回 true 的 Cookie。
+func stripCookieFunc(r *http.Request, drop func(*http.Cookie) bool) {
 	cookies := r.Cookies()
 	if len(cookies) == 0 {
 		return
 	}
 	var kept []string
 	for _, c := range cookies {
-		drop := false
-		for _, n := range names {
-			if c.Name == n {
-				drop = true
-				break
-			}
-		}
-		if !drop {
+		if !drop(c) {
 			kept = append(kept, c.Name+"="+c.Value)
 		}
 	}
