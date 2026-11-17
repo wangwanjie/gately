@@ -50,7 +50,7 @@ Auf jeder Modulseite lassen sich die Programme online installieren, aktualisiere
 
 ## Laufzeitprotokolle
 
-Die Laufzeitprotokolle des Systems und aller Module werden standardmäßig nach `logs/` im Konfigurationsverzeichnis geschrieben und sind daher nach einem Neustart oder Upgrade weiterhin auf der Seite Systemprotokolle und in jedem Modul sichtbar:
+Die Laufzeitprotokolle des Systems und aller Module werden standardmäßig nach `logs/` im Konfigurationsverzeichnis geschrieben und sind daher nach einem Neustart oder Upgrade weiterhin im Tab „Systemprotokolle“ der Seite „System → Protokolle“ und in jedem Modul sichtbar:
 
 - Eine JSON-Lines-Datei pro Quelle: `logs/<Modul-ID>.log`, Systemprotokolle in `logs/gately.log`. Beim Start werden die neuesten Einträge, bis zu „Aufbewahrte Protokollzeilen“, aus der Datei wiederhergestellt;
 - Neue Einträge werden gebündelt mit höchstens 1 Sekunde Verzögerung geschrieben. Überschreitet eine Datei das Limit (standardmäßig 2 MB), wird sie nach `.1` rotiert und nur diese eine ältere Datei behalten, jede Quelle belegt also höchstens das Doppelte des Limits;
@@ -64,7 +64,7 @@ Die Laufzeitprotokolle des Systems und aller Module werden standardmäßig nach 
 
 ### Anzeigen und filtern {#log-filter}
 
-Die Seite Systemprotokolle und die Protokollkarte unten auf jeder Modulseite verwenden denselben Protokollbetrachter. Die folgenden Bedingungen lassen sich kombinieren; Änderungen wirken sofort, und neue Einträge werden nur angehängt, wenn sie zutreffen:
+Der Tab „Systemprotokolle“ der Seite „Protokolle“ und die Protokollkarte unten auf jeder Modulseite verwenden denselben Protokollbetrachter. Die folgenden Bedingungen lassen sich kombinieren; Änderungen wirken sofort, und neue Einträge werden nur angehängt, wenn sie zutreffen:
 
 - Stufe und Quelle (die Auswahlliste enthält alle Quellen aus der Modulkonfiguration und alle in den Protokollen aufgetretenen, etwa sämtliche Listener des Webdienstes, auch solche ohne bisherige Zugriffe oder mit Protokollen nur auf der Festplatte; eine Eingabe ist weiterhin möglich);
 - Suchbegriffe: durch Leerzeichen getrennte Begriffe müssen alle zutreffen, doppelte Anführungszeichen fassen eine Phrase zusammen, ein vorangestelltes `-` schließt einen Begriff aus, z. B. `GET "timeout" -debug`; Treffer werden hervorgehoben. Ist die Oberfläche in einer anderen Sprache, suchen Sie mit dem übersetzten Text, den Sie auf dem Bildschirm sehen;

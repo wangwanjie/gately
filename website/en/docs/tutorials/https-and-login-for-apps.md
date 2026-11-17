@@ -55,7 +55,7 @@ The IPs are examples.
 **Large photo and video uploads.** Immich uploads big files when it backs up your library. Gately itself sets no limit, so only two things matter:
 
 1. If the site has no WAF attached, there is nothing to do.
-2. If it has a WAF, the WAF inspects request bodies only up to 12.5 MB by default and answers 413 above that. Create a separate WAF instance for Immich ("Web → WAF Firewall" → "Add instance"), set "Over the limit" to "Inspect the first part only" under "Request body inspection", raise the "Inspection limit" if needed, and select the instance as the site's "WAF instance". Alternatively add the upload endpoint `/api/assets` under "Paths without body inspection"; headers, URL and parameters are still inspected. Start in "Detect only" mode, read the log for false positives, then switch to "Block".
+2. If it has a WAF, the WAF inspects request bodies only up to 12.5 MB by default and answers 413 above that. Create a separate WAF instance for Immich ("Security → WAF Firewall" → "Add instance"), set "Over the limit" to "Inspect the first part only" under "Request body inspection", raise the "Inspection limit" if needed, and select the instance as the site's "WAF instance". Alternatively add the upload endpoint `/api/assets` under "Paths without body inspection"; headers, URL and parameters are still inspected. Start in "Detect only" mode, read the log for false positives, then switch to "Block".
 
 **Timeouts.** Very large videos take a long time to upload; Gately's defaults do not interrupt an upload that keeps sending data. If you set a "wait for response headers" timeout on the site's "Traffic" tab, make it 600 seconds or more.
 

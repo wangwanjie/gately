@@ -2,7 +2,7 @@
 
 ## WebDAV
 
-Configure em "Serviço WebDAV", no grupo "Serviços de arquivos" da barra lateral.
+Configure na aba "WebDAV" da página "Serviços de arquivos → Compartilhamento de arquivos" da barra lateral.
 
 | Campo | Padrão | Descrição |
 | --- | --- | --- |
@@ -27,7 +27,7 @@ Cada usuário pode ser mapeado para um diretório ou montar vários diretórios:
 
 ## FTP
 
-Configure em "Serviço FTP", no grupo "Serviços de arquivos". FTP e FTPS são compatíveis.
+Configure na aba "FTP" da página "Serviços de arquivos → Compartilhamento de arquivos". FTP e FTPS são compatíveis.
 
 | Campo | Padrão | Descrição |
 | --- | --- | --- |
@@ -47,7 +47,7 @@ Configure em "Serviço FTP", no grupo "Serviços de arquivos". FTP e FTPS são c
 
 ## SMB
 
-Configure em "Serviço SMB", no grupo "Serviços de arquivos", para compartilhar diretórios locais com o Explorador de Arquivos do Windows, o Finder do macOS, Linux e clientes SMB de celulares e TVs. A implementação do protocolo vem embutida no Gately (baseada no [gosamba](https://github.com/ahmetozer/gosamba)) e suporta SMB 2.0.2 a 3.1.1, autenticação NTLMv2 e assinatura, com criptografia SMB 3 obrigatória opcional; SMB 1 não é suportado. Disponível apenas no Linux e no macOS.
+Configure na aba "SMB" da página "Serviços de arquivos → Compartilhamento de arquivos" para compartilhar diretórios locais com o Explorador de Arquivos do Windows, o Finder do macOS, Linux e clientes SMB de celulares e TVs. A implementação do protocolo vem embutida no Gately (baseada no [gosamba](https://github.com/ahmetozer/gosamba)) e suporta SMB 2.0.2 a 3.1.1, autenticação NTLMv2 e assinatura, com criptografia SMB 3 obrigatória opcional; SMB 1 não é suportado. Disponível apenas no Linux e no macOS.
 
 | Campo | Padrão | Descrição |
 | --- | --- | --- |
@@ -78,20 +78,20 @@ Para diagnosticar clientes que não conectam ou falham na autenticação, defina
 
 ## Usuários compartilhados {#shared-users}
 
-WebDAV, FTP e SMB compartilham uma lista de "usuários compartilhados" com os mesmos campos dos usuários locais de cada serviço (nome, senha, `root` e `readOnly`, ou `mounts`), salva em `fileusers.json` no diretório de configuração. Eles são gerenciados na página "Usuários compartilhados de arquivos" do grupo "Serviços de arquivos" da barra lateral e, ao salvar, valem para os três serviços; os usuários locais de cada serviço não mudam. O topo da página mostra se cada serviço permite usuários compartilhados e lista os usuários compartilhados com o mesmo nome de um usuário local ou que o SMB não pode usar.
+WebDAV, FTP e SMB compartilham uma lista de "usuários compartilhados" com os mesmos campos dos usuários locais de cada serviço (nome, senha, `root` e `readOnly`, ou `mounts`), salva em `fileusers.json` no diretório de configuração. Eles são gerenciados na aba "Usuários compartilhados" da página "Serviços de arquivos → Compartilhamento de arquivos" da barra lateral e, ao salvar, valem para os três serviços; os usuários locais de cada serviço não mudam. O topo da página mostra se cada serviço permite usuários compartilhados e lista os usuários compartilhados com o mesmo nome de um usuário local ou que o SMB não pode usar.
 
-- Cada serviço decide sozinho se aceita usuários compartilhados: ative "Permitir usuários compartilhados" no cartão "Usuários compartilhados" da página do serviço (campo `sharedUsers`) e salve, e os usuários compartilhados poderão entrar nesse serviço; o cartão também lista os usuários compartilhados salvos, e "Gerenciar usuários compartilhados" abre a página "Usuários compartilhados de arquivos";
+- Cada serviço decide sozinho se aceita usuários compartilhados: ative "Permitir usuários compartilhados" no cartão "Usuários compartilhados" da aba do serviço (campo `sharedUsers`) e salve, e os usuários compartilhados poderão entrar nesse serviço; o cartão também lista os usuários compartilhados salvos, e "Gerenciar usuários compartilhados" abre a aba "Usuários compartilhados";
 - Se um usuário local tiver o mesmo nome, só o usuário local é verificado (sem diferenciar maiúsculas no SMB);
 - Nomes de usuários compartilhados não podem se repetir, mesmo com maiúsculas diferentes, e não podem conter dois-pontos;
 - As alterações nos usuários compartilhados valem na hora: o WebDAV usa as novas configurações na próxima requisição; se só senhas mudaram, FTP e SMB continuam em execução e encerram apenas as conexões dos usuários cuja senha mudou (esses clientes reconectam com a nova senha e os demais usuários não são afetados); adicionar ou remover usuários ou mudar diretórios ou o modo somente leitura reinicia FTP e SMB, e os clientes conectados precisam se reconectar;
 - Com a chave ligada e pelo menos um usuário compartilhado, o serviço pode ser ativado sem usuários locais;
 - Um serviço ativado só com usuários compartilhados precisa manter após a alteração um usuário compartilhado que consiga entrar (no SMB, um que o SMB possa usar); caso contrário, a alteração é recusada;
 - Se o `fileusers.json` for corrompido à mão (senha vazia, diretório que não é caminho absoluto etc.), nenhum usuário compartilhado consegue entrar e a página mostra um aviso; corrija e salve para restaurá-los;
-- O SMB só aceita senhas em texto puro, e os nomes de usuário e de compartilhamento precisam seguir as regras de caracteres do SMB; usuários compartilhados que não seguem são indicados na página "Usuários compartilhados de arquivos", na página do SMB e no log de execução e ignorados, enquanto WebDAV e FTP ainda podem usá-los.
+- O SMB só aceita senhas em texto puro, e os nomes de usuário e de compartilhamento precisam seguir as regras de caracteres do SMB; usuários compartilhados que não seguem são indicados na aba "Usuários compartilhados", na aba "SMB" e no log de execução e ignorados, enquanto WebDAV e FTP ainda podem usá-los.
 
 A API é `GET` / `PUT /api/fileusers`, que exige a permissão `fileusers:read` / `fileusers:write` para tokens de API; `services` na resposta mostra como cada serviço os usa. Os antigos `GET` / `PUT /api/<serviço>/shared-users` de cada serviço estão obsoletos, mas continuam funcionando e leem e gravam a mesma lista: a leitura usa a permissão de leitura do serviço, e uma alteração exige `webdav:write`, `ftp:write` e `smb:write` ao mesmo tempo.
 
-**Troca de senha pelo próprio usuário**: ative Troca de senha pelo próprio usuário na página Usuários compartilhados de arquivos e salve; os usuários compartilhados poderão trocar a própria senha em `https://dominio-do-site/__gately_auth/password` em qualquer site do serviço web com autenticação web, informando o nome de usuário, a senha atual e a nova (de 8 a 128 caracteres). WebDAV, FTP e SMB passam a usar a nova senha na hora (FTP e SMB não reiniciam, apenas encerram as conexões abertas desse usuário, e o cliente reconecta com a nova senha). Senhas em texto puro continuam em texto puro e hashes bcrypt continuam como hash; senha atual incorreta conta para o mesmo limite de tentativas e bloqueio automático do login web. O botão fica salvo em `selfService` no `fileusers.json`, com o mesmo nome de campo na API. Para os usuários compartilhados de login web, veja [troca de senha no serviço web](/pt-BR/docs/modules/web#self-service-password).
+**Troca de senha pelo próprio usuário**: ative Troca de senha pelo próprio usuário na aba "Usuários compartilhados" da página "Compartilhamento de arquivos" e salve; os usuários compartilhados poderão trocar a própria senha em `https://dominio-do-site/__gately_auth/password` em qualquer site do serviço web com autenticação web, informando o nome de usuário, a senha atual e a nova (de 8 a 128 caracteres). WebDAV, FTP e SMB passam a usar a nova senha na hora (FTP e SMB não reiniciam, apenas encerram as conexões abertas desse usuário, e o cliente reconecta com a nova senha). Senhas em texto puro continuam em texto puro e hashes bcrypt continuam como hash; senha atual incorreta conta para o mesmo limite de tentativas e bloqueio automático do login web. O botão fica salvo em `selfService` no `fileusers.json`, com o mesmo nome de campo na API. Para os usuários compartilhados de login web, veja [troca de senha no serviço web](/pt-BR/docs/modules/web#self-service-password).
 
 ## File Browser {#filebrowser}
 
@@ -239,7 +239,7 @@ Execute comandos ou envie requisições HTTP em um agendamento cron.
 
 - A página "Visão geral" mostra informações do host: modelo, uso e carga da CPU, memória, disco, endereços das interfaces de rede e taxas em tempo real, IPv4 e IPv6 públicos (clique para copiar), o estado do serviço de cada módulo e, para o processo do Gately, versão, commit, data de compilação, hora de início, PID, CPU, memória residente, heap do Go e número de goroutines;
 - Quando o Gately gerencia programas externos (frp, Tailscale, NetBird, túnel do Cloudflare, File Browser), a página "Visão geral" também tem o cartão "Processos gerenciados", que lista cada processo com módulo e instância, nome do programa, PID, tempo ativo, número de reinícios, CPU e memória residente, com os totais no cabeçalho; clique em uma linha para abrir o módulo. Conta apenas o próprio processo, sem os filhos que ele inicia, e não mostra caminhos nem argumentos de inicialização;
-- A página "Logs do sistema" reúne os logs de todos os módulos, incluindo os registros de execução de módulos como Docker, FTP e Tarefas agendadas.
+- A aba "Logs do sistema" da página "Logs" reúne os logs de todos os módulos, incluindo os registros de execução de módulos como Docker, FTP e Tarefas agendadas.
 
 ## Temas
 

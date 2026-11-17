@@ -4,7 +4,7 @@ Gately maneja claves DNS y claves privadas de certificados, así que debe poder 
 
 ## Registro de auditoría
 
-«Sistema → Registro de auditoría», en la barra lateral, muestra las siguientes operaciones de la más reciente a la más antigua. Puedes filtrar por categoría o buscar por ruta, usuario o IP:
+La pestaña «Registro de auditoría» de la página «Sistema → Registros» de la barra lateral muestra las siguientes operaciones de la más reciente a la más antigua. Puedes filtrar por categoría o buscar por ruta, usuario o IP:
 
 | Categoría | Qué se registra |
 | --- | --- |
@@ -23,7 +23,7 @@ Cada entrada incluye la hora, el autor (nombre de usuario o `api-token:<nombre d
 
 Antes de sobrescribir un archivo de configuración, Gately guarda el contenido anterior como una versión del historial en `history/<nombre>/` dentro del directorio de configuración, y conserva las 30 más recientes de cada configuración. `account.json` (credenciales de la cuenta) y `tokens.json` (tokens) no se guardan en el historial.
 
-En «Sistema → Historial de configuración»:
+En la pestaña «Historial de configuración» de la página «Sistema → Registros»:
 
 1. Elige un archivo de configuración para ver la fecha de guardado y el tamaño de cada versión;
 2. Pulsa «Comparar» para ver las diferencias línea a línea entre esa versión y la configuración actual;
