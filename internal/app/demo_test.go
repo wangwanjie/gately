@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/http/cookiejar"
 	"net/http/httptest"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"strconv"
@@ -173,6 +174,42 @@ func TestDemoLoginUnavailableOutsideDemo(t *testing.T) {
 	}
 	if code, _ := doJSON(t, c, "POST", srv.URL+"/api/login/demo", nil); code != 404 {
 		t.Fatalf("非演示模式不应有一键进入，实际 %d", code)
+	}
+}
+
+// 演示实例对公众开放：网卡、网段与系统信息接口不能暴露宿主机真实的地址、主机名与部署目录。
+func TestDemoHidesHostNetworkInfo(t *testing.T) {
+	a, srv := newDemoApp(t, 0)
+	c := demoClient()
+	if code, body := doJSON(t, c, "POST", srv.URL+"/api/login/demo", nil); code != 200 {
+		t.Fatalf("一键进入失败 %d %s", code, body)
+	}
+	// 收集本机真实的非回环地址
+	var real []string
+	if addrs, err := net.InterfaceAddrs(); err == nil {
+		for _, ad := range addrs {
+			if ipn, ok := ad.(*net.IPNet); ok && !ipn.IP.IsLoopback() {
+				real = append(real, ipn.IP.String())
+			}
+		}
+	}
+	host, _ := os.Hostname()
+	for _, p := range []string{"/api/ddns/netinterfaces", "/api/stun/netinterfaces", "/api/nettools/networks", "/api/system/info"} {
+		code, body := doJSON(t, c, "GET", srv.URL+p, nil)
+		if code != 200 {
+			t.Fatalf("%s 应可读取，实际 %d %s", p, code, body)
+		}
+		for _, ip := range real {
+			if bytes.Contains(body, []byte(`"`+ip+`/`)) || bytes.Contains(body, []byte(`"`+ip+`"`)) {
+				t.Errorf("%s 暴露了宿主机地址 %s: %s", p, ip, body)
+			}
+		}
+		if len(host) >= 3 && bytes.Contains(body, []byte(`"`+host+`"`)) {
+			t.Errorf("%s 暴露了宿主机主机名 %s", p, host)
+		}
+		if bytes.Contains(body, []byte(a.opts.ConfigDir)) {
+			t.Errorf("%s 暴露了配置目录 %s", p, a.opts.ConfigDir)
+		}
 	}
 }
 
