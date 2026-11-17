@@ -1,0 +1,10 @@
+{
+	auto_https off
+}
+http://bench.test:8080 {
+	reverse_proxy 127.0.0.1:9000
+}
+https://bench.test:8443 {
+	tls /certs/bench.crt /certs/bench.key
+	reverse_proxy 127.0.0.1:9000
+}
