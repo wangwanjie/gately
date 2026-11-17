@@ -34,6 +34,7 @@
       "guide/lists": "リストのグループ化・並べ替え・一括操作・複製",
       "guide/cli-mcp": "コマンドラインと MCP",
       "guide/migration": "移行ガイド",
+      "guide/benchmarks": "性能比較",
       "guide/faq": "よくある質問",
       "tutorials/remote-access-without-public-ip": "グローバル IPv4 なしで NAS に外部から接続",
       "tutorials/one-port-443": "1 つの 443 ポートで全サービスを提供",

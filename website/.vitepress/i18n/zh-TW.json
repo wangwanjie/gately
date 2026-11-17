@@ -34,6 +34,7 @@
       "guide/lists": "清單分組、排序、批次操作與複製",
       "guide/cli-mcp": "命令列與 MCP",
       "guide/migration": "遷移指南",
+      "guide/benchmarks": "效能對比",
       "guide/faq": "常見問題",
       "tutorials/remote-access-without-public-ip": "沒有公網 IPv4 也能存取 NAS",
       "tutorials/one-port-443": "一個 443 連接埠跑所有服務",

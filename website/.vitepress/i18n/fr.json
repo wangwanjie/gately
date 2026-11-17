@@ -34,6 +34,7 @@
       "guide/lists": "Groupes, tri, opérations en lot et duplication",
       "guide/cli-mcp": "Ligne de commande et MCP",
       "guide/migration": "Guide de migration",
+      "guide/benchmarks": "Comparatif de performances",
       "guide/faq": "FAQ",
       "tutorials/remote-access-without-public-ip": "Accéder à un NAS sans IPv4 publique",
       "tutorials/one-port-443": "Tout sur un seul port 443",
