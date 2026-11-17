@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/wangwanjie/gately/internal/demo"
 	"io"
 	"net"
 	"net/http"
@@ -187,6 +188,9 @@ func tracerouteTool(ctx context.Context, m *Module, req Request, out output) err
 		name, args = "tracepath", []string{"-n", ip}
 	default:
 		return errors.New("系统中没有 traceroute / tracepath 命令（Docker 镜像可安装 traceroute 包）")
+	}
+	if err := demo.Check(); err != nil {
+		return err
 	}
 	out.Line("$ %s %s", name, strings.Join(args, " "))
 	cmd := exec.CommandContext(ctx, name, args...)

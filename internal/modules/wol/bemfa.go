@@ -7,6 +7,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
+	"github.com/wangwanjie/gately/internal/demo"
 	"io"
 	"net"
 	"net/http"
@@ -247,6 +248,9 @@ type packet struct {
 
 // session 建立一次连接并处理到断开为止。
 func (b *bemfaClient) session(ctx context.Context, uid string, topics []string, log *logbuf.Logger) error {
+	if err := demo.Check(); err != nil {
+		return err
+	}
 	d := tls.Dialer{NetDialer: &net.Dialer{Timeout: 15 * time.Second, KeepAlive: 30 * time.Second}, Config: bemfaTLSConfig()}
 	dctx, cancel := context.WithTimeout(ctx, 20*time.Second)
 	c, err := d.DialContext(dctx, "tcp", bemfaAddr)

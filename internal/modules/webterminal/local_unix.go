@@ -3,6 +3,7 @@
 package webterminal
 
 import (
+	"github.com/wangwanjie/gately/internal/demo"
 	"os"
 	"os/exec"
 
@@ -30,6 +31,10 @@ func (l *localSession) Close() error {
 }
 
 func startLocal(cfg LocalConfig, cols, rows int) (session, error) {
+	// 演示模式下不执行任何外部命令
+	if err := demo.Check(); err != nil {
+		return nil, err
+	}
 	shell := cfg.Shell
 	if shell == "" {
 		shell = os.Getenv("SHELL")

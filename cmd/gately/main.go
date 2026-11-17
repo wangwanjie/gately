@@ -74,6 +74,7 @@ func serve(ctx context.Context) {
 	applyDir := flag.String("apply", os.Getenv("GATELY_APPLY_DIR"), "apply <name>.json files from this directory to the config directory on every start (also GATELY_APPLY_DIR) / 每次启动把该目录下的配置文件覆盖到配置目录")
 	gatewaySocket := flag.String("gateway-socket", "", "also serve the admin UI on this Unix socket, e.g. for the fnOS unified gateway / 额外在该 Unix Socket 上提供管理界面（如飞牛 fnOS 统一网关）")
 	gatewayPrefix := flag.String("gateway-prefix", "", "path prefix used behind the gateway socket, e.g. /app/gately / 经网关访问时的路径前缀")
+	demoMode := flag.Bool("demo", os.Getenv("GATELY_DEMO") == "1", "public demo mode: read-only visitors, no data-plane services, no external actions, data reset hourly (also GATELY_DEMO=1) / 在线演示模式：只读访客，不启动数据面服务，不执行外部动作，数据每小时重置")
 	flag.Parse()
 
 	// 多余的位置参数不属于任何子命令，拒绝启动，避免误启动第二个服务实例去抢占端口
@@ -114,6 +115,7 @@ func serve(ctx context.Context) {
 		GatewayPrefix:   *gatewayPrefix,
 		// 崩溃信息保存到配置目录的 crash.log，容器重启后看不到 stderr 时也能随诊断包导出
 		CrashLog: true,
+		Demo:     *demoMode,
 	})
 	if err != nil {
 		log.Fatalf("启动失败: %v", err)

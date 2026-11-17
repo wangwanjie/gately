@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"github.com/wangwanjie/gately/internal/demo"
 	"net"
 	"net/http"
 	"strconv"
@@ -58,6 +59,10 @@ func (p *Proxy) validate() error {
 
 // dialDirect 是直连拨号，测试可替换。
 var dialDirect = func(ctx context.Context, addr string, timeout time.Duration) (net.Conn, error) {
+	// 演示模式下不执行任何外部命令
+	if err := demo.Check(); err != nil {
+		return nil, err
+	}
 	d := net.Dialer{Timeout: timeout}
 	return d.DialContext(ctx, "tcp", addr)
 }

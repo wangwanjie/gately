@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/wangwanjie/gately/internal/demo"
 	"net/netip"
 	"os"
 	"os/exec"
@@ -177,6 +178,10 @@ func findNFT() (string, string) {
 }
 
 func (f *firewall) execNFT(ctx context.Context, stdin string, args ...string) (string, error) {
+	// 演示模式下不执行任何外部命令
+	if err := demo.Check(); err != nil {
+		return "", err
+	}
 	ctx, cancel := context.WithTimeout(ctx, nftTimeout)
 	defer cancel()
 	cmd := exec.CommandContext(ctx, f.nft, args...)

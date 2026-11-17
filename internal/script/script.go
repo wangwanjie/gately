@@ -3,6 +3,7 @@ package script
 
 import (
 	"context"
+	"github.com/wangwanjie/gately/internal/demo"
 	"os"
 	"os/exec"
 	"runtime"
@@ -18,6 +19,10 @@ const waitDelay = 3 * time.Second
 
 // Run 以 sh -c（Windows 为临时 .bat）执行脚本。每个变量同时以原名和 GATELY_ 大写前缀两种形式注入环境变量。
 func Run(content string, vars map[string]string) ([]byte, error) {
+	// 演示模式下不执行任何外部命令
+	if err := demo.Check(); err != nil {
+		return nil, err
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), Timeout)
 	defer cancel()
 	var cmd *exec.Cmd
