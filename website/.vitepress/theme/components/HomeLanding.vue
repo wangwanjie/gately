@@ -63,36 +63,56 @@ const tourOpen = ref(false)
 // 对话框当前播放的视频：巡览视频是 16:10 无声录屏，宣传片与功能全览是 16:9 带配乐
 const playing = ref({ src: '', aspect: '16 / 10', muted: true })
 
-// 宣传片与功能全览视频只有简体中文版（随官网部署在 /videos/，不进 git），只在中文页面展示
-const isZh = computed(() => shotLang.value.startsWith('zh'))
-const filmsText = computed(() => (shotLang.value === 'zh-TW'
-  ? { title: '影片介紹', desc: '短片看懂 Gately，再用 5 分鐘逐項看完主要功能。畫面均為真實介面截圖，影片為簡體中文。', play: '播放' }
-  : { title: '视频介绍', desc: '先用短片看懂 Gately，再花 5 分钟逐项看完主要功能。画面均为真实界面截图与录屏。', play: '播放' }))
+// 宣传片与功能全览视频有简体中文与英文两版（随官网部署在 /videos/，不进 git）：简繁中文页用中文版，其余语言用英文版
+// 英文版功能全览时长，按实际成片填写
+const OVERVIEW_EN_DUR = '5:08'
+// 视频文件重新编码后递增，让浏览器不再使用缓存里的旧文件
+const FILM_VER = '2'
+const filmLang = computed(() => (shotLang.value.startsWith('zh') ? 'zh' : 'en'))
+const FILM_TEXT: Record<string, { title: string, desc: string, play: string, promo: string, promoText: string, overview: string, overviewText: string }> = {
+  'zh-CN': {
+    title: '视频介绍', desc: '先用短片看懂 Gately，再花 5 分钟逐项看完主要功能。画面均为真实界面截图与录屏。', play: '播放',
+    promo: '宣传片', promoText: '一个程序替代 nginx、certbot、ddns-go、fail2ban 等，自托管、无遥测、Apache-2.0。',
+    overview: '功能全览', overviewText: '安装登录、概览、Web 服务、证书、动态域名、协议分流、入侵防护、内网穿透与配置回滚。'
+  },
+  'zh-TW': {
+    title: '影片介紹', desc: '短片看懂 Gately，再用 5 分鐘逐項看完主要功能。畫面均為真實介面截圖，影片為簡體中文。', play: '播放',
+    promo: '宣傳片', promoText: '一個程式替代 nginx、certbot、ddns-go、fail2ban 等，自架、無遙測、Apache-2.0。',
+    overview: '功能全覽', overviewText: '安裝登入、概覽、Web 服務、憑證、動態網域、協定分流、入侵防護、內網穿透與設定回滾。'
+  },
+  en: {
+    title: 'Videos', desc: 'A short film on what Gately is, then a 5-minute walk through the main features. Every frame shows the real admin UI.', play: 'Play',
+    promo: 'Promo', promoText: 'One program in place of nginx, certbot, ddns-go, fail2ban and more. Self-hosted, no telemetry, Apache-2.0.',
+    overview: 'Feature walkthrough', overviewText: 'Install, overview, web services, certificates, DDNS, protocol routing, intrusion protection, tunnels and config rollback.'
+  }
+}
+const filmsText = computed(() => FILM_TEXT[shotLang.value] ?? FILM_TEXT.en)
 const films = computed(() => {
-  const tw = shotLang.value === 'zh-TW'
+  const t = filmsText.value
+  const lang = filmLang.value
   return [
-    {
-      key: 'promo',
-      title: tw ? '宣傳片' : '宣传片',
-      text: tw ? '一個程式替代 nginx、certbot、ddns-go、fail2ban 等，自架、無遙測、Apache-2.0。' : '一个程序替代 nginx、certbot、ddns-go、fail2ban 等，自托管、无遥测、Apache-2.0。',
-      dur: '0:42',
-      src: withBase('/videos/gately-promo.zh.mp4'),
-      poster: withBase('/videos/gately-promo.zh.jpg')
-    },
-    {
-      key: 'overview',
-      title: tw ? '功能全覽' : '功能全览',
-      text: tw ? '安裝登入、概覽、Web 服務、憑證、動態網域、協定分流、入侵防護、內網穿透與設定回滾。' : '安装登录、概览、Web 服务、证书、动态域名、协议分流、入侵防护、内网穿透与配置回滚。',
-      dur: '5:08',
-      src: withBase('/videos/gately-overview.zh.mp4'),
-      poster: withBase('/videos/gately-overview.zh.jpg')
-    }
+    { key: 'promo', title: t.promo, text: t.promoText, dur: '0:42', src: withBase(`/videos/gately-promo.${lang}.mp4?v=${FILM_VER}`), poster: withBase(`/videos/gately-promo.${lang}.jpg`) },
+    { key: 'overview', title: t.overview, text: t.overviewText, dur: lang === 'zh' ? '5:08' : OVERVIEW_EN_DUR, src: withBase(`/videos/gately-overview.${lang}.mp4?v=${FILM_VER}`), poster: withBase(`/videos/gately-overview.${lang}.jpg`) }
   ]
 })
+
+// 播放时锁住页面滚动：对话框里滚动滚轮或双指滑动触控板，背后的页面保持不动；补上滚动条宽度，避免页面横向跳动
+function lockPageScroll(lock: boolean) {
+  const root = document.documentElement
+  if (lock) {
+    const gap = window.innerWidth - root.clientWidth
+    root.style.overflow = 'hidden'
+    root.style.paddingRight = gap > 0 ? `${gap}px` : ''
+  } else {
+    root.style.overflow = ''
+    root.style.paddingRight = ''
+  }
+}
 
 function openVideo(src: string, aspect: string, muted: boolean) {
   playing.value = { src, aspect, muted }
   tourOpen.value = true
+  lockPageScroll(true)
   tourDialog.value?.showModal()
   nextTick(() => {
     tourVideo.value?.play().catch(() => {})
@@ -107,6 +127,7 @@ function openTour() {
 function onTourClose() {
   tourOpen.value = false
   tourVideo.value?.pause()
+  lockPageScroll(false)
 }
 
 function onTourBackdrop(e: MouseEvent) {
@@ -222,6 +243,10 @@ watch(localeIndex, async () => {
 })
 
 onBeforeUnmount(() => {
+  // 对话框开着时离开首页，恢复页面滚动
+  if (tourOpen.value) {
+    lockPageScroll(false)
+  }
   revealIo?.disconnect()
   cancelAnimationFrame(spotRaf)
 })
@@ -315,7 +340,8 @@ function onSpot(e: PointerEvent) {
     </section>
 
     <!-- 巡览视频对话框：打开时才设置 src 并开始加载 -->
-    <dialog ref="tourDialog" class="tour" :aria-label="h.product.tour" @close="onTourClose" @click="onTourBackdrop">
+    <!-- 弹窗内容不需要滚动：拦下滚轮与触控板滑动，配合 lockPageScroll 让背后页面保持不动 -->
+    <dialog ref="tourDialog" class="tour" :aria-label="h.product.tour" @close="onTourClose" @click="onTourBackdrop" @wheel.prevent>
       <div class="tour-box">
         <button class="tour-close" :aria-label="h.product.close" @click="tourDialog?.close()"><X :size="18" /></button>
         <video
@@ -332,8 +358,8 @@ function onSpot(e: PointerEvent) {
       </div>
     </dialog>
 
-    <!-- 视频介绍：宣传片与功能全览，只在中文页面展示；点击封面在上面的对话框里播放 -->
-    <section v-if="isZh" id="videos" class="wrap films">
+    <!-- 视频介绍：宣传片与功能全览，中文页面用中文版、其他语言用英文版；点击封面在上面的对话框里播放 -->
+    <section id="videos" class="wrap films">
       <header class="head" data-r>
         <h2>{{ filmsText.title }}</h2>
         <p>{{ filmsText.desc }}</p>
@@ -641,7 +667,7 @@ h1 .sub { margin-top: 12px; font-size: .56em; line-height: 1.3; letter-spacing: 
 .dark .product-shot img { filter: brightness(.94); }
 
 /* ---- 巡览视频 ---- */
-.tour { width: min(1100px, 94vw, 144vh); max-width: none; padding: 0; border: 0; background: transparent; overflow: visible; }
+.tour { width: min(1100px, 94vw, 144vh); max-width: none; padding: 0; border: 0; background: transparent; overflow: visible; overscroll-behavior: contain; }
 .tour::backdrop { background: rgba(3, 10, 9, .78); }
 .tour-box { position: relative; border-radius: 14px; overflow: hidden; background: #000; box-shadow: 0 40px 80px -30px rgba(0, 0, 0, .6); }
 .tour video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 10; }
