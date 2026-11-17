@@ -123,8 +123,7 @@ html.app .grid{gap:var(--gap,18px) var(--gap,10px);grid-template-columns:repeat(
 @media (min-width:641px){
 html.app.lc .grid{grid-template-columns:repeat(auto-fill,minmax(max(calc(var(--is,64px) + 8px),calc((100% - (var(--cols) - 1) * var(--gap,10px)) / var(--cols))),1fr))}
 }
-html.app .card{grid-column:span 1;flex-direction:column;align-items:center;justify-content:flex-start;gap:7px;min-width:0;min-height:0;padding:6px 2px 4px;border:0;background:transparent;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;text-align:center}
-html.app .card.link:hover{background:transparent;transform:none}
+html.app .grid .card,html.app .grid .card.link:hover{grid-column:span 1;flex-direction:column;align-items:center;justify-content:flex-start;gap:7px;min-width:0;min-height:0;padding:6px 2px 4px;border:0;background:transparent;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;transform:none;text-align:center}
 html.app .card .ic{--s:var(--is,64px);width:min(var(--s),100%);height:auto;aspect-ratio:1;border-radius:calc(var(--s) * .24);font-size:calc(var(--s) * .4);box-shadow:0 8px 18px -12px rgba(0,0,0,.55);transition:transform .18s,box-shadow .18s}
 html.app .card .ic.img{background:var(--card)}
 html.app .card.link:hover .ic{transform:translateY(-3px);box-shadow:0 14px 26px -14px rgba(0,0,0,.6)}
