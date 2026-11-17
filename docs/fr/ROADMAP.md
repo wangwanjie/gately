@@ -38,6 +38,11 @@ internal/modules/registry/  Enregistrement des modules : un mod_<module>.go par 
 tools/custombuild/     Version personnalisée : convertit modules.json en build tags, langues et arguments de build Docker, puis empaquette
 modules.json           Modules optionnels, dépendances, taille estimée, niveaux de langue, cibles de build et préréglages (lu par build.gately.cn)
 internal/luckyimport/  Déchiffrement des .lkcf de Lucky et correspondance des champs
+internal/releasesig/   Signature des versions : clés publiques intégrées (avec un emplacement de rotation), vérification minisign de checksums.txt avant une mise à jour en ligne
+internal/minisign/     Clés publiques Ed25519, signatures et clés secrètes chiffrées compatibles minisign
+tools/sign/            Génère les clés de version, signe checksums.txt et le vérifie
+internal/demo/         Mode démo (-demo / GATELY_DEMO=1) : instance publique en lecture seule qui bloque les écritures et les requêtes sortantes
+tools/demo/            Générateur de données de démo ; deploy/demo/ contient l'image et le compose de la démo
 web/                   Projet frontend, le résultat de la compilation est intégré par web/embed.go
 ```
 
