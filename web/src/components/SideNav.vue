@@ -20,6 +20,7 @@
         </el-tooltip>
       </div>
     </div>
+    <AddFeaturesLink :collapsed="collapsed" @navigate="$emit('navigate')" />
   </nav>
 </template>
 
@@ -27,6 +28,7 @@
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import AppLogo from './AppLogo.vue'
+import AddFeaturesLink from './AddFeaturesLink.vue'
 import { visibleNavGroups } from '../nav'
 
 defineProps<{ collapsed?: boolean }>()
