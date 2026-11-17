@@ -208,7 +208,7 @@ Gately 預設每 12 小時存取一次 GitHub，讀取 Gately 的發布列表與
 Linux 執行檔部署（systemd、PVE LXC 容器、手動部署的 OpenWrt 等）可以在管理介面的「關於」頁線上升級：點擊「檢查更新」，發現新版本後點擊「立即升級」。在 PVE 中用 OCI 映像檔建立的 LXC 容器同樣適用，無需刪除重建。Gately 會依序：
 
 1. 從 GitHub 下載與本機平台對應的 `gately_<版本>_linux_<架構>.tar.gz`；
-2. 對照同一版本的 `checksums.txt` 校驗 SHA-256；
+2. 下載同一版本的 `checksums.txt` 與 `checksums.txt.minisig`，用內建於程式的公鑰驗證簽章，再核對 SHA-256。簽章無效或來自未知金鑰時拒絕升級；簽章上線之前發布的版本沒有簽章檔，照常升級但提示該版本未簽章（見 [驗證發佈檔案](/zh-TW/docs/guide/verify)）；
 3. 以 `-version` 試執行新程式，確認能在本機執行；
 4. 替換可執行檔並以相同參數重新啟動，舊版本保留為同目錄下的 `gately.old`。
 

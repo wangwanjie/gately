@@ -22,6 +22,8 @@
   "modeDetect": "Nur erkennen (nur protokollieren)",
   "paranoia": "Paranoia-Stufe",
   "paranoiaHelp": "Höher bedeutet strenger mit mehr Fehlalarmen. Beginnen Sie mit 1",
+  "regexPrefilter": "Regex-Vorfilter",
+  "regexPrefilterHelp": "Schließt Reguläre Ausdrücke, die nicht passen können, vorab über Literal-Schlüsselwörter aus und senkt die Erkennungs-CPU um etwa 16 %. Bekannt: Bei der Standard-Schutzstufe wird ein Beispiel des CRS-Regressionstests 942220 #2 nicht erkannt; zur vollständigen Erkennung ausschalten",
   "inbound": "Schwellenwert eingehend",
   "outbound": "Schwellenwert ausgehend",
   "bodyCheck": "Prüfung des Request-Bodys",

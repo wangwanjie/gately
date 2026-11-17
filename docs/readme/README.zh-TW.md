@@ -353,7 +353,7 @@ make lint     # gofmt、go vet、前端型別檢查
 
 ## 交流群
 
-提問和分享設定請到 [GitHub Discussions](https://github.com/wangwanjie/gately/discussions)；日常交流在 Telegram 群：[t.me/gately_chat](https://t.me/gately_chat)，也可以用手機掃描 QR Code 加入：
+提問請到 [GitHub Discussions Q&A](https://github.com/wangwanjie/gately/discussions/categories/q-a)，回答可被搜尋，分享設定也請發在 Discussions；即時交流請加入 Telegram 群：[t.me/gately_chat](https://t.me/gately_chat)，也可以用手機掃描 QR Code 加入：
 
 <a href="https://t.me/gately_chat"><img src="../images/telegram-qr.svg" alt="掃描加入 Gately Telegram 群組" width="160"></a>
 

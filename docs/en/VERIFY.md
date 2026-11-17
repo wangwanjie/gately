@@ -1,18 +1,30 @@
 # Verifying release artifacts
 
-Every official Gately release ships with signatures and provenance, so you can confirm that the files you downloaded were built by this repository's GitHub Actions and were not tampered with. All signatures use [Sigstore](https://www.sigstore.dev/) keyless signing, so there is no private key to protect.
+Every official Gately release ships with signatures and provenance, so you can confirm that the files you downloaded were built by this repository's GitHub Actions and were not tampered with. `checksums.txt` carries a minisign signature whose public key is built into Gately, and online upgrades use it to verify downloads; the cosign signatures and build provenance use [Sigstore](https://www.sigstore.dev/) keyless signing.
 
 ## Binary archives
 
-The release page provides `checksums.txt` (SHA-256 of each archive), `checksums.txt.sigstore.json` (the signature of the checksum file) and an SBOM.
+The release page provides `checksums.txt` (SHA-256 of each archive), `checksums.txt.minisig` (minisign signature of the checksum file), `checksums.txt.sigstore.json` (cosign signature of the checksum file) and an SBOM. Releases published before signing was introduced have no `checksums.txt.minisig`.
 
-1. Verify the archive's SHA-256:
+1. Verify the signature of `checksums.txt` with [minisign](https://jedisct1.github.io/minisign/). The Gately release public key (key ID `512082B4037581F0`):
+
+```text
+RWTwgXUDtIIgUVNxL3scLhMObpyS0vKQbkCepGauqNA0/u0nQA86M50/
+```
+
+```bash
+minisign -Vm checksums.txt -P RWTwgXUDtIIgUVNxL3scLhMObpyS0vKQbkCepGauqNA0/u0nQA86M50/
+```
+
+The output `Signature and comment signature verified` means the signature is valid; the `Trusted comment` line shows the version and signing time.
+
+2. Verify the archive's SHA-256:
 
 ```bash
 sha256sum -c checksums.txt --ignore-missing
 ```
 
-2. Verify the signature of `checksums.txt` with [cosign](https://docs.sigstore.dev/cosign/installation/). The signing identity must be this repository's release workflow:
+3. Verify the signature of `checksums.txt` with [cosign](https://docs.sigstore.dev/cosign/installation/). The signing identity must be this repository's release workflow:
 
 ```bash
 cosign verify-blob checksums.txt \
@@ -21,11 +33,20 @@ cosign verify-blob checksums.txt \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com
 ```
 
-3. You can also verify the build provenance of a single archive with the GitHub CLI:
+4. You can also verify the build provenance of a single archive with the GitHub CLI:
 
 ```bash
 gh attestation verify gately_v1.0.0_linux_amd64.tar.gz --repo wangwanjie/gately
 ```
+
+## Signature check during online upgrades
+
+Online upgrades of Linux binary deployments ("Upgrade now") first download `checksums.txt` and `checksums.txt.minisig`, verify the signature with the public key built into the program, and only then compare the SHA-256 of the archive:
+
+- Invalid signature, unknown key or modified `checksums.txt`: the upgrade is refused, the upgrade dialog and the system log show why, and the installed program stays as it is;
+- No `checksums.txt.minisig` in the release (published before signing was introduced): the upgrade goes ahead, and the upgrade dialog and the system log warn that the release is unsigned and only its SHA-256 was checked.
+
+The program has a second public key slot for key rotation: a new public key is first built into a release and published on this page, and only later releases are signed with it, so deployed instances keep upgrading. "Upload upgrade package" does not check signatures; verify the archive with the steps above before uploading. Docker image upgrades rely on the cosign image signatures below.
 
 ## macOS code signing
 

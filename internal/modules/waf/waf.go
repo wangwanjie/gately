@@ -105,6 +105,9 @@ type Instance struct {
 	SkipBodyPaths string `json:"skipBodyPaths"`
 	// WebDAV 为 true 时放行 WebDAV 与上传用到的方法、请求头与任意内容类型，供网盘、WebDAV 等站点使用
 	WebDAV bool `json:"webdav"`
+	// RegexPrefilter 控制是否启用 Coraza 的正则预过滤（SecRxPreFilter）：先用字面量快速排除不可能命中的正则，
+	// 可降低约 16% 的检测 CPU。nil（存量配置）视为开启；已知默认防护等级下 CRS 回归用例 942220 #2 的一条样例会漏判，关闭可恢复完整检测
+	RegexPrefilter *bool `json:"regexPrefilter"`
 	// SafeLine 为接入雷池检测引擎的设置，可与规则组同时使用：先经雷池检测，再经规则组检查
 	SafeLine SafeLine `json:"safeline"`
 	Remark   string   `json:"remark"`
@@ -156,6 +159,10 @@ func (in *Instance) Validate() error {
 	}
 	if in.BodyLimitMB < 0 || in.BodyLimitMB > maxBodyLimitMB {
 		return fmt.Errorf("请求体检查上限应为 0~%d MB", maxBodyLimitMB)
+	}
+	if in.RegexPrefilter == nil {
+		on := true
+		in.RegexPrefilter = &on
 	}
 	switch in.BodyLimitAction {
 	case "":
@@ -235,9 +242,18 @@ const lfiRulesFile = "REQUEST-930-APPLICATION-ATTACK-LFI.conf"
 // 字段值仍按原规则检查，攻击载荷通常位于值中，不受影响。
 const jsonNamesLFIExclusion = "SecRuleUpdateTargetById 930120 \"!ARGS_NAMES:/^json\\./\"\n"
 
+// prefilterOn 返回是否启用正则预过滤，未设置时默认开启。
+func (in *Instance) prefilterOn() bool {
+	return in.RegexPrefilter == nil || *in.RegexPrefilter
+}
+
 // directives 生成实例的 SecLang 指令。
 func (in *Instance) directives() (string, error) {
 	var b strings.Builder
+	// SecRxPreFilter 必须出现在全部规则（含 coraza.conf-recommended 中的规则）之前才对后续正则生效
+	if in.prefilterOn() {
+		b.WriteString("SecRxPreFilter On\n")
+	}
 	b.WriteString("Include @coraza.conf-recommended\n")
 	if in.Mode == ModeDetect {
 		b.WriteString("SecRuleEngine DetectionOnly\n")

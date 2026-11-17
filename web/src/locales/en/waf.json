@@ -22,6 +22,8 @@
   "modeDetect": "Detect only (log only)",
   "paranoia": "Paranoia level",
   "paranoiaHelp": "Higher is stricter with more false positives. Start from 1",
+  "regexPrefilter": "Regex pre-filter",
+  "regexPrefilterHelp": "Skips regular expressions that cannot match by checking literal keywords first, cutting detection CPU by about 16%. Known: at the default protection level one sample of CRS regression test 942220 #2 is missed; turn it off to restore full detection",
   "inbound": "Inbound threshold",
   "outbound": "Outbound threshold",
   "bodyCheck": "Request body inspection",

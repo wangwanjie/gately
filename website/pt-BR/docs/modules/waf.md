@@ -19,6 +19,10 @@ Um firewall de aplicações web baseado no [Coraza](https://coraza.io/) e no OWA
 2. Ajuste os arquivos de regras ou adicione exceções personalizadas para os falsos positivos;
 3. Depois mude para "Bloquear".
 
+## Pré-filtro de expressões regulares
+
+Cada instância tem um interruptor «Pré-filtro de expressões regulares», ativado por padrão (instâncias existentes antes da atualização contam como ativadas). Ativado, o WAF descarta primeiro, por palavras-chave literais das regras, as expressões que não podem corresponder, reduzindo em cerca de 16% a CPU da detecção. Sabe-se que no nível de proteção padrão (nível de paranoia 1) uma amostra do teste de regressão CRS 942220 #2 não é detectada. Desative o interruptor para restaurar a detecção completa.
+
 ## Requisições do painel de administração
 
 Quando o painel de administração é acessado por proxy reverso através de um site com WAF, as requisições com uma sessão de administrador válida desta instância não passam pelo WAF (SafeLine incluído). As configurações salvas costumam conter caminhos de arquivo (como as observações gravadas pela importação do nginx), HTML (páginas de erro personalizadas) e scripts (implantação de certificados), que as regras do CRS contra travessia de caminho, XSS e injeção de comandos bloqueariam com 403. A sessão é assinada pelo servidor e só o papel de administrador conta; requisições de contas somente leitura, visitantes e painéis de outras instâncias continuam sendo verificadas.

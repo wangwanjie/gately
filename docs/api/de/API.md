@@ -1540,6 +1540,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `hits` | Map von integer |
 | `openPorts` | integer |
 | `reason` | string |
+| `redirect` | boolean |
 | `trapPorts` | string |
 | `trapSkipped` | Array von integer |
 | `version` | string |
@@ -2068,6 +2069,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `listenAddress` | string |
 | `listenPorts` | string |
 | `maxConnections` | integer |
+| `maxConnsPerSource` | integer |
 | `mode` | string |
 | `name` | string |
 | `protocols` | Array von string |
@@ -2119,6 +2121,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `listenAddress` | string |
 | `listenPorts` | string |
 | `maxConnections` | integer |
+| `maxConnsPerSource` | integer |
 | `name` | string |
 | `protocols` | Array von string |
 | `proxyProtocol` | string |
@@ -2384,6 +2387,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `name` | string |
 | `outboundThreshold` | integer |
 | `paranoia` | integer |
+| `regexPrefilter` | boolean |
 | `remark` | string |
 | `ruleSets` | Array von `waf.RuleSet` |
 | `safeline` | `waf.SafeLine` |
