@@ -4131,6 +4131,9 @@
           "altBadge": {
             "type": "boolean"
           },
+          "altClick": {
+            "type": "string"
+          },
           "background": {
             "type": "string"
           },
@@ -4176,7 +4179,16 @@
           "groupCount": {
             "type": "boolean"
           },
+          "hideAppName": {
+            "type": "boolean"
+          },
           "hideFooter": {
+            "type": "boolean"
+          },
+          "hideLock": {
+            "type": "boolean"
+          },
+          "hideSkin": {
             "type": "boolean"
           },
           "icon": {
@@ -4211,6 +4223,9 @@
           },
           "remark": {
             "type": "string"
+          },
+          "showLang": {
+            "type": "boolean"
           },
           "skin": {
             "type": "string"
@@ -4247,6 +4262,31 @@
             "type": "string"
           },
           "url": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.PanelFaviconRequest": {
+        "properties": {
+          "urls": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.PanelFaviconResult": {
+        "properties": {
+          "from": {
+            "type": "string"
+          },
+          "icon": {
+            "type": "string"
+          },
+          "source": {
             "type": "string"
           }
         },
@@ -52170,6 +52210,73 @@
           }
         ],
         "summary": "調整導覽面板排序",
+        "tags": [
+          "Web 服務"
+        ],
+        "x-required-scope": "webservice:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/panels/favicon": {
+      "post": {
+        "description": "所需權限：`webservice:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/webservice.PanelFaviconRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/webservice.PanelFaviconResult"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "從連結位址取得網站圖示：依序存取各位址，解析網頁中的圖示宣告與 Web App Manifest，找不到時用 /favicon.ico，傳回 data:image 圖片，不儲存。位址需為不含變數的 http/https 位址",
         "tags": [
           "Web 服務"
         ],

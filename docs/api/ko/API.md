@@ -441,6 +441,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/webservice/panels/preview` | `webservice:write` | 내비게이션 패널 미리보기 |
 | GET | `/api/webservice/panels/icons` | `webservice:read` | 내비게이션 패널 내장 아이콘 목록 |
 | POST | `/api/webservice/panels/sunpanel` | `webservice:write` | Sun-Panel 설정 변환 |
+| POST | `/api/webservice/panels/favicon` | `webservice:write` | 링크 주소에서 사이트 아이콘을 가져옵니다. 각 주소에 차례로 접속해 페이지에 선언된 아이콘과 Web App Manifest를 읽고, 없으면 /favicon.ico를 사용해 data:image 이미지를 반환합니다(저장하지 않음). 주소는 변수가 없는 http/https여야 합니다 |
 | GET | `/api/webservice/users` | `webservice:read` | 공유 사용자와 OIDC ID 공급자 조회 |
 | PUT | `/api/webservice/users` | `webservice:write` | 공유 사용자와 OIDC ID 공급자 저장, 사이트 일괄 설정 |
 | DELETE | `/api/webservice/users/{id}/passkeys/{cred}` | `webservice:write` | 공유 사용자의 Passkey를 삭제합니다(id는 공유 사용자 ID, cred는 Passkey 식별자). Passkey는 사용자 본인만 등록할 수 있고 관리자는 삭제만 가능합니다(예: 기기 분실 시) |
@@ -2734,6 +2735,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 필드 | 타입 |
 | --- | --- |
 | `altBadge` | boolean |
+| `altClick` | string |
 | `background` | string |
 | `bgBlur` | integer |
 | `bgDim` | integer |
@@ -2748,7 +2750,10 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `footerUrl` | string |
 | `gap` | integer |
 | `groupCount` | boolean |
+| `hideAppName` | boolean |
 | `hideFooter` | boolean |
+| `hideLock` | boolean |
+| `hideSkin` | boolean |
 | `icon` | string |
 | `iconSize` | integer |
 | `key` | string |
@@ -2758,6 +2763,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `mobileColumns` | integer |
 | `name` | string |
 | `remark` | string |
+| `showLang` | boolean |
 | `skin` | string |
 | `subtitle` | string |
 | `tabTitle` | string |
@@ -2777,6 +2783,20 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | --- | --- |
 | `name` | string |
 | `url` | string |
+
+### webservice.PanelFaviconRequest
+
+| 필드 | 타입 |
+| --- | --- |
+| `urls` | Array of string |
+
+### webservice.PanelFaviconResult
+
+| 필드 | 타입 |
+| --- | --- |
+| `from` | string |
+| `icon` | string |
+| `source` | string |
 
 ### webservice.PanelIconView
 

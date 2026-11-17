@@ -441,6 +441,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | POST | `/api/webservice/panels/preview` | `webservice:write` | Vista previa del panel de navegación |
 | GET | `/api/webservice/panels/icons` | `webservice:read` | Iconos integrados de los paneles de navegación |
 | POST | `/api/webservice/panels/sunpanel` | `webservice:write` | Convertir configuración de Sun-Panel |
+| POST | `/api/webservice/panels/favicon` | `webservice:write` | Obtiene el icono de un sitio a partir de las direcciones del enlace: prueba cada dirección en orden, lee los iconos declarados en la página y en su Web App Manifest, recurre a /favicon.ico y devuelve una imagen data:image sin guardarla. Las direcciones deben ser http/https y sin variables |
 | GET | `/api/webservice/users` | `webservice:read` | Leer usuarios compartidos y proveedor de identidad OIDC |
 | PUT | `/api/webservice/users` | `webservice:write` | Guardar usuarios compartidos y proveedor de identidad OIDC, configurar sitios en bloque |
 | DELETE | `/api/webservice/users/{id}/passkeys/{cred}` | `webservice:write` | Elimina una Passkey de un usuario compartido (id es el ID del usuario compartido, cred es el ID de la Passkey); las Passkeys solo las registran los propios usuarios y los administradores solo pueden eliminarlas, por ejemplo si se pierde un dispositivo |
@@ -2734,6 +2735,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | Campo | Tipo |
 | --- | --- |
 | `altBadge` | boolean |
+| `altClick` | string |
 | `background` | string |
 | `bgBlur` | integer |
 | `bgDim` | integer |
@@ -2748,7 +2750,10 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `footerUrl` | string |
 | `gap` | integer |
 | `groupCount` | boolean |
+| `hideAppName` | boolean |
 | `hideFooter` | boolean |
+| `hideLock` | boolean |
+| `hideSkin` | boolean |
 | `icon` | string |
 | `iconSize` | integer |
 | `key` | string |
@@ -2758,6 +2763,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `mobileColumns` | integer |
 | `name` | string |
 | `remark` | string |
+| `showLang` | boolean |
 | `skin` | string |
 | `subtitle` | string |
 | `tabTitle` | string |
@@ -2777,6 +2783,20 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | --- | --- |
 | `name` | string |
 | `url` | string |
+
+### webservice.PanelFaviconRequest
+
+| Campo | Tipo |
+| --- | --- |
+| `urls` | Lista de string |
+
+### webservice.PanelFaviconResult
+
+| Campo | Tipo |
+| --- | --- |
+| `from` | string |
+| `icon` | string |
+| `source` | string |
 
 ### webservice.PanelIconView
 
