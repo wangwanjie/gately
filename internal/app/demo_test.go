@@ -31,9 +31,16 @@ const demoTestAdminPassword = "Demo-Admin-Test-2026!"
 // newDemoApp 用演示数据生成器的输出启动演示模式实例（不监听，只返回处理器），返回应用与服务器。
 func newDemoApp(t *testing.T, portBase int) (*App, *httptest.Server) {
 	t.Helper()
+	return newDemoAppWith(t, gen.Options{PortBase: portBase})
+}
+
+// newDemoAppWith 按给定的生成选项（Dir 由这里指定）启动演示实例。
+func newDemoAppWith(t *testing.T, opt gen.Options) (*App, *httptest.Server) {
+	t.Helper()
 	dir := t.TempDir()
 	t.Setenv("GATELY_DEMO_SNAPSHOT", filepath.Join(t.TempDir(), "snap"))
-	if err := gen.Generate(gen.Options{Dir: dir, PortBase: portBase}); err != nil {
+	opt.Dir = dir
+	if err := gen.Generate(opt); err != nil {
 		t.Fatal(err)
 	}
 	mods, certs := registry.New()
@@ -353,5 +360,37 @@ func TestOwnSessionCheck(t *testing.T) {
 	p, _, _ := strings.Cut(token, ".")
 	if httpx.OwnSession(p + ".AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA") {
 		t.Fatal("签名不符的会话不应判定为本实例的")
+	}
+}
+
+// 演示实例在容器里由前置反向代理访问，代理地址属于 Docker 网络、不是本机。生成时写入可信代理后，
+// 经代理以 HTTPS 访问时一键进入下发的会话 Cookie 带 Secure；未写入时不采信代理的 X-Forwarded-Proto。
+func TestDemoLoginSecureBehindProxy(t *testing.T) {
+	for _, tc := range []struct {
+		trusted []string
+		secure  bool
+	}{
+		{nil, false},
+		{[]string{"172.16.0.0/12"}, true},
+	} {
+		a, _ := newDemoAppWith(t, gen.Options{TrustedProxies: tc.trusted})
+		req := httptest.NewRequest("POST", "/api/login/demo", nil)
+		req.RemoteAddr = "172.18.0.3:40000"
+		req.Header.Set("X-Forwarded-Proto", "https")
+		req.Header.Set("Content-Type", "application/json")
+		rec := httptest.NewRecorder()
+		a.Handler().ServeHTTP(rec, req)
+		if rec.Code != 200 {
+			t.Fatalf("一键进入失败 %d %s", rec.Code, rec.Body)
+		}
+		var got *http.Cookie
+		for _, c := range rec.Result().Cookies() {
+			if c.Name == auth.CookieName {
+				got = c
+			}
+		}
+		if got == nil || got.Secure != tc.secure {
+			t.Fatalf("可信代理 %v：会话 Cookie 的 Secure 应为 %v，实际 %+v", tc.trusted, tc.secure, got)
+		}
 	}
 }
