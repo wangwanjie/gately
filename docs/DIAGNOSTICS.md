@@ -26,7 +26,7 @@
 ## 脱敏方式
 
 - **配置**：默认移除所有取值，只保留字段名、数字、开关、固定的枚举字段（`protocol`、`mode`、`provider` 等）与时间戳。地址类字段只保留端口和 IP 类别。
-- **日志**：替换 IP、域名、邮箱、URL、`password=…` 形式的键值、`Bearer` 令牌、疑似密钥的长字符串、MAC 地址与用户目录。`github.com`、`letsencrypt.org` 等公共服务域名予以保留，用来判断故障是否为网络问题。
+- **日志**：替换 IP、域名、邮箱、URL、`password=…` 形式的键值、`Bearer` 令牌、`Authorization` 与 `Cookie` 请求头的整个值、`Basic` / `Digest` 之后的凭据、名称含密钥关键词的键（如 `client_secret`、`X-Api-Key`、`TS_AUTHKEY`）的值、以空格分隔的命令行参数值（如 `--auth-key 值`）、疑似密钥的长字符串、MAC 地址与用户目录。`github.com`、`letsencrypt.org` 等公共服务域名予以保留，用来判断故障是否为网络问题。
 - 你自填的名称（如规则备注）若出现在日志里，且不像 IP 或域名，仍可能留在日志行中。发布前请快速浏览 `logs/*.log`，删掉不想公开的内容。
 
 ## 排查异常退出

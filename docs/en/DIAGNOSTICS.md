@@ -26,7 +26,7 @@ The bundle is generated on your own machine and is never uploaded anywhere. Clic
 ## How redaction works
 
 - **Configuration**: values are removed by default. Only field names, numbers, booleans, a fixed list of enum fields (`protocol`, `mode`, `provider`, …) and timestamps survive. Address fields keep only the port and the IP category.
-- **Logs**: IP addresses, domains, e-mails, URLs, `password=…` style pairs, `Bearer` tokens, long token-like strings, MAC addresses and user directories are masked. Public service domains such as `github.com` and `letsencrypt.org` are kept because they show whether a failure is a network problem.
+- **Logs**: IP addresses, domains, e-mails, URLs, `password=…` style pairs, `Bearer` tokens, the whole value of `Authorization` and `Cookie` headers, credentials after `Basic` and `Digest`, values of keys whose names contain a secret keyword (such as `client_secret`, `X-Api-Key`, `TS_AUTHKEY`), values of command-line flags given after a space (`--auth-key value`), long token-like strings, MAC addresses and user directories are masked. Public service domains such as `github.com` and `letsencrypt.org` are kept because they show whether a failure is a network problem.
 - A name you typed (for example a rule remark) can still appear in a log line if it does not look like an IP or domain. Skim `logs/*.log` before posting, and remove anything you do not want to share.
 
 ## Troubleshooting abnormal exits
