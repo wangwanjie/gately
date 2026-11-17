@@ -372,8 +372,10 @@ const formRef = ref<FormInstance>()
 const formRules = computed<FormRules>(() => ({
   protocols: [{ type: 'array', required: true, min: 1, message: t('portForward.protocolRequired'), trigger: 'change' }],
   listenPorts: [{ required: true, whitespace: true, message: t('portForward.listenPortsRequired'), trigger: 'blur' }],
-  // 目标地址的输入框绑定的是文本，按拆分后的地址判断
-  targetAddresses: [{ trigger: 'blur', validator: (_r: unknown, _v: unknown, cb: (e?: Error) => void) => cb(targetLines.value.length ? undefined : new Error(t('portForward.targetRequired'))) }],
+  // 目标地址的输入框绑定的是文本，按拆分后的地址判断。规则里写上 required：
+  // 表单项带 required 属性而规则里没有 required 时，Element Plus 会另加一条检查 editing.targetAddresses 的必填规则，
+  // 该数组保存时才从文本回写，失焦时仍为空，会误报英文的「targetAddresses is required」。有自定义 validator 时 required 只用于显示星号
+  targetAddresses: [{ required: true, trigger: 'blur', validator: (_r: unknown, _v: unknown, cb: (e?: Error) => void) => cb(targetLines.value.length ? undefined : new Error(t('portForward.targetRequired'))) }],
 }))
 
 // advOpen 为编辑框是否展开「高级设置」；advCount 为与默认值不同的高级字段数
