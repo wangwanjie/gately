@@ -3,6 +3,7 @@
   <div class="panels-page">
     <PageHeader :title="t('panels.title')" doc="modules/web#nav-panel" :desc="t('panels.desc')" :icon="LayoutGrid">
       <el-button :icon="RefreshCw" :loading="loading" @click="load">{{ t('common.refresh') }}</el-button>
+      <el-button v-if="!isReadonly && !notFound" :icon="Import" data-test="sp-open" @click="openSunPanel('new')">{{ t('sunpanelImport.button') }}</el-button>
       <el-button v-if="!isReadonly && !notFound" type="primary" :icon="Plus" data-test="panel-add" @click="openEditor()">{{ t('panels.add') }}</el-button>
     </PageHeader>
 
@@ -16,7 +17,10 @@
     <div v-else-if="!loading && !panels.length" class="g-card empty-card">
       <el-empty :description="t('panels.empty')">
         <div class="form-help empty-help">{{ t('panels.emptyHelp') }}</div>
-        <el-button v-if="!isReadonly" type="primary" :icon="Plus" @click="openEditor()">{{ t('panels.add') }}</el-button>
+        <div class="empty-actions">
+          <el-button v-if="!isReadonly" type="primary" :icon="Plus" @click="openEditor()">{{ t('panels.add') }}</el-button>
+          <el-button v-if="!isReadonly" :icon="Import" data-test="sp-open-empty" @click="openSunPanel('new')">{{ t('sunpanelImport.button') }}</el-button>
+        </div>
       </el-empty>
     </div>
 
@@ -78,6 +82,7 @@
           <div class="links-toolbar">
             <el-button v-if="!isReadonly" type="primary" :icon="Plus" data-test="link-add" @click="openLink(-1)">{{ t('panels.addLink') }}</el-button>
             <el-button v-if="!isReadonly" :icon="Import" data-test="link-import" @click="openImport">{{ t('panels.importSites') }}</el-button>
+            <el-button v-if="!isReadonly" :icon="FileInput" data-test="link-sp" @click="openSunPanel('append')">{{ t('sunpanelImport.button') }}</el-button>
             <span class="muted count">{{ editing.links.length }} / {{ MAX_LINKS }}</span>
           </div>
           <div v-if="!editing.links.length" class="links-empty">{{ t('panels.noLinks') }}</div>
@@ -331,6 +336,9 @@
         <el-button type="primary" :disabled="!importSel.size" data-test="import-ok" @click="doImport">{{ t('panels.importN', { n: importSel.size }) }}</el-button>
       </template>
     </el-dialog>
+
+    <!-- 从 Sun-Panel 导入：新建面板，或并入正在编辑的面板 -->
+    <SunPanelImport v-model="spVisible" :mode="spMode" :existing="spMode === 'append' ? editing.links : undefined" @done="onSunPanel" />
   </div>
 </template>
 
@@ -338,7 +346,7 @@
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
-import { ArrowDown, ArrowUp, CopyPlus, RotateCcw, Eye, FolderClosed, Import, LayoutGrid, Lock, Pencil, Plus, RefreshCw, Search, Trash2 } from 'lucide-vue-next'
+import { ArrowDown, ArrowUp, CopyPlus, RotateCcw, Eye, FileInput, FolderClosed, Import, LayoutGrid, Lock, Pencil, Plus, RefreshCw, Search, Trash2 } from 'lucide-vue-next'
 import PageHeader from '../components/PageHeader.vue'
 import LoadError from '../components/LoadError.vue'
 import EntityCard from '../components/EntityCard.vue'
@@ -350,6 +358,7 @@ import GroupInput from '../components/GroupInput.vue'
 import PanelIcon from '../components/PanelIcon.vue'
 import PanelIconInput from '../components/PanelIconInput.vue'
 import PanelBackgroundInput from '../components/PanelBackgroundInput.vue'
+import SunPanelImport from '../components/SunPanelImport.vue'
 import { api, ApiError, errorText } from '../api'
 import { isReadonly, moduleEnabled } from '../nav'
 import { useFormLayout } from '../composables/useIsMobile'
@@ -369,11 +378,13 @@ import {
   addEngine,
   emptyLink,
   emptyPanel,
+  freeName,
   groupLinks,
   iconKind,
   importableSites,
   insertLink,
   linksFromSites,
+  mergeLinks,
   engineUrlProblem,
   moveEngine,
   moveGroup,
@@ -771,6 +782,35 @@ function doImport() {
   ElMessage.success(t('panels.imported', { n: add.length }))
 }
 
+// ---- 从 Sun-Panel 导入 ----
+
+const spVisible = ref(false)
+const spMode = ref<'new' | 'append'>('new')
+
+function openSunPanel(mode: 'new' | 'append') {
+  spMode.value = mode
+  spVisible.value = true
+}
+
+// onSunPanel 接收转换得到的链接：新建时打开新面板的编辑框（未保存，确认后点保存），编辑中时并入当前面板
+function onSunPanel(links: PanelLink[], skipDuplicates: boolean) {
+  if (spMode.value === 'new') {
+    openEditor()
+    editing.value.name = freeName('Sun-Panel', panels.value.map((x) => x.name))
+    editing.value.links = mergeLinks([], links, false).links
+    tab.value = 'links'
+    ElMessage.success(t('sunpanelImport.created', { n: editing.value.links.length }))
+    return
+  }
+  const r = mergeLinks(editing.value.links, links, skipDuplicates)
+  editing.value.links = r.links
+  if (r.overflow) {
+    ElMessage.warning(t('sunpanelImport.overflow', { n: r.added, rest: r.overflow, max: MAX_LINKS }))
+  } else {
+    ElMessage.success(t('panels.imported', { n: r.added }))
+  }
+}
+
 // ---- 预览 ----
 
 const previewHtml = ref('')
@@ -843,6 +883,15 @@ onMounted(async () => {
 }
 .empty-card {
   padding: 12px 0;
+}
+.empty-actions {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.empty-actions .el-button + .el-button {
+  margin-left: 0;
 }
 .empty-help {
   max-width: 460px;
