@@ -91,8 +91,8 @@
   "home": {
     "pill": "Gratis y de código abierto · Apache-2.0",
     "announce": {
-      "text": "v0.6.8: correcciones de seguridad, búsqueda global y asistente rápido de sitios, importación de NPM / Sun-Panel, firma de versiones →",
-      "link": "/es/news/v0.6.8"
+      "text": "v0.6.8.1: corrige el error de formato de siteCerts al añadir un sitio y el «Sitio no encontrado» con certificados comodín en varios dominios →",
+      "link": "/es/news/v0.6.8.1"
     },
     "titleLine1": "Una sola puerta de entrada para tus servicios autoalojados",
     "titleLine2": "Proxy inverso, HTTPS, DDNS, traversal de NAT, WAF y bloqueos en un solo binario",

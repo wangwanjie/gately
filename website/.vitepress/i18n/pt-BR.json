@@ -91,8 +91,8 @@
   "home": {
     "pill": "Gratuito e de código aberto · Apache-2.0",
     "announce": {
-      "text": "v0.6.8: correções de segurança, busca global e assistente rápido de sites, importação do NPM / Sun-Panel, assinatura das versões →",
-      "link": "/pt-BR/news/v0.6.8"
+      "text": "v0.6.8.1: corrige o erro de formato de siteCerts ao adicionar um site e o «Site não encontrado» com certificado curinga em vários domínios →",
+      "link": "/pt-BR/news/v0.6.8.1"
     },
     "titleLine1": "Uma única entrada para os seus serviços auto-hospedados",
     "titleLine2": "Proxy reverso, HTTPS, DDNS, travessia de NAT, WAF e bloqueios em um único binário",

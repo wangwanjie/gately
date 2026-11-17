@@ -7,6 +7,10 @@ description: Release-Ankündigungen und Versionshinweise zu jeder Gately-Version
 
 Unten stehen die Ankündigungen zu wichtigen Releases. Alle Änderungen und Downloads jeder Version finden Sie unter [GitHub Releases](https://github.com/wangwanjie/gately/releases).
 
+## [v0.6.8.1](/de/news/v0.6.8.1)
+
+17. November 2026 · Behebt den siteCerts-Formatfehler beim Hinzufügen oder Bearbeiten einer Site in v0.6.8; bei Wildcard-Zertifikaten mit mehreren Domains, die das Protokoll-Routing an verschiedene Gately-Instanzen weiterleitet, wird das durch Verbindungswiederverwendung des Browsers ausgelöste „Website nicht gefunden“ durch ein 421 ersetzt, damit der Browser neu verbindet.
+
 ## [v0.6.8](/de/news/v0.6.8)
 
 17. November 2026 · Sicherheitskorrekturen (Schreib-Token mit Lesezugriff auf das Konfigurationsverzeichnis, Rücksprungadresse der Drittanbieter-Anmeldung bei Sites, SMB-Absturz vor der Authentifizierung u. a.) und signierte Releases; globale Suche, Einrichtungsassistent und schneller Site-Assistent bei auf 27 Einträge verkleinerter Seitenleiste; Import von Nginx Proxy Manager und Sun-Panel; Layout des Navigationspanels und Adressauswahl; Einbruchschutz, Verbindungslimit bei der Portweiterleitung, KCP/QUIC für frps, parallele DNS-Abfragen und Log-Level.
