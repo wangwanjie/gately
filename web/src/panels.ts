@@ -60,6 +60,14 @@ export interface Panel {
   background: string
   bgDim: number
   bgBlur: number
+  // cardStyle 为链接样式：空为卡片，app 为桌面 App 图标（大图标在上、名称在下，不显示描述）。
+  // 以下布局数值为 0 时用默认值：iconSize 图标边长，columns 宽屏每行最多的链接数，mobileColumns 手机每行的链接数，gap 间距，maxWidth 内容最大宽度
+  cardStyle: '' | 'app'
+  iconSize: number
+  columns: number
+  mobileColumns: number
+  gap: number
+  maxWidth: number
   lanCidrs: string[]
   links: PanelLink[]
   remark: string
@@ -82,6 +90,29 @@ export const MAX_BG_DIM = 90
 export const MAX_BG_BLUR = 20
 // 上传背景图时选图后的默认遮罩浓度：文字在大多数图片上仍清晰
 export const DEFAULT_BG_DIM = 45
+// 布局的取值范围，与后端一致；0 为默认
+export const LAYOUT_LIMITS = {
+  iconSize: { min: 24, max: 128, step: 4 },
+  columns: { min: 1, max: 12, step: 1 },
+  mobileColumns: { min: 1, max: 8, step: 1 },
+  gap: { min: 4, max: 48, step: 2 },
+  maxWidth: { min: 640, max: 3840, step: 40 },
+} as const
+export type LayoutField = keyof typeof LAYOUT_LIMITS
+// layoutDefaults 返回各样式下布局的默认值（未设置时页面使用），用作输入框的占位提示；0 表示按宽度自动排列
+export function layoutDefaults(style: Panel['cardStyle']): Record<LayoutField, number> {
+  return style === 'app'
+    ? { iconSize: 64, columns: 0, mobileColumns: 0, gap: 18, maxWidth: 1200 }
+    : { iconSize: 40, columns: 0, mobileColumns: 2, gap: 12, maxWidth: 1200 }
+}
+// normalizeLayoutValue 把输入框的值转为保存的值：清空为 0（默认），其余取整并限制在范围内
+export function normalizeLayoutValue(field: LayoutField, v: number | null | undefined): number {
+  if (v === null || v === undefined || !Number.isFinite(v) || v <= 0) {
+    return 0
+  }
+  const { min, max } = LAYOUT_LIMITS[field]
+  return Math.min(max, Math.max(min, Math.round(v)))
+}
 
 // ENGINE_PRESETS 为常用搜索引擎，名称用各自的通用叫法，不随界面语言变化
 export const ENGINE_PRESETS: readonly PanelEngine[] = [
@@ -137,7 +168,7 @@ export function moveEngine(engines: PanelEngine[], def: number, i: number, delta
 }
 
 export function emptyPanel(): Panel {
-  return { name: '', enable: true, title: '', subtitle: '', icon: '', tabTitle: '', favicon: '', description: '', footer: '', footerUrl: '', hideFooter: false, theme: '', skin: '', engines: [], defaultEngine: 0, background: '', bgDim: 0, bgBlur: 0, lanCidrs: [], links: [], remark: '' }
+  return { name: '', enable: true, title: '', subtitle: '', icon: '', tabTitle: '', favicon: '', description: '', footer: '', footerUrl: '', hideFooter: false, theme: '', skin: '', engines: [], defaultEngine: 0, background: '', bgDim: 0, bgBlur: 0, cardStyle: '', iconSize: 0, columns: 0, mobileColumns: 0, gap: 0, maxWidth: 0, lanCidrs: [], links: [], remark: '' }
 }
 
 export function emptyLink(group = ''): PanelLink {
@@ -165,6 +196,12 @@ export function toPanel(v: PanelView | Panel): Panel {
     background: v.background ?? '',
     bgDim: v.bgDim ?? 0,
     bgBlur: v.bgBlur ?? 0,
+    cardStyle: v.cardStyle === 'app' ? 'app' : '',
+    iconSize: v.iconSize ?? 0,
+    columns: v.columns ?? 0,
+    mobileColumns: v.mobileColumns ?? 0,
+    gap: v.gap ?? 0,
+    maxWidth: v.maxWidth ?? 0,
     lanCidrs: [...(v.lanCidrs ?? [])],
     links: (v.links ?? []).map((l) => ({ ...emptyLink(), ...l, alts: (l.alts ?? []).map((a) => ({ name: a.name, url: a.url })) })),
     remark: v.remark ?? '',

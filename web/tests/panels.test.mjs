@@ -4,6 +4,7 @@ import assert from 'node:assert/strict'
 import {
   emptyLink, groupLinks, moveLink, moveGroup, insertLink, importableSites, linksFromSites, iconKind, safeIconSrc,
   initial, paletteColor, textIconOk, hasVars, toPanel, mergeLinks, freeName, MAX_LINKS,
+  emptyPanel, layoutDefaults, normalizeLayoutValue, LAYOUT_LIMITS,
 } from '../src/panels.ts'
 
 const L = (name, group = '') => ({ ...emptyLink(group), name, url: `https://${name}.example.com` })
@@ -237,4 +238,40 @@ test('mergeLinks 补齐缺少的字段并复制其他访问方式', () => {
 test('freeName 未占用时原样返回，否则依次编号', () => {
   assert.equal(freeName('Sun-Panel', ['Home']), 'Sun-Panel')
   assert.equal(freeName('Sun-Panel', ['Sun-Panel', ' Sun-Panel 2 ']), 'Sun-Panel 3')
+})
+
+test('布局：清空为 0（默认），越界收紧到范围，小数取整', () => {
+  assert.equal(normalizeLayoutValue('iconSize', null), 0)
+  assert.equal(normalizeLayoutValue('iconSize', undefined), 0)
+  assert.equal(normalizeLayoutValue('iconSize', 0), 0)
+  assert.equal(normalizeLayoutValue('iconSize', -5), 0)
+  assert.equal(normalizeLayoutValue('iconSize', Number.NaN), 0)
+  assert.equal(normalizeLayoutValue('iconSize', 10), 24)
+  assert.equal(normalizeLayoutValue('iconSize', 999), 128)
+  assert.equal(normalizeLayoutValue('iconSize', 71.6), 72)
+  assert.equal(normalizeLayoutValue('columns', 13), 12)
+  assert.equal(normalizeLayoutValue('mobileColumns', 9), 8)
+  assert.equal(normalizeLayoutValue('gap', 2), 4)
+  assert.equal(normalizeLayoutValue('maxWidth', 100), 640)
+  assert.equal(normalizeLayoutValue('maxWidth', 5000), 3840)
+  // 与后端的范围一致
+  assert.deepEqual(Object.fromEntries(Object.entries(LAYOUT_LIMITS).map(([k, v]) => [k, [v.min, v.max]])),
+    { iconSize: [24, 128], columns: [1, 12], mobileColumns: [1, 8], gap: [4, 48], maxWidth: [640, 3840] })
+})
+
+test('布局：默认值随样式变化，旧配置载入后为默认布局', () => {
+  assert.equal(layoutDefaults('').iconSize, 40)
+  assert.equal(layoutDefaults('app').iconSize, 64)
+  assert.equal(layoutDefaults('').mobileColumns, 2)
+  assert.equal(layoutDefaults('app').columns, 0)
+  const p = emptyPanel()
+  assert.equal(p.cardStyle, '')
+  assert.deepEqual([p.iconSize, p.columns, p.mobileColumns, p.gap, p.maxWidth], [0, 0, 0, 0, 0])
+  // 旧版面板没有这些字段，未知样式按卡片处理
+  const old = toPanel({ name: 'x', enable: true, links: [] })
+  assert.equal(old.cardStyle, '')
+  assert.equal(old.iconSize, 0)
+  assert.equal(toPanel({ name: 'x', enable: true, links: [], cardStyle: 'weird' }).cardStyle, '')
+  const app = toPanel({ name: 'x', enable: true, links: [], cardStyle: 'app', iconSize: 72, columns: 6, mobileColumns: 4, gap: 20, maxWidth: 1600 })
+  assert.deepEqual([app.cardStyle, app.iconSize, app.columns, app.mobileColumns, app.gap, app.maxWidth], ['app', 72, 6, 4, 20, 1600])
 })

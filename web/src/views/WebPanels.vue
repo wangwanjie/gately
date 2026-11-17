@@ -157,6 +157,56 @@
           </div>
         </el-tab-pane>
 
+        <!-- 布局：链接样式（卡片或桌面 App 图标）与图标大小、每行数量、间距、内容宽度；数值留空为默认 -->
+        <el-tab-pane :label="t('panels.tabLayout')" name="layout" data-test="tab-layout">
+          <el-form :model="editing" label-width="130px" :label-position="labelPosition" :disabled="isReadonly">
+            <el-form-item :label="t('panels.cardStyle')">
+              <div class="style-pick" role="radiogroup" :aria-label="t('panels.cardStyle')">
+                <button
+                  v-for="o in styleOptions"
+                  :key="o.value"
+                  type="button"
+                  role="radio"
+                  class="style-opt"
+                  :class="{ on: editing.cardStyle === o.value }"
+                  :aria-checked="editing.cardStyle === o.value"
+                  :disabled="isReadonly"
+                  :data-test="'layout-style-' + (o.value || 'card')"
+                  @click="editing.cardStyle = o.value"
+                >
+                  <span class="style-sketch" :class="o.value || 'card'" aria-hidden="true">
+                    <i v-for="n in o.value ? 8 : 4" :key="n"><b /><em /></i>
+                  </span>
+                  <span class="style-name">{{ o.label }}</span>
+                  <span class="style-desc">{{ o.desc }}</span>
+                </button>
+              </div>
+            </el-form-item>
+            <el-form-item v-for="f in layoutFields" :key="f.key" :label="f.label">
+              <div class="layout-row">
+                <el-input-number
+                  :model-value="editing[f.key] || undefined"
+                  :min="LAYOUT_LIMITS[f.key].min"
+                  :max="LAYOUT_LIMITS[f.key].max"
+                  :step="LAYOUT_LIMITS[f.key].step"
+                  :placeholder="layoutPlaceholder(f.key)"
+                  :value-on-clear="null"
+                  controls-position="right"
+                  class="layout-num"
+                  :data-test="'layout-' + f.key"
+                  @update:model-value="(v: number | null | undefined) => (editing[f.key] = normalizeLayoutValue(f.key, v))"
+                />
+                <span v-if="f.unit" class="muted">{{ f.unit }}</span>
+              </div>
+              <div class="form-help">{{ f.help }}</div>
+            </el-form-item>
+            <el-form-item label=" ">
+              <el-button :icon="RotateCcw" data-test="layout-reset" @click="resetLayout">{{ t('panels.layoutReset') }}</el-button>
+              <div class="form-help">{{ t('panels.layoutHelp') }}</div>
+            </el-form-item>
+          </el-form>
+        </el-tab-pane>
+
         <el-tab-pane :label="t('panels.tabPage')" name="page">
           <el-form :model="editing" label-width="130px" :label-position="labelPosition" :disabled="isReadonly">
             <el-form-item :label="t('panels.name')" required>
@@ -244,12 +294,16 @@
               <el-radio-button :value="false">{{ t('panels.previewWan') }}</el-radio-button>
               <el-radio-button :value="true">{{ t('panels.previewLan') }}</el-radio-button>
             </el-radio-group>
+            <el-radio-group v-model="previewDevice" size="small" data-test="preview-device">
+              <el-radio-button value="desktop">{{ t('panels.previewDesktop') }}</el-radio-button>
+              <el-radio-button value="mobile">{{ t('panels.previewMobile') }}</el-radio-button>
+            </el-radio-group>
             <el-button size="small" :icon="RefreshCw" :loading="previewing" @click="renderPreview">{{ t('common.refresh') }}</el-button>
             <span class="form-help preview-help">{{ t('panels.previewHelp') }}</span>
           </div>
           <el-alert v-if="previewError" type="error" :closable="false" show-icon :title="previewError" />
           <!-- 预览页面不含脚本，sandbox 也不允许脚本；允许点开链接（新标签页打开，不带管理界面的地址） -->
-          <iframe v-else class="preview-frame" sandbox="allow-popups allow-popups-to-escape-sandbox" referrerpolicy="no-referrer" :srcdoc="previewHtml" :title="t('panels.tabPreview')" data-test="panel-preview" />
+          <iframe v-else class="preview-frame" :class="{ mobile: previewDevice === 'mobile' }" sandbox="allow-popups allow-popups-to-escape-sandbox" referrerpolicy="no-referrer" :srcdoc="previewHtml" :title="t('panels.tabPreview')" data-test="panel-preview" />
         </el-tab-pane>
       </el-tabs>
       <template #footer>
@@ -369,6 +423,10 @@ import { DEFAULT_FAMILY, resolveTheme, themeFamilies, type ThemeFamily } from '.
 import { loadForwardSources } from '../forwardSources'
 import {
   DEFAULT_BG_DIM,
+  LAYOUT_LIMITS,
+  layoutDefaults,
+  normalizeLayoutValue,
+  type LayoutField,
   ENGINE_PRESETS,
   MAX_ALTS,
   MAX_BG_BLUR,
@@ -620,6 +678,26 @@ function shiftEngine(i: number, delta: -1 | 1) {
   editing.value.defaultEngine = r.def
 }
 // 选好背景图后遮罩还是 0 时给一个默认值，文字在大多数图片上仍清晰
+// 链接样式的选项与布局输入框；占位文字显示当前样式下的默认值
+const styleOptions = computed(() => [
+  { value: '' as const, label: t('panels.styleCard'), desc: t('panels.styleCardDesc') },
+  { value: 'app' as const, label: t('panels.styleApp'), desc: t('panels.styleAppDesc') },
+])
+const layoutFields = computed<{ key: LayoutField; label: string; help: string; unit: string }[]>(() => [
+  { key: 'iconSize', label: t('panels.iconSize'), help: t('panels.iconSizeHelp'), unit: 'px' },
+  { key: 'columns', label: t('panels.columns'), help: t('panels.columnsHelp'), unit: '' },
+  { key: 'mobileColumns', label: t('panels.mobileColumns'), help: t('panels.mobileColumnsHelp'), unit: '' },
+  { key: 'gap', label: t('panels.gap'), help: t('panels.gapHelp'), unit: 'px' },
+  { key: 'maxWidth', label: t('panels.maxWidth'), help: t('panels.maxWidthHelp'), unit: 'px' },
+])
+function layoutPlaceholder(key: LayoutField): string {
+  const d = layoutDefaults(editing.value.cardStyle)[key]
+  return d ? t('panels.layoutDefault', { n: d }) : t('panels.layoutAuto')
+}
+function resetLayout() {
+  Object.assign(editing.value, { cardStyle: '', iconSize: 0, columns: 0, mobileColumns: 0, gap: 0, maxWidth: 0 })
+}
+
 function resetBackground() {
   editing.value.background = ''
   editing.value.bgDim = 0
@@ -816,6 +894,8 @@ function onSunPanel(links: PanelLink[], skipDuplicates: boolean) {
 const previewHtml = ref('')
 const previewError = ref('')
 const previewLAN = ref(false)
+// 预览的设备宽度：手机时 iframe 按常见手机宽度显示，页面按手机布局排版
+const previewDevice = ref<'desktop' | 'mobile'>('desktop')
 const previewing = ref(false)
 
 async function renderPreview() {
@@ -1037,6 +1117,118 @@ onMounted(async () => {
   border: 1px solid var(--g-border);
   border-radius: var(--g-radius);
   background: #fff;
+}
+.preview-frame.mobile {
+  width: 390px;
+  max-width: 100%;
+  margin: 0 auto;
+}
+.style-pick {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 220px));
+  gap: 12px;
+  width: 100%;
+}
+.style-opt {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 10px;
+  border: 1px solid var(--g-border);
+  border-radius: var(--g-radius);
+  background: var(--g-card, transparent);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.style-opt:hover:not(:disabled) {
+  border-color: var(--el-color-primary);
+}
+.style-opt.on {
+  border-color: var(--el-color-primary);
+  box-shadow: 0 0 0 3px var(--el-color-primary-light-8);
+}
+.style-opt:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+.style-name {
+  font-weight: 600;
+}
+.style-desc {
+  color: var(--el-text-color-secondary);
+  font-size: 12px;
+  line-height: 1.5;
+}
+/* 样式示意图：卡片为左图标右文字的两列，图标为 4 列小方块加名称 */
+.style-sketch {
+  display: grid;
+  width: 100%;
+  height: 74px;
+  margin-bottom: 4px;
+  padding: 8px;
+  border-radius: 6px;
+  background: var(--el-fill-color-light);
+  gap: 6px;
+}
+.style-sketch.card {
+  grid-template-columns: 1fr 1fr;
+}
+.style-sketch.app {
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px 6px;
+}
+.style-sketch i {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+.style-sketch.card i {
+  padding: 4px;
+  border-radius: 4px;
+  background: var(--el-bg-color);
+}
+.style-sketch.app i {
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+}
+.style-sketch b {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  background: var(--el-color-primary);
+  opacity: 0.85;
+}
+.style-sketch.app b {
+  width: 16px;
+  height: 16px;
+  border-radius: 5px;
+}
+.style-sketch em {
+  display: block;
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--el-text-color-placeholder);
+}
+.style-sketch.app em {
+  flex: none;
+  width: 18px;
+  height: 3px;
+}
+.layout-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.layout-num {
+  width: 160px;
 }
 .panels-load-error {
   margin-bottom: 12px;
