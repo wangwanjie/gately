@@ -146,7 +146,7 @@
     "title": "Network",
     "dnsServers": "DNS servers",
     "dnsPlaceholder": "Leave empty to use system DNS; enter an IP or IP:port",
-    "dnsHelp": "Affects all outbound name resolution (DDNS, Webhook, ACME, etc.). With multiple servers, one is picked at random with automatic failover.",
+    "dnsHelp": "Affects all outbound name resolution (DDNS, Webhook, ACME, etc.). Accepts an IP, IP:port, doh{'@'}host or an https:// DoH address. With multiple servers, lookups start at the server that last answered; if it fails or gives no answer within 1 second, the next one is queried in parallel and the first answer wins.",
     "updateProxy": "Update proxy",
     "updateProxyPlaceholder": "Empty for direct, e.g. http://127.0.0.1:7890",
     "updateProxyHelp": "Used to reach GitHub when checking for updates and upgrading online. Supports http://, https:// and socks5://; when empty, the HTTPS_PROXY environment variable is honored.",

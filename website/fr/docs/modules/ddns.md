@@ -113,6 +113,8 @@ Les Paramètres globaux, dans l’en-tête de la page, contiennent :
 - Créez chez votre fournisseur DNS une clé de sous-compte limitée à la modification des enregistrements DNS. Évitez d'utiliser la clé du compte principal ;
 - Après avoir créé une tâche, cliquez sur « Forcer la synchronisation » pour vérifier que l'enregistrement a bien été mis à jour ;
 - Pour retirer un enregistrement devenu inutile, cliquez sur l'icône de suppression à droite de cet enregistrement dans la liste, sans ouvrir l'éditeur ; la tâche garde au moins un enregistrement, et la suppression de l'enregistrement DNS chez le fournisseur est décrite dans [Supprimer des enregistrements et des tâches](#delete) ;
+- Quand la liste des tâches est vide, vous pouvez partir d'un cas courant : « Cloudflare, IPv4 domestique », « Alibaba Cloud, IPv4 + IPv6 » ou « DNSPod, IPv6 uniquement », qui ouvrent chacun un formulaire de tâche prérempli ;
+- Les enregistrements d'hôte sont stockés et envoyés aux fournisseurs en minuscules (anciennes configurations comprises) ; les valeurs A / AAAA sont comparées en tant qu'adresses, si bien qu'une IPv6 renvoyée sous forme développée ou en majuscules ne compte pas comme un changement ;
 - L'adresse de consultation de l'IP publique ne dépend plus d'aucun service exploité par le projet, et vous pouvez la modifier à tout moment dans une tâche.
 
 ## Groupes et tri

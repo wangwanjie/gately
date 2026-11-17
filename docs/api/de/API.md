@@ -2733,9 +2733,12 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 
 | Feld | Typ |
 | --- | --- |
+| `altBadge` | boolean |
 | `background` | string |
 | `bgBlur` | integer |
 | `bgDim` | integer |
+| `cardStyle` | string |
+| `columns` | integer |
 | `defaultEngine` | integer |
 | `description` | string |
 | `enable` | boolean |
@@ -2743,11 +2746,16 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `favicon` | string |
 | `footer` | string |
 | `footerUrl` | string |
+| `gap` | integer |
+| `groupCount` | boolean |
 | `hideFooter` | boolean |
 | `icon` | string |
+| `iconSize` | integer |
 | `key` | string |
 | `lanCidrs` | Array von string |
 | `links` | Array von `webservice.PanelLink` |
+| `maxWidth` | integer |
+| `mobileColumns` | integer |
 | `name` | string |
 | `remark` | string |
 | `skin` | string |

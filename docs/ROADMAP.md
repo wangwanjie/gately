@@ -38,6 +38,11 @@ internal/modules/registry/  模块注册：可选模块各自一个 mod_<模块>
 tools/custombuild/     定制构建：按 modules.json 换算 build tag、语言与 Docker 构建参数并打包
 modules.json           可选模块、依赖、体积估算、语言档位、构建目标与预设（build.gately.cn 读取）
 internal/luckyimport/  Lucky .lkcf 解密与字段映射
+internal/releasesig/   发布签名：内嵌发布公钥（含轮换备用槽），在线升级前校验 checksums.txt 的 minisign 签名
+internal/minisign/     minisign 兼容的 Ed25519 公钥、签名与加密私钥格式
+tools/sign/            生成发布密钥、签名 checksums.txt 并校验
+internal/demo/         演示模式（-demo / GATELY_DEMO=1）：只读公开实例，拦截写入与出站
+tools/demo/            演示数据生成器；deploy/demo/ 为演示实例的镜像与 compose
 web/                   前端工程，构建产物由 web/embed.go 嵌入
 ```
 

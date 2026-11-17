@@ -5,7 +5,7 @@ Un cortafuegos de aplicaciones web basado en [Coraza](https://coraza.io/) y OWAS
 ## Capacidades
 
 - Conjunto de reglas OWASP CRS v4 integrado, con archivos de reglas que se pueden activar individualmente;
-- Reglas SecLang personalizadas;
+- Reglas SecLang personalizadas; las compilaciones oficiales omiten el operador `@validateSchema` para ocupar menos, y una regla que lo use se señala para que la quites o la reescribas;
 - Los grupos de reglas se pueden reordenar; los registros de coincidencias guardan la IP del cliente, el dominio, la ruta y el ID de regla, y se pueden filtrar por dominio, IP o palabras clave;
 - Modo de bloqueo y modo de solo detección;
 - Límite de inspección del cuerpo de la solicitud ajustable: al superarlo se rechaza la solicitud o se inspecciona solo la primera parte; también se puede omitir la inspección del cuerpo por ruta;

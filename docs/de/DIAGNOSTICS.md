@@ -26,7 +26,7 @@ Das Paket wird auf Ihrem eigenen Rechner erzeugt und nirgendwohin hochgeladen. K
 ## Wie geschwärzt wird
 
 - **Konfiguration**: Werte werden standardmäßig entfernt. Erhalten bleiben nur Feldnamen, Zahlen, Booleans, eine feste Liste von Enum-Feldern (`protocol`, `mode`, `provider`, …) und Zeitstempel. Adressfelder behalten nur den Port und die IP-Kategorie.
-- **Logs**: IP-Adressen, Domains, E-Mail-Adressen, URLs, Paare der Form `password=…`, `Bearer`-Tokens, lange tokenartige Strings, MAC-Adressen und Benutzerverzeichnisse werden maskiert. Domains öffentlicher Dienste wie `github.com` und `letsencrypt.org` bleiben erhalten, weil sie zeigen, ob ein Fehler ein Netzwerkproblem ist.
+- **Logs**: IP-Adressen, Domains, E-Mail-Adressen, URLs, Paare der Form `password=…`, `Bearer`-Tokens, der gesamte Wert von `Authorization`- und `Cookie`-Headern, Zugangsdaten nach `Basic` und `Digest`, Werte von Schlüsseln mit einem Geheimnis-Stichwort im Namen (etwa `client_secret`, `X-Api-Key`, `TS_AUTHKEY`), durch Leerzeichen getrennte Werte von Kommandozeilenoptionen (`--auth-key wert`), lange tokenartige Strings, MAC-Adressen und Benutzerverzeichnisse werden maskiert. Domains öffentlicher Dienste wie `github.com` und `letsencrypt.org` bleiben erhalten, weil sie zeigen, ob ein Fehler ein Netzwerkproblem ist.
 - Ein selbst eingegebener Name (zum Beispiel die Bemerkung einer Regel) kann trotzdem in einer Logzeile stehen, wenn er nicht wie eine IP oder Domain aussieht. Überfliegen Sie `logs/*.log` vor dem Veröffentlichen und entfernen Sie alles, was Sie nicht teilen möchten.
 
 ## Abnormale Beendigungen untersuchen

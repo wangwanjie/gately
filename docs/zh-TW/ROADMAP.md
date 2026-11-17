@@ -38,6 +38,11 @@ internal/modules/registry/  模組註冊：可選模組各自一個 mod_<模組>
 tools/custombuild/     自訂建置：依 modules.json 換算 build tag、語言與 Docker 建置參數並打包
 modules.json           可選模組、相依、體積估算、語言檔位、建置目標與預設組合（build.gately.cn 讀取）
 internal/luckyimport/  Lucky .lkcf 解密與欄位對應
+internal/releasesig/   發佈簽章：內嵌發佈公鑰（含輪換備用槽），線上升級前驗證 checksums.txt 的 minisign 簽章
+internal/minisign/     minisign 相容的 Ed25519 公鑰、簽章與加密私鑰格式
+tools/sign/            產生發佈金鑰、簽署 checksums.txt 並驗證
+internal/demo/         示範模式（-demo / GATELY_DEMO=1）：唯讀公開實例，攔截寫入與對外連線
+tools/demo/            示範資料產生器；deploy/demo/ 為示範實例的映像與 compose
 web/                   前端專案，建置產物由 web/embed.go 嵌入
 ```
 

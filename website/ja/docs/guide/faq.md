@@ -39,3 +39,5 @@
 ## 問題の報告や開発への参加はどうすればよいですか？
 
 [GitHub Issues](https://github.com/wangwanjie/gately/issues) で報告してください。開発の決まりごとは [コントリビュート](/ja/docs/guide/contributing) を参照してください。
+
+使い方の質問は [GitHub Discussions Q&A](https://github.com/wangwanjie/gately/discussions/categories/q-a) でどうぞ。回答が検索できる形で残ります。すぐに話したいときは Telegram グループ [t.me/gately_chat](https://t.me/gately_chat) に参加してください。
