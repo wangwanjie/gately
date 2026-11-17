@@ -864,7 +864,7 @@ func (a *App) demoSummary(id string) []summaryItem {
 	case "knock":
 		return []summaryItem{{"启用规则", fmt.Sprint(a.demoEnabledCount("knock", "rules")), ""}, {"当前授权", "2", ""}, {"防火墙拦截", "已生效", "ok"}}
 	case "waf":
-		return []summaryItem{{"实例", fmt.Sprint(len(asMaps(a.demoConfig("waf")["instances"]))), ""}, {"已拦截", fmt.Sprint(a.demoTotal("waf-main/m", 0.002) * 3 / 4), "warn"}}
+		return []summaryItem{{"实例", fmt.Sprint(len(asMaps(a.demoConfig("waf")["instances"]))), ""}, {"已拦截", fmt.Sprint(a.demoTotal("waf-main/m", 0.002) * 3 / 4), ""}}
 	case "webservice":
 		ls, sites := 0, 0
 		var req int64
