@@ -169,6 +169,12 @@ func parseNginx(text string) (out []*ngDirective, warns []string, err error) {
 						}
 						continue
 					}
+					// 每展开一次文件也计入上限：最内层文件没有指令时展开结果为空，
+					// 只按输出的指令计数挡不住层层重复包含带来的指数级展开次数
+					total++
+					if total > nginxMaxDirectives {
+						return res
+					}
 					included[f] = true
 					active[f] = true
 					res = append(res, expand(parsed[f], depth+1)...)
