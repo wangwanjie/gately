@@ -112,7 +112,7 @@
         {
           "from": "nginx、Nginx Proxy Manager",
           "module": "Web サービス",
-          "text": "リバースプロキシ、静的サイト、リダイレクト、HTTP/3、サイトごとのアクセス制御。nginx 設定をインポート可能"
+          "text": "リバースプロキシ、静的サイト、リダイレクト、HTTP/3、サイトごとのアクセス制御。nginx と Nginx Proxy Manager の設定をインポート可能"
         },
         {
           "from": "certbot、acme.sh",
@@ -122,7 +122,7 @@
         {
           "from": "ddns-go、DDNS スクリプト",
           "module": "ダイナミック DNS",
-          "text": "35 以上のプロバイダー、IPv4 / IPv6"
+          "text": "30 以上のプロバイダー、IPv4 / IPv6"
         },
         {
           "from": "haproxy の SNI 振り分け、sslh",
@@ -185,7 +185,7 @@
       },
       {
         "title": "ネットワーク接続と NAT 越え",
-        "text": "Tailscale、NetBird、frp（frpc / frps）、cloudflared トンネルをプロセス管理方式で統合し、オンラインでのインストール、更新、ロールバック、アンインストールに対応します。"
+        "text": "Tailscale、NetBird、EasyTier、frp（frpc / frps）、cloudflared トンネルをプロセス管理方式で統合し、オンラインでのインストール、更新、ロールバック、アンインストールに対応します。"
       },
       {
         "title": "Docker 管理",

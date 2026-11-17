@@ -112,7 +112,7 @@
         {
           "from": "nginx、Nginx Proxy Manager",
           "module": "Web 服务",
-          "text": "反向代理、静态站点、重定向、HTTP/3、按站点的访问控制；可导入 nginx 配置"
+          "text": "反向代理、静态站点、重定向、HTTP/3、按站点的访问控制；可导入 nginx 与 Nginx Proxy Manager 配置"
         },
         {
           "from": "acme.sh、certbot",
@@ -122,7 +122,7 @@
         {
           "from": "ddns-go、DDNS 脚本",
           "module": "动态域名",
-          "text": "35+ 服务商，IPv4 / IPv6"
+          "text": "30+ 服务商，IPv4 / IPv6"
         },
         {
           "from": "haproxy 按 SNI 分流、sslh",
@@ -185,7 +185,7 @@
       },
       {
         "title": "组网与穿透",
-        "text": "以进程托管方式集成 Tailscale、NetBird、frp（frpc / frps）与 cloudflared 隧道，支持在线安装、更新、回滚与卸载。"
+        "text": "以进程托管方式集成 Tailscale、NetBird、EasyTier、frp（frpc / frps）与 cloudflared 隧道，支持在线安装、更新、回滚与卸载。"
       },
       {
         "title": "Docker 管理",

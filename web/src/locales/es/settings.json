@@ -146,7 +146,7 @@
     "title": "Red",
     "dnsServers": "Servidores DNS",
     "dnsPlaceholder": "Déjalo vacío para usar el DNS del sistema; introduce una IP o IP:puerto",
-    "dnsHelp": "Afecta a toda la resolución de nombres saliente (DDNS, Webhook, ACME, etc.). Con varios servidores, se elige uno al azar con conmutación automática por error.",
+    "dnsHelp": "Afecta a toda la resolución de nombres saliente (DDNS, Webhook, ACME, etc.). Admite una IP, IP:puerto, doh{'@'}host o una dirección DoH https://. Con varios servidores, las consultas empiezan por el que respondió la última vez; si falla o no responde en 1 segundo, se consulta el siguiente en paralelo y se usa la primera respuesta.",
     "updateProxy": "Proxy de actualización",
     "updateProxyPlaceholder": "Vacío para conexión directa, p. ej. http://127.0.0.1:7890",
     "updateProxyHelp": "Se usa para acceder a GitHub al buscar actualizaciones y actualizar en línea. Admite http://, https:// y socks5://; si está vacío, se respeta la variable de entorno HTTPS_PROXY.",

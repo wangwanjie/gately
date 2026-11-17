@@ -39,3 +39,5 @@ Si la interfaz WAN de tu router está detrás de un NAT de operador (100.64.0.0/
 ## ¿Cómo informo de problemas o contribuyo?
 
 Abre una incidencia en [GitHub Issues](https://github.com/wangwanjie/gately/issues). Las convenciones de desarrollo están en [Cómo contribuir](/es/docs/guide/contributing).
+
+Las preguntas de uso van en [GitHub Discussions Q&A](https://github.com/wangwanjie/gately/discussions/categories/q-a), donde las respuestas quedan a mano para buscarlas; para charlar al momento, únete al grupo de Telegram [t.me/gately_chat](https://t.me/gately_chat).

@@ -403,6 +403,33 @@ func TestUpgradeUnsignedWarns(t *testing.T) {
 	}
 }
 
+// 签名上线之后的版本缺少签名文件时拒绝升级（防止删掉 .minisig 绕过校验），可执行文件不变
+func TestUpgradeRejectsMissingSignatureAfterFirstSigned(t *testing.T) {
+	for _, tag := range []string{firstSignedRelease, "v0.6.8.1", "v0.7.0", "v1.0.0"} {
+		t.Run(tag, func(t *testing.T) {
+			exe := setupUpgrade(t)
+			a, srv, c := loginApp(t)
+			fakeRelease(t, tag, tarGz(t, map[string][]byte{"gately": fakeBinary(tag)}), "")
+			st := runOnlineUpgrade(t, c, srv.URL)
+			if raw := a.upgradeSnapshot(); st.State != upgradeStateFailed || !strings.Contains(raw.Error, "缺少发布签名") {
+				t.Fatalf("缺少签名时应拒绝升级: %+v", raw)
+			}
+			if got, _ := os.ReadFile(exe); string(got) != "old-binary" {
+				t.Fatal("拒绝升级时不应改动可执行文件")
+			}
+		})
+	}
+}
+
+func TestReleaseRequiresSignature(t *testing.T) {
+	cases := map[string]bool{"v0.6.6.6": false, "v0.6.7.9": false, "v0.6.8": true, "v0.6.8.1": true, "v0.7.0": true, "garbage": true}
+	for tag, want := range cases {
+		if got := releaseRequiresSignature(tag); got != want {
+			t.Errorf("releaseRequiresSignature(%q) = %v, want %v", tag, got, want)
+		}
+	}
+}
+
 // 轮换：第二把受信公钥签名的版本同样可以升级
 func TestUpgradeRotationKey(t *testing.T) {
 	setupUpgrade(t)

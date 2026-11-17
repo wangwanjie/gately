@@ -2733,9 +2733,12 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 
 | Campo | Tipo |
 | --- | --- |
+| `altBadge` | boolean |
 | `background` | string |
 | `bgBlur` | integer |
 | `bgDim` | integer |
+| `cardStyle` | string |
+| `columns` | integer |
 | `defaultEngine` | integer |
 | `description` | string |
 | `enable` | boolean |
@@ -2743,11 +2746,16 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `favicon` | string |
 | `footer` | string |
 | `footerUrl` | string |
+| `gap` | integer |
+| `groupCount` | boolean |
 | `hideFooter` | boolean |
 | `icon` | string |
+| `iconSize` | integer |
 | `key` | string |
 | `lanCidrs` | Lista de string |
 | `links` | Lista de `webservice.PanelLink` |
+| `maxWidth` | integer |
+| `mobileColumns` | integer |
 | `name` | string |
 | `remark` | string |
 | `skin` | string |

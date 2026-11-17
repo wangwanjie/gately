@@ -233,15 +233,15 @@ jobs:
           go-version-file: go.mod
       # 用 minisign 格式的 Ed25519 私钥给 checksums.txt 签名，生成 checksums.txt.minisig；在线升级先用编进程序的公钥验证它。
       # 需要仓库 Secrets：GATELY_SIGNING_KEY（tools/sign keygen 生成的 gately.key 的完整内容）与 GATELY_SIGNING_KEY_PASSWORD（其口令）。
-      # 未配置时跳过并留下警告：Release 不带 .minisig，在线升级照常进行但提示该版本未签名
+      # 未配置时发布失败：v0.6.8 起的版本缺少 .minisig 时在线升级会拒绝安装（见 internal/app/upgrade.go 的 firstSignedRelease）
       - name: 签名校验和文件（minisign）
         env:
           GATELY_SIGNING_KEY: ${{ secrets.GATELY_SIGNING_KEY }}
           GATELY_SIGNING_KEY_PASSWORD: ${{ secrets.GATELY_SIGNING_KEY_PASSWORD }}
         run: |
           if [ -z "$GATELY_SIGNING_KEY" ]; then
-            echo "::warning title=checksums.txt 未签名::没有配置 GATELY_SIGNING_KEY，本次 Release 不带 checksums.txt.minisig，在线升级会提示该版本未签名"
-            exit 0
+            echo "::error title=checksums.txt 未签名::没有配置 GATELY_SIGNING_KEY；v0.6.8 起缺少 checksums.txt.minisig 的版本无法在线升级，已中止发布"
+            exit 1
           fi
           go run ./tools/sign sign -t "gately ${GITHUB_REF_NAME} checksums.txt $(date -u +%Y-%m-%dT%H:%M:%SZ)" dist/checksums.txt
           # 用编进程序的受信公钥再验证一次：私钥与代码中的公钥不匹配时中止发布，避免发出在线升级一律拒绝的签名

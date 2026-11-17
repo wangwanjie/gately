@@ -173,3 +173,48 @@ func TestHungServerFallsBack(t *testing.T) {
 		t.Fatalf("回退太慢: %v", d)
 	}
 }
+
+// 并行回退中别的服务器先返回时会取消 ctx：卡住的 UDP/TCP 查询应随即结束，
+// 不再占着协程、套接字与缓冲区等到 5 秒超时。
+func TestQueryStopsOnCancel(t *testing.T) {
+	// 收到查询但从不回复的 UDP 服务器
+	hungUDP, err := net.ListenPacket("udp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer hungUDP.Close()
+	// 接受连接但从不回复的 TCP 服务器
+	hungTCP, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer hungTCP.Close()
+	go func() {
+		for {
+			c, err := hungTCP.Accept()
+			if err != nil {
+				return
+			}
+			defer c.Close()
+		}
+	}()
+	msg := make([]byte, 12)
+	for name, query := range map[string]func(context.Context) error{
+		"udp": func(ctx context.Context) error {
+			_, err := queryUDP(ctx, hungUDP.LocalAddr().String(), msg)
+			return err
+		},
+		"tcp": func(ctx context.Context) error { _, err := queryTCP(ctx, hungTCP.Addr().String(), msg); return err },
+	} {
+		ctx, cancel := context.WithCancel(context.Background())
+		time.AfterFunc(50*time.Millisecond, cancel)
+		begin := time.Now()
+		if err := query(ctx); err == nil {
+			t.Fatalf("%s: 卡住的服务器不应返回结果", name)
+		}
+		if d := time.Since(begin); d > time.Second {
+			t.Fatalf("%s: 取消后查询仍等了 %v 才结束", name, d)
+		}
+		cancel()
+	}
+}

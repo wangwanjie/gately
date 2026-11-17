@@ -17,6 +17,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/wangwanjie/gately/internal/demo"
 	"github.com/wangwanjie/gately/internal/httpx"
 )
 
@@ -222,6 +223,11 @@ func localNetworks() []string {
 }
 
 func (m *Module) handleNetworks(w http.ResponseWriter, _ *http.Request) {
+	// 演示实例对公众开放：返回文档保留地址的示例网段，不暴露宿主机所在的内网
+	if demo.Enabled() {
+		httpx.OK(w, []string{"192.0.2.0/24"})
+		return
+	}
 	nets := localNetworks()
 	if nets == nil {
 		nets = []string{}

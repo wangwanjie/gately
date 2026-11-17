@@ -26,7 +26,7 @@
 ## 遮蔽方式
 
 - **設定**：預設移除所有取值，只保留欄位名稱、數字、開關、固定的列舉欄位（`protocol`、`mode`、`provider` 等）與時間戳記。位址類欄位只保留連接埠和 IP 類別。
-- **日誌**：替換 IP、網域、電子郵件、URL、`password=…` 形式的鍵值、`Bearer` 權杖、疑似金鑰的長字串、MAC 位址與使用者目錄。`github.com`、`letsencrypt.org` 等公共服務網域予以保留，用來判斷故障是否為網路問題。
+- **日誌**：替換 IP、網域、電子郵件、URL、`password=…` 形式的鍵值、`Bearer` 權杖、`Authorization` 與 `Cookie` 請求標頭的整個值、`Basic` / `Digest` 之後的憑證、名稱含金鑰關鍵字的鍵（如 `client_secret`、`X-Api-Key`、`TS_AUTHKEY`）的值、以空格分隔的命令列參數值（如 `--auth-key 值`）、疑似金鑰的長字串、MAC 位址與使用者目錄。`github.com`、`letsencrypt.org` 等公共服務網域予以保留，用來判斷故障是否為網路問題。
 - 你自行填寫的名稱（如規則備註）若出現在日誌裡，且不像 IP 或網域，仍可能留在日誌行中。發布前請快速瀏覽 `logs/*.log`，刪掉不想公開的內容。
 
 ## 排查異常結束
