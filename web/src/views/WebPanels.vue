@@ -200,6 +200,14 @@
               </div>
               <div class="form-help">{{ f.help }}</div>
             </el-form-item>
+            <el-form-item :label="t('panels.groupCount')">
+              <el-switch v-model="editing.groupCount" data-test="layout-group-count" />
+              <div class="form-help">{{ t('panels.groupCountHelp') }}</div>
+            </el-form-item>
+            <el-form-item :label="t('panels.altBadge')">
+              <el-switch v-model="editing.altBadge" data-test="layout-alt-badge" />
+              <div class="form-help">{{ t('panels.altBadgeHelp') }}</div>
+            </el-form-item>
             <el-form-item label=" ">
               <el-button :icon="RotateCcw" data-test="layout-reset" @click="resetLayout">{{ t('panels.layoutReset') }}</el-button>
               <div class="form-help">{{ t('panels.layoutHelp') }}</div>
@@ -695,7 +703,7 @@ function layoutPlaceholder(key: LayoutField): string {
   return d ? t('panels.layoutDefault', { n: d }) : t('panels.layoutAuto')
 }
 function resetLayout() {
-  Object.assign(editing.value, { cardStyle: '', iconSize: 0, columns: 0, mobileColumns: 0, gap: 0, maxWidth: 0 })
+  Object.assign(editing.value, { cardStyle: '', iconSize: 0, columns: 0, mobileColumns: 0, gap: 0, maxWidth: 0, groupCount: false, altBadge: false })
 }
 
 function resetBackground() {
