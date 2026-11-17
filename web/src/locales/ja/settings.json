@@ -146,7 +146,7 @@
     "title": "ネットワーク",
     "dnsServers": "DNS サーバー",
     "dnsPlaceholder": "空欄でシステムの DNS を使用。IP または IP:ポートを入力できます",
-    "dnsHelp": "すべての外向きの名前解決（DDNS、Webhook、ACME など）に影響します。複数の場合はランダムに選択し、自動でフェイルオーバーします。",
+    "dnsHelp": "すべての外向きの名前解決（DDNS、Webhook、ACME など）に影響します。IP、IP:ポート、doh{'@'}ホスト、https:// の DoH アドレスを指定できます。複数ある場合は最後に応答したサーバーから問い合わせ、失敗するか 1 秒以内に応答がなければ次のサーバーにも並行して問い合わせ、最初の応答を使います。",
     "updateProxy": "更新用プロキシ",
     "updateProxyPlaceholder": "空欄で直接接続（例: http://127.0.0.1:7890）",
     "updateProxyHelp": "更新確認とオンラインアップグレードで GitHub にアクセスする際に使います。http://、https://、socks5:// に対応し、空欄の場合は HTTPS_PROXY 環境変数に従います。",

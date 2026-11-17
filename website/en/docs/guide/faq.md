@@ -39,3 +39,5 @@ If your router's WAN interface sits behind carrier-grade NAT (100.64.0.0/10), ou
 ## How do I report issues or contribute?
 
 Open an issue on [GitHub Issues](https://github.com/wangwanjie/gately/issues). Development conventions are in [Contributing](/en/docs/guide/contributing).
+
+Ask usage questions in [GitHub Discussions Q&A](https://github.com/wangwanjie/gately/discussions/categories/q-a) so the answers stay searchable; for instant chat, join the Telegram group [t.me/gately_chat](https://t.me/gately_chat).

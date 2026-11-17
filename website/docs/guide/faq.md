@@ -39,3 +39,5 @@
 ## 如何反馈问题或参与开发？
 
 在 [GitHub Issues](https://github.com/wangwanjie/gately/issues) 提交问题，开发约定见 [参与贡献](/docs/guide/contributing)。
+
+使用问题请在 [GitHub Discussions Q&A](https://github.com/wangwanjie/gately/discussions/categories/q-a) 提问，答案便于其他人搜索；即时交流可加入 Telegram 群 [t.me/gately_chat](https://t.me/gately_chat)。

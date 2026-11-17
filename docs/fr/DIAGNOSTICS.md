@@ -26,7 +26,7 @@ Le paquet est généré sur votre propre machine et n'est jamais envoyé nulle p
 ## Fonctionnement du masquage
 
 - **Configuration** : les valeurs sont retirées par défaut. Seuls subsistent les noms de champs, les nombres, les booléens, une liste fixe de champs énumérés (`protocol`, `mode`, `provider`, …) et les horodatages. Les champs d'adresse ne gardent que le port et la catégorie d'IP.
-- **Journaux** : les adresses IP, domaines, e-mails, URL, paires du type `password=…`, jetons `Bearer`, longues chaînes ressemblant à des jetons, adresses MAC et répertoires d'utilisateur sont masqués. Les domaines de services publics comme `github.com` et `letsencrypt.org` sont conservés, car ils montrent si un échec vient du réseau.
+- **Journaux** : les adresses IP, domaines, e-mails, URL, paires du type `password=…`, jetons `Bearer`, valeur entière des en-têtes `Authorization` et `Cookie`, identifiants après `Basic` et `Digest`, valeurs des clés dont le nom contient un mot-clé de secret (comme `client_secret`, `X-Api-Key`, `TS_AUTHKEY`), valeurs d'options de ligne de commande séparées par une espace (`--auth-key valeur`), longues chaînes ressemblant à des jetons, adresses MAC et répertoires d'utilisateur sont masqués. Les domaines de services publics comme `github.com` et `letsencrypt.org` sont conservés, car ils montrent si un échec vient du réseau.
 - Un nom que vous avez saisi (par exemple la remarque d'une règle) peut encore apparaître dans une ligne de journal s'il ne ressemble ni à une IP ni à un domaine. Parcourez `logs/*.log` avant de publier et retirez tout ce que vous ne voulez pas partager.
 
 ## Diagnostiquer un arrêt anormal

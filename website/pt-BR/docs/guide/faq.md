@@ -39,3 +39,5 @@ Quando a porta WAN do roteador está atrás de um CGNAT da operadora (100.64.0.0
 ## Como relatar problemas ou participar do desenvolvimento?
 
 Abra uma issue em [GitHub Issues](https://github.com/wangwanjie/gately/issues). As convenções de desenvolvimento estão em [Como contribuir](/pt-BR/docs/guide/contributing).
+
+Faça perguntas de uso em [GitHub Discussions Q&A](https://github.com/wangwanjie/gately/discussions/categories/q-a) para que as respostas fiquem fáceis de encontrar; para conversar na hora, entre no grupo do Telegram [t.me/gately_chat](https://t.me/gately_chat).

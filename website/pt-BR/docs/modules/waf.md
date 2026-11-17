@@ -5,7 +5,7 @@ Um firewall de aplicações web baseado no [Coraza](https://coraza.io/) e no OWA
 ## Recursos
 
 - Conjunto de regras OWASP CRS v4 embutido, com arquivos de regras que podem ser ativados individualmente;
-- Regras SecLang personalizadas;
+- Regras SecLang personalizadas; as builds oficiais deixam de fora o operador `@validateSchema` para reduzir o tamanho, e uma regra que o use é sinalizada para ser removida ou reescrita;
 - Os grupos de regras podem ser reordenados; os logs de detecção registram IP do cliente, domínio, caminho e ID da regra, e podem ser filtrados por domínio, IP ou palavras-chave;
 - Modo de bloqueio e modo apenas de detecção;
 - Limite de inspeção do corpo da requisição ajustável: acima do limite, a requisição é rejeitada ou só a parte inicial é inspecionada; a inspeção do corpo pode ser pulada por caminho;

@@ -54,7 +54,7 @@ docker run -d --name gately --network host --cap-add NET_ADMIN \
 ## 放在网络入口，凭什么信它
 
 - **看得见**：Apache-2.0 开源；默认不连接任何项目方服务器，不上报设备信息；每个外连地址（公网 IP 查询、STUN、更新检查）都可见、可改、可关；第三方登录使用你自己的 OAuth 应用，不经过中转。
-- **可验证**：每个发布产物带 cosign 签名、构建来源证明和 SBOM（[验证方法](docs/VERIFY.md)）；安全修复以 [GitHub 安全公告](https://github.com/wangwanjie/gately/security/advisories)公开。
+- **可验证**：每个发布产物带 cosign 签名、构建来源证明和 SBOM（[验证方法](docs/VERIFY.md)）；安全修复以 [GitHub 安全公告](https://github.com/wangwanjie/gately/security/advisories)公开。`checksums.txt` 另有 minisign 签名，在线升级安装前会先校验该签名。
 - **可追溯**：操作审计、配置历史对比与一键回滚，配置是明文 JSON，可以直接放进 git。
 - **性能跟得上**：同机 2 核对比 haproxy + nginx 组合，HTTPS 反代 26k 对 14.7k req/s（[数据与测试方法](#性能)）。
 
@@ -158,7 +158,7 @@ Cloudflare、阿里云、DNSPod、Route 53 等都能用。IPv4 与 IPv6，IP 可
 | 动态域名 | 阿里云、Cloudflare、腾讯云、DNSPod、华为云、GoDaddy、Porkbun、dynv6、DuckDNS、Amazon Route 53、OVHcloud、Gandi、NS1、Bunny DNS、Namecheap、腾讯云 EdgeOne、阿里云 ESA、百度智能云、火山引擎、DNS.LA、雨云、时代互联（Now.cn）、新网互联（Eranet）、Tnet.hk、HiPM DNSMgr、Vercel、NameSilo、Dynadot、Spaceship、Name.com、Gcore、ClouDNS、deSEC、DynDNS2（No-IP、Dynu 等）、自定义回调 |
 | 动态域名：任务 | URL / 网卡 / 命令取 IP；IPv4/IPv6；Webhook；分组、排序与搜索；备注写入服务商；删除任务时可同时删除服务商处的解析 |
 | STUN 穿透 | TCP/UDP、保活、UPnP/NAT-PMP、内置转发、地址变化时触发 Webhook 与脚本 |
-| 端口转发 | TCP/UDP、IPv4/IPv6、端口段、多目标故障转移、连接数限制、流量统计、PROXY 协议（v1/v2）；分组、排序与搜索 |
+| 端口转发 | TCP/UDP、IPv4/IPv6、端口段、多目标故障转移、连接数限制、流量统计、PROXY 协议（v1/v2）；分组、排序与搜索；单个来源并发连接上限、空连接超时 |
 | 协议分流 | 多个服务共用 443 等同一个端口：按协议识别连接并透传、不解密，TLS 按 SNI 与 ALPN、HTTP 按 Host，Minecraft 按服务器地址，另可识别 SSH、RDP、SOCKS、OpenVPN、RTSP、SIP、XMPP、MQTT、AMQP、PostgreSQL、Redis、SMB、Git、IRC、ADB、BitTorrent，VNC 等服务端先发言的协议走等待超时路由；默认目标、每条路由单独设置 PROXY 协议 |
 | SSL 证书 | ACME 自动签发与续期，支持 DNS-01（通配符；委派子域名按 SOA 自动识别 DNS 区域）与 HTTP-01（无需 DNS 服务商）；EAB、上传、读取文件、映射到目录并执行脚本 |
 | SSL 证书：IP 与短期证书 | 短期证书与公网 IP 地址证书（Let's Encrypt shortlived 配置） |
@@ -166,7 +166,7 @@ Cloudflare、阿里云、DNSPod、Route 53 等都能用。IPv4 与 IPv6，IP 可
 | Tailscale | 托管 tailscaled（用户态网络，容器友好）或接入系统已有守护进程；认证密钥/登录链接、Headscale、子网路由、出口节点、节点列表、SOCKS5 代理、固定端口、额外参数与环境变量；Linux 上可在线安装 |
 | NetBird | 加入 NetBird 官方云或自建管理服务；托管 netbird 守护进程（用户态网络，可让其他节点访问本机服务）或接入系统已有服务；设置密钥/登录链接、接受路由、作为路由节点、接受 DNS、拒绝入站、节点列表（直连/中继、延迟）、SOCKS5 代理；Linux、macOS、Windows 可在线安装 |
 | EasyTier | 托管 easytier-core：P2P 打洞优先，支持自建或选择中继节点，用户态网络、端口转发、子网代理、出口节点、KCP/QUIC 代理 |
-| frp | 可同时运行多个 frpc 与 frps 实例：frpc（tcp/udp/http/https/stcp/xtcp 代理，增删即生效，代理访问地址可点击、复制）与 frps（端口白名单、子域名、控制台、按来源 IP 限制 frpc 登录）；可一键导入旧版 ini / 新版 toml 配置 |
+| frp | 可同时运行多个 frpc 与 frps 实例：frpc（tcp/udp/http/https/stcp/xtcp 代理，增删即生效，代理访问地址可点击、复制）与 frps（端口白名单、子域名、控制台、按来源 IP 限制 frpc 登录）；可一键导入旧版 ini / 新版 toml 配置；frps 的 KCP / QUIC 端口、两端的 QUIC 调节、frps 端口自动放行防火墙 |
 | Cloudflare 隧道 | cloudflared 令牌隧道与 trycloudflare 临时隧道，多隧道、自动重启、公网地址展示；令牌隧道可通过 Cloudflare API 编辑路由规则并创建 DNS 记录 |
 | WAF 防火墙 | Coraza + OWASP CRS v4，可按文件启用规则、自定义 SecLang、拦截/仅检测；还可接入自行部署的雷池（SafeLine）检测引擎；本实例管理员会话不经过 WAF；可信任已登录用户 |
 | WAF：大请求 | 请求体检查上限可调，超限时只检查前段或按路径跳过，网盘、WebDAV 等上传站点也能挂 WAF |
@@ -191,13 +191,14 @@ Cloudflare、阿里云、DNSPod、Route 53 等都能用。IPv4 与 IPv6，IP 可
 | 列表管理 | 规则、实例、证书、解析记录、终端连接与 API 令牌等列表统一支持分组、手动排序（拖动或箭头，可多选批量移动）与搜索，多选后可批量启停、删除；Web 服务站点还能批量增删或替换域名、批量修改选项，并可通过编辑、批量或拖动移到其他监听；多数列表可切换卡片/紧凑视图；调整顺序与分组不重启服务，手机上也能操作；多数条目可复制为副本再修改，密码等密钥沿用原条目 |
 | 管理员登录 | Passkey（WebAuthn）登录、两步验证（TOTP）、只读账号、登录失败限流（递增锁定）、陌生来源失败预算（抵御分散爆破）、弱口令检测与强制改密、关闭密码登录（只用 Passkey）、安全评分 |
 | 管理端访问 | 安全入口、仅内网访问、可自定义未授权访问的响应以隐藏管理端口（普通 404、空白页、断开连接、不响应或自定义页面）、管理界面 HTTPS、信任本机反向代理传来的真实客户端地址 |
-| 系统设置 | 多 API 令牌（按模块读写授权）、已保存的密码与密钥可按需显示（需写权限）、自定义 DNS（支持 DoH）、时区、配置备份与恢复、按需开关功能模块（关闭的模块不启动服务、不提供接口） |
+| 系统设置 | 多 API 令牌（按模块读写授权）、已保存的密码与密钥可按需显示（需写权限）、自定义 DNS（支持 DoH）、时区、配置备份与恢复、按需开关功能模块（关闭的模块不启动服务、不提供接口）、日志级别（`GATELY_LOG_LEVEL`） |
+| 管理界面 | 全局搜索（Ctrl/⌘+K）页面、标签页、站点域名、端口转发规则、DDNS 记录与证书；首次启动选择使用场景并给出「开始使用」清单；三步「快速建站」并测试后端连通；端口转发与 DDNS 空列表提供场景模板；只读公开演示模式（`-demo`） |
 | 更新检查 | 自动检查新版本与安全公告（匿名访问 GitHub，可关闭），受已公开安全问题影响时醒目提示并发送通知 |
 | 飞牛原生应用 | 离线 `.fpk` 安装包（x86 / ARM）；接入飞牛统一网关，从飞牛桌面图标打开，远程域名同样可用；飞牛管理员可凭飞牛登录态直接登录（默认关闭）；以 root 运行，可监听 80/443 并管理 Docker |
 | 审计与历史 | 操作审计日志：登录、配置变更、访问敏感内容（不记录请求体与任何密钥）；每次覆盖配置文件前保留旧版本，可对比差异并一键回滚；声明式配置目录（`-apply`），便于 GitOps |
 | 监控 | 性能面板：主机、Gately 进程与站点的 60 秒 / 1 小时 / 24 小时趋势，含首字节延迟 P50 / P95；托管进程（frp、Tailscale、NetBird、cloudflared、File Browser）的 CPU 与内存；阈值告警（指标 + 阈值 + 持续时长），触发与恢复经通知中心发送 |
 | 指标与自检 | 全局 Prometheus 指标 `/api/metrics`（证书、DDNS、STUN、端口转发、Web 服务），附 Grafana 面板；一键网络自检（公网 IP、运营商 NAT、系统时间、80/443 端口、DDNS 解析、证书到期、HTTPS 站点缺少证书、frp 代理冲突） |
-| 迁移 | 导入 nginx 配置（支持 `nginx -T` 输出）：反向代理与 upstream、静态目录、跳转、分路径后端、访问控制，`auth_request` 转换为转发认证 |
+| 迁移 | 导入 nginx 配置（支持 `nginx -T` 输出）：反向代理与 upstream、静态目录、跳转、分路径后端、访问控制，`auth_request` 转换为转发认证；直接导入 Nginx Proxy Manager 配置（`set` 变量代入 `proxy_pass`）；Sun-Panel 1.x / 2.x 导出文件转换为导航面板 |
 
 #### Web 服务
 
@@ -213,8 +214,8 @@ Cloudflare、阿里云、DNSPod、Route 53 等都能用。IPv4 与 IPv6，IP 可
 | 性能 | 压缩、限流、响应缓存（按路径缓存规则：不缓存/单独时长/强制缓存）与清空缓存 |
 | 错误页 | 404 与 5xx 错误页可选 10 种内置风格或自己的 HTML（上传或服务器文件，经安全检查并在沙箱中显示），可拦截后端返回的错误页（类似 nginx `proxy_intercept_errors`） |
 | 可观测 | 分钟级访问统计与 Prometheus 指标、按站点查看实时连接并可断开或封禁、拓扑视图实时展示监听 → 站点 → 后端的 QPS、流量与活动 IP（按 IP 高亮链路、打码地址、「聚焦活动」、回放：快照按容量保留在内存中，默认关闭）、按地址的访客审计（站点、路径、身份、被拦截占比、保留期限）、访问日志按天压缩归档与导出 |
-| 导航面板 | 作为站点提供的链接页：内网访客看到内网地址、内置图标、其他访问方式、与管理界面相同的换肤、搜索引擎、背景图片、登录后可见的链接、大小卡片、访客语言切换、自定义页脚 |
-| 运维 | 修改站点不会断开已有连接、站点分组、排序与搜索、从可信代理（CDN、WAF）的请求头取访客真实 IP、域名可点击、复制完整地址 |
+| 导航面板 | 作为站点提供的链接页：内网访客看到内网地址、内置图标、其他访问方式、与管理界面相同的换肤、搜索引擎、背景图片、登录后可见的链接、大小卡片、访客语言切换、自定义页脚；链接样式（卡片或 App 图标）与布局（图标尺寸、每行数量、间距、内容宽度）；多地址链接点击时选择地址；可选的分组数量与地址数角标 |
+| 运维 | 修改站点不会断开已有连接、站点分组、排序与搜索、从可信代理（CDN、WAF）的请求头取访客真实 IP、域名可点击、复制完整地址、HTTPS 站点行显示匹配的证书与剩余天数 |
 
 </details>
 

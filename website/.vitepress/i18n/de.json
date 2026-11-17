@@ -112,7 +112,7 @@
         {
           "from": "nginx, Nginx Proxy Manager",
           "module": "Web-Dienste",
-          "text": "Reverse Proxy, statische Sites, Weiterleitungen, HTTP/3, Zugriffsregeln pro Site; importiert nginx-Konfigurationen"
+          "text": "Reverse Proxy, statische Sites, Weiterleitungen, HTTP/3, Zugriffsregeln pro Site; importiert Konfigurationen von nginx und Nginx Proxy Manager"
         },
         {
           "from": "certbot, acme.sh",
@@ -122,7 +122,7 @@
         {
           "from": "ddns-go, DDNS-Skripte",
           "module": "Dynamisches DNS",
-          "text": "Über 35 Anbieter, IPv4 und IPv6"
+          "text": "Über 30 Anbieter, IPv4 und IPv6"
         },
         {
           "from": "haproxy-SNI-Routing, sslh",
@@ -185,7 +185,7 @@
       },
       {
         "title": "Netzwerk & Tunnel",
-        "text": "Betreibt Tailscale, NetBird, frp (frpc / frps) und cloudflared-Tunnel als verwaltete Prozesse, mit Online-Installation, Update, Rollback und Deinstallation."
+        "text": "Betreibt Tailscale, NetBird, EasyTier, frp (frpc / frps) und cloudflared-Tunnel als verwaltete Prozesse, mit Online-Installation, Update, Rollback und Deinstallation."
       },
       {
         "title": "Docker-Verwaltung",

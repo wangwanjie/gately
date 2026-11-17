@@ -38,6 +38,11 @@ internal/modules/registry/  Registro de módulos: cada módulo opcional tem seu 
 tools/custombuild/     Build personalizado: converte o modules.json em build tags, idiomas e argumentos de build do Docker, e empacota
 modules.json           Módulos opcionais, dependências, estimativa de tamanho, níveis de idioma, alvos de build e presets (lido pelo build.gately.cn)
 internal/luckyimport/  Descriptografia do .lkcf do Lucky e mapeamento de campos
+internal/releasesig/   Assinatura de releases: chaves públicas embutidas (com um slot de rotação) e verificação minisign do checksums.txt antes da atualização online
+internal/minisign/     Chaves públicas Ed25519, assinaturas e chaves secretas criptografadas compatíveis com minisign
+tools/sign/            Gera chaves de release, assina o checksums.txt e o verifica
+internal/demo/         Modo demo (-demo / GATELY_DEMO=1): instância pública somente leitura que bloqueia gravações e requisições de saída
+tools/demo/            Gerador de dados de demonstração; deploy/demo/ traz a imagem e o compose da demo
 web/                   Projeto do frontend; o resultado do build é embutido por web/embed.go
 ```
 

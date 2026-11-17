@@ -5,7 +5,7 @@ Eine Web Application Firewall auf Basis von [Coraza](https://coraza.io/) und OWA
 ## Funktionen
 
 - Integriertes OWASP-CRS-v4-Regelwerk, dessen Regeldateien einzeln aktiviert werden können;
-- Eigene SecLang-Regeln;
+- Eigene SecLang-Regeln; offizielle Builds enthalten den Operator `@validateSchema` aus Platzgründen nicht, eine Regel, die ihn verwendet, wird mit dem Hinweis gemeldet, sie zu entfernen oder umzuschreiben;
 - Regelgruppen lassen sich umsortieren; Treffer-Logs enthalten Client-IP, Domain, Pfad und Regel-ID und lassen sich nach Domain, IP oder Stichwörtern filtern;
 - Blockiermodus und reiner Erkennungsmodus;
 - Einstellbares Prüflimit für den Request-Body: Größere Anfragen werden abgelehnt oder nur im vorderen Teil geprüft; die Body-Prüfung lässt sich pro Pfad überspringen;

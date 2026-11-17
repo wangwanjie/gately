@@ -113,6 +113,8 @@ Die Globalen Einstellungen im Seitenkopf enthalten:
 - Legen Sie beim DNS-Anbieter einen Schlüssel für ein Unterkonto an, der auf das Bearbeiten von DNS-Einträgen beschränkt ist. Vermeiden Sie den Schlüssel des Hauptkontos;
 - Klicken Sie nach dem Anlegen einer Aufgabe auf „Sync erzwingen“, um zu prüfen, ob der Eintrag aktualisiert wurde;
 - Einen nicht mehr benötigten Eintrag entfernen Sie direkt über das Löschsymbol rechts neben dem Eintrag in der Liste, ohne den Editor zu öffnen; eine Aufgabe behält mindestens einen Eintrag, und wie der DNS-Eintrag beim Anbieter mitgelöscht wird, steht unter [Einträge und Aufgaben löschen](#delete);
+- Ist die Aufgabenliste leer, können Sie mit einem häufigen Fall beginnen: „Cloudflare, IPv4 zu Hause“, „Alibaba Cloud, IPv4 + IPv6“ oder „DNSPod, nur IPv6“ öffnen jeweils ein vorausgefülltes Aufgabenformular;
+- Host-Einträge werden in Kleinbuchstaben gespeichert und an die Anbieter gesendet (auch bei älteren Konfigurationen); A-/AAAA-Werte werden als Adressen verglichen, sodass eine IPv6-Adresse in ausgeschriebener Form oder in Großbuchstaben nicht als Änderung gilt;
 - Die Adresse zur Abfrage der öffentlichen IP hängt von keinem vom Projekt betriebenen Dienst ab und lässt sich jederzeit in einer Aufgabe ändern.
 
 ## Gruppen und Sortierung

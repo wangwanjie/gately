@@ -140,7 +140,7 @@
           </li>
           <li>{{ t('quickSite.dnsHosts', { domain }) }}</li>
         </ul>
-        <el-link :href="docsUrl(locale, '/guide/quick-start')" target="_blank" type="primary">{{ t('quickSite.tutorial') }}</el-link>
+        <el-link :href="docsUrl(locale, '/docs/guide/quick-start')" target="_blank" type="primary">{{ t('quickSite.tutorial') }}</el-link>
       </div>
     </div>
 

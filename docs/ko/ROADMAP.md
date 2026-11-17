@@ -38,6 +38,11 @@ internal/modules/registry/  모듈 등록: 선택 모듈마다 mod_<모듈>.go �
 tools/custombuild/     사용자 지정 빌드: modules.json에 따라 build tag, 언어, Docker 빌드 인수를 계산하고 패키징
 modules.json           선택 모듈, 의존성, 크기 추정, 언어 단계, 빌드 대상과 프리셋(build.gately.cn이 읽음)
 internal/luckyimport/  Lucky .lkcf 복호화와 필드 매핑
+internal/releasesig/   릴리스 서명: 내장된 릴리스 공개 키(교체용 예비 슬롯 포함), 온라인 업그레이드 전 checksums.txt의 minisign 서명 확인
+internal/minisign/     minisign 호환 Ed25519 공개 키, 서명, 암호화된 비밀 키 형식
+tools/sign/            릴리스 키 생성, checksums.txt 서명 및 확인
+internal/demo/         데모 모드(-demo / GATELY_DEMO=1): 쓰기와 외부 요청을 막는 읽기 전용 공개 인스턴스
+tools/demo/            데모 데이터 생성기; deploy/demo/는 데모 인스턴스의 이미지와 compose
 web/                   프런트엔드 프로젝트, 빌드 결과물은 web/embed.go로 내장
 ```
 
