@@ -1,0 +1,36 @@
+# Authelia 4.39 最小配置：file 用户后端、one_factor、会话存内存（未配置 redis）、regulation 用默认值
+# @SECRET_*@ 由 bench.py 替换为随机串
+server:
+  address: 'tcp://127.0.0.1:9091/'
+log:
+  level: 'warn'
+ntp:
+  # 压测机不一定能访问外网 NTP，跳过启动检查
+  disable_startup_check: true
+identity_validation:
+  reset_password:
+    jwt_secret: '@SECRET_JWT@'
+authentication_backend:
+  password_reset:
+    disable: true
+  file:
+    path: '/config/users.yml'
+    watch: false
+    # 校验时按用户文件中哈希自带的参数计算；users.yml 用 authelia crypto hash generate 的默认参数生成
+    # （argon2id、t=3、m=65536 KiB、p=4、密钥 32 字节、盐 16 字节）
+access_control:
+  default_policy: 'one_factor'
+session:
+  secret: '@SECRET_SESSION@'
+  cookies:
+    - domain: 'bench.test'
+      authelia_url: 'https://auth.bench.test:8443'
+      default_redirection_url: 'https://bench.test:8443'
+# regulation 不写，使用默认值：find_time 2m 内失败 3 次封禁 5m（按用户名）
+storage:
+  encryption_key: '@SECRET_STORAGE@'
+  local:
+    path: '/config/db.sqlite3'
+notifier:
+  filesystem:
+    filename: '/config/notification.txt'
