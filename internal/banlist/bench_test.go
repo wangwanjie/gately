@@ -96,3 +96,56 @@ func TestNetsTracking(t *testing.T) {
 		t.Fatalf("到期的网段应被清除: %d", len(s.nets))
 	}
 }
+
+// fillFull 向封禁表写入 DefaultLimit 条创建时间各不相同的临时自动封禁，使表恰好写满。
+func fillFull(b testing.TB) *Store {
+	s := New()
+	now := time.Now()
+	entries := make([]Entry, 0, DefaultLimit)
+	for i := 0; i < DefaultLimit; i++ {
+		a := netip.AddrFrom4([4]byte{10, byte(i >> 16), byte(i >> 8), byte(i)})
+		created := now.Add(time.Duration(i-DefaultLimit) * time.Second)
+		entries = append(entries, Entry{Key: KeyFor(a), Until: now.Add(time.Hour), Created: created, Source: SourceScan, Count: 1})
+	}
+	s.Import(entries, nil)
+	return s
+}
+
+// BenchmarkBanFull 衡量封禁表已满时再封禁新地址（每次都要淘汰一条）的开销：扫描器洪水下表满后每次自动封禁都走这条路径。
+func BenchmarkBanFull(b *testing.B) {
+	s := fillFull(b)
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		a := netip.AddrFrom4([4]byte{192, byte(i >> 16), byte(i >> 8), byte(i)})
+		if _, _, err := s.Ban(KeyFor(a), Options{Duration: time.Hour, Source: SourceScan}); err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+// BenchmarkBannedDuringFullBans 衡量表已满、持续有新封禁（每次淘汰一条）时，其它协程查询 Banned 的耗时。
+func BenchmarkBannedDuringFullBans(b *testing.B) {
+	s := fillFull(b)
+	var stop atomic.Bool
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for i := 0; !stop.Load(); i++ {
+			a := netip.AddrFrom4([4]byte{192, byte(i >> 16), byte(i >> 8), byte(i)})
+			_, _, _ = s.Ban(KeyFor(a), Options{Duration: time.Hour, Source: SourceScan})
+		}
+	}()
+	probe := netip.MustParseAddr("203.0.113.9")
+	b.ReportAllocs()
+	b.ResetTimer()
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			s.Banned(probe)
+		}
+	})
+	b.StopTimer()
+	stop.Store(true)
+	wg.Wait()
+}
