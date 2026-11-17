@@ -34,6 +34,7 @@
       "guide/lists": "Группы, порядок, пакетные операции и дублирование",
       "guide/cli-mcp": "CLI и MCP",
       "guide/migration": "Руководство по миграции",
+      "guide/benchmarks": "Сравнение производительности",
       "guide/faq": "FAQ",
       "tutorials/remote-access-without-public-ip": "Доступ к NAS без публичного IPv4",
       "tutorials/one-port-443": "Всё на одном порту 443",

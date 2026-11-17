@@ -34,6 +34,7 @@
       "guide/lists": "Listen gruppieren, sortieren, im Stapel bearbeiten und duplizieren",
       "guide/cli-mcp": "CLI & MCP",
       "guide/migration": "Migrationsanleitung",
+      "guide/benchmarks": "Leistungsvergleich",
       "guide/faq": "FAQ",
       "tutorials/remote-access-without-public-ip": "NAS ohne öffentliche IPv4 erreichen",
       "tutorials/one-port-443": "Alles über einen Port 443",

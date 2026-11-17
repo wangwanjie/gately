@@ -34,6 +34,7 @@
       "guide/lists": "목록 그룹화, 정렬, 일괄 작업과 복제",
       "guide/cli-mcp": "명령줄 및 MCP",
       "guide/migration": "마이그레이션 가이드",
+      "guide/benchmarks": "성능 비교",
       "guide/faq": "자주 묻는 질문",
       "tutorials/remote-access-without-public-ip": "공인 IPv4 없이 NAS에 접속하기",
       "tutorials/one-port-443": "443 포트 하나로 모든 서비스 운영",
