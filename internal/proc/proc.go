@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/wangwanjie/gately/internal/demo"
 	"github.com/wangwanjie/gately/internal/events"
 	"os"
 	"os/exec"
@@ -90,6 +91,10 @@ func Version(path string, args ...string) string {
 
 // Output 运行命令并返回合并后的输出，超时后强制结束。
 func Output(timeout time.Duration, path string, args, env []string) ([]byte, error) {
+	// 演示模式下不执行任何外部命令
+	if err := demo.Check(); err != nil {
+		return nil, err
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 	cmd := exec.CommandContext(ctx, path, args...)
@@ -324,6 +329,10 @@ func Run(ctx context.Context, spec Spec, log *logbuf.Logger) error {
 // execOnce 启动进程并等待其退出，输出按行写入日志。
 // onStarted 与 onExited 分别在启动成功后与退出后调用，可为 nil。
 func execOnce(ctx context.Context, spec Spec, log *logbuf.Logger, onStarted func(pid int), onExited func()) (startErr, exitErr error) {
+	// 演示模式下不执行任何外部命令
+	if err := demo.Check(); err != nil {
+		return err, nil
+	}
 	cmd := exec.CommandContext(ctx, spec.Path, spec.Args...)
 	cmd.Env = append(os.Environ(), spec.Env...)
 	cmd.Dir = spec.Dir

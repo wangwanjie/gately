@@ -11,6 +11,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/wangwanjie/gately/internal/demo"
 	"io"
 	"net/http"
 	"net/url"
@@ -349,6 +350,10 @@ func extractBinary(data []byte) ([]byte, error) {
 // probeBinary 以 -version 试运行新二进制，确认它能在本机执行（架构正确、文件完整）并返回其版本号。
 // 使用 -version 参数：即使是不认识该参数的旧版本也只会报错退出，不会启动第二个服务实例。
 func probeBinary(ctx context.Context, path string) (string, error) {
+	// 演示模式下不执行任何外部命令
+	if err := demo.Check(); err != nil {
+		return "", err
+	}
 	ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
 	defer cancel()
 	out, err := exec.CommandContext(ctx, path, "-version").Output()

@@ -5,6 +5,7 @@
 package sysstat
 
 import (
+	"github.com/wangwanjie/gately/internal/demo"
 	"net"
 	"os"
 	"runtime"
@@ -141,6 +142,10 @@ const (
 
 // Snapshot 采集一次主机信息。
 func (c *Collector) Snapshot() Snapshot {
+	// 演示模式不暴露真实主机信息：返回随时间变化的模拟数据
+	if demo.Enabled() {
+		return demoSnapshot(time.Now())
+	}
 	c.mu.Lock()
 	defer c.mu.Unlock()
 

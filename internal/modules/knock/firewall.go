@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"github.com/wangwanjie/gately/internal/demo"
 	"net/netip"
 	"os"
 	"os/exec"
@@ -193,6 +194,10 @@ func lookCmd(name string) string {
 }
 
 func execCmd(ctx context.Context, stdin, bin string, args ...string) (string, error) {
+	// 演示模式下不执行任何外部命令
+	if err := demo.Check(); err != nil {
+		return "", err
+	}
 	ctx, cancel := context.WithTimeout(ctx, cmdTimeout)
 	defer cancel()
 	cmd := exec.CommandContext(ctx, bin, args...)

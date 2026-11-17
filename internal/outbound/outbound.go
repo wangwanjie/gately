@@ -13,6 +13,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/wangwanjie/gately/internal/demo"
 	"github.com/wangwanjie/gately/internal/resolver"
 	"net"
 	"net/http"
@@ -157,6 +158,10 @@ func IsBlocked(ip netip.Addr) bool {
 
 // Control 可直接用作 net.Dialer.Control：此时地址已经解析为 IP，开关开启时拒绝被禁止的目标。
 func Control(network, address string, _ syscall.RawConn) error {
+	// 演示模式下拒绝一切经本包的对外连接（通知、Webhook、DDNS、证书签发、订阅拉取、更新检查、出站代理）
+	if err := demo.Check(); err != nil {
+		return err
+	}
 	if !restricted.Load() {
 		return nil
 	}
@@ -183,6 +188,9 @@ func NewDialer(timeout time.Duration) *net.Dialer {
 // 因此开关开启时在这里解析并检查（尽力而为，无法防御代理侧的 DNS 重绑定）。
 // 本机解析失败的主机名一律拒绝：代理侧可能把它解析成内网地址，例如只有代理所在网络才能解析的内网域名。
 func CheckHost(ctx context.Context, host string) error {
+	if err := demo.Check(); err != nil {
+		return err
+	}
 	if !restricted.Load() || host == "" {
 		return nil
 	}
@@ -275,6 +283,10 @@ func Guard(tr *http.Transport) *http.Transport {
 		// 标准库的 Dialer 在 Resolver 为空时会直接读 net.DefaultResolver，与保存 DNS 设置时的写入竞争；
 		// 这里每次拨号取受锁保护的当前解析器，复制一份拨号器后再使用
 		r := resolver.Current()
+		// 演示模式下连代理也一并拒绝
+		if err := demo.Check(); err != nil {
+			return nil, err
+		}
 		if _, ok := proxies.Load(addr); ok {
 			d := *plain
 			d.Resolver = r

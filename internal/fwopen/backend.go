@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/wangwanjie/gately/internal/demo"
 	"os/exec"
 	"regexp"
 	"runtime"
@@ -59,6 +60,10 @@ func lookPath(name string, candidates []string) string {
 }
 
 func run(ctx context.Context, stdin string, bin string, args ...string) (string, error) {
+	// 演示模式下不执行任何外部命令
+	if err := demo.Check(); err != nil {
+		return "", err
+	}
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 	cmd := exec.CommandContext(ctx, bin, args...)

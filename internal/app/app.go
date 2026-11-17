@@ -25,6 +25,7 @@ import (
 	"github.com/wangwanjie/gately/internal/auth"
 	"github.com/wangwanjie/gately/internal/config"
 	"github.com/wangwanjie/gately/internal/crashlog"
+	"github.com/wangwanjie/gately/internal/demo"
 	"github.com/wangwanjie/gately/internal/events"
 	"github.com/wangwanjie/gately/internal/fileusers"
 	"github.com/wangwanjie/gately/internal/fsperm"
@@ -79,6 +80,8 @@ type Options struct {
 	CrashLog bool
 	// Echo 为日志回显使用的标准错误输出；为 nil 时使用进程共用的 StderrEcho
 	Echo *logbuf.Echo
+	// Demo 开启在线演示模式：数据面服务全部不启动，只读访客一键进入，写操作与外部动作一律不可用，数据定时重置
+	Demo bool
 }
 
 type moduleEntry struct {
@@ -164,6 +167,12 @@ func New(opts Options) (_ *App, err error) {
 		}
 		opts.ConfigDir = abs
 	}
+	if opts.Demo {
+		demo.Set(true)
+		if err := prepareDemoDir(opts.ConfigDir); err != nil {
+			return nil, fmt.Errorf("恢复演示数据失败: %w", err)
+		}
+	}
 	store, err := config.Open(opts.ConfigDir)
 	if err != nil {
 		return nil, err
@@ -248,6 +257,9 @@ func New(opts Options) (_ *App, err error) {
 	}
 	// 服务未运行期间通过命令行提交的重置请求，在启动时应用
 	a.applyAccountReset()
+	if err := a.setupDemo(); err != nil {
+		return nil, fmt.Errorf("初始化演示账号失败: %w", err)
+	}
 	// 管理后台经本机 Web 服务站点反代访问时，站点据此识别管理员自己的请求并在访问日志中标记，日志页可隐藏它们。
 	// 只看后台登录 Cookie：Authorization 头多是发给后端应用的，不必逐个校验；令牌带签名，访客无法伪造
 	httpx.SetSessionCheck(func(r *http.Request) string {
@@ -326,6 +338,9 @@ func New(opts Options) (_ *App, err error) {
 	}
 	a.audit.SetHook(publishAudit)
 	a.applyRuntime()
+	if err := a.snapshotDemo(); err != nil {
+		return nil, fmt.Errorf("保存演示快照失败: %w", err)
+	}
 	return a, nil
 }
 
@@ -340,6 +355,8 @@ func (a *App) Handler() http.Handler {
 	mux.HandleFunc("POST /api/login/passkey/begin", a.handlePasskeyLoginBegin)
 	mux.HandleFunc("POST /api/login/passkey/finish", a.handlePasskeyLoginFinish)
 	mux.HandleFunc("GET /api/login/providers", a.handleThirdProviders)
+	mux.HandleFunc("GET /api/demo", a.handleDemoInfo)
+	mux.HandleFunc("POST /api/login/demo", a.handleDemoLogin)
 	mux.HandleFunc("POST /api/login/fnos", a.handleGatewayLogin)
 	mux.HandleFunc("GET "+thirdauth.StartPath, a.handleThirdStart)
 	mux.HandleFunc("GET "+thirdauth.CallbackPath, a.handleThirdCallback)
@@ -434,7 +451,7 @@ func (a *App) Handler() http.Handler {
 	rec.add("GET /api/openapi.json", a.handleOpenAPI, "")
 	a.routes = rec.routes
 	a.routeDocs = rec.docs
-	mux.Handle("/api/", a.requireAuth(a.roleGuard(a.defaultPasswordGuard(a.redactReadOnly(a.audit.Middleware(protected))))))
+	mux.Handle("/api/", a.requireAuth(a.demoGuard(a.roleGuard(a.defaultPasswordGuard(a.redactReadOnly(a.audit.Middleware(a.demoOverlay(protected))))))))
 	mux.Handle("/", a.staticHandler())
 	// 压缩放在翻译之外，压缩的是翻译后的最终内容；已预压缩的静态资源自带 Content-Encoding，不会重复压缩
 	// 最外层限制请求体读取速度，登录等未认证接口同样受限
@@ -463,6 +480,10 @@ func (a *App) run(parent context.Context) error {
 			disabled = append(disabled, e.mod.Title())
 			continue
 		}
+		// 演示模式不启动任何模块：数据面服务不监听端口，后台任务也不运行
+		if demo.Enabled() {
+			continue
+		}
 		if err := e.mod.Start(ctx); err != nil {
 			// 单个模块失败不影响其他模块，错误写入日志供界面查看
 			e.logs.Add(logbuf.LevelError, "", "模块启动失败: "+err.Error())
@@ -472,7 +493,12 @@ func (a *App) run(parent context.Context) error {
 		a.sysLogs.Add(logbuf.LevelInfo, "", "以下功能模块已关闭，未启动："+strings.Join(disabled, "、"))
 	}
 	go a.watchAccountReset(ctx)
-	go a.runUpdateCheck(ctx)
+	if demo.Enabled() {
+		a.sysLogs.Add(logbuf.LevelInfo, "", "演示模式：全部数据面服务不启动，写操作与对外动作不可用")
+		go a.runDemoReset(ctx)
+	} else {
+		go a.runUpdateCheck(ctx)
+	}
 	s := a.settingsSnapshot()
 	handler := a.Handler()
 	servers := []*http.Server{{Addr: s.Listen, Handler: handler, ReadHeaderTimeout: 10 * time.Second, ConnContext: denyConnContext}}
@@ -710,6 +736,15 @@ func (a *App) handleStatus(w http.ResponseWriter, r *http.Request) {
 		info := moduleInfo{ID: e.mod.ID(), Title: e.mod.Title(), Enabled: e.enabled}
 		if sm, ok := e.mod.(module.Summarizer); ok && e.enabled {
 			info.Summary = sm.Summary()
+			// 演示模式没有运行中的服务，摘要换成与演示数据一致的模拟值
+			if demo.Enabled() {
+				if items := a.demoSummary(e.mod.ID()); items != nil {
+					info.Summary = nil
+					for _, it := range items {
+						info.Summary = append(info.Summary, module.SummaryItem{Label: it.Label, Value: it.Value, Level: it.Level})
+					}
+				}
+			}
 		}
 		mods = append(mods, info)
 	}

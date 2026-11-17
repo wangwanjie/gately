@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/wangwanjie/gately/internal/demo"
 	"net"
 	"net/http"
 	"strconv"
@@ -229,6 +230,10 @@ func interfaceBroadcasts() []string {
 
 // sendFunc 允许测试截获发送的数据包。
 var sendFunc = func(addr string, pkt []byte) error {
+	// 演示模式下不发出任何网络数据包
+	if err := demo.Check(); err != nil {
+		return err
+	}
 	c, err := net.Dial("udp4", addr)
 	if err != nil {
 		return err
@@ -463,6 +468,13 @@ func (m *Module) handleStatus(w http.ResponseWriter, r *http.Request) {
 		go func() {
 			defer wg.Done()
 			status := "offline"
+			// 演示模式下不探测任何地址，状态由演示数据层给出
+			if demo.Enabled() {
+				mu.Lock()
+				out[d.Key] = status
+				mu.Unlock()
+				return
+			}
 			if c, err := net.DialTimeout("tcp", d.CheckAddr, 1500*time.Millisecond); err == nil {
 				c.Close()
 				status = "online"

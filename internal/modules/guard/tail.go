@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/wangwanjie/gately/internal/demo"
 	"io"
 	"os"
 	"os/exec"
@@ -217,6 +218,9 @@ func (s *stderrTail) last() string {
 }
 
 func runOnce(ctx context.Context, name string, args []string, onLine func(string)) error {
+	if err := demo.Check(); err != nil {
+		return err
+	}
 	path, err := exec.LookPath(name)
 	if err != nil {
 		return fmt.Errorf("找不到命令 %s", name)

@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/wangwanjie/gately/internal/demo"
 	"io"
 	"net"
 	"net/http"
@@ -325,6 +326,10 @@ func fromInterface(name string, fam Family) ([]netip.Addr, error) {
 }
 
 func fromCommand(ctx context.Context, command string, fam Family) ([]netip.Addr, error) {
+	// 演示模式下不执行任何外部命令
+	if err := demo.Check(); err != nil {
+		return nil, err
+	}
 	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 	var cmd *exec.Cmd
