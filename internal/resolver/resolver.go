@@ -249,6 +249,15 @@ func queryDoH(ctx context.Context, endpoint string, msg []byte) ([]byte, error) 
 	return io.ReadAll(io.LimitReader(resp.Body, 64<<10))
 }
 
+// queryDeadline 返回单个服务器一次查询的截止时间：最长 5 秒，ctx 的期限更早时以它为准。
+func queryDeadline(ctx context.Context) time.Time {
+	deadline := time.Now().Add(5 * time.Second)
+	if dl, ok := ctx.Deadline(); ok && dl.Before(deadline) {
+		deadline = dl
+	}
+	return deadline
+}
+
 func queryUDP(ctx context.Context, addr string, msg []byte) ([]byte, error) {
 	d := net.Dialer{Timeout: 5 * time.Second}
 	c, err := d.DialContext(ctx, "udp", addr)
@@ -256,11 +265,11 @@ func queryUDP(ctx context.Context, addr string, msg []byte) ([]byte, error) {
 		return nil, err
 	}
 	defer c.Close()
-	deadline := time.Now().Add(5 * time.Second)
-	if dl, ok := ctx.Deadline(); ok && dl.Before(deadline) {
-		deadline = dl
-	}
-	_ = c.SetDeadline(deadline)
+	// 并行回退中别的服务器先返回、或调用方放弃时，ctx 被取消：立即关闭连接结束等待，
+	// 不让这次查询的协程、套接字与 64 KB 缓冲区一直挂到 5 秒超时
+	stop := context.AfterFunc(ctx, func() { _ = c.Close() })
+	defer stop()
+	_ = c.SetDeadline(queryDeadline(ctx))
 	if _, err := c.Write(msg); err != nil {
 		return nil, err
 	}
@@ -283,7 +292,9 @@ func queryTCP(ctx context.Context, addr string, msg []byte) ([]byte, error) {
 		return nil, err
 	}
 	defer c.Close()
-	_ = c.SetDeadline(time.Now().Add(5 * time.Second))
+	stop := context.AfterFunc(ctx, func() { _ = c.Close() })
+	defer stop()
+	_ = c.SetDeadline(queryDeadline(ctx))
 	frame := binary.BigEndian.AppendUint16(nil, uint16(len(msg)))
 	if _, err := c.Write(append(frame, msg...)); err != nil {
 		return nil, err
