@@ -213,6 +213,45 @@ func TestDemoHidesHostNetworkInfo(t *testing.T) {
 	}
 }
 
+// 同一配置目录先以演示模式启动、再正常启动：演示账号的密码写在源码里，正常启动后不能再用它登录；
+// 管理员自己创建的同名账号（密码不同）不受影响。
+func TestDemoAccountRemovedOutsideDemo(t *testing.T) {
+	a, _ := newDemoApp(t, 0)
+	dir := a.opts.ConfigDir
+	if !a.auth.UserPasswordIs(demoUsername, demoPassword) {
+		t.Fatal("演示模式下应创建演示账号")
+	}
+	demo.Set(false)
+	mods, certs := registry.New()
+	b, err := New(Options{ConfigDir: dir, Modules: mods, Certs: certs, Requires: registry.Requires(), Absent: registry.Absent()})
+	if err != nil {
+		t.Fatal(err)
+	}
+	b.logger = log.New(io.Discard, "", 0)
+	srv := httptest.NewServer(b.Handler())
+	defer srv.Close()
+	code, body := doJSON(t, demoClient(), "POST", srv.URL+"/api/login", map[string]string{"username": demoUsername, "password": demoPassword})
+	if code == 200 {
+		t.Fatalf("正常启动后不应能用公开的演示密码登录: %s", body)
+	}
+	for _, u := range b.auth.Users() {
+		if u.Username == demoUsername {
+			t.Fatal("仍使用公开密码的演示账号应被删除")
+		}
+	}
+	// 管理员自己建的 demo 账号（密码不同）保留
+	if err := b.auth.AddUser(demoUsername, "Another-Readonly-Pass-2026"); err != nil {
+		t.Fatal(err)
+	}
+	c, err := New(Options{ConfigDir: dir, Modules: mods, Certs: certs, Requires: registry.Requires(), Absent: registry.Absent()})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !c.auth.UserPasswordIs(demoUsername, "Another-Readonly-Pass-2026") {
+		t.Fatal("密码不同的同名账号不应被删除")
+	}
+}
+
 // 演示数据全部取自文档保留的地址与域名，不含真实 IP 与域名。
 func TestDemoDataUsesReservedAddresses(t *testing.T) {
 	dir := t.TempDir()

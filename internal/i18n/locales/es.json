@@ -1637,6 +1637,7 @@
   "已创建容器 %s（镜像 %s）": "Contenedor %s creado (imagen %s)",
   "已删除 API 令牌“%s”": "Token de API “%s” eliminado",
   "已删除 Passkey": "Passkey eliminada",
+  "已删除演示模式留下的只读账号 demo（其密码公开），当前未以演示模式运行": "Se eliminó la cuenta de solo lectura demo que dejó el modo de demostración (su contraseña es pública); esta instancia no se está ejecutando en modo de demostración",
   "已删除账号 %s": "Cuenta %s eliminada",
   "已加载 GeoIP 数据库（%s）": "Base de datos GeoIP cargada (%s)",
   "已升级 %s → %s，旧版本保留为 %s，正在重启": "Actualizado %s → %s, versión anterior conservada como %s, reiniciando",
