@@ -5,7 +5,7 @@ Un pare-feu applicatif web basé sur [Coraza](https://coraza.io/) et OWASP CRS v
 ## Fonctions
 
 - Jeu de règles OWASP CRS v4 intégré, dont les fichiers de règles s'activent individuellement ;
-- Règles SecLang personnalisées ;
+- Règles SecLang personnalisées ; les builds officiels omettent l'opérateur `@validateSchema` pour gagner de la place, et une règle qui l'utilise est signalée pour que vous la supprimiez ou la réécriviez ;
 - Les groupes de règles peuvent être réordonnés ; les journaux de détection enregistrent l'IP du client, le domaine, le chemin et l'ID de règle, filtrables par domaine, IP ou mots-clés ;
 - Mode blocage et mode détection seule ;
 - Limite d'inspection du corps de requête réglable : au-delà, la requête est rejetée ou seul le début est inspecté ; l'inspection du corps peut être ignorée par chemin ;
