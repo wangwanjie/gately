@@ -42,7 +42,7 @@ func NewPasswordReset(password string) (ResetRequest, error) {
 			return ResetRequest{}, err
 		}
 	}
-	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), passwordCost)
 	if err != nil {
 		return ResetRequest{}, err
 	}
