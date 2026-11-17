@@ -345,8 +345,8 @@ make lint     # gofmt、go vet、前端型別檢查
 
 - Gately 處於 1.0 之前。版本號最多四段（例如 `v0.6.6.6`），某個小版本的後續修復發佈時最後一段遞增。
 - 每個 `v*` 標籤都會執行[發佈流程](../../.github/workflows/release.yml)：建置各平台執行檔、OpenWrt 與飛牛安裝包、多架構 Docker 映像檔，並對產物簽章。映像檔帶版本標籤和 `latest`，`latest` 始終指向最新版本。
-- 發版頻繁：2026 年 10 月 17 日到 11 月 17 日共 56 個版本標籤。[GitHub Releases](https://github.com/wangwanjie/gately/releases) 的說明依模組分節並標出升級提示，官網[更新日誌](https://gately.cn/zh-TW/news/)有版本公告。
-- 安全修復只發佈在最新版本上（[SECURITY.md](../../SECURITY.md)）。正式環境建議固定映像檔標籤，例如 `ghcr.io/wangwanjie/gately:v0.6.8`，升級前先讀發佈說明，設定改動可在設定歷史中回滾。
+- 發版頻繁：2026 年 10 月 17 日到 11 月 17 日共 57 個版本標籤。[GitHub Releases](https://github.com/wangwanjie/gately/releases) 的說明依模組分節並標出升級提示，官網[更新日誌](https://gately.cn/zh-TW/news/)有版本公告。
+- 安全修復只發佈在最新版本上（[SECURITY.md](../../SECURITY.md)）。正式環境建議固定映像檔標籤，例如 `ghcr.io/wangwanjie/gately:v0.6.8.1`，升級前先讀發佈說明，設定改動可在設定歷史中回滾。
 
 ## 貢獻
 

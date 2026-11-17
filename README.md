@@ -345,8 +345,8 @@ Custom build tags, the tests that need extra setup, module requirements and the 
 
 - Gately is below 1.0. Version numbers have up to four parts (for example `v0.6.6.6`); the last part increases for follow-up releases of a minor version.
 - Every `v*` tag runs the [release workflow](.github/workflows/release.yml), which builds the binaries, OpenWrt and fnOS packages and the multi-arch Docker image, and signs the artifacts. Images are tagged with the version and with `latest`, which always points to the newest release.
-- Releases are frequent: 56 version tags between October 17 and November 17, 2026. [GitHub Releases](https://github.com/wangwanjie/gately/releases) group the notes by module and call out upgrade notes; the [changelog](https://gately.cn/en/news/) on the website has the announcements.
-- Security fixes ship for the latest version only ([SECURITY.md](SECURITY.md)). For production, pin an image tag such as `ghcr.io/wangwanjie/gately:v0.6.8`, read the release notes before upgrading, and use config history to roll a setting back.
+- Releases are frequent: 57 version tags between October 17 and November 17, 2026. [GitHub Releases](https://github.com/wangwanjie/gately/releases) group the notes by module and call out upgrade notes; the [changelog](https://gately.cn/en/news/) on the website has the announcements.
+- Security fixes ship for the latest version only ([SECURITY.md](SECURITY.md)). For production, pin an image tag such as `ghcr.io/wangwanjie/gately:v0.6.8.1`, read the release notes before upgrading, and use config history to roll a setting back.
 
 ## Contributing
 
