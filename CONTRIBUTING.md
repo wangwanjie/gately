@@ -24,6 +24,7 @@ The directory layout and technology choices are described in [docs/en/ROADMAP.md
 Optional modules and UI languages can be left out at build time:
 
 - `go build -tags no_waf,no_smb,lang_zh` removes modules (`no_<module>`) and languages (`lang_zh` keeps Simplified Chinese, `lang_cjken` keeps Simplified Chinese, Traditional Chinese and English).
+- Release, Docker, `make build` and custom builds always add `coraza.disabled_operators.validateSchema`, which drops Coraza's `@validateSchema` operator and the JSON Schema and YAML libraries it needs (about 2.3 MB); keep it next to other tags, for example `go build -tags coraza.disabled_operators.validateSchema,no_smb`. CI also tests the WAF package with this tag.
 - `GATELY_LOCALES=zh-CN pnpm build` bundles only the chosen UI languages.
 - [modules.json](modules.json) lists the optional modules, and `go run ./tools/custombuild resolve -modules ddns,frp -lang zh` turns a selection into tags, locales and Docker build arguments (`GATELY_TAGS`, `GATELY_LOCALES`, `WITH_DOCKER_CLI`, `WITH_NFTABLES`).
 
