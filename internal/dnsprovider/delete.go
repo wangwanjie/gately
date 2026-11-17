@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/netip"
 	"net/url"
 	"slices"
 	"strconv"
@@ -96,8 +97,16 @@ func pickTargets(recs []remoteRecord, r Record) ([]remoteRecord, error) {
 	return out, nil
 }
 
-// sameValue 比较记录值：去掉 TXT 的引号与 CNAME 结尾的点，CNAME 不区分大小写。
+// sameValue 比较记录值：A/AAAA 按解析后的地址比较（IPv6 可能以展开或大写写法返回）；
+// 其他类型去掉 TXT 的引号与 CNAME 结尾的点，CNAME 不区分大小写。
 func sameValue(typ, a, b string) bool {
+	if typ == "A" || typ == "AAAA" {
+		pa, errA := netip.ParseAddr(strings.TrimSpace(a))
+		pb, errB := netip.ParseAddr(strings.TrimSpace(b))
+		if errA == nil && errB == nil {
+			return pa.Unmap() == pb.Unmap()
+		}
+	}
 	norm := func(s string) string {
 		return strings.TrimSuffix(unquote(strings.TrimSpace(s)), ".")
 	}
