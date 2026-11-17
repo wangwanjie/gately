@@ -112,7 +112,7 @@
         {
           "from": "nginx, Nginx Proxy Manager",
           "module": "웹 서비스",
-          "text": "리버스 프록시, 정적 사이트, 리디렉션, HTTP/3, 사이트별 접근 제어; nginx 설정 가져오기"
+          "text": "리버스 프록시, 정적 사이트, 리디렉션, HTTP/3, 사이트별 접근 제어; nginx 및 Nginx Proxy Manager 설정 가져오기"
         },
         {
           "from": "certbot, acme.sh",
@@ -122,7 +122,7 @@
         {
           "from": "ddns-go, DDNS 스크립트",
           "module": "동적 DNS",
-          "text": "35개 이상의 제공자, IPv4 / IPv6"
+          "text": "30개 이상의 제공자, IPv4 / IPv6"
         },
         {
           "from": "haproxy SNI 라우팅, sslh",
