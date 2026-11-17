@@ -1,0 +1,16 @@
+# 压测专用 jail：放到 /etc/fail2ban/jail.d/zz-bx-guard.local
+# 关闭 Debian 默认启用的 sshd jail，只保留被测的一条规则
+[sshd]
+enabled = false
+
+[bx-404]
+enabled   = true
+backend   = pyinotify
+logpath   = /var/log/bxguard/access.log
+filter    = bx-404
+maxretry  = 5
+findtime  = 60
+bantime   = 3600
+banaction = nftables-multiport
+port      = http,https
+ignoreip  = 127.0.0.1/8 ::1
