@@ -237,3 +237,7 @@ Se você concedeu ao binário acesso a portas baixas com `setcap`, execute `setc
 - Windows, macOS, FreeBSD: substitua o executável e reinicie o serviço.
 
 Antes de atualizar, exporte um backup da configuração ou mantenha o diretório de configuração no git. As assinaturas dos arquivos e imagens baixados podem ser conferidas conforme [Verificar versões](/pt-BR/docs/guide/verify).
+
+## Publicar uma demonstração online {#demo}
+
+`gately -demo` (ou `GATELY_DEMO=1`) inicia uma instância de demonstração somente leitura. Nenhum serviço do plano de dados é iniciado e o processo escuta apenas na porta de administração. A página de login oferece uma conta de demonstração de um clique e uma faixa no topo avisa que é uma demonstração. Para qualquer conta, gravações, terminal web, gerenciamento do Docker, acesso a arquivos, execução de scripts, atualizações online, restauração de backups e qualquer requisição de saída ficam indisponíveis, e os dados voltam a cada hora ao snapshot da inicialização. Gere os dados com `go run ./tools/demo -out <diretório>`; eles usam apenas endereços e domínios reservados para documentação. O diretório `deploy/demo` do repositório contém os arquivos de implantação com Docker.

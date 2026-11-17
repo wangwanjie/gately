@@ -237,3 +237,7 @@ Si concediste al binario permiso para puertos bajos con `setcap`, vuelve a ejecu
 - Windows, macOS, FreeBSD: sustituye el ejecutable y reinicia el servicio.
 
 Antes de actualizar, exporta una copia de seguridad de la configuración o guarda el directorio de configuración en git. Puedes comprobar la firma de los archivos e imágenes descargados según [Verificar versiones](/es/docs/guide/verify).
+
+## Publicar una demostración en línea {#demo}
+
+`gately -demo` (o `GATELY_DEMO=1`) inicia una instancia de demostración de solo lectura. No arranca ningún servicio del plano de datos y el proceso solo escucha en el puerto de administración. La página de inicio de sesión ofrece una cuenta de demostración de un clic y una franja superior avisa de que es una demostración. Para cualquier cuenta no están disponibles las escrituras, el terminal web, la gestión de Docker, el acceso a archivos, la ejecución de scripts, las actualizaciones en línea, la restauración de copias ni ninguna petición saliente, y los datos vuelven cada hora a la instantánea del arranque. Genera los datos con `go run ./tools/demo -out <directorio>`; solo usa direcciones y dominios reservados para documentación. El directorio `deploy/demo` del repositorio contiene los archivos de despliegue con Docker.

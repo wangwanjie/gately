@@ -237,3 +237,7 @@ Si vous avez accordé au binaire l'accès aux ports bas avec `setcap`, relancez 
 - Windows, macOS, FreeBSD : remplacez l'exécutable et redémarrez le service.
 
 Avant de mettre à niveau, exportez une sauvegarde de la configuration ou conservez le dossier de configuration dans git. Les archives et images téléchargées peuvent être vérifiées selon [Vérifier les versions](/fr/docs/guide/verify).
+
+## Héberger une démo en ligne {#demo}
+
+`gately -demo` (ou `GATELY_DEMO=1`) démarre une instance de démonstration en lecture seule. Aucun service du plan de données ne démarre et le processus n'écoute que sur le port d'administration. La page de connexion propose un compte de démonstration en un clic et un bandeau en haut de page l'indique. Pour tous les comptes, les écritures, le terminal web, la gestion de Docker, l'accès aux fichiers, l'exécution de scripts, les mises à jour en ligne, la restauration de sauvegardes et toute requête sortante sont indisponibles, et les données reviennent chaque heure à l'instantané du démarrage. Générez les données avec `go run ./tools/demo -out <répertoire>` ; elles n'utilisent que des adresses et domaines réservés à la documentation. Le dossier `deploy/demo` du dépôt contient les fichiers de déploiement Docker.

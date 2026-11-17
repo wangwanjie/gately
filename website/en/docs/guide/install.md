@@ -235,3 +235,7 @@ If you granted low-port access to the binary with `setcap`, run `setcap` again a
 - Windows, macOS, FreeBSD: replace the executable and restart the service.
 
 Before upgrading, export a configuration backup or keep the config directory in git. Downloaded archives and images can be checked against their signatures as described in [Verifying Releases](/en/docs/guide/verify).
+
+## Host an online demo {#demo}
+
+`gately -demo` (or `GATELY_DEMO=1`) starts a read-only demo instance. No data-plane service starts and the process listens only on the admin port. The login page offers a one-click demo account and a banner runs across the top. For every account, writes, the web terminal, Docker management, file access, script execution, online upgrades, backup restore and all outbound requests are unavailable, and the data returns to its startup snapshot every hour. Generate the demo data with `go run ./tools/demo -out <dir>`; it uses documentation-reserved addresses and domains only. The `deploy/demo` directory of the repository holds the Docker deployment files.
