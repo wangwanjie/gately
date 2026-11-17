@@ -70,9 +70,9 @@ func (g *generator) ddns() error {
 
 func (g *generator) stun() error {
 	rule := func(key, name, proto string, port int, target string, tport int, extra obj) obj {
-		o := obj{"key": key, "name": name, "group": "", "enable": true, "protocol": proto, "bind": obj{"mode": "any"}, "localPort": g.port(port),
+		o := obj{"key": key, "name": name, "group": "", "enable": true, "protocol": proto, "bind": obj{"mode": "ip", "ip": ""}, "localPort": g.port(port),
 			"useGlobalServers": true, "stunServers": []string{}, "keepAliveServers": []string{}, "targetAddresses": []string{target}, "targetPort": tport,
-			"upnp": true, "autoFirewall": true, "heartbeatInterval": 25, "stunTimeout": 5, "retryInterval": 30, "autoRetry": true,
+			"upnp": true, "autoFirewall": true, "heartbeatInterval": 25000, "stunTimeout": 5000, "retryInterval": 30000, "autoRetry": true,
 			"useGlobalWebhook": true, "remark": "", "ipMode": "", "ipList": []string{}}
 		for k, v := range extra {
 			o[k] = v
@@ -83,9 +83,9 @@ func (g *generator) stun() error {
 		"settings": obj{"enable": true, "stunServers": []string{"stun.example.com:3478", "stun2.example.com:3478"},
 			"keepAliveServers": []string{"keepalive.example.com:80"}, "addrCheckInterval": 60, "webhook": obj{"enable": false}},
 		"rules": list(
-			rule("st-web", "家宽 HTTPS 穿透", "tcp", 14433, "192.0.2.21", 443, obj{"remark": "NAT1 下打通 TCP，外网地址写进 DDNS"}),
-			rule("st-bt", "下载 UDP 穿透", "udp", 16881, "192.0.2.90", 6881, obj{}),
-			rule("st-game", "游戏联机", "udp", 19133, "192.0.2.60", 19132, obj{"enable": false}),
+			rule("st-web", "家宽 HTTPS 穿透", "tcp4", 14433, "192.0.2.21", 443, obj{"remark": "NAT1 下打通 TCP，外网地址写进 DDNS"}),
+			rule("st-bt", "下载 UDP 穿透", "udp4", 16881, "192.0.2.90", 6881, obj{}),
+			rule("st-game", "游戏联机", "udp4", 19133, "192.0.2.60", 19132, obj{"enable": false}),
 		),
 	})
 }

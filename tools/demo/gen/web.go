@@ -67,7 +67,7 @@ func (g *generator) webservice() error {
 			proxy("s-nas", "NAS 管理", "内网", strs("nas.example.com"), "https://192.0.2.10:5001", obj{
 				"insecureSkipVerify": true, "ipMode": "whitelist", "ipList": strs("192.0.2.0/24", "198.51.100.64/26", "2001:db8::/48")}),
 			proxy("s-router", "路由器", "内网", strs("router.example.com"), "http://192.0.2.1:80", obj{
-				"ipMode": "whitelist", "ipList": strs("192.0.2.0/24"), "basicAuth": true, "users": strs("admin")}),
+				"ipMode": "whitelist", "ipList": strs("192.0.2.0/24"), "basicAuth": true, "users": strs("admin:" + hash("demo-password-router"))}),
 			proxy("s-grafana", "监控面板", "内网", strs("grafana.example.com"), "http://192.0.2.31:3000", obj{
 				"webAuth": true, "sharedUsers": true, "health": obj{"enable": true, "path": "/api/health", "interval": 30}}),
 		),
