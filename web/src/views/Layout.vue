@@ -14,6 +14,8 @@
     </el-drawer>
 
     <div class="main">
+      <!-- 在线演示实例的提示条，非演示实例不显示 -->
+      <DemoBanner />
       <header class="header">
         <div class="header-left">
           <button v-if="isMobile" class="icon-btn" :aria-label="t('layout.openMenu')" @click="drawer = true">
@@ -72,6 +74,7 @@
 
 <script setup lang="ts">
 import Onboarding from '../components/Onboarding.vue'
+import DemoBanner from '../components/DemoBanner.vue'
 import UpdateBanner from '../components/UpdateBanner.vue'
 import SecurityBanner from '../components/SecurityBanner.vue'
 import ForcePasswordDialog from '../components/ForcePasswordDialog.vue'
