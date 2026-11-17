@@ -7,6 +7,7 @@
   "nav": {
     "home": "ホーム",
     "docs": "ドキュメント",
+    "tutorials": "チュートリアル",
     "modules": "機能モジュール",
     "download": "ダウンロード",
     "changelog": "更新履歴",
@@ -15,10 +16,15 @@
   "sidebar": {
     "groups": {
       "start": "はじめに",
-      "tutorials": "チュートリアル",
       "modules": "機能モジュール",
       "security": "セキュリティ",
       "reference": "リファレンス"
+    },
+    "tutorialsHome": "チュートリアル一覧",
+    "tutorialGroups": {
+      "basics": "入門",
+      "advanced": "応用",
+      "scenarios": "実践シナリオ"
     },
     "items": {
       "guide/introduction": "プロジェクト概要",

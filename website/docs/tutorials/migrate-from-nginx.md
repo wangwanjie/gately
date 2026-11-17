@@ -1,4 +1,5 @@
 ---
+time: 30 分钟
 description: 从 nginx 或 Nginx Proxy Manager 迁移到 Gately：导入 nginx -T 输出（NPM 在容器内执行）、与 nginx 并行验证、逐站切换与回滚，以及 NPM 各项设置的转换结果。
 ---
 

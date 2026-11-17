@@ -1,4 +1,5 @@
 ---
+time: 20 min
 description: How to reach a NAS from outside without a public IPv4 address. Four routes compared (IPv6 with DDNS, STUN, frp on your own VPS, Cloudflare Tunnel), with prerequisites, trade-offs and the Gately setup steps for each.
 ---
 

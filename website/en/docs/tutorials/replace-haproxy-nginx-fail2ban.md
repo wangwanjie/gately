@@ -1,4 +1,5 @@
 ---
+time: 40 min
 description: Replace haproxy, nginx, fail2ban and acme.sh on a cloud server with one Gately process. Side-by-side mapping, migration order, rollback, and the like-for-like benchmark numbers from the README.
 ---
 

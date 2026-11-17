@@ -1,4 +1,5 @@
 ---
+time: 20 分钟
 description: 给 Jellyfin、Immich、Home Assistant、Vaultwarden 加 HTTPS 和登录：WebSocket、大文件上传与 WAF 请求体上限、信任代理设置，以及网页认证挡住手机 App 时的几种办法。
 ---
 

@@ -1,4 +1,5 @@
 ---
+time: 40 分钟
 description: 在云服务器上用 Gately 一个程序替换 haproxy + nginx + fail2ban + acme.sh：逐项对照、迁移顺序、回滚办法，以及同机对比的性能数据。
 ---
 

@@ -7,6 +7,7 @@
   "nav": {
     "home": "首頁",
     "docs": "文件",
+    "tutorials": "教學",
     "modules": "功能模組",
     "download": "下載",
     "changelog": "更新日誌",
@@ -15,10 +16,15 @@
   "sidebar": {
     "groups": {
       "start": "開始使用",
-      "tutorials": "教學",
       "modules": "功能模組",
       "security": "安全",
       "reference": "參考"
+    },
+    "tutorialsHome": "教學首頁",
+    "tutorialGroups": {
+      "basics": "入門",
+      "advanced": "進階",
+      "scenarios": "實戰場景"
     },
     "items": {
       "guide/introduction": "專案簡介",

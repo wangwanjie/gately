@@ -1,4 +1,5 @@
 ---
+time: 15 分钟
 description: 用 Gately 的协议分流让 HTTPS 网站、SSH、RDP 共用一个 443 端口，网站保留访客真实 IP，步骤、验证命令与排查。
 ---
 

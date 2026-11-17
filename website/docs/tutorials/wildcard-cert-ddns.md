@@ -1,4 +1,5 @@
 ---
+time: 10 分钟
 description: 用 Gately 十分钟配好动态域名与泛域名 HTTPS 证书：Cloudflare 与阿里云各一版，DNS-01 验证，无需开放 80 或 443 端口，到期自动续签。
 ---
 

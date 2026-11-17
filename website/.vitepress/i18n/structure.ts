@@ -48,18 +48,6 @@ export const sidebarGroups: SidebarGroup[] = [
     ]
   },
   {
-    id: 'tutorials',
-    onlyExisting: true,
-    slugs: [
-      'tutorials/remote-access-without-public-ip',
-      'tutorials/one-port-443',
-      'tutorials/https-and-login-for-apps',
-      'tutorials/wildcard-cert-ddns',
-      'tutorials/migrate-from-nginx',
-      'tutorials/replace-haproxy-nginx-fail2ban'
-    ]
-  },
-  {
     id: 'modules',
     slugs: [
       'modules/index',
@@ -94,6 +82,54 @@ export const sidebarGroups: SidebarGroup[] = [
       'reference/diagnostics',
       'reference/monitoring',
       'guide/contributing'
+    ]
+  }
+]
+
+// 教程（顶栏「教程」）的侧边栏骨架：按难度分三组，从入门到实战场景。
+// 只列出该语言实际存在的页面；某语言没有 docs/tutorials/index.md 时不显示「教程」入口。
+export const tutorialGroups: SidebarGroup[] = [
+  {
+    id: 'basics',
+    onlyExisting: true,
+    slugs: [
+      'tutorials/getting-started',
+      'tutorials/first-site',
+      'tutorials/https-certificate',
+      'tutorials/ddns-basics',
+      'tutorials/port-forward-basics'
+    ]
+  },
+  {
+    id: 'advanced',
+    onlyExisting: true,
+    slugs: [
+      'tutorials/site-access-control',
+      'tutorials/guard-waf',
+      'tutorials/notify-alerts',
+      'tutorials/history-backup',
+      'tutorials/navigation-panel',
+      'tutorials/stun-traversal',
+      'tutorials/frp-tunnel',
+      'tutorials/mesh-vpn',
+      'tutorials/port-knocking',
+      'tutorials/docker-terminal',
+      'tutorials/oidc-sso',
+      'tutorials/api-automation'
+    ]
+  },
+  {
+    id: 'scenarios',
+    onlyExisting: true,
+    slugs: [
+      'tutorials/home-nas-end-to-end',
+      'tutorials/remote-access-without-public-ip',
+      'tutorials/one-port-443',
+      'tutorials/https-and-login-for-apps',
+      'tutorials/wildcard-cert-ddns',
+      'tutorials/vps-front-door',
+      'tutorials/migrate-from-nginx',
+      'tutorials/replace-haproxy-nginx-fail2ban'
     ]
   }
 ]

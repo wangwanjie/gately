@@ -1,4 +1,5 @@
 ---
+time: 20 min
 description: Put HTTPS and sign-in in front of Jellyfin, Immich, Home Assistant and Vaultwarden with Gately. WebSocket, large uploads and the WAF body limit, trusted-proxy settings, and what to do when web authentication blocks the mobile apps.
 ---
 
