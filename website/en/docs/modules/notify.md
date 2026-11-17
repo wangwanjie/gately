@@ -25,7 +25,7 @@ Click "Add channel", choose a type and fill in the fields. Every channel has a n
 
 | Type | Required fields | Optional fields |
 | --- | --- | --- |
-| Webhook | Request URL | Request method (default GET; GET, POST, PUT or PATCH), headers (one `Key: Value` per line), body, success-match content, timeout (seconds, default 20), skip certificate verification |
+| Webhook | Request URL | Request method (channels created in the UI default to POST; GET, POST, PUT or PATCH; a channel created through the API without a method uses GET), headers (one `Key: Value` per line), body (hidden and not sent for GET). Success-match content, timeout (seconds, default 20) and skip certificate verification can only be set through the API (`webhook.successContent`, `webhook.timeout`, `webhook.insecureSkipVerify`) and are not shown in the UI |
 | Telegram | Bot Token, Chat ID | API URL (leave empty to use `https://api.telegram.org`) |
 | Bark | Device Key | Server URL (leave empty to use `https://api.day.app`) |
 | WeCom | Bot URL | None |
@@ -135,9 +135,10 @@ When creating a rule, click a template to prefill the events, level and silence 
 | `process.exited` | Child process exited abnormally | Error | A child process managed by Gately exited abnormally and will be restarted automatically; the source is that process's log name |
 | `backup.done` | Backup: completed | Info | A scheduled or manual backup succeeded for all destinations; see [Configuration Backup](/en/docs/modules/backup) |
 | `backup.failed` | Backup: failed | Error | Backup packaging failed, or writing to any destination failed |
-| `auth.failed` | Authentication: repeated failures | Warning | A management UI login failed, with the `ip` field |
+| `auth.failed` | Authentication: repeated failures | Warning | Published for every failed management UI login (wrong password, two-factor code or Passkey), with the `ip` field. To avoid getting every one, set "Silence (s)" in the rule, or let Intrusion Prevention ban by count |
 | `fileauth.failed` | File services: sign-in failed | Warning | A WebDAV, FTP or SMB sign-in failed or was refused after too many failures. The source is the service name; the event carries the `ip` and `service` (`WebDAV`, `FTP` or `SMB`) fields, plus `user` when a username was submitted. At most one event per source every 5 seconds; Intrusion Prevention can count it to ban the source, see [Intrusion Prevention](/en/docs/modules/guard) |
 | `auth.banned` | Authentication: IP banned | Warning | Repeated Web service authentication failures triggered an automatic ban |
+| `auth.flood` | Auth: suspected distributed brute force | Warning | Management UI login failures from unfamiliar addresses (addresses that never signed in successfully) reached the "Unfamiliar-address failure budget" (default 20) within 10 minutes. Password sign-in from unfamiliar addresses is then temporarily restricted, while addresses that have signed in before are unaffected. Published once per window, see [Security model](/en/docs/guide/security) |
 | `guard.banned` | Intrusion prevention: IP banned | Warning | A log rule, trap port or port-scan detection banned an IP address or network, with the `ip` and `reason` fields (and `count` when several addresses were banned together) |
 | `knock.opened` | Port knocking: knock succeeded | Info | A knock passed authentication and the source address was let through, with the fields `ip`, `rule` and `ports`; see [Port Knocking](/en/docs/modules/knock) |
 | `knock.failed` | Port knocking: knock rejected | Warning | A knock packet submitted over a Protocol Routing TCP connection failed authentication or was refused by the rule (replay, expired timestamp, port not allowed, wrong user, etc.). Carries the fields `ip`, `reason` and `via` (`tcp`); recorded at most once every 5 seconds per source, and intrusion prevention can count it towards a ban. UDP source addresses can be forged (including replays of valid packets), so knocks refused over UDP are only counted and logged and publish no event |

@@ -25,7 +25,7 @@
 
 | 类型 | 必填字段 | 可选字段 |
 | --- | --- | --- |
-| Webhook | 请求地址 | 请求方法（默认 GET，可选 GET、POST、PUT、PATCH）、请求头（每行 `Key: Value`）、请求体、成功判定内容、超时（秒，默认 20）、跳过证书校验 |
+| Webhook | 请求地址 | 请求方法（界面新建时默认 POST，可选 GET、POST、PUT、PATCH；经接口创建且未填写时按 GET）、请求头（每行 `Key: Value`）、请求体（GET 时不显示也不发送）。成功判定内容、超时（秒，默认 20）与跳过证书校验只能经接口设置（`webhook.successContent`、`webhook.timeout`、`webhook.insecureSkipVerify`），界面不显示 |
 | Telegram | Bot Token、Chat ID | API 地址（留空使用 `https://api.telegram.org`） |
 | Bark | 设备 Key | 服务地址（留空使用 `https://api.day.app`） |
 | 企业微信 | 机器人地址 | 无 |
@@ -135,9 +135,10 @@ WAF 拦截和上游状态变化可能频繁发生，建议为这类规则设置 
 | `process.exited` | 子进程异常退出 | 错误 | 由 Gately 托管的子进程异常退出并将自动重启，来源为该进程的日志名称 |
 | `backup.done` | 备份：完成 | 信息 | 定时或手动备份全部目的地成功，见[配置备份](/docs/modules/backup) |
 | `backup.failed` | 备份：失败 | 错误 | 备份打包失败，或任一目的地写入失败 |
-| `auth.failed` | 认证：连续失败 | 警告 | 管理后台登录失败，附带 `ip` 字段 |
+| `auth.failed` | 认证：连续失败 | 警告 | 管理后台每次登录失败（密码、两步验证码或 Passkey 校验不通过）都会发布，附带 `ip` 字段；不想每次都收到时，在规则里设置「静默(秒)」，或交给入侵防护按次数封禁 |
 | `fileauth.failed` | 文件服务：登录失败 | 警告 | WebDAV、FTP、SMB 登录失败，或因失败次数过多被拒绝，来源为服务名，附带 `ip`、`service`（`WebDAV`、`FTP` 或 `SMB`）字段，提交了用户名时还有 `user` 字段。同一来源每 5 秒最多发布一次，入侵防护可按此计数封禁，见[入侵防护](/docs/modules/guard) |
 | `auth.banned` | 认证：IP 已被封禁 | 警告 | Web 服务认证连续失败触发自动封禁 |
+| `auth.flood` | 认证：疑似分布式爆破 | 警告 | 10 分钟内来自陌生地址（从未成功登录过的地址）的管理后台登录失败达到「陌生地址失败预算」（默认 20 次），此后陌生地址的密码登录暂时受限，曾成功登录过的地址不受影响；窗口期内只发布一次，见[安全模型](/docs/guide/security) |
 | `guard.banned` | 入侵防护：IP 已被封禁 | 警告 | 日志规则、诱饵端口或端口扫描检测封禁了 IP 或网段，附带 `ip` 与 `reason` 字段（一次封禁多个地址时还有 `count`） |
 | `knock.opened` | 端口敲门：敲门成功 | 信息 | 端口敲门认证通过并放行来源地址，附带 `ip`、`rule`、`ports` 字段，见[端口敲门](/docs/modules/knock) |
 | `knock.failed` | 端口敲门：敲门被拒绝 | 警告 | 经协议分流 TCP 连接提交的敲门包未通过认证或被规则拒绝（重放、时间戳过期、请求的端口不在允许范围、用户不符等）。附带 `ip`、`reason`、`via`（`tcp`）字段，同一来源每 5 秒最多记一次，入侵防护可按此计数封禁。UDP 来源地址可以伪造（含重放的合法报文），经 UDP 发来的敲门被拒绝时只计数、写日志，不发布此事件 |
