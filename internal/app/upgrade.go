@@ -648,11 +648,18 @@ func (a *App) downloadAndInstall(ctx context.Context, exe string) (string, error
 	return installBinary(ctx, exe, bin)
 }
 
+// firstSignedRelease 是第一个带发布签名的版本。不低于它的版本缺少签名文件时拒绝升级：
+// 否则攻击者控制发布页后只要删掉 .minisig 并换掉 checksums.txt 就能绕过签名校验。
+const firstSignedRelease = "v0.6.8"
+
 // verifyReleaseSignature 验证 checksums.txt 的发布签名：有签名文件时必须由受信公钥签名，否则拒绝升级；
-// 没有签名文件的版本（签名上线之前发布）允许继续，但在进度与系统日志中给出警告。
+// 没有签名文件时，签名上线之前发布的版本允许继续（进度与系统日志给出警告），之后的版本一律拒绝。
 func (a *App) verifyReleaseSignature(ctx context.Context, client *http.Client, rel *releaseInfo, sumData []byte) error {
 	asset := rel.asset(releasesig.SignatureFile)
 	if asset == nil {
+		if releaseRequiresSignature(rel.TagName) {
+			return fmt.Errorf("版本 %s 缺少发布签名（%s），已拒绝升级；如确需安装请从发布页下载后用上传升级包方式升级", rel.TagName, releasesig.SignatureFile)
+		}
 		a.setUpgradeStatus(func(st *upgradeStatus) { st.Unsigned = true })
 		a.sysLogs.Add(logbuf.LevelWarn, "system", fmt.Sprintf("版本 %s 没有发布签名（%s），只核对 SHA-256 后继续升级", rel.TagName, releasesig.SignatureFile))
 		return nil
@@ -667,6 +674,16 @@ func (a *App) verifyReleaseSignature(ctx context.Context, client *http.Client, r
 	}
 	a.sysLogs.Add(logbuf.LevelInfo, "system", fmt.Sprintf("已验证版本 %s 的发布签名（密钥 %s）", rel.TagName, id))
 	return nil
+}
+
+// releaseRequiresSignature 判断版本号是否不低于第一个签名版本；版本号无法解析时按需要签名处理。
+func releaseRequiresSignature(tag string) bool {
+	v, ok := parseLooseVersion(tag)
+	if !ok {
+		return true
+	}
+	first, _ := parseLooseVersion(firstSignedRelease)
+	return compareVersion(v, first) >= 0
 }
 
 // handleUpgradeUpload 用上传的升级包（发布页的 tar.gz 或解压后的 gately 二进制）升级。

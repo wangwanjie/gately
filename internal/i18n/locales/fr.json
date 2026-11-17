@@ -2494,6 +2494,7 @@
   "版本 %s 中缺少 %s 或 checksums.txt": "La version %s ne contient pas %s ou checksums.txt",
   "版本 %s 没有发布签名（%s），只核对 SHA-256 后继续升级": "La version %s n'a pas de signature (%s) ; la mise à niveau continue après la seule vérification du SHA-256",
   "版本 %s 的 %s 缺少 SHA-256 校验值，已中止": "%[2]s de la version %[1]s n’a pas de somme SHA-256, abandon",
+  "版本 %s 缺少发布签名（%s），已拒绝升级；如确需安装请从发布页下载后用上传升级包方式升级": "La version %s n'a pas de signature de publication (%s), mise à jour refusée ; pour l'installer quand même, téléchargez-la depuis la page de publication et mettez à jour en envoyant le paquet",
   "版本号格式应为 1.90.2": "Le numéro de version doit ressembler à 1.90.2",
   "状态": "État",
   "状态: %s": "État : %s",

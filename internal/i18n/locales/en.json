@@ -2494,6 +2494,7 @@
   "版本 %s 中缺少 %s 或 checksums.txt": "Release %s is missing %s or checksums.txt",
   "版本 %s 没有发布签名（%s），只核对 SHA-256 后继续升级": "Release %s has no signature (%s); continuing the upgrade after checking SHA-256 only",
   "版本 %s 的 %s 缺少 SHA-256 校验值，已中止": "%[2]s in release %[1]s has no SHA-256 checksum, aborted",
+  "版本 %s 缺少发布签名（%s），已拒绝升级；如确需安装请从发布页下载后用上传升级包方式升级": "Release %s has no signature (%s), upgrade refused; to install it anyway, download it from the release page and upgrade by uploading the package",
   "版本号格式应为 1.90.2": "The version should look like 1.90.2",
   "状态": "Status",
   "状态: %s": "Status: %s",
