@@ -281,3 +281,12 @@ test('布局：默认值随样式变化，旧配置载入后为默认布局', ()
   const app = toPanel({ name: 'x', enable: true, links: [], cardStyle: 'app', iconSize: 72, columns: 6, mobileColumns: 4, gap: 20, maxWidth: 1600 })
   assert.deepEqual([app.cardStyle, app.iconSize, app.columns, app.mobileColumns, app.gap, app.maxWidth], ['app', 72, 6, 4, 20, 1600])
 })
+
+test('开关：旧配置载入后语言切换隐藏、换肤与锁标记显示', () => {
+  const old = toPanel({ name: 'x', enable: true, links: [] })
+  assert.deepEqual([old.hideLock, old.showLang, old.hideSkin], [false, false, false])
+  const p = emptyPanel()
+  assert.deepEqual([p.hideLock, p.showLang, p.hideSkin], [false, false, false])
+  const on = toPanel({ name: 'x', enable: true, links: [], hideLock: true, showLang: true, hideSkin: true })
+  assert.deepEqual([on.hideLock, on.showLang, on.hideSkin], [true, true, true])
+})

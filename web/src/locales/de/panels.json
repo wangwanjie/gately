@@ -153,6 +153,12 @@
   "groupCountHelp": "Zeigt die Anzahl der Links neben jedem Gruppentitel.",
   "altBadge": "Adressen-Badge",
   "altBadgeHelp": "Links mit weiteren Zugängen zeigen die Gesamtzahl ihrer Adressen oben rechts am Symbol. Unabhängig davon öffnet ein Klick auf solche Links die Adressliste zur Auswahl.",
+  "lockMark": "Schloss-Markierung",
+  "lockMarkHelp": "Angemeldete Besucher sehen ein Schloss an Links, die nur nach Anmeldung sichtbar sind; ausschalten, um es zu verbergen. Nicht angemeldete Besucher sehen solche Links nie.",
+  "skinSwitch": "Design-Schaltfläche",
+  "skinSwitchHelp": "Zeigt oben rechts die Design-Schaltfläche, damit Besucher Farben und hellen oder dunklen Modus wählen. Ausgeschaltet nutzt die Seite immer das oben eingestellte Design und den Modus; früher gespeicherte Auswahlen der Besucher gelten nicht mehr.",
+  "langSwitch": "Sprachauswahl",
+  "langSwitchHelp": "Zeigt oben rechts ein Sprachmenü. Ausgeschaltet (Standard) folgt die Seite der Browsersprache des Besuchers.",
   "bgPreview": "Vorschau",
   "bgPreviewHelp": "Unschärfe und Abdeckung ändern sich sofort beim Ziehen der Regler; die ganze Seite zeigt der Tab Vorschau."
 }

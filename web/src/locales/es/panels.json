@@ -153,6 +153,12 @@
   "groupCountHelp": "Muestra el número de enlaces junto al título de cada grupo.",
   "altBadge": "Insignia de direcciones",
   "altBadgeHelp": "Los enlaces con otras formas de acceso muestran el total de direcciones en la esquina superior derecha del icono. En cualquier caso, al hacer clic aparece la lista de direcciones para elegir.",
+  "lockMark": "Marca de candado",
+  "lockMarkHelp": "Los visitantes con sesión iniciada ven un candado en los enlaces visibles solo tras iniciar sesión; desactívalo para ocultarlo. Quien no ha iniciado sesión nunca ve esos enlaces.",
+  "skinSwitch": "Botón de tema",
+  "skinSwitchHelp": "Muestra el botón de tema arriba a la derecha para que el visitante elija colores y modo claro u oscuro. Si se desactiva, la página usa siempre el tema y el modo configurados arriba y las elecciones guardadas por el visitante dejan de aplicarse.",
+  "langSwitch": "Selector de idioma",
+  "langSwitchHelp": "Muestra un menú de idioma arriba a la derecha. Desactivado (predeterminado), la página sigue el idioma del navegador del visitante.",
   "bgPreview": "Vista previa",
   "bgPreviewHelp": "El desenfoque y la capa se actualizan al mover los controles; la página completa está en la pestaña Vista previa."
 }

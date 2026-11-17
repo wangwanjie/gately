@@ -68,6 +68,8 @@ type PanelView struct {
 	Layout PanelLayout
 	// GroupCount 为在分组标题旁显示链接数；AltBadge 为在有多个访问地址的链接图标右上角显示地址数
 	GroupCount, AltBadge bool
+	// ShowLang 为显示语言切换；HideSkin 为不显示换肤按钮，此时页面固定用面板设置的皮肤，不读取访客保存的选择
+	ShowLang, HideSkin bool
 }
 
 // PanelLayout 是链接样式与页面布局，数值为 0 时用默认值（随样式而定）。取值已由 Web 服务校验，渲染时再按范围收紧一次。
@@ -315,7 +317,7 @@ const panelSrc = `<!doctype html>
 {{if .Switchable}}<nav class="net" aria-label="{{.T.netHint}}">{{if .LAN}}<span class="on"><i class="dot"></i>{{.T.lan}}</span><a href="?net=wan" title="{{.T.toWan}}">{{.T.wan}}</a>{{else}}<a href="?net=lan" title="{{.T.toLan}}">{{.T.lan}}</a><span class="on"><i class="dot"></i>{{.T.wan}}</span>{{end}}{{if .Forced}}<a href="?net=auto">{{.T.auto}}</a>{{end}}</nav>{{end}}
 {{if not .Preview}}<div class="acts" id="acts">
 {{if .Langs}}<div class="pw"><button id="lang-btn" class="skin-btn" type="button" aria-haspopup="listbox" aria-expanded="false" title="{{.T.language}}" aria-label="{{.T.language}}">{{.LangIcon}}</button></div>{{end}}
-<div class="skin"><button id="skin-btn" class="skin-btn" type="button" aria-haspopup="dialog" aria-controls="skin-pop" aria-expanded="false" title="{{.SkinT.switchTheme}}" aria-label="{{.SkinT.switchTheme}}">{{.SkinIcon}}</button></div>
+{{if not .HideSkin}}<div class="skin"><button id="skin-btn" class="skin-btn" type="button" aria-haspopup="dialog" aria-controls="skin-pop" aria-expanded="false" title="{{.SkinT.switchTheme}}" aria-label="{{.SkinT.switchTheme}}">{{.SkinIcon}}</button></div>{{end}}
 {{if and .User .LogoutURL}}<div class="pw"><button id="user-btn" class="ubtn" type="button" aria-haspopup="menu" aria-expanded="false" title="{{.User}}" aria-label="{{.User}}"><span class="av">{{.UserInitial}}</span>{{.ChevronIcon}}</button></div>{{else}}<div class="pw"><button id="set-btn" class="skin-btn" type="button" aria-haspopup="dialog" aria-expanded="false" title="{{.T.settings}}" aria-label="{{.T.settings}}">{{.GearIcon}}</button></div>{{if .LoginURL}}<a class="btn" href="{{.LoginURL}}">{{.LockIcon}}{{.T.login}}</a>{{end}}{{if .LogoutURL}}<button id="logout-btn" class="btn" type="button">{{.T.logout}}</button>{{end}}{{end}}
 </div>{{end}}
 </header>
@@ -588,8 +590,8 @@ func RenderPanel(r *http.Request, v PanelView) ([]byte, string) {
 	for _, c := range i18n.Langs {
 		langs = append(langs, uiLang{C: c, N: panelLangNames[c]})
 	}
-	// 只有一种语言（定制构建）时不显示语言切换
-	if len(langs) < 2 {
+	// 面板没有开启语言切换，或只有一种语言（定制构建）时不显示语言切换
+	if len(langs) < 2 || !v.ShowLang {
 		langs = nil
 	}
 	ui.Langs = langs
@@ -612,7 +614,7 @@ func RenderPanel(r *http.Request, v PanelView) ([]byte, string) {
 		"Lang": lang, "T": Localize(lang, panelTexts), "Nonce": nonce,
 		"Title": v.Title, "TabTitle": tabTitle, "MetaDesc": v.Description, "Subtitle": v.Subtitle, "Icon": head, "Favicon": favicon, "GridIcon": template.HTML(panelGridIcon),
 		"Theme": theme, "Groups": groups,
-		"SkinCSS": template.CSS(skinCSS(skin)), "Skins": skinScriptData(lang, skin, theme), "SkinT": skinLangTexts(lang).UI, "SkinIcon": template.HTML(skinIconPalette), "Empty": total == 0, "Colors": colors,
+		"SkinCSS": template.CSS(skinCSS(skin)), "Skins": skinScriptData(lang, skin, theme, v.HideSkin), "HideSkin": v.HideSkin, "SkinT": skinLangTexts(lang).UI, "SkinIcon": template.HTML(skinIconPalette), "Empty": total == 0, "Colors": colors,
 		"LAN": v.LAN, "Switchable": v.Switchable, "Forced": v.Forced, "Preview": v.Preview,
 	}
 	var buf bytes.Buffer
