@@ -113,6 +113,8 @@ Global settings in the page header contain:
 - Create a sub-account key limited to DNS record editing for your DNS provider. Avoid using the main account key;
 - After creating a task, click "Force sync" to confirm that the record has been updated;
 - To drop a record you no longer need, click the delete icon at the right of that record in the list, without opening the editor; a task keeps at least one record, and whether the DNS record at the provider is deleted too is described in [Deleting records and tasks](#delete);
+- When the task list is empty, you can start from a common case: "Cloudflare, home IPv4", "Alibaba Cloud, IPv4 + IPv6" or "DNSPod, IPv6 only", each of which opens a prefilled task form;
+- Host records are stored and sent to providers in lower case (older configs included); A / AAAA values are compared as addresses, so an IPv6 address returned in expanded or upper-case form is not treated as a change;
 - The public-IP lookup address no longer depends on any service operated by the project, and you can change it in a task at any time.
 
 ## Groups and sorting
