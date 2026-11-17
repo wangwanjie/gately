@@ -7,6 +7,7 @@
     </el-input>
     <el-button :icon="Shapes" data-test="icon-pick" @click="pickerVisible = true">{{ t('panels.iconPick') }}</el-button>
     <el-button :icon="Upload" @click="pick">{{ t('panels.iconUpload') }}</el-button>
+    <el-button v-if="urls" :icon="Globe" :loading="fetching" :disabled="!urls.length" :title="urls.length ? t('panels.iconFetchHelp') : t('panels.iconFetchNoUrl')" data-test="icon-fetch" @click="fetchIcon">{{ t('panels.iconFetch') }}</el-button>
     <input ref="file" type="file" accept="image/png,image/jpeg,image/gif,image/webp,image/svg+xml,image/x-icon,.ico" hidden @change="onFile" />
   </div>
   <PanelIconPicker v-model:visible="pickerVisible" :model-value="model" @select="(v: string) => (model = v)" />
@@ -21,15 +22,15 @@
 import { computed, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
-import { Image as ImageIcon, Shapes, Upload } from 'lucide-vue-next'
+import { Globe, Image as ImageIcon, Shapes, Upload } from 'lucide-vue-next'
 import PanelIcon from './PanelIcon.vue'
 import PanelIconPicker from './PanelIconPicker.vue'
-import { formatBytes } from '../api'
+import { api, errorText, formatBytes } from '../api'
 import { MAX_ICON_BYTES, builtinId, iconKind, textIconOk } from '../panels'
 import { usePanelIcons } from '../composables/usePanelIcons'
 
-// name 与 color 用于预览默认的首字图标
-defineProps<{ name?: string; color?: string }>()
+// name 与 color 用于预览默认的首字图标；urls 为“获取图标”要尝试的链接地址，不传时不显示该按钮
+const props = defineProps<{ name?: string; color?: string; urls?: string[] }>()
 const model = defineModel<string>({ default: '' })
 const { t } = useI18n()
 const file = ref<HTMLInputElement>()
@@ -54,26 +55,69 @@ function readAsDataURL(f: Blob): Promise<string> {
   })
 }
 
-// shrink 把位图缩放到最长边 128 像素以内并转成 PNG，图标显示尺寸很小，原图只会让配置变大
-async function shrink(f: File): Promise<string> {
-  const url = URL.createObjectURL(f)
-  try {
-    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
-      const el = new Image()
-      el.onload = () => resolve(el)
-      el.onerror = () => reject(new Error('decode'))
-      el.src = url
-    })
-    const scale = Math.min(1, 128 / Math.max(img.naturalWidth, img.naturalHeight, 1))
+// shrinkSrc 把位图缩放到最长边 256 像素以内并转成 PNG（2×2 大块与大图标放大显示时仍清晰）；
+// 超过内联上限时改为 128 像素。原图只会让配置变大
+async function shrinkSrc(src: string): Promise<string> {
+  const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+    const el = new Image()
+    el.onload = () => resolve(el)
+    el.onerror = () => reject(new Error('decode'))
+    el.src = src
+  })
+  let out = ''
+  for (const edge of [256, 128]) {
+    const scale = Math.min(1, edge / Math.max(img.naturalWidth, img.naturalHeight, 1))
     const w = Math.max(1, Math.round(img.naturalWidth * scale))
     const h = Math.max(1, Math.round(img.naturalHeight * scale))
     const canvas = document.createElement('canvas')
     canvas.width = w
     canvas.height = h
     canvas.getContext('2d')?.drawImage(img, 0, 0, w, h)
-    return canvas.toDataURL('image/png')
+    out = canvas.toDataURL('image/png')
+    if (out.length <= MAX_ICON_BYTES) {
+      break
+    }
+  }
+  return out
+}
+
+async function shrink(f: File): Promise<string> {
+  const url = URL.createObjectURL(f)
+  try {
+    return await shrinkSrc(url)
   } finally {
     URL.revokeObjectURL(url)
+  }
+}
+
+// fetchIcon 由 Gately 访问链接地址，取网页声明的图标（找不到时用 /favicon.ico）；SVG 原样保存，
+// 其余格式缩小成 PNG；ICO 能在浏览器中解码时同样缩小，否则在不超过上限时原样保存
+const fetching = ref(false)
+async function fetchIcon() {
+  if (!props.urls?.length || fetching.value) {
+    return
+  }
+  fetching.value = true
+  try {
+    const r = await api.post<{ icon: string; source: string }>('/api/webservice/panels/favicon', { urls: props.urls })
+    let data = r.icon
+    if (!data.startsWith('data:image/svg+xml')) {
+      try {
+        data = await shrinkSrc(r.icon)
+      } catch {
+        data = r.icon
+      }
+    }
+    if (data.length > MAX_ICON_BYTES) {
+      ElMessage.error(t('panels.iconTooLarge', { size: formatBytes(MAX_ICON_BYTES) }))
+      return
+    }
+    model.value = data
+    ElMessage.success(t('panels.iconFetched'))
+  } catch (e) {
+    ElMessage.error(errorText(e))
+  } finally {
+    fetching.value = false
   }
 }
 

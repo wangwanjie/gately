@@ -100,8 +100,10 @@ func (m *Module) registerPanels(r module.Router) {
 	r.HandleFunc("POST /panels/preview", m.handlePanelPreview)
 	r.HandleFunc("GET /panels/icons", handlePanelIcons)
 	r.HandleFunc("POST /panels/sunpanel", m.handlePanelSunPanel)
+	r.HandleFunc("POST /panels/favicon", m.handlePanelFavicon)
 	module.DocOf(r, "GET /panels/icons", module.Doc{Summary: "导航面板的内置图标列表", Resp: []PanelIconView{}})
 	module.DocOf(r, "POST /panels/sunpanel", module.Doc{Summary: "转换 Sun-Panel 导出的配置（1.x 的 .sun-panel.json 或 2.x 的 .zip）为导航面板链接，不保存。multipart 表单：file 为导出文件，baseUrl 为可选的 Sun-Panel 地址", Resp: &SunPanelImportResult{}})
+	module.DocOf(r, "POST /panels/favicon", module.Doc{Summary: "从链接地址获取网站图标：按顺序访问各地址，解析网页中的图标声明与 Web App Manifest，找不到时用 /favicon.ico，返回 data:image 图片，不保存。地址需为不含变量的 http/https 地址", Req: &PanelFaviconRequest{}, Resp: &PanelFaviconResult{}})
 	module.DocOf(r, "POST /panels/preview", module.Doc{Summary: "按编辑中的内容生成导航面板预览，不保存", Req: &PanelPreviewRequest{}, Resp: &PanelPreview{}})
 }
 

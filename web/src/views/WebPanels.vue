@@ -382,7 +382,7 @@
         </el-form-item>
         <el-form-item :label="t('panels.description')"><el-input v-model="link.description" maxlength="200" /></el-form-item>
         <el-form-item :label="t('panels.icon')">
-          <PanelIconInput v-model="link.icon" :name="link.name" :color="link.color" />
+          <PanelIconInput v-model="link.icon" :name="link.name" :color="link.color" :urls="faviconUrls(link)" />
         </el-form-item>
         <el-form-item v-if="iconKind(link.icon) !== 'image'" :label="t('panels.color')">
           <el-color-picker v-model="colorModel" :predefine="palette" />
@@ -469,6 +469,7 @@ import {
   DEFAULT_BG_DIM,
   LAYOUT_LIMITS,
   SIZE_CHOICES,
+  faviconUrls,
   sizeChoice,
   sizeValue,
   type SizeChoice,
