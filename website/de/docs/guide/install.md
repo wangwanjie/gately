@@ -237,3 +237,7 @@ Haben Sie der Binärdatei mit `setcap` Zugriff auf niedrige Ports gegeben, führ
 - Windows, macOS, FreeBSD: die ausführbare Datei ersetzen und den Dienst neu starten.
 
 Exportieren Sie vor dem Upgrade eine Konfigurationssicherung oder legen Sie das Konfigurationsverzeichnis in Git ab. Die Signaturen heruntergeladener Archive und Images können Sie gemäß [Releases verifizieren](/de/docs/guide/verify) prüfen.
+
+## Eine Online-Demo betreiben {#demo}
+
+`gately -demo` (oder `GATELY_DEMO=1`) startet eine schreibgeschützte Demo-Instanz. Es startet kein Datenebenen-Dienst, der Prozess lauscht nur auf dem Verwaltungsport. Die Anmeldeseite bietet ein Demo-Konto mit einem Klick, oben auf der Seite weist ein Banner auf die Demo hin. Für jedes Konto sind Schreibzugriffe, das Web-Terminal, die Docker-Verwaltung, Dateizugriffe, Skriptausführung, Online-Upgrades, das Wiederherstellen von Sicherungen und alle ausgehenden Anfragen nicht verfügbar; die Daten kehren stündlich zum Snapshot beim Start zurück. Die Demo-Daten erzeugt `go run ./tools/demo -out <Verzeichnis>`; sie verwenden nur für Dokumentation reservierte Adressen und Domains. Im Verzeichnis `deploy/demo` des Repositorys liegen die Docker-Dateien.

@@ -237,3 +237,7 @@ systemctl restart gately
 - Windows、macOS、FreeBSD：替換可執行檔並重新啟動服務。
 
 升級前建議匯出一份設定備份，或直接把設定目錄納入 git。下載的壓縮檔與映像檔可依 [驗證發佈檔案](/zh-TW/docs/guide/verify) 核對簽章。
+
+## 自建線上示範 {#demo}
+
+`gately -demo`（或環境變數 `GATELY_DEMO=1`）會啟動唯讀的示範實例：不啟動任何資料面服務，程序只監聽管理連接埠；登入頁提供「示範帳號」一鍵進入，頁面頂部有示範橫幅；無論哪個帳號，寫入操作、Web 終端、Docker 管理、檔案讀寫、腳本執行、線上升級、備份還原與所有對外請求都無法使用；資料每小時還原為啟動時的快照。示範資料由 `go run ./tools/demo -out <目錄>` 產生，只含文件保留位址與網域。儲存庫的 `deploy/demo` 提供 Docker 部署材料。
