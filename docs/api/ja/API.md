@@ -441,6 +441,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/webservice/panels/preview` | `webservice:write` | ナビゲーションパネルのプレビュー |
 | GET | `/api/webservice/panels/icons` | `webservice:read` | ナビゲーションパネルの組み込みアイコン一覧 |
 | POST | `/api/webservice/panels/sunpanel` | `webservice:write` | Sun-Panel 設定の変換 |
+| POST | `/api/webservice/panels/favicon` | `webservice:write` | リンクのアドレスからサイトのアイコンを取得します。各アドレスに順にアクセスし、ページで宣言されたアイコンと Web App Manifest を読み取り、見つからなければ /favicon.ico を使って data:image の画像を返します（保存はしません）。アドレスは変数を含まない http/https である必要があります |
 | GET | `/api/webservice/users` | `webservice:read` | 共有ユーザーと OIDC ID プロバイダーを取得 |
 | PUT | `/api/webservice/users` | `webservice:write` | 共有ユーザーと OIDC ID プロバイダーを保存し、サイトを一括設定 |
 | DELETE | `/api/webservice/users/{id}/passkeys/{cred}` | `webservice:write` | 共有ユーザーの Passkey を削除します（id は共有ユーザーの ID、cred は Passkey の識別子）。Passkey は本人のみが登録でき、管理者は削除のみ可能です（端末の紛失時など） |
@@ -2734,6 +2735,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | フィールド | 型 |
 | --- | --- |
 | `altBadge` | boolean |
+| `altClick` | string |
 | `background` | string |
 | `bgBlur` | integer |
 | `bgDim` | integer |
@@ -2748,7 +2750,10 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `footerUrl` | string |
 | `gap` | integer |
 | `groupCount` | boolean |
+| `hideAppName` | boolean |
 | `hideFooter` | boolean |
+| `hideLock` | boolean |
+| `hideSkin` | boolean |
 | `icon` | string |
 | `iconSize` | integer |
 | `key` | string |
@@ -2758,6 +2763,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `mobileColumns` | integer |
 | `name` | string |
 | `remark` | string |
+| `showLang` | boolean |
 | `skin` | string |
 | `subtitle` | string |
 | `tabTitle` | string |
@@ -2777,6 +2783,20 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | --- | --- |
 | `name` | string |
 | `url` | string |
+
+### webservice.PanelFaviconRequest
+
+| フィールド | 型 |
+| --- | --- |
+| `urls` | 配列 of string |
+
+### webservice.PanelFaviconResult
+
+| フィールド | 型 |
+| --- | --- |
+| `from` | string |
+| `icon` | string |
+| `source` | string |
 
 ### webservice.PanelIconView
 

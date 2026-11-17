@@ -441,6 +441,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | POST | `/api/webservice/panels/preview` | `webservice:write` | Aperçu du panneau de navigation |
 | GET | `/api/webservice/panels/icons` | `webservice:read` | Icônes intégrées des panneaux de navigation |
 | POST | `/api/webservice/panels/sunpanel` | `webservice:write` | Convertir la configuration Sun-Panel |
+| POST | `/api/webservice/panels/favicon` | `webservice:write` | Récupère l'icône d'un site à partir des adresses du lien : essaie chaque adresse dans l'ordre, lit les icônes déclarées dans la page et son Web App Manifest, se rabat sur /favicon.ico et renvoie une image data:image sans l'enregistrer. Les adresses doivent être en http/https et sans variables |
 | GET | `/api/webservice/users` | `webservice:read` | Lire les utilisateurs partagés et le fournisseur d'identité OIDC |
 | PUT | `/api/webservice/users` | `webservice:write` | Enregistrer utilisateurs partagés et fournisseur d'identité OIDC, configurer les sites en masse |
 | DELETE | `/api/webservice/users/{id}/passkeys/{cred}` | `webservice:write` | Supprime une Passkey d'un utilisateur partagé (id est l'ID de l'utilisateur partagé, cred l'identifiant de la Passkey) ; les Passkeys ne peuvent être enregistrées que par les utilisateurs eux-mêmes, les administrateurs peuvent seulement les supprimer, par exemple en cas de perte d'un appareil |
@@ -2734,6 +2735,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | Champ | Type |
 | --- | --- |
 | `altBadge` | boolean |
+| `altClick` | string |
 | `background` | string |
 | `bgBlur` | integer |
 | `bgDim` | integer |
@@ -2748,7 +2750,10 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `footerUrl` | string |
 | `gap` | integer |
 | `groupCount` | boolean |
+| `hideAppName` | boolean |
 | `hideFooter` | boolean |
+| `hideLock` | boolean |
+| `hideSkin` | boolean |
 | `icon` | string |
 | `iconSize` | integer |
 | `key` | string |
@@ -2758,6 +2763,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `mobileColumns` | integer |
 | `name` | string |
 | `remark` | string |
+| `showLang` | boolean |
 | `skin` | string |
 | `subtitle` | string |
 | `tabTitle` | string |
@@ -2777,6 +2783,20 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | --- | --- |
 | `name` | string |
 | `url` | string |
+
+### webservice.PanelFaviconRequest
+
+| Champ | Type |
+| --- | --- |
+| `urls` | Tableau de string |
+
+### webservice.PanelFaviconResult
+
+| Champ | Type |
+| --- | --- |
+| `from` | string |
+| `icon` | string |
+| `source` | string |
 
 ### webservice.PanelIconView
 

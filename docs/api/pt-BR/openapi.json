@@ -4131,6 +4131,9 @@
           "altBadge": {
             "type": "boolean"
           },
+          "altClick": {
+            "type": "string"
+          },
           "background": {
             "type": "string"
           },
@@ -4176,7 +4179,16 @@
           "groupCount": {
             "type": "boolean"
           },
+          "hideAppName": {
+            "type": "boolean"
+          },
           "hideFooter": {
+            "type": "boolean"
+          },
+          "hideLock": {
+            "type": "boolean"
+          },
+          "hideSkin": {
             "type": "boolean"
           },
           "icon": {
@@ -4211,6 +4223,9 @@
           },
           "remark": {
             "type": "string"
+          },
+          "showLang": {
+            "type": "boolean"
           },
           "skin": {
             "type": "string"
@@ -4247,6 +4262,31 @@
             "type": "string"
           },
           "url": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.PanelFaviconRequest": {
+        "properties": {
+          "urls": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.PanelFaviconResult": {
+        "properties": {
+          "from": {
+            "type": "string"
+          },
+          "icon": {
+            "type": "string"
+          },
+          "source": {
             "type": "string"
           }
         },
@@ -52170,6 +52210,73 @@
           }
         ],
         "summary": "Reordenar Painéis de navegação",
+        "tags": [
+          "Serviço web"
+        ],
+        "x-required-scope": "webservice:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/panels/favicon": {
+      "post": {
+        "description": "Permissão necessária: `webservice:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/webservice.PanelFaviconRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/webservice.PanelFaviconResult"
+                }
+              }
+            },
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Obtém o ícone de um site a partir dos endereços do link: tenta cada endereço em ordem, lê os ícones declarados na página e no Web App Manifest, recorre a /favicon.ico e retorna uma imagem data:image sem salvar. Os endereços devem ser http/https e sem variáveis",
         "tags": [
           "Serviço web"
         ],

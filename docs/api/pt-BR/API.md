@@ -441,6 +441,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | POST | `/api/webservice/panels/preview` | `webservice:write` | Prévia do painel de navegação |
 | GET | `/api/webservice/panels/icons` | `webservice:read` | Ícones embutidos dos painéis de navegação |
 | POST | `/api/webservice/panels/sunpanel` | `webservice:write` | Converter configuração do Sun-Panel |
+| POST | `/api/webservice/panels/favicon` | `webservice:write` | Obtém o ícone de um site a partir dos endereços do link: tenta cada endereço em ordem, lê os ícones declarados na página e no Web App Manifest, recorre a /favicon.ico e retorna uma imagem data:image sem salvar. Os endereços devem ser http/https e sem variáveis |
 | GET | `/api/webservice/users` | `webservice:read` | Ler usuários compartilhados e provedor de identidade OIDC |
 | PUT | `/api/webservice/users` | `webservice:write` | Salvar usuários compartilhados e provedor de identidade OIDC, configurar sites em lote |
 | DELETE | `/api/webservice/users/{id}/passkeys/{cred}` | `webservice:write` | Exclui uma Passkey de um usuário compartilhado (id é o ID do usuário compartilhado, cred é o ID da Passkey); as Passkeys só podem ser registradas pelos próprios usuários e os administradores só podem excluí-las, por exemplo ao perder um dispositivo |
@@ -2734,6 +2735,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | Campo | Tipo |
 | --- | --- |
 | `altBadge` | boolean |
+| `altClick` | string |
 | `background` | string |
 | `bgBlur` | integer |
 | `bgDim` | integer |
@@ -2748,7 +2750,10 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `footerUrl` | string |
 | `gap` | integer |
 | `groupCount` | boolean |
+| `hideAppName` | boolean |
 | `hideFooter` | boolean |
+| `hideLock` | boolean |
+| `hideSkin` | boolean |
 | `icon` | string |
 | `iconSize` | integer |
 | `key` | string |
@@ -2758,6 +2763,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `mobileColumns` | integer |
 | `name` | string |
 | `remark` | string |
+| `showLang` | boolean |
 | `skin` | string |
 | `subtitle` | string |
 | `tabTitle` | string |
@@ -2777,6 +2783,20 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | --- | --- |
 | `name` | string |
 | `url` | string |
+
+### webservice.PanelFaviconRequest
+
+| Campo | Tipo |
+| --- | --- |
+| `urls` | Array de string |
+
+### webservice.PanelFaviconResult
+
+| Campo | Tipo |
+| --- | --- |
+| `from` | string |
+| `icon` | string |
+| `source` | string |
 
 ### webservice.PanelIconView
 

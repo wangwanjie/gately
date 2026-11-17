@@ -441,6 +441,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | POST | `/api/webservice/panels/preview` | `webservice:write` | Vorschau des Navigationspanels |
 | GET | `/api/webservice/panels/icons` | `webservice:read` | Eingebaute Symbole für Navigationspanels |
 | POST | `/api/webservice/panels/sunpanel` | `webservice:write` | Sun-Panel-Konfiguration umwandeln |
+| POST | `/api/webservice/panels/favicon` | `webservice:write` | Ruft ein Website-Symbol über die Link-Adressen ab: probiert die Adressen der Reihe nach, liest die in der Seite und ihrem Web App Manifest angegebenen Symbole, greift sonst auf /favicon.ico zurück und gibt ein data:image-Bild zurück, ohne zu speichern. Adressen müssen http/https sein und dürfen keine Variablen enthalten |
 | GET | `/api/webservice/users` | `webservice:read` | Gemeinsame Benutzer und OIDC-Identitätsanbieter lesen |
 | PUT | `/api/webservice/users` | `webservice:write` | Gemeinsame Benutzer und OIDC-Identitätsanbieter speichern, Sites gesammelt einstellen |
 | DELETE | `/api/webservice/users/{id}/passkeys/{cred}` | `webservice:write` | Löscht einen Passkey eines gemeinsamen Benutzers (id ist die ID des Benutzers, cred die Passkey-ID); Passkeys können nur vom Benutzer selbst registriert werden, Administratoren können sie nur löschen, z. B. bei Geräteverlust |
@@ -2734,6 +2735,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | Feld | Typ |
 | --- | --- |
 | `altBadge` | boolean |
+| `altClick` | string |
 | `background` | string |
 | `bgBlur` | integer |
 | `bgDim` | integer |
@@ -2748,7 +2750,10 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `footerUrl` | string |
 | `gap` | integer |
 | `groupCount` | boolean |
+| `hideAppName` | boolean |
 | `hideFooter` | boolean |
+| `hideLock` | boolean |
+| `hideSkin` | boolean |
 | `icon` | string |
 | `iconSize` | integer |
 | `key` | string |
@@ -2758,6 +2763,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `mobileColumns` | integer |
 | `name` | string |
 | `remark` | string |
+| `showLang` | boolean |
 | `skin` | string |
 | `subtitle` | string |
 | `tabTitle` | string |
@@ -2777,6 +2783,20 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | --- | --- |
 | `name` | string |
 | `url` | string |
+
+### webservice.PanelFaviconRequest
+
+| Feld | Typ |
+| --- | --- |
+| `urls` | Array von string |
+
+### webservice.PanelFaviconResult
+
+| Feld | Typ |
+| --- | --- |
+| `from` | string |
+| `icon` | string |
+| `source` | string |
 
 ### webservice.PanelIconView
 

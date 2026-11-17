@@ -441,6 +441,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/webservice/panels/preview` | `webservice:write` | Предпросмотр панели навигации |
 | GET | `/api/webservice/panels/icons` | `webservice:read` | Встроенные значки панелей навигации |
 | POST | `/api/webservice/panels/sunpanel` | `webservice:write` | Преобразовать конфигурацию Sun-Panel |
+| POST | `/api/webservice/panels/favicon` | `webservice:write` | Получить значок сайта по адресам ссылки: адреса проверяются по порядку, читаются значки, объявленные на странице и в её Web App Manifest, иначе используется /favicon.ico; возвращается изображение data:image без сохранения. Адреса должны быть http/https без переменных |
 | GET | `/api/webservice/users` | `webservice:read` | Получить общих пользователей и поставщика удостоверений OIDC |
 | PUT | `/api/webservice/users` | `webservice:write` | Сохранить общих пользователей и поставщика удостоверений OIDC, массово настроить сайты |
 | DELETE | `/api/webservice/users/{id}/passkeys/{cred}` | `webservice:write` | Удаляет Passkey общего пользователя (id — ID общего пользователя, cred — идентификатор Passkey); Passkey регистрирует только сам пользователь, администратор может лишь удалять их, например при потере устройства |
@@ -2734,6 +2735,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | Поле | Тип |
 | --- | --- |
 | `altBadge` | boolean |
+| `altClick` | string |
 | `background` | string |
 | `bgBlur` | integer |
 | `bgDim` | integer |
@@ -2748,7 +2750,10 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `footerUrl` | string |
 | `gap` | integer |
 | `groupCount` | boolean |
+| `hideAppName` | boolean |
 | `hideFooter` | boolean |
+| `hideLock` | boolean |
+| `hideSkin` | boolean |
 | `icon` | string |
 | `iconSize` | integer |
 | `key` | string |
@@ -2758,6 +2763,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `mobileColumns` | integer |
 | `name` | string |
 | `remark` | string |
+| `showLang` | boolean |
 | `skin` | string |
 | `subtitle` | string |
 | `tabTitle` | string |
@@ -2777,6 +2783,20 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | --- | --- |
 | `name` | string |
 | `url` | string |
+
+### webservice.PanelFaviconRequest
+
+| Поле | Тип |
+| --- | --- |
+| `urls` | Массив из string |
+
+### webservice.PanelFaviconResult
+
+| Поле | Тип |
+| --- | --- |
+| `from` | string |
+| `icon` | string |
+| `source` | string |
 
 ### webservice.PanelIconView
 

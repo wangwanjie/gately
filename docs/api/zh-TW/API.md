@@ -441,6 +441,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/webservice/panels/preview` | `webservice:write` | 導覽面板預覽 |
 | GET | `/api/webservice/panels/icons` | `webservice:read` | 導覽面板的內建圖示清單 |
 | POST | `/api/webservice/panels/sunpanel` | `webservice:write` | 轉換 Sun-Panel 設定 |
+| POST | `/api/webservice/panels/favicon` | `webservice:write` | 從連結位址取得網站圖示：依序存取各位址，解析網頁中的圖示宣告與 Web App Manifest，找不到時用 /favicon.ico，傳回 data:image 圖片，不儲存。位址需為不含變數的 http/https 位址 |
 | GET | `/api/webservice/users` | `webservice:read` | 讀取共用使用者與 OIDC 身分提供者 |
 | PUT | `/api/webservice/users` | `webservice:write` | 儲存共用使用者與 OIDC 身分提供者，批次設定站點 |
 | DELETE | `/api/webservice/users/{id}/passkeys/{cred}` | `webservice:write` | 刪除共用使用者的一個 Passkey（id 為共用使用者的 ID，cred 為 Passkey 標識）；使用者的 Passkey 只能由使用者自助註冊，管理員只能刪除，例如裝置遺失時 |
@@ -2734,6 +2735,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 欄位 | 類型 |
 | --- | --- |
 | `altBadge` | boolean |
+| `altClick` | string |
 | `background` | string |
 | `bgBlur` | integer |
 | `bgDim` | integer |
@@ -2748,7 +2750,10 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `footerUrl` | string |
 | `gap` | integer |
 | `groupCount` | boolean |
+| `hideAppName` | boolean |
 | `hideFooter` | boolean |
+| `hideLock` | boolean |
+| `hideSkin` | boolean |
 | `icon` | string |
 | `iconSize` | integer |
 | `key` | string |
@@ -2758,6 +2763,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `mobileColumns` | integer |
 | `name` | string |
 | `remark` | string |
+| `showLang` | boolean |
 | `skin` | string |
 | `subtitle` | string |
 | `tabTitle` | string |
@@ -2777,6 +2783,20 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | --- | --- |
 | `name` | string |
 | `url` | string |
+
+### webservice.PanelFaviconRequest
+
+| 欄位 | 類型 |
+| --- | --- |
+| `urls` | 陣列 of string |
+
+### webservice.PanelFaviconResult
+
+| 欄位 | 類型 |
+| --- | --- |
+| `from` | string |
+| `icon` | string |
+| `source` | string |
 
 ### webservice.PanelIconView
 

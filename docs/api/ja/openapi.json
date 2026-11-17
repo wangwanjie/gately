@@ -4131,6 +4131,9 @@
           "altBadge": {
             "type": "boolean"
           },
+          "altClick": {
+            "type": "string"
+          },
           "background": {
             "type": "string"
           },
@@ -4176,7 +4179,16 @@
           "groupCount": {
             "type": "boolean"
           },
+          "hideAppName": {
+            "type": "boolean"
+          },
           "hideFooter": {
+            "type": "boolean"
+          },
+          "hideLock": {
+            "type": "boolean"
+          },
+          "hideSkin": {
             "type": "boolean"
           },
           "icon": {
@@ -4211,6 +4223,9 @@
           },
           "remark": {
             "type": "string"
+          },
+          "showLang": {
+            "type": "boolean"
           },
           "skin": {
             "type": "string"
@@ -4247,6 +4262,31 @@
             "type": "string"
           },
           "url": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.PanelFaviconRequest": {
+        "properties": {
+          "urls": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.PanelFaviconResult": {
+        "properties": {
+          "from": {
+            "type": "string"
+          },
+          "icon": {
+            "type": "string"
+          },
+          "source": {
             "type": "string"
           }
         },
@@ -52170,6 +52210,73 @@
           }
         ],
         "summary": "ナビゲーションパネル の並び順を変更",
+        "tags": [
+          "Web サービス"
+        ],
+        "x-required-scope": "webservice:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/panels/favicon": {
+      "post": {
+        "description": "必要な権限: `webservice:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/webservice.PanelFaviconRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/webservice.PanelFaviconResult"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "リンクのアドレスからサイトのアイコンを取得します。各アドレスに順にアクセスし、ページで宣言されたアイコンと Web App Manifest を読み取り、見つからなければ /favicon.ico を使って data:image の画像を返します（保存はしません）。アドレスは変数を含まない http/https である必要があります",
         "tags": [
           "Web サービス"
         ],

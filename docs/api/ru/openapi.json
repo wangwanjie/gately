@@ -4131,6 +4131,9 @@
           "altBadge": {
             "type": "boolean"
           },
+          "altClick": {
+            "type": "string"
+          },
           "background": {
             "type": "string"
           },
@@ -4176,7 +4179,16 @@
           "groupCount": {
             "type": "boolean"
           },
+          "hideAppName": {
+            "type": "boolean"
+          },
           "hideFooter": {
+            "type": "boolean"
+          },
+          "hideLock": {
+            "type": "boolean"
+          },
+          "hideSkin": {
             "type": "boolean"
           },
           "icon": {
@@ -4211,6 +4223,9 @@
           },
           "remark": {
             "type": "string"
+          },
+          "showLang": {
+            "type": "boolean"
           },
           "skin": {
             "type": "string"
@@ -4247,6 +4262,31 @@
             "type": "string"
           },
           "url": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.PanelFaviconRequest": {
+        "properties": {
+          "urls": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.PanelFaviconResult": {
+        "properties": {
+          "from": {
+            "type": "string"
+          },
+          "icon": {
+            "type": "string"
+          },
+          "source": {
             "type": "string"
           }
         },
@@ -52170,6 +52210,73 @@
           }
         ],
         "summary": "Изменить порядок: Панели навигации",
+        "tags": [
+          "Веб-служба"
+        ],
+        "x-required-scope": "webservice:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/panels/favicon": {
+      "post": {
+        "description": "Требуемое разрешение: `webservice:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/webservice.PanelFaviconRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/webservice.PanelFaviconResult"
+                }
+              }
+            },
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Получить значок сайта по адресам ссылки: адреса проверяются по порядку, читаются значки, объявленные на странице и в её Web App Manifest, иначе используется /favicon.ico; возвращается изображение data:image без сохранения. Адреса должны быть http/https без переменных",
         "tags": [
           "Веб-служба"
         ],
