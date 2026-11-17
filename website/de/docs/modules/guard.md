@@ -105,7 +105,7 @@ Aktiviert eine äußere Site eines zweistufigen Gately „Auth-Markierung des Ba
 Egal welcher Listener auslöst: Die Sperre landet in derselben Sperrliste und gilt für alle Listener, Sites und übrigen Dienste von Gately; mit Firewall-Synchronisation verwirft auch die Systemfirewall den gesamten Verkehr dieser Adresse.
 :::
 
-Die Quelladresse ist dieselbe wie im Zugriffsprotokoll und wird nur über das PROXY-Protokoll wiederhergestellt. Bei Sites hinter einem CDN, das die echte IP in einem Header übergibt, würde der CDN-Knoten gesperrt – auf solchen Listenern keine Pfadsondierung verwenden. Sitzt Gately hinter einem anderen Reverse Proxy auf demselben Host, ist die Quelle eine Loopback-Adresse: Mit „LAN-Adressen ignorieren“ wird sie nie gesperrt, und die Regel bleibt wirkungslos.
+Die Quelladresse ist dieselbe wie im Zugriffsprotokoll und wird über das PROXY-Protokoll wiederhergestellt, bei Sites hinter einem CDN über die [echte Besucher-IP](/de/docs/modules/web#real-ip) des Webdienstes (vertrauenswürdige Proxys und Header mit der echten IP). Ohne konfigurierte vertrauenswürdige Proxys würde bei CDN-Origin-Pull der CDN-Knoten gesperrt; richten Sie auf solchen Listenern zuerst die vertrauenswürdigen Proxys ein und aktivieren Sie dann die Pfadsondierung. Sitzt Gately hinter einem anderen Reverse Proxy auf demselben Host, ist die Quelle eine Loopback-Adresse: Mit „LAN-Adressen ignorieren“ wird sie nie gesperrt, und die Regel bleibt wirkungslos.
 
 ## TLS-Handshake-Fehler
 
@@ -158,7 +158,7 @@ IPv6 hat kein NAT, jedes Gerät besitzt eine öffentliche Adresse, und sobald si
 
 Sperren aus „Nach fehlgeschlagener Authentifizierung sperren“ des Webdienstes landen in derselben Sperrliste; mit aktiver Synchronisierung gelten sie daher für den ganzen Host statt nur für Websites. Mit „LAN-Adressen ignorieren“ werden LAN-Adressen nie automatisch gesperrt.
 
-Webdienst und WAF erfahren die echte Client-Adresse nur über das PROXY-Protokoll. Bei Sites hinter einem CDN, das die echte IP per Header übergibt, würden Sperren nach fehlgeschlagener Authentifizierung und die Regel „WAF-Blockierungen“ die CDN-Knoten sperren; schalten Sie sie für solche Sites nicht ein.
+Webdienst und WAF ermitteln die echte Client-Adresse über das PROXY-Protokoll und die [echte Besucher-IP](/de/docs/modules/web#real-ip) (vertrauenswürdige Proxys und Header mit der echten IP) in den globalen Einstellungen des Webdienstes. Bei Sites hinter einem CDN tragen Sie zuerst die Origin-Pull-Adressen des CDN unter „Echte Besucher-IP“ ein und wählen den Header mit der echten IP; erst dann sperren die Sperren nach fehlgeschlagener Authentifizierung und die Regel „WAF-Blockierungen“ die Besucher. Ohne diese Konfiguration werden die CDN-Knoten gesperrt.
 
 ## Benachrichtigungen
 

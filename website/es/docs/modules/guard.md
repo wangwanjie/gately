@@ -105,7 +105,7 @@ Cuando un sitio externo de un Gately en dos niveles activa «Confiar en la marca
 Sea cual sea la escucha que lo active, el bloqueo entra en la misma lista y se aplica a todas las escuchas, sitios y demás servicios de Gately; con la sincronización del cortafuegos activa, el cortafuegos del sistema también descarta todo el tráfico de esa dirección.
 :::
 
-La dirección de origen es la misma del registro de acceso y solo se restaura mediante el protocolo PROXY. En sitios detrás de una CDN que pasa la IP real en una cabecera, se bloquearía el nodo de la CDN, así que no use el sondeo de rutas en esas escuchas. Si Gately está detrás de otro proxy inverso en el mismo equipo, el origen es una dirección de bucle local: con «Ignorar direcciones de la LAN» nunca se bloquea, y la regla no tiene efecto.
+La dirección de origen es la misma del registro de acceso: se restaura mediante el protocolo PROXY y, en sitios detrás de una CDN, mediante la [IP real del visitante](/es/docs/modules/web#real-ip) del servicio web (proxies de confianza y cabecera de IP real). Si hay una CDN pero no se han configurado proxies de confianza, se bloquearía el nodo de la CDN; en esas escuchas configure primero los proxies de confianza y después active el sondeo de rutas. Si Gately está detrás de otro proxy inverso en el mismo equipo, el origen es una dirección de bucle local: con «Ignorar direcciones de la LAN» nunca se bloquea, y la regla no tiene efecto.
 
 ## Fallos de handshake TLS
 
@@ -158,7 +158,7 @@ IPv6 no tiene NAT, cada dispositivo tiene una dirección pública y, cuando esa 
 
 Los bloqueos de «Bloquear tras fallos de autenticación» del servicio web van a la misma lista, por lo que con la sincronización activada afectan a todo el equipo y no solo a los sitios web. Con «Ignorar direcciones de la LAN» activado, las direcciones de la LAN nunca se bloquean automáticamente.
 
-El servicio web y el WAF solo conocen la dirección real del cliente mediante el protocolo PROXY. En sitios detrás de una CDN que pasa la IP real en una cabecera, los bloqueos por fallos de autenticación y la regla «Bloqueos del WAF» bloquearían los nodos de la CDN, así que no los actives en esos sitios.
+El servicio web y el WAF obtienen la dirección real del cliente mediante el protocolo PROXY y la [IP real del visitante](/es/docs/modules/web#real-ip) de los ajustes globales del servicio web (proxies de confianza y cabecera de IP real). En sitios detrás de una CDN, introduce primero en «IP real del visitante (detrás de una CDN / WAF)» las direcciones de recuperación de origen de la CDN y elige la cabecera de IP real; solo así los bloqueos por fallos de autenticación y la regla «Bloqueos del WAF» bloquean a los visitantes. Sin esa configuración se bloquearían los nodos de la CDN.
 
 ## Notificaciones
 

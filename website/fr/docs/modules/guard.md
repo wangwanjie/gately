@@ -105,7 +105,7 @@ Quand un site externe d'un Gately à deux niveaux active « Faire confiance au m
 Quel que soit l’écouteur déclencheur, le bannissement entre dans la même liste et s’applique à tous les écouteurs, sites et autres services de Gately ; avec la synchronisation du pare-feu, le pare-feu du système rejette aussi tout le trafic de cette adresse.
 :::
 
-L’adresse source est la même que dans le journal d’accès et n’est restaurée que par le protocole PROXY. Pour les sites derrière un CDN qui transmet l’IP réelle dans un en-tête, c’est le nœud du CDN qui serait banni : n’utilisez pas le sondage de chemins sur ces écouteurs. Si Gately est derrière un autre proxy inverse sur la même machine, la source est une adresse de bouclage : avec « Ignorer les adresses du LAN », elle n’est jamais bannie, et la règle reste sans effet.
+L’adresse source est la même que dans le journal d’accès : elle est restaurée par le protocole PROXY et, pour les sites derrière un CDN, par l’[IP réelle du visiteur](/fr/docs/modules/web#real-ip) du service Web (proxys de confiance et en-tête d’IP réelle). Si un CDN est utilisé sans proxys de confiance configurés, c’est le nœud du CDN qui serait banni : sur ces écouteurs, configurez d’abord les proxys de confiance avant d’activer le sondage de chemins. Si Gately est derrière un autre proxy inverse sur la même machine, la source est une adresse de bouclage : avec « Ignorer les adresses du LAN », elle n’est jamais bannie, et la règle reste sans effet.
 
 ## Échecs de handshake TLS
 
@@ -158,7 +158,7 @@ IPv6 n'a pas de NAT : chaque appareil possède une adresse publique, et dès qu'
 
 Les bannissements de « Bannir après des échecs d'authentification » du service web vont dans la même liste ; avec la synchronisation activée, ils s'appliquent donc à tout l'hôte et plus seulement aux sites web. Avec « Ignorer les adresses du LAN » activé, les adresses du LAN ne sont jamais bannies automatiquement.
 
-Le service web et le WAF ne connaissent l'adresse réelle du client que par le protocole PROXY. Pour les sites derrière un CDN qui transmet l'IP réelle dans un en-tête, les bannissements après échec d'authentification et la règle « Blocages du WAF » banniraient les nœuds du CDN : ne les activez pas pour ces sites.
+Le service web et le WAF identifient l'adresse réelle du client par le protocole PROXY et par l'[IP réelle du visiteur](/fr/docs/modules/web#real-ip) des paramètres globaux du service Web (proxys de confiance et en-tête d'IP réelle). Pour les sites derrière un CDN, saisissez d'abord dans « IP réelle du visiteur (derrière un CDN / WAF) » les adresses de récupération d'origine du CDN et choisissez l'en-tête d'IP réelle ; les bannissements après échec d'authentification et la règle « Blocages du WAF » visent alors bien les visiteurs. Sans cette configuration, ce sont les nœuds du CDN qui seraient bannis.
 
 ## Notifications
 

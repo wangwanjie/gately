@@ -105,7 +105,7 @@ Quando um site externo de um Gately em dois níveis ativa "Confiar na marca de a
 Seja qual for o listener que disparar, o bloqueio vai para a mesma lista e vale para todos os listeners, sites e demais serviços do Gately; com a sincronização do firewall ligada, o firewall do sistema também descarta todo o tráfego desse endereço.
 :::
 
-O endereço de origem é o mesmo do log de acesso e só é restaurado pelo protocolo PROXY. Em sites atrás de uma CDN que repassa o IP real num cabeçalho, seria bloqueado o nó da CDN; não use a sondagem de caminhos nesses listeners. Se o Gately estiver atrás de outro proxy reverso no mesmo host, a origem é um endereço de loopback: com "Ignorar endereços da LAN" ele nunca é bloqueado, e a regra não tem efeito.
+O endereço de origem é o mesmo do log de acesso e é restaurado pelo protocolo PROXY; em sites atrás de uma CDN, pelo [IP real do visitante](/pt-BR/docs/modules/web#real-ip) do serviço web (proxies confiáveis e cabeçalho com o IP real). Sem proxies confiáveis configurados, quem faz a busca de origem pela CDN teria o nó da CDN bloqueado; nesses listeners, configure primeiro os proxies confiáveis e só então ative a sondagem de caminhos. Se o Gately estiver atrás de outro proxy reverso no mesmo host, a origem é um endereço de loopback: com "Ignorar endereços da LAN" ele nunca é bloqueado, e a regra não tem efeito.
 
 ## Falhas de handshake TLS
 
@@ -158,7 +158,7 @@ O IPv6 não tem NAT, cada dispositivo tem um endereço público e, quando esse e
 
 Os bloqueios de "Bloquear após falhas de autenticação" do serviço web vão para a mesma lista; com a sincronização ligada, eles valem para o host inteiro, e não só para os sites. Com "Ignorar endereços da LAN" ligado, endereços da LAN nunca são bloqueados automaticamente.
 
-O serviço web e o WAF só conhecem o endereço real do cliente pelo protocolo PROXY. Em sites atrás de uma CDN que passa o IP real em um cabeçalho, os bloqueios por falha de autenticação e a regra "Bloqueios do WAF" bloqueariam os nós da CDN, então não os ative nesses sites.
+O serviço web e o WAF identificam o endereço real do cliente pelo protocolo PROXY e pelo [IP real do visitante](/pt-BR/docs/modules/web#real-ip) (proxies confiáveis e cabeçalho com o IP real) nas configurações globais do serviço web. Em sites atrás de uma CDN, informe primeiro em "IP real do visitante" os endereços de origem da CDN e escolha o cabeçalho com o IP real; só assim os bloqueios por falha de autenticação e a regra "Bloqueios do WAF" bloqueiam os visitantes. Sem essa configuração, os nós da CDN é que são bloqueados.
 
 ## Notificações
 
