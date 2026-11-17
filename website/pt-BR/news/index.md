@@ -9,7 +9,7 @@ Abaixo estão os anúncios das versões principais. Veja as [GitHub Releases](ht
 
 ## [v0.6.8.1](/pt-BR/news/v0.6.8.1)
 
-17 de novembro de 2026 · Corrige o erro de formato de siteCerts ao adicionar ou editar um site na v0.6.8; quando um certificado curinga cobre vários domínios que o roteamento por protocolo envia a Gately diferentes, o «Site não encontrado» causado pela reutilização de conexão do navegador passa a retornar 421 para que o navegador se reconecte.
+17 de novembro de 2026 · Corrige o erro de formato de siteCerts ao adicionar ou editar um site na v0.6.8; quando um certificado curinga cobre vários domínios que o roteamento por protocolo envia a Gately diferentes, o «Site não encontrado» causado pela reutilização de conexão do navegador passa a retornar 421 para que o navegador se reconecte; o painel de navegação ganha os tamanhos de link 1×1 / 1×2 / 2×2, abertura direta de links com vários endereços, obtenção de ícones de link e interruptores de página.
 
 ## [v0.6.8](/pt-BR/news/v0.6.8)
 

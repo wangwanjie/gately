@@ -91,7 +91,7 @@
   "home": {
     "pill": "Gratuit et open source · Apache-2.0",
     "announce": {
-      "text": "v0.6.8.1 : correction de l'erreur de format siteCerts à l'ajout d'un site et du « Site introuvable » avec un certificat générique sur plusieurs domaines →",
+      "text": "v0.6.8.1 : correction de l’erreur à l’ajout d’un site et du « Site introuvable » avec un certificat générique, plus tailles de lien et récupération d’icônes du panneau de navigation →",
       "link": "/fr/news/v0.6.8.1"
     },
     "titleLine1": "Une seule entrée pour vos services auto-hébergés",

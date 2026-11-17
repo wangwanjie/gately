@@ -9,7 +9,7 @@ A continuación se listan los anuncios de las versiones principales. Consulta [G
 
 ## [v0.6.8.1](/es/news/v0.6.8.1)
 
-17 de noviembre de 2026 · Corrige el error de formato de siteCerts al añadir o editar un sitio en v0.6.8; cuando un certificado comodín cubre varios dominios que el enrutamiento por protocolo envía a distintos Gately, el «Sitio no encontrado» causado por la reutilización de conexión del navegador pasa a devolver 421 para que el navegador vuelva a conectarse.
+17 de noviembre de 2026 · Corrige el error de formato de siteCerts al añadir o editar un sitio en v0.6.8; cuando un certificado comodín cubre varios dominios que el enrutamiento por protocolo envía a distintos Gately, el «Sitio no encontrado» causado por la reutilización de conexión del navegador pasa a devolver 421 para que el navegador vuelva a conectarse; el panel de navegación incorpora los tamaños de enlace 1×1 / 1×2 / 2×2, la apertura directa de enlaces con varias direcciones, la obtención de iconos de enlace e interruptores de página.
 
 ## [v0.6.8](/es/news/v0.6.8)
 

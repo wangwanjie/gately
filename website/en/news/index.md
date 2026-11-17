@@ -9,7 +9,7 @@ Announcements for major releases are listed below. See [GitHub Releases](https:/
 
 ## [v0.6.8.1](/en/news/v0.6.8.1)
 
-November 17, 2026 · Fixes the siteCerts format error when adding or editing a site in v0.6.8; when a wildcard certificate covers several domains routed by the protocol router to different Gately instances, the "Site not found" caused by browser connection reuse now returns 421 so the browser reconnects.
+November 17, 2026 · Fixes the siteCerts format error when adding or editing a site in v0.6.8; when a wildcard certificate covers several domains routed by the protocol router to different Gately instances, the "Site not found" caused by browser connection reuse now returns 421 so the browser reconnects; the navigation panel gains 1×1 / 1×2 / 2×2 link sizes, direct opening of multi-address links, link icon fetching and page switches.
 
 ## [v0.6.8](/en/news/v0.6.8)
 

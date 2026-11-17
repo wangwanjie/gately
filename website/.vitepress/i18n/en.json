@@ -91,7 +91,7 @@
   "home": {
     "pill": "Free and open source · Apache-2.0",
     "announce": {
-      "text": "v0.6.8.1 released: fixes the siteCerts format error when adding a site and \"Site not found\" with wildcard certificates on several domains →",
+      "text": "v0.6.8.1 released: fixes the siteCerts error when adding a site and \"Site not found\" with wildcard certificates, plus navigation panel link sizes and icon fetching →",
       "link": "/en/news/v0.6.8.1"
     },
     "titleLine1": "One gateway for your self-hosted services",
