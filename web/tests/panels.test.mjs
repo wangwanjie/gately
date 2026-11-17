@@ -5,7 +5,7 @@ import {
   emptyLink, groupLinks, moveLink, moveGroup, insertLink, importableSites, linksFromSites, iconKind, safeIconSrc,
   initial, paletteColor, textIconOk, hasVars, toPanel, mergeLinks, freeName, MAX_LINKS,
   emptyPanel, layoutDefaults, normalizeLayoutValue, LAYOUT_LIMITS,
-  sizeChoice, sizeValue, SIZE_CHOICES,
+  sizeChoice, sizeValue, faviconUrls, SIZE_CHOICES,
 } from '../src/panels.ts'
 
 const L = (name, group = '') => ({ ...emptyLink(group), name, url: `https://${name}.example.com` })
@@ -299,6 +299,14 @@ test('尺寸：默认尺寸在卡片样式下为 1×2、图标样式下为 1×1�
   }
   assert.deepEqual(['1x1', '1x2', '2x2'].map((c) => sizeValue(c, '')), ['small', '', 'big'])
   assert.deepEqual(['1x1', '1x2', '2x2'].map((c) => sizeValue(c, 'app')), ['', 'wide', 'big'])
+})
+
+test('faviconUrls：内网地址优先，只取 http/https，去重并最多 10 个', () => {
+  const l = { url: 'https://nas.example.com', lanUrl: ' http://192.168.1.2:5000 ', alts: [{ name: 'a', url: 'https://nas.example.com' }, { name: 'b', url: 'smb://nas/x' }, { name: 'c', url: 'HTTPS://v6.example.com' }] }
+  assert.deepEqual(faviconUrls(l), ['http://192.168.1.2:5000', 'https://nas.example.com', 'HTTPS://v6.example.com'])
+  assert.deepEqual(faviconUrls({ url: '', lanUrl: '', alts: [] }), [])
+  const many = { url: 'https://a.example.com', lanUrl: '', alts: Array.from({ length: 12 }, (_, i) => ({ name: String(i), url: `https://h${i}.example.com` })) }
+  assert.equal(faviconUrls(many).length, 10)
 })
 
 test('开关：旧配置载入后语言切换隐藏、换肤与锁标记显示、点击弹出选择；未知点击方式按默认', () => {

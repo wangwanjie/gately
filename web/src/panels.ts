@@ -59,6 +59,19 @@ export function sizeValue(choice: SizeChoice, style: Panel['cardStyle']): LinkSi
   return choice === '1x1' ? 'small' : 'wide'
 }
 
+// faviconUrls 返回“获取图标”要尝试的地址：内网地址优先（Gately 多与服务在同一内网），然后是主地址与其他访问方式；
+// 含变量的地址要到访客访问时才能确定，后端会跳过
+export function faviconUrls(l: Pick<PanelLink, 'url' | 'lanUrl' | 'alts'>): string[] {
+  const out: string[] = []
+  for (const u of [l.lanUrl, l.url, ...(l.alts ?? []).map((a) => a.url)]) {
+    const v = (u ?? '').trim()
+    if (v && /^https?:\/\//i.test(v) && !out.includes(v)) {
+      out.push(v)
+    }
+  }
+  return out.slice(0, 10)
+}
+
 // PanelEngine 是页面搜索框可选的搜索引擎，url 用 {q} 代表关键词
 export interface PanelEngine {
   name: string
