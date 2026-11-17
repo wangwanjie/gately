@@ -185,7 +185,7 @@
       },
       {
         "title": "ネットワーク接続と NAT 越え",
-        "text": "Tailscale、NetBird、frp（frpc / frps）、cloudflared トンネルをプロセス管理方式で統合し、オンラインでのインストール、更新、ロールバック、アンインストールに対応します。"
+        "text": "Tailscale、NetBird、EasyTier、frp（frpc / frps）、cloudflared トンネルをプロセス管理方式で統合し、オンラインでのインストール、更新、ロールバック、アンインストールに対応します。"
       },
       {
         "title": "Docker 管理",

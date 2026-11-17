@@ -185,7 +185,7 @@
       },
       {
         "title": "Networking & Tunnels",
-        "text": "Supervises Tailscale, NetBird, frp (frpc / frps) and cloudflared tunnels as managed processes, with online install, update, rollback and uninstall."
+        "text": "Supervises Tailscale, NetBird, EasyTier, frp (frpc / frps) and cloudflared tunnels as managed processes, with online install, update, rollback and uninstall."
       },
       {
         "title": "Docker Management",
