@@ -39,7 +39,7 @@ v0.6.8.1 及更早的 Gately 反代到非本机管理后台的后端时，会剥
 docker compose -f docker-compose.yml -f docker-compose.cookie.yml up -d --build
 ```
 
-demo.gately.cn（hk-tyy）现在就是这样部署的：`.env` 里 `DEMO_PORT=16690`，主 Gately 的 `demo.gately.cn` 站点目标仍是 `http://127.0.0.1:16690`，配置未改动。主 Gately 升级到包含该修复的版本后，去掉 `-f docker-compose.cookie.yml` 重新 `up -d`，并删除 `gately-demo-cookie` 容器（`docker compose -f docker-compose.yml up -d --remove-orphans`），服务器上的基础 compose 端口一直是 `127.0.0.1:16690:16680`，不用再改。
+demo.gately.cn（hk-tyy）的前置 Gately 已升级到包含该修复的版本（2026-11-17），不再使用改名代理：演示实例直接发布在 `127.0.0.1:16690`，主 Gately 的 `demo.gately.cn` 站点反代到这里。从改名部署切回直接部署的命令是 `docker compose -f docker-compose.yml up -d --remove-orphans`（同时删除 `gately-demo-cookie` 容器）。
 
 ### 用 nginx 反向代理
 
