@@ -22,6 +22,8 @@ Te recomendamos instalar la aplicación nativa: se abre desde el icono del escri
 
 Abre `http://<ip-del-dispositivo>:16680` en un navegador. El usuario es `admin` y la contraseña predeterminada es `gately.cn`. Esta contraseña es pública: al iniciar sesión aparece un diálogo de cambio de contraseña, y para continuar hay que elegir una nueva de al menos 10 caracteres y difícil de adivinar.
 
+La barra lateral de la interfaz de administración lista todas las páginas por grupos. Pulsa Ctrl+K (⌘K en macOS) o el cuadro de búsqueda de la parte superior de la barra lateral para abrir la búsqueda global: lleva por nombre a una página o a una pestaña dentro de ella, y también busca dominios de sitios, reglas de reenvío de puertos, registros DDNS y dominios de certificados. En el móvil, pulsa el icono de búsqueda de la barra superior.
+
 ## 3. Aplicar un refuerzo básico
 
 Nada más iniciar sesión, ve a «Ajustes» y:

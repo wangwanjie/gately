@@ -2,7 +2,7 @@
 
 ## WebDAV
 
-Configure it under "WebDAV Service" in the sidebar "File Services" group.
+Configure it on the "WebDAV" tab of the sidebar page "File Services → File Sharing".
 
 | Field | Default | Description |
 | --- | --- | --- |
@@ -27,7 +27,7 @@ Each user can map to one directory, or mount several directories:
 
 ## FTP
 
-Configure it under "FTP Service" in the "File Services" group. FTP and FTPS are supported.
+Configure it on the "FTP" tab of "File Services → File Sharing". FTP and FTPS are supported.
 
 | Field | Default | Description |
 | --- | --- | --- |
@@ -47,7 +47,7 @@ Configure it under "FTP Service" in the "File Services" group. FTP and FTPS are 
 
 ## SMB
 
-Configure it under "SMB Service" in the "File Services" group to share local directories with Windows Explorer, the macOS Finder, Linux and SMB clients on phones and TVs. The protocol implementation is built into Gately (based on [gosamba](https://github.com/ahmetozer/gosamba)) and supports SMB 2.0.2 to 3.1.1, NTLMv2 authentication and signing, with optional mandatory SMB 3 encryption; SMB 1 is not supported. Available on Linux and macOS only.
+Configure it on the "SMB" tab of "File Services → File Sharing" to share local directories with Windows Explorer, the macOS Finder, Linux and SMB clients on phones and TVs. The protocol implementation is built into Gately (based on [gosamba](https://github.com/ahmetozer/gosamba)) and supports SMB 2.0.2 to 3.1.1, NTLMv2 authentication and signing, with optional mandatory SMB 3 encryption; SMB 1 is not supported. Available on Linux and macOS only.
 
 | Field | Default | Description |
 | --- | --- | --- |
@@ -78,20 +78,20 @@ To troubleshoot clients that cannot connect or fail to authenticate, set the env
 
 ## Shared users {#shared-users}
 
-WebDAV, FTP and SMB share one list of "shared users" with the same fields as each service's local users (name, password, `root` and `readOnly`, or `mounts`), stored in `fileusers.json` in the configuration directory. They are managed on the "File shared users" page in the "File Services" group of the sidebar, and saving applies to all three services; the local users of each service are unchanged. The top of the page shows whether each service allows shared users and lists shared users that have the same name as a local user or cannot be used by SMB.
+WebDAV, FTP and SMB share one list of "shared users" with the same fields as each service's local users (name, password, `root` and `readOnly`, or `mounts`), stored in `fileusers.json` in the configuration directory. They are managed on the "Shared users" tab of the sidebar page "File Services → File Sharing", and saving applies to all three services; the local users of each service are unchanged. The top of the page shows whether each service allows shared users and lists shared users that have the same name as a local user or cannot be used by SMB.
 
-- Each service decides on its own whether to accept shared users: turn on "Allow shared users" in the "Shared users" card of the service page (field `sharedUsers`) and save, and shared users can sign in to that service; the card also lists the saved shared users, and "Manage shared users" opens the "File shared users" page;
+- Each service decides on its own whether to accept shared users: turn on "Allow shared users" in the "Shared users" card of each service's tab (field `sharedUsers`) and save, and shared users can sign in to that service; the card also lists the saved shared users, and "Manage shared users" opens the "Shared users" tab;
 - When a local user has the same name, only the local user is checked (case-insensitive for SMB);
 - Shared user names must be unique regardless of case and cannot contain a colon;
 - Changes to shared users take effect at once: WebDAV checks the new settings on the next request; when only passwords changed, FTP and SMB keep running and drop only the connections of the users whose password changed (those clients reconnect with the new password, other users are unaffected); adding or removing users or changing directories or read-only settings restarts FTP and SMB, and connected clients need to reconnect;
 - With the switch on and at least one shared user, the service can be enabled without any local user;
 - A service enabled with shared users only must still have a shared user that can sign in after a change (for SMB, one usable by SMB), otherwise the change is rejected;
 - If `fileusers.json` is broken by hand (for example an empty password or a directory that is not an absolute path), no shared user can sign in and the page shows a warning; fix it and save to restore them;
-- SMB only accepts plain passwords, and user and share names must follow SMB's character rules; shared users that do not are reported on the "File shared users" page, the SMB page and in the runtime log and skipped, while WebDAV and FTP can still use them.
+- SMB only accepts plain passwords, and user and share names must follow SMB's character rules; shared users that do not are reported on the "Shared users" tab, the "SMB" tab and in the runtime log and skipped, while WebDAV and FTP can still use them.
 
 The API is `GET` / `PUT /api/fileusers`, which needs the `fileusers:read` / `fileusers:write` permission for API tokens; `services` in the response shows how each service uses them. The former `GET` / `PUT /api/<service>/shared-users` of each service are deprecated but still work and read and write the same list: reading uses the read permission of that service, and a change needs `webdav:write`, `ftp:write` and `smb:write` together.
 
-**Self-service password change**: turn on Self-service password change on the File shared users page and save, and shared users can change their own password at `https://site-domain/__gately_auth/password` on any web service site with web authentication by entering the username, current password and new password (8–128 characters). WebDAV, FTP and SMB use the new password right away (FTP and SMB do not restart, they only drop that user's signed-in connections, and the client reconnects with the new password). Plaintext passwords stay plaintext and bcrypt hashes stay hashed; a wrong current password counts toward the same rate limit and automatic ban as web logins. The switch is stored as `selfService` in `fileusers.json`, with the same field name in the API. For web login shared users, see [self-service password change in the web service](/en/docs/modules/web#self-service-password).
+**Self-service password change**: turn on Self-service password change on the "Shared users" tab of the File Sharing page and save, and shared users can change their own password at `https://site-domain/__gately_auth/password` on any web service site with web authentication by entering the username, current password and new password (8–128 characters). WebDAV, FTP and SMB use the new password right away (FTP and SMB do not restart, they only drop that user's signed-in connections, and the client reconnects with the new password). Plaintext passwords stay plaintext and bcrypt hashes stay hashed; a wrong current password counts toward the same rate limit and automatic ban as web logins. The switch is stored as `selfService` in `fileusers.json`, with the same field name in the API. For web login shared users, see [self-service password change in the web service](/en/docs/modules/web#self-service-password).
 
 ## File Browser {#filebrowser}
 
@@ -239,7 +239,7 @@ Run commands or send HTTP requests on a cron schedule.
 
 - The "Overview" page shows host information: CPU model, usage and load, memory, disk, network interface addresses and live rates, public IPv4 and IPv6 (click to copy), the service status of each module, and for the Gately process its version, commit, build time, start time, PID, CPU, resident memory, Go heap and goroutine count;
 - When Gately manages external programs (frp, Tailscale, NetBird, Cloudflare Tunnel, File Browser), the "Overview" page also has a "Managed Processes" card listing each process with its module and instance, program name, PID, uptime, restart count, CPU and resident memory, with the totals in the card header; click a row to open its module. Only the process itself is counted, not the children it starts, and paths and launch arguments are not shown;
-- The "System Logs" page collects the logs of all modules, including the runtime records of modules such as Docker, FTP and Scheduled Tasks.
+- The "System Logs" tab of the "Logs" page collects the logs of all modules, including the runtime records of modules such as Docker, FTP and Scheduled Tasks.
 
 ## Themes
 

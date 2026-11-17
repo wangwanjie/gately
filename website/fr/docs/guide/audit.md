@@ -4,7 +4,7 @@ Gately détient des clés DNS et des clés privées de certificats : il doit don
 
 ## Journal d'audit
 
-« Système → Journal d'audit », dans la barre latérale, liste les opérations suivantes de la plus récente à la plus ancienne. Vous pouvez filtrer par catégorie ou rechercher par chemin, utilisateur ou IP :
+L'onglet « Journal d'audit » de la page « Système → Journaux », dans la barre latérale, liste les opérations suivantes de la plus récente à la plus ancienne. Vous pouvez filtrer par catégorie ou rechercher par chemin, utilisateur ou IP :
 
 | Catégorie | Contenu enregistré |
 | --- | --- |
@@ -23,7 +23,7 @@ Chaque entrée contient l'heure, l'auteur (nom d'utilisateur ou `api-token:<nom 
 
 Avant chaque écrasement d'un fichier de configuration, Gately enregistre l'ancien contenu comme une version d'historique dans `history/<nom>/` du dossier de configuration, et conserve les 30 plus récentes pour chaque configuration. `account.json` (identifiants du compte) et `tokens.json` (jetons) ne sont pas historisés.
 
-Dans « Système → Historique de configuration » :
+Dans l'onglet « Historique de configuration » de la page « Système → Journaux » :
 
 1. Choisissez un fichier de configuration pour voir la date d'enregistrement et la taille de chaque version ;
 2. Cliquez sur « Comparer » pour afficher les différences ligne par ligne entre cette version et la configuration actuelle ;

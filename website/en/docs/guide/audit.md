@@ -4,7 +4,7 @@ Gately holds DNS keys and certificate private keys, so who did what and when, an
 
 ## Audit log
 
-The sidebar "System → Audit Log" lists the following actions in reverse chronological order. You can filter by category or search by path, user or IP:
+The "Audit Log" tab of the sidebar page "System → Logs" lists the following actions in reverse chronological order. You can filter by category or search by path, user or IP:
 
 | Category | What is recorded |
 | --- | --- |
@@ -23,7 +23,7 @@ Each record contains the time, the actor (username or `api-token:<token name>`),
 
 Before overwriting a configuration file, Gately saves the old content as a history version under `history/<name>/` in the config directory, keeping the latest 30 versions per configuration. `account.json` (account credentials) and `tokens.json` (tokens) have no history.
 
-In "System → Config History":
+In the "Config History" tab of "System → Logs":
 
 1. Choose a configuration file to see the save time and size of each version;
 2. Click "Compare" to see a line-by-line diff between that version and the current configuration;

@@ -4,7 +4,7 @@ Gately verwaltet DNS-Schlüssel und private Zertifikatsschlüssel. Wer wann was 
 
 ## Audit-Protokoll
 
-Unter „System → Audit-Protokoll“ in der Seitenleiste werden die folgenden Aktionen in umgekehrt chronologischer Reihenfolge aufgeführt. Sie lassen sich nach Kategorie filtern oder nach Pfad, Benutzer und IP durchsuchen:
+Im Tab „Audit-Protokoll“ der Seite „System → Protokolle“ in der Seitenleiste werden die folgenden Aktionen in umgekehrt chronologischer Reihenfolge aufgeführt. Sie lassen sich nach Kategorie filtern oder nach Pfad, Benutzer und IP durchsuchen:
 
 | Kategorie | Erfasste Inhalte |
 | --- | --- |
@@ -23,7 +23,7 @@ Jeder Eintrag enthält Zeitpunkt, Akteur (Benutzername oder `api-token:<Token-Na
 
 Bevor Gately eine Konfigurationsdatei überschreibt, speichert es den alten Inhalt als Version unter `history/<Name>/` im Konfigurationsverzeichnis; pro Konfiguration bleiben die letzten 30 Versionen erhalten. Für `account.json` (Kontodaten) und `tokens.json` (Token) wird kein Verlauf geführt.
 
-Unter „System → Konfigurationsverlauf“:
+Im Tab „Konfigurationsverlauf“ der Seite „System → Protokolle“:
 
 1. Konfigurationsdatei wählen und Speicherzeitpunkt sowie Größe der einzelnen Versionen ansehen;
 2. Auf „Vergleichen“ klicken, um die zeilenweisen Unterschiede zwischen dieser Version und der aktuellen Konfiguration zu sehen;

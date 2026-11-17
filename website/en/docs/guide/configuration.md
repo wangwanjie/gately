@@ -50,7 +50,7 @@ Each module page can install, update and roll back its program online. Programs 
 
 ## Runtime logs
 
-System and module runtime logs are written to `logs/` in the configuration directory by default, so they are still available on the System logs page and each module page after a restart or upgrade:
+System and module runtime logs are written to `logs/` in the configuration directory by default, so they are still available on the "System Logs" tab of "System → Logs" and on each module page after a restart or upgrade:
 
 - One JSON Lines file per source: `logs/<module ID>.log`, with system logs in `logs/gately.log`. On startup the most recent entries, up to "Log retention lines", are restored from the file;
 - New entries are written in batches at most 1 second later. A file is rotated to `.1` once it exceeds the limit (2 MB by default) and only that one previous file is kept, so each source uses at most twice the limit;
@@ -64,7 +64,7 @@ System and module runtime logs are written to `logs/` in the configuration direc
 
 ### Viewing and filtering {#log-filter}
 
-The System Logs page and the log card at the bottom of each module page use the same log viewer. The following conditions can be combined; changes apply immediately, and new entries are appended only when they match:
+The "System Logs" tab of the Logs page and the log card at the bottom of each module page use the same log viewer. The following conditions can be combined; changes apply immediately, and new entries are appended only when they match:
 
 - Level and source (the dropdown lists every source in the module configuration plus sources that have appeared in the logs, such as all Web Service listeners, including ones with no access yet or whose logs are only on disk; you can also type one);
 - Keywords: space-separated terms must all match, double quotes group a phrase, a leading `-` excludes a term, for example `GET "timeout" -debug`; matches are highlighted. When the interface is in another language, search with the translated text you see on screen;

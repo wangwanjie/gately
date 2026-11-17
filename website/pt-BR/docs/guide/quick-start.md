@@ -22,6 +22,8 @@ Instale o aplicativo nativo: ele abre pelo ícone da área de trabalho através 
 
 Abra `http://<ip-do-dispositivo>:16680` no navegador. O usuário é `admin` e a senha padrão é `gately.cn`. A senha padrão é pública; depois de entrar, abre-se uma janela de troca de senha, e só é possível continuar depois de definir uma nova senha com pelo menos 10 caracteres e difícil de adivinhar.
 
+A barra lateral da interface de administração lista todas as páginas por grupo. Pressione Ctrl+K (⌘K no macOS) ou clique na caixa de busca no topo da barra lateral para abrir a busca global: ela leva a páginas e às suas abas pelo nome e também encontra domínios de sites, regras de encaminhamento de portas, registros DDNS e domínios de certificados. No celular, toque no ícone de busca na barra superior.
+
 ## 3. Aplicar o reforço básico de segurança
 
 Logo após entrar, vá em "Configurações" e:
