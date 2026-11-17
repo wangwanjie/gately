@@ -1,0 +1,23 @@
+{
+ "sut": "nginx",
+ "httpsCheck": "200 1024 2",
+ "idle": {
+  "pssKiB": 16087,
+  "rssKiB": 25644,
+  "cgroupKiB": 17688,
+  "cpuUsec": 88003,
+  "procs": 3
+ },
+ "tests": {},
+ "info": "nginx version: nginx/1.29.8",
+ "idleAfter": {
+  "pssKiB": 16087,
+  "rssKiB": 25644,
+  "cgroupKiB": 17824,
+  "cpuUsec": 116083,
+  "procs": 3
+ },
+ "startupSec": 0.316,
+ "image": "nginx:1.29-alpine",
+ "imageBytes": 92562078
+}

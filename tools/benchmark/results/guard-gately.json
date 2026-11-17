@@ -1,0 +1,314 @@
+{
+ "sut": "gately",
+ "params": {
+  "maxretry": 5,
+  "findtime": 60,
+  "bantime": 3600,
+  "rates": [
+   1000,
+   5000,
+   20000
+  ],
+  "streamSec": 60.0,
+  "malFrac": 0.02,
+  "latSamples": 60,
+  "bigAttackers": 10000,
+  "bigRate": 5000,
+  "sutCpus": "0,1"
+ },
+ "info": {
+  "version": "{\"buildDate\":\"2026-11-17T12:17:45Z\",\"commit\":\"1869b4f1ee7cf175f235fbe11eceb2d57a3205fa\",\"go\":\"go1.26.11\",\"version\":\"v0.6.8.1\"}",
+  "image": "ghcr.io/wangwanjie/gately:v0.6.8.1",
+  "binaryBytes": 40505506,
+  "imageBytes": 228676697,
+  "nftInImage": "nftables v1.1.1 (Commodore Bullmoose #2)",
+  "variant": "guard"
+ },
+ "tests": {
+  "idle": {
+   "readySec": 1.62,
+   "idle": {
+    "pssKiB": 45188,
+    "rssKiB": 45196,
+    "cgroupKiB": 22384,
+    "cpuUsec": 218620,
+    "procs": 1
+   },
+   "idlePssKiB": 45188,
+   "idleCpuPercent": 0.2,
+   "cpuset": "0-1"
+  },
+  "latency": {
+   "n": 60,
+   "p50ms": 477.9,
+   "p90ms": 912.5,
+   "p99ms": 996.1,
+   "maxms": 996.1,
+   "minms": 35.7,
+   "meanms": 482.3,
+   "missed": 0,
+   "polledFallback": 0,
+   "monitorErrors": [],
+   "detect": {
+    "n": 60,
+    "p50ms": 467.7,
+    "p90ms": 902.8,
+    "p99ms": 986.5,
+    "maxms": 986.5,
+    "minms": 26.5,
+    "meanms": 473.0
+   },
+   "sync": {
+    "n": 60,
+    "p50ms": 9.5,
+    "p90ms": 10.2,
+    "p99ms": 17.6,
+    "maxms": 17.6,
+    "minms": 4.0,
+    "meanms": 9.3
+   }
+  },
+  "stream": {
+   "1000": {
+    "rate": 1000,
+    "achievedRate": 1000,
+    "lines": 59992,
+    "malLines": 1199,
+    "injectSec": 60.0,
+    "expected": 237,
+    "banned": 237,
+    "missed": 0,
+    "inSetAtEnd": 237,
+    "falseBans": 0,
+    "partialBanned": 0,
+    "latency": {
+     "n": 237,
+     "p50ms": 500.7,
+     "p90ms": 931.2,
+     "p99ms": 1007.6,
+     "maxms": 1010.5,
+     "minms": 7.9,
+     "meanms": 501.6
+    },
+    "detect": {
+     "n": 237,
+     "p50ms": 496.2,
+     "p90ms": 921.4,
+     "p99ms": 998.6,
+     "maxms": 1000.6,
+     "minms": 5.8,
+     "meanms": 497.0
+    },
+    "sync": {
+     "n": 237,
+     "p50ms": 3.2,
+     "p90ms": 10.1,
+     "p99ms": 12.3,
+     "maxms": 15.0,
+     "minms": 1.7,
+     "meanms": 4.7
+    },
+    "lastBanAfterInjectEndSec": 0.1,
+    "allBannedSec": 60.1,
+    "cpuBusyAfterInjectEndSec": 0.1,
+    "inject": {
+     "peakPssKiB": 46556,
+     "cpuSeconds": 1.73,
+     "cpuPercent": 2.9,
+     "seconds": 59.2
+    },
+    "total": {
+     "peakPssKiB": 46556,
+     "cpuSeconds": 1.77,
+     "cpuPercent": 2.8,
+     "seconds": 64.2
+    },
+    "baselineCpuPercent": 0.6,
+    "polledFallback": 0,
+    "monitorErrors": [],
+    "nftListSetSec": 0.008,
+    "readySec": 1.48
+   },
+   "5000": {
+    "rate": 5000,
+    "achievedRate": 4999,
+    "lines": 299964,
+    "malLines": 5999,
+    "injectSec": 60.0,
+    "expected": 1187,
+    "banned": 1187,
+    "missed": 0,
+    "inSetAtEnd": 1187,
+    "falseBans": 0,
+    "partialBanned": 0,
+    "latency": {
+     "n": 1187,
+     "p50ms": 488.7,
+     "p90ms": 902.5,
+     "p99ms": 996.8,
+     "maxms": 1011.4,
+     "minms": 3.6,
+     "meanms": 497.4
+    },
+    "detect": {
+     "n": 1187,
+     "p50ms": 485.8,
+     "p90ms": 898.8,
+     "p99ms": 988.7,
+     "maxms": 1001.0,
+     "minms": 1.5,
+     "meanms": 494.3
+    },
+    "sync": {
+     "n": 1187,
+     "p50ms": 2.5,
+     "p90ms": 4.8,
+     "p99ms": 12.1,
+     "maxms": 20.4,
+     "minms": 1.7,
+     "meanms": 3.1
+    },
+    "lastBanAfterInjectEndSec": 0.23,
+    "allBannedSec": 60.23,
+    "cpuBusyAfterInjectEndSec": 0.1,
+    "inject": {
+     "peakPssKiB": 52620,
+     "cpuSeconds": 4.4,
+     "cpuPercent": 7.4,
+     "seconds": 59.2
+    },
+    "total": {
+     "peakPssKiB": 52620,
+     "cpuSeconds": 4.48,
+     "cpuPercent": 7.0,
+     "seconds": 64.2
+    },
+    "baselineCpuPercent": 0.9,
+    "polledFallback": 0,
+    "monitorErrors": [],
+    "nftListSetSec": 0.01,
+    "readySec": 1.38
+   },
+   "20000": {
+    "rate": 20000,
+    "achievedRate": 19997,
+    "lines": 1199857,
+    "malLines": 23997,
+    "injectSec": 60.0,
+    "expected": 4752,
+    "banned": 4752,
+    "missed": 0,
+    "inSetAtEnd": 4752,
+    "falseBans": 0,
+    "partialBanned": 0,
+    "latency": {
+     "n": 4752,
+     "p50ms": 509.2,
+     "p90ms": 909.4,
+     "p99ms": 1005.7,
+     "maxms": 1028.8,
+     "minms": 4.5,
+     "meanms": 512.5
+    },
+    "detect": {
+     "n": 4752,
+     "p50ms": 505.1,
+     "p90ms": 905.4,
+     "p99ms": 998.4,
+     "maxms": 1025.4,
+     "minms": 1.4,
+     "meanms": 508.1
+    },
+    "sync": {
+     "n": 4752,
+     "p50ms": 4.0,
+     "p90ms": 7.1,
+     "p99ms": 10.4,
+     "maxms": 22.3,
+     "minms": -0.1,
+     "meanms": 4.4
+    },
+    "lastBanAfterInjectEndSec": 0.57,
+    "allBannedSec": 60.57,
+    "cpuBusyAfterInjectEndSec": 0.6,
+    "inject": {
+     "peakPssKiB": 63408,
+     "cpuSeconds": 21.12,
+     "cpuPercent": 35.7,
+     "seconds": 59.2
+    },
+    "total": {
+     "peakPssKiB": 63408,
+     "cpuSeconds": 21.59,
+     "cpuPercent": 33.6,
+     "seconds": 64.2
+    },
+    "baselineCpuPercent": 1.2,
+    "polledFallback": 0,
+    "monitorErrors": [],
+    "nftListSetSec": 0.016,
+    "readySec": 1.4
+   }
+  },
+  "big": {
+   "rate": 5000,
+   "achievedRate": 5000,
+   "lines": 50000,
+   "malLines": 50000,
+   "injectSec": 10.0,
+   "expected": 10000,
+   "banned": 10000,
+   "missed": 0,
+   "inSetAtEnd": 10000,
+   "falseBans": 0,
+   "partialBanned": 0,
+   "latency": {
+    "n": 10000,
+    "p50ms": 605.2,
+    "p90ms": 2039.4,
+    "p99ms": 2408.2,
+    "maxms": 2449.2,
+    "minms": 6.0,
+    "meanms": 754.2
+   },
+   "detect": {
+    "n": 10000,
+    "p50ms": 599.3,
+    "p90ms": 2026.5,
+    "p99ms": 2394.4,
+    "maxms": 2434.2,
+    "minms": 2.5,
+    "meanms": 745.6
+   },
+   "sync": {
+    "n": 10000,
+    "p50ms": 8.1,
+    "p90ms": 13.5,
+    "p99ms": 16.3,
+    "maxms": 22.7,
+    "minms": -2.1,
+    "meanms": 8.6
+   },
+   "lastBanAfterInjectEndSec": 2.3,
+   "allBannedSec": 12.3,
+   "cpuBusyAfterInjectEndSec": 2.4,
+   "inject": {
+    "peakPssKiB": 71712,
+    "cpuSeconds": 7.22,
+    "cpuPercent": 75.8,
+    "seconds": 9.5
+   },
+   "total": {
+    "peakPssKiB": 73512,
+    "cpuSeconds": 10.13,
+    "cpuPercent": 69.7,
+    "seconds": 14.5
+   },
+   "baselineCpuPercent": 0.9,
+   "polledFallback": 0,
+   "monitorErrors": [],
+   "nftListSetSec": 0.034,
+   "readySec": 1.44
+  }
+ }
+}

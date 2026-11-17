@@ -1,0 +1,1182 @@
+{
+ "sut": "fnknock",
+ "env": {
+  "sutCpus": "0,1",
+  "loadCpus": "4-7",
+  "kernel": "6.12.63+deb13-amd64",
+  "arch": "x86_64"
+ },
+ "startupSec": 2.09,
+ "idle": {
+  "pssKiB": 64724,
+  "rssKiB": 64740,
+  "cgroupKiB": 100620,
+  "cpuUsec": 506665,
+  "procs": 3
+ },
+ "image": "kcilnk/fn-knock:2.5.11",
+ "imageBytes": 142411793,
+ "info": {
+  "version": "2.5.11",
+  "programBytes": 66592178,
+  "appDirBytes": 78308545,
+  "programNote": "server-admin-rs（Rust 控制面）+ go-reauth-proxy（Go 网关）；appDirBytes 含界面与 acme.sh 包"
+ },
+ "stealth": {
+  "probe": {
+   "tcp/9200": {
+    "result": "握手成功后被重置（RST）"
+   },
+   "tcp/7999": {
+    "result": "握手成功并返回数据",
+    "first": "HTTP/1.1 200 OK"
+   },
+   "tcp/7991": {
+    "result": "握手成功并返回数据",
+    "first": "HTTP/1.1 200 OK"
+   }
+  },
+  "nmap": [
+   "Host: 203.0.113.1 ()\tPorts: 7991/open/tcp/////, 7999/open/tcp//irdmi2///, 9200/open/tcp//wap-wsp///"
+  ]
+ },
+ "latency": {
+  "attempts": 60,
+  "ok": 60,
+  "total": {
+   "n": 60,
+   "p50ms": 84.164,
+   "p90ms": 126.852,
+   "p99ms": 142.512,
+   "maxms": 142.512,
+   "minms": 68.208,
+   "meanms": 93.149
+  },
+  "exCaptcha": {
+   "n": 60,
+   "p50ms": 50.307,
+   "p90ms": 84.702,
+   "p99ms": 89.428,
+   "maxms": 89.428,
+   "minms": 44.69,
+   "meanms": 57.792
+  },
+  "afterLogin": {
+   "n": 60,
+   "p50ms": 1.053,
+   "p90ms": 1.213,
+   "p99ms": 3.308,
+   "maxms": 3.308,
+   "minms": 0.888,
+   "meanms": 1.126
+  },
+  "login": {
+   "n": 60,
+   "p50ms": 49.12,
+   "p90ms": 83.514,
+   "p99ms": 88.226,
+   "maxms": 88.226,
+   "minms": 43.717,
+   "meanms": 56.666
+  },
+  "captchaSolve": {
+   "n": 60,
+   "p50ms": 28.243,
+   "p90ms": 46.746,
+   "p99ms": 59.57,
+   "maxms": 59.57,
+   "minms": 6.946,
+   "meanms": 30.598
+  },
+  "captchaFetch": {
+   "n": 60,
+   "p50ms": 4.722,
+   "p90ms": 4.894,
+   "p99ms": 17.634,
+   "maxms": 17.634,
+   "minms": 1.238,
+   "meanms": 4.758
+  },
+  "runs": [
+   {
+    "ok": true,
+    "challengeMs": 17.634160998568404,
+    "solveMs": 22.976103000473813,
+    "powNumber": 23262,
+    "maxNumber": 100000,
+    "loginMs": 85.34615700045833,
+    "ms": 126.8516139989515,
+    "exCaptchaMs": 86.24134999990929,
+    "afterLoginMs": 0.8951929994509555
+   },
+   {
+    "ok": true,
+    "challengeMs": 4.682366999986698,
+    "solveMs": 28.243270000530174,
+    "powNumber": 27232,
+    "maxNumber": 100000,
+    "loginMs": 49.311168999338406,
+    "ms": 83.23702199959371,
+    "exCaptchaMs": 50.311384999076836,
+    "afterLoginMs": 1.0002159997384297
+   },
+   {
+    "ok": true,
+    "challengeMs": 4.695712999819079,
+    "solveMs": 11.132600000564707,
+    "powNumber": 14693,
+    "maxNumber": 100000,
+    "loginMs": 51.45680500027083,
+    "ms": 68.2082690000243,
+    "exCaptchaMs": 52.379955999640515,
+    "afterLoginMs": 0.9231509993696818
+   },
+   {
+    "ok": true,
+    "challengeMs": 4.722069001218188,
+    "solveMs": 32.2081039994373,
+    "powNumber": 36105,
+    "maxNumber": 100000,
+    "loginMs": 88.2263650000823,
+    "ms": 126.34938200062606,
+    "exCaptchaMs": 89.41920899997058,
+    "afterLoginMs": 1.1928439998882823
+   },
+   {
+    "ok": true,
+    "challengeMs": 4.787271000168403,
+    "solveMs": 12.143228999775602,
+    "powNumber": 5420,
+    "maxNumber": 100000,
+    "loginMs": 63.188176000039675,
+    "ms": 81.20076399973186,
+    "exCaptchaMs": 64.27026399978786,
+    "afterLoginMs": 1.0820879997481825
+   },
+   {
+    "ok": true,
+    "challengeMs": 1.2377719995129155,
+    "solveMs": 28.0327260006743,
+    "powNumber": 64927,
+    "maxNumber": 100000,
+    "loginMs": 45.48710699964431,
+    "ms": 75.90795000032813,
+    "exCaptchaMs": 46.63745200014091,
+    "afterLoginMs": 1.1503450004965998
+   },
+   {
+    "ok": true,
+    "challengeMs": 4.848550999668078,
+    "solveMs": 20.82942800007004,
+    "powNumber": 14895,
+    "maxNumber": 100000,
+    "loginMs": 52.58210399915697,
+    "ms": 79.19569099976798,
+    "exCaptchaMs": 53.51771200002986,
+    "afterLoginMs": 0.9356080008728895
+   },
+   {
+    "ok": true,
+    "challengeMs": 4.778683000040473,
+    "solveMs": 57.59318399941549,
+    "powNumber": 98385,
+    "maxNumber": 100000,
+    "loginMs": 48.484488999747555,
+    "ms": 111.91928299922438,
+    "exCaptchaMs": 49.54741599976842,
+    "afterLoginMs": 1.0629270000208635
+   },
+   {
+    "ok": true,
+    "challengeMs": 4.871909000939922,
+    "solveMs": 30.042315000173403,
+    "powNumber": 66087,
+    "maxNumber": 100000,
+    "loginMs": 45.978150999872014,
+    "ms": 82.85553700079618,
+    "exCaptchaMs": 47.94131299968285,
+    "afterLoginMs": 1.9631619998108363
+   },
+   {
+    "ok": true,
+    "challengeMs": 3.6229590004950296,
+    "solveMs": 23.694595000051777,
+    "powNumber": 25073,
+    "maxNumber": 100000,
+    "loginMs": 49.945812999794725,
+    "ms": 78.18756500091695,
+    "exCaptchaMs": 50.87001100037014,
+    "afterLoginMs": 0.9241980005754158
+   },
+   {
+    "ok": true,
+    "challengeMs": 5.128910999701475,
+    "solveMs": 25.452746000155457,
+    "powNumber": 22478,
+    "maxNumber": 100000,
+    "loginMs": 48.82661599913263,
+    "ms": 80.29607599928568,
+    "exCaptchaMs": 49.714418999428744,
+    "afterLoginMs": 0.8878030002961168
+   },
+   {
+    "ok": true,
+    "challengeMs": 4.640758999812533,
+    "solveMs": 23.262549000719446,
+    "powNumber": 17967,
+    "maxNumber": 100000,
+    "loginMs": 52.730039999005385,
+    "ms": 81.61701099925267,
+    "exCaptchaMs": 53.71370299872069,
+    "afterLoginMs": 0.9836629997153068
+   },
+   {
+    "ok": true,
+    "challengeMs": 4.748413999550394,
+    "solveMs": 35.98726500058547,
+    "powNumber": 81542,
+    "maxNumber": 100000,
+    "loginMs": 47.915211000145064,
+    "ms": 89.64250600001833,
+    "exCaptchaMs": 48.90682699988247,
+    "afterLoginMs": 0.9916159997374052
+   },
+   {
+    "ok": true,
+    "challengeMs": 4.851858000620268,
+    "solveMs": 32.92942000007315,
+    "powNumber": 40920,
+    "maxNumber": 100000,
+    "loginMs": 50.02313299883099,
+    "ms": 88.86854000047606,
+    "exCaptchaMs": 51.08726199978264,
+    "afterLoginMs": 1.0641290009516524
+   },
+   {
+    "ok": true,
+    "challengeMs": 4.4614750004257075,
+    "solveMs": 21.06382400052098,
+    "powNumber": 15346,
+    "maxNumber": 100000,
+    "loginMs": 79.73806399968453,
+    "ms": 106.29432600035216,
+    "exCaptchaMs": 80.76902699940547,
+    "afterLoginMs": 1.0309629997209413
+   },
+   {
+    "ok": true,
+    "challengeMs": 1.3636549992952496,
+    "solveMs": 25.24014400114538,
+    "powNumber": 60580,
+    "maxNumber": 100000,
+    "loginMs": 45.871240999986185,
+    "ms": 73.45024999995076,
+    "exCaptchaMs": 46.846450999510125,
+    "afterLoginMs": 0.9752099995239405
+   },
+   {
+    "ok": true,
+    "challengeMs": 4.854945000261068,
+    "solveMs": 15.18046300043352,
+    "powNumber": 26994,
+    "maxNumber": 100000,
+    "loginMs": 50.05393899955379,
+    "ms": 71.15397499910614,
+    "exCaptchaMs": 51.11856699841155,
+    "afterLoginMs": 1.064627998857759
+   },
+   {
+    "ok": true,
+    "challengeMs": 4.665057000238448,
+    "solveMs": 14.489942999716732,
+    "powNumber": 27476,
+    "maxNumber": 100000,
+    "loginMs": 83.49453600021661,
+    "ms": 103.64471899993077,
+    "exCaptchaMs": 84.4897189999756,
+    "afterLoginMs": 0.9951829997589812
+   },
+   {
+    "ok": true,
+    "challengeMs": 4.8215179995168,
+    "solveMs": 35.94483699998818,
+    "powNumber": 78015,
+    "maxNumber": 100000,
+    "loginMs": 46.203648000300745,
+    "ms": 87.93354800036468,
+    "exCaptchaMs": 47.1671930008597,
+    "afterLoginMs": 0.9635450005589519
+   },
+   {
+    "ok": true,
+    "challengeMs": 4.808499999853666,
+    "solveMs": 59.56991099992592,
+    "powNumber": 96069,
+    "maxNumber": 100000,
+    "loginMs": 48.84377100097481,
+    "ms": 114.20099800125172,
+    "exCaptchaMs": 49.82258700147213,
+    "afterLoginMs": 0.9788160004973179
+   },
+   {
+    "ok": true,
+    "challengeMs": 4.7275090000766795,
+    "solveMs": 43.783102999441326,
+    "powNumber": 68635,
+    "maxNumber": 100000,
+    "loginMs": 82.76300000034098,
+    "ms": 132.31809500030067,
+    "exCaptchaMs": 83.80748300078267,
+    "afterLoginMs": 1.0444830004416872
+   },
+   {
+    "ok": true,
+    "challengeMs": 4.678929999499815,
+    "solveMs": 53.50166099924536,
+    "powNumber": 99220,
+    "maxNumber": 100000,
+    "loginMs": 43.71731500032183,
+    "ms": 102.87011800028267,
+    "exCaptchaMs": 44.6895270015375,
+    "afterLoginMs": 0.9722120012156665
+   },
+   {
+    "ok": true,
+    "challengeMs": 4.754198000227916,
+    "solveMs": 24.392266999711865,
+    "powNumber": 25309,
+    "maxNumber": 100000,
+    "loginMs": 48.2955290008249,
+    "ms": 78.47236400084512,
+    "exCaptchaMs": 49.32589900090534,
+    "afterLoginMs": 1.0303700000804383
+   },
+   {
+    "ok": true,
+    "challengeMs": 3.0512400007864926,
+    "solveMs": 33.15856599874678,
+    "powNumber": 73114,
+    "maxNumber": 100000,
+    "loginMs": 48.03930500020215,
+    "ms": 85.310140000729,
+    "exCaptchaMs": 49.10033400119573,
+    "afterLoginMs": 1.0610290009935852
+   },
+   {
+    "ok": true,
+    "challengeMs": 4.662643999836291,
+    "solveMs": 19.964148001236026,
+    "powNumber": 40326,
+    "maxNumber": 100000,
+    "loginMs": 46.557176998248906,
+    "ms": 72.26266500038037,
+    "exCaptchaMs": 47.63587299930805,
+    "afterLoginMs": 1.0786960010591429
+   },
+   {
+    "ok": true,
+    "challengeMs": 5.796608000309789,
+    "solveMs": 17.358224000417977,
+    "powNumber": 9804,
+    "maxNumber": 100000,
+    "loginMs": 60.08289399869682,
+    "ms": 84.16363700052898,
+    "exCaptchaMs": 61.008804999801214,
+    "afterLoginMs": 0.9259110011043958
+   },
+   {
+    "ok": true,
+    "challengeMs": 10.815666000780766,
+    "solveMs": 44.09110300002794,
+    "powNumber": 69669,
+    "maxNumber": 100000,
+    "loginMs": 48.42440799984615,
+    "ms": 104.26118500072334,
+    "exCaptchaMs": 49.354415999914636,
+    "afterLoginMs": 0.9300080000684829
+   },
+   {
+    "ok": true,
+    "challengeMs": 1.2972450003871927,
+    "solveMs": 30.233038998630946,
+    "powNumber": 65760,
+    "maxNumber": 100000,
+    "loginMs": 47.91603600097005,
+    "ms": 80.55865300048026,
+    "exCaptchaMs": 49.028369001462124,
+    "afterLoginMs": 1.1123330004920717
+   },
+   {
+    "ok": true,
+    "challengeMs": 5.138058999364148,
+    "solveMs": 46.384626999497414,
+    "powNumber": 69631,
+    "maxNumber": 100000,
+    "loginMs": 86.51141700102016,
+    "ms": 139.21988499896543,
+    "exCaptchaMs": 87.69719900010386,
+    "afterLoginMs": 1.1857819990837015
+   },
+   {
+    "ok": true,
+    "challengeMs": 4.706375000750995,
+    "solveMs": 24.902375998863135,
+    "powNumber": 25085,
+    "maxNumber": 100000,
+    "loginMs": 46.149140000125044,
+    "ms": 76.79056000051787,
+    "exCaptchaMs": 47.18180900090374,
+    "afterLoginMs": 1.0326690007786965
+   },
+   {
+    "ok": true,
+    "challengeMs": 4.754120000143303,
+    "solveMs": 23.963190000358736,
+    "powNumber": 26750,
+    "maxNumber": 100000,
+    "loginMs": 48.0148040005588,
+    "ms": 77.78535400029796,
+    "exCaptchaMs": 49.06804399979592,
+    "afterLoginMs": 1.053239999237121
+   },
+   {
+    "ok": true,
+    "challengeMs": 4.776608000611304,
+    "solveMs": 35.1811889995588,
+    "powNumber": 41653,
+    "maxNumber": 100000,
+    "loginMs": 87.2419160004938,
+    "ms": 128.21708200135618,
+    "exCaptchaMs": 88.25928500118607,
+    "afterLoginMs": 1.0173690006922698
+   },
+   {
+    "ok": true,
+    "challengeMs": 4.707194999355124,
+    "solveMs": 42.58490900065226,
+    "powNumber": 99249,
+    "maxNumber": 100000,
+    "loginMs": 46.1432979991514,
+    "ms": 94.49288999894634,
+    "exCaptchaMs": 47.200785998938954,
+    "afterLoginMs": 1.0574879997875541
+   },
+   {
+    "ok": true,
+    "challengeMs": 4.8270699990098365,
+    "solveMs": 22.099382000305923,
+    "powNumber": 48126,
+    "maxNumber": 100000,
+    "loginMs": 46.64319699986663,
+    "ms": 74.54597699870646,
+    "exCaptchaMs": 47.619524999390705,
+    "afterLoginMs": 0.9763279995240737
+   },
+   {
+    "ok": true,
+    "challengeMs": 4.86350100072741,
+    "solveMs": 25.31749499939906,
+    "powNumber": 23439,
+    "maxNumber": 100000,
+    "loginMs": 49.17037499944854,
+    "ms": 80.49370200023986,
+    "exCaptchaMs": 50.312706000113394,
+    "afterLoginMs": 1.1423310006648535
+   },
+   {
+    "ok": true,
+    "challengeMs": 4.663631998482742,
+    "solveMs": 14.68986000145378,
+    "powNumber": 6858,
+    "maxNumber": 100000,
+    "loginMs": 59.4536419994256,
+    "ms": 79.80876099827583,
+    "exCaptchaMs": 60.45526899833931,
+    "afterLoginMs": 1.0016269989137072
+   },
+   {
+    "ok": true,
+    "challengeMs": 4.684454999733134,
+    "solveMs": 10.46016799955396,
+    "powNumber": 15397,
+    "maxNumber": 100000,
+    "loginMs": 80.6053400010569,
+    "ms": 97.13452600044548,
+    "exCaptchaMs": 81.98990300115838,
+    "afterLoginMs": 1.3845630001014797
+   },
+   {
+    "ok": true,
+    "challengeMs": 4.934120001053088,
+    "solveMs": 46.74556299869437,
+    "powNumber": 85424,
+    "maxNumber": 100000,
+    "loginMs": 47.93906099985179,
+    "ms": 100.64346699982707,
+    "exCaptchaMs": 48.96378400007961,
+    "afterLoginMs": 1.024723000227823
+   },
+   {
+    "ok": true,
+    "challengeMs": 4.695572000855464,
+    "solveMs": 31.494769998971606,
+    "powNumber": 71607,
+    "maxNumber": 100000,
+    "loginMs": 44.079539000449586,
+    "ms": 81.31631300057052,
+    "exCaptchaMs": 45.12597100074345,
+    "afterLoginMs": 1.046432000293862
+   },
+   {
+    "ok": true,
+    "challengeMs": 4.834356999708689,
+    "solveMs": 46.598801000072854,
+    "powNumber": 80235,
+    "maxNumber": 100000,
+    "loginMs": 69.75343600061024,
+    "ms": 122.1790180006792,
+    "exCaptchaMs": 70.74586000089766,
+    "afterLoginMs": 0.9924240002874285
+   },
+   {
+    "ok": true,
+    "challengeMs": 4.659316000470426,
+    "solveMs": 52.9868389985495,
+    "powNumber": 90377,
+    "maxNumber": 100000,
+    "loginMs": 46.412166000664,
+    "ms": 105.16168100002687,
+    "exCaptchaMs": 47.51552600100695,
+    "afterLoginMs": 1.1033600003429456
+   },
+   {
+    "ok": true,
+    "challengeMs": 4.58331099980569,
+    "solveMs": 39.199734999783686,
+    "powNumber": 65985,
+    "maxNumber": 100000,
+    "loginMs": 46.73740600082965,
+    "ms": 91.56730200083985,
+    "exCaptchaMs": 47.78425600125047,
+    "afterLoginMs": 1.046850000420818
+   },
+   {
+    "ok": true,
+    "challengeMs": 4.733047000627266,
+    "solveMs": 44.28531099983957,
+    "powNumber": 67267,
+    "maxNumber": 100000,
+    "loginMs": 83.51437400051509,
+    "ms": 133.7202110007638,
+    "exCaptchaMs": 84.70185300029698,
+    "afterLoginMs": 1.187478999781888
+   },
+   {
+    "ok": true,
+    "challengeMs": 4.717274998256471,
+    "solveMs": 51.707662001717836,
+    "powNumber": 93255,
+    "maxNumber": 100000,
+    "loginMs": 50.15116299910005,
+    "ms": 107.72481699859782,
+    "exCaptchaMs": 51.29987999862351,
+    "afterLoginMs": 1.148716999523458
+   },
+   {
+    "ok": true,
+    "challengeMs": 4.759201998240314,
+    "solveMs": 46.02124800112506,
+    "powNumber": 78054,
+    "maxNumber": 100000,
+    "loginMs": 47.83620699890889,
+    "ms": 99.88815599899681,
+    "exCaptchaMs": 49.107705999631435,
+    "afterLoginMs": 1.2714990007225424
+   },
+   {
+    "ok": true,
+    "challengeMs": 4.524425999989035,
+    "solveMs": 19.208899000659585,
+    "powNumber": 21528,
+    "maxNumber": 100000,
+    "loginMs": 50.2074010000797,
+    "ms": 74.9475339998753,
+    "exCaptchaMs": 51.214208999226685,
+    "afterLoginMs": 1.0068079991469858
+   },
+   {
+    "ok": true,
+    "challengeMs": 4.894318000879139,
+    "solveMs": 13.278258998980164,
+    "powNumber": 6263,
+    "maxNumber": 100000,
+    "loginMs": 60.74805800017202,
+    "ms": 80.11080200049037,
+    "exCaptchaMs": 61.938225000631064,
+    "afterLoginMs": 1.1901670004590414
+   },
+   {
+    "ok": true,
+    "challengeMs": 4.575114999170182,
+    "solveMs": 37.649627000064356,
+    "powNumber": 83247,
+    "maxNumber": 100000,
+    "loginMs": 74.6824830002879,
+    "ms": 118.64571799924306,
+    "exCaptchaMs": 76.42097600000852,
+    "afterLoginMs": 1.73849299972062
+   },
+   {
+    "ok": true,
+    "challengeMs": 4.718567000963958,
+    "solveMs": 23.006256998996832,
+    "powNumber": 22255,
+    "maxNumber": 100000,
+    "loginMs": 50.886340000943164,
+    "ms": 79.74989600006666,
+    "exCaptchaMs": 52.025072000105865,
+    "afterLoginMs": 1.138731999162701
+   },
+   {
+    "ok": true,
+    "challengeMs": 1.7476989996794146,
+    "solveMs": 21.78950400048052,
+    "powNumber": 36489,
+    "maxNumber": 100000,
+    "loginMs": 48.07895200065104,
+    "ms": 72.6360789994942,
+    "exCaptchaMs": 49.09887599933427,
+    "afterLoginMs": 1.0199239986832254
+   },
+   {
+    "ok": true,
+    "challengeMs": 4.743903000417049,
+    "solveMs": 48.34083599962469,
+    "powNumber": 84615,
+    "maxNumber": 100000,
+    "loginMs": 88.2148340006097,
+    "ms": 142.51225299994985,
+    "exCaptchaMs": 89.42751399990811,
+    "afterLoginMs": 1.212679999298416
+   },
+   {
+    "ok": true,
+    "challengeMs": 1.7581219999556197,
+    "solveMs": 34.54862000035064,
+    "powNumber": 76677,
+    "maxNumber": 100000,
+    "loginMs": 45.95204599900171,
+    "ms": 83.28410699868982,
+    "exCaptchaMs": 46.977364998383564,
+    "afterLoginMs": 1.0253189993818523
+   },
+   {
+    "ok": true,
+    "challengeMs": 4.859544000282767,
+    "solveMs": 27.98544199868047,
+    "powNumber": 30419,
+    "maxNumber": 100000,
+    "loginMs": 48.0704350011365,
+    "ms": 81.99132899972028,
+    "exCaptchaMs": 49.14634300075704,
+    "afterLoginMs": 1.07590799962054
+   },
+   {
+    "ok": true,
+    "challengeMs": 4.85736500013445,
+    "solveMs": 33.47149600085686,
+    "powNumber": 44190,
+    "maxNumber": 100000,
+    "loginMs": 46.110305998809054,
+    "ms": 85.55631600029301,
+    "exCaptchaMs": 47.2274549993017,
+    "afterLoginMs": 1.1171490004926454
+   },
+   {
+    "ok": true,
+    "challengeMs": 4.670751999583445,
+    "solveMs": 23.540954000054626,
+    "powNumber": 49482,
+    "maxNumber": 100000,
+    "loginMs": 47.181023999655736,
+    "ms": 76.55171400074323,
+    "exCaptchaMs": 48.34000800110516,
+    "afterLoginMs": 1.1589840014494257
+   },
+   {
+    "ok": true,
+    "challengeMs": 4.799260999789112,
+    "solveMs": 34.320029999435064,
+    "powNumber": 45299,
+    "maxNumber": 100000,
+    "loginMs": 45.631860000867164,
+    "ms": 88.05947799919522,
+    "exCaptchaMs": 48.94018699997105,
+    "afterLoginMs": 3.3083269991038833
+   },
+   {
+    "ok": true,
+    "challengeMs": 4.799382999408408,
+    "solveMs": 6.946445000721724,
+    "powNumber": 6792,
+    "maxNumber": 100000,
+    "loginMs": 59.66978699871106,
+    "ms": 72.69432300017797,
+    "exCaptchaMs": 60.94849500004784,
+    "afterLoginMs": 1.2787080013367813
+   },
+   {
+    "ok": true,
+    "challengeMs": 4.543859000477823,
+    "solveMs": 8.442502999969292,
+    "powNumber": 10511,
+    "maxNumber": 100000,
+    "loginMs": 55.48011400060204,
+    "ms": 69.53425600113405,
+    "exCaptchaMs": 56.54789400068694,
+    "afterLoginMs": 1.0677800000848947
+   },
+   {
+    "ok": true,
+    "challengeMs": 4.493698999795015,
+    "solveMs": 42.78187900126795,
+    "powNumber": 60632,
+    "maxNumber": 100000,
+    "loginMs": 84.07904799969401,
+    "ms": 132.49816500137968,
+    "exCaptchaMs": 85.22258700031671,
+    "afterLoginMs": 1.1435390006226953
+   },
+   {
+    "ok": true,
+    "challengeMs": 4.471086000194191,
+    "solveMs": 33.45729800093977,
+    "powNumber": 39613,
+    "maxNumber": 100000,
+    "loginMs": 49.11951199937903,
+    "ms": 88.23570099957578,
+    "exCaptchaMs": 50.30731699844182,
+    "afterLoginMs": 1.1878049990627915
+   }
+  ]
+ },
+ "flood": {
+  "http-badlogin-10000": {
+   "flood": {
+    "rps": 9999.716604071984,
+    "p50ms": 145.948475,
+    "p99ms": 278.319637,
+    "ok": 0,
+    "non2xx": 2699,
+    "errors": 397294,
+    "statusCodes": {
+     "400": 2699
+    },
+    "errorDist": {
+     "aborted due to deadline": 2,
+     "connection error": 397292
+    }
+   },
+   "sutCpuPercent": 84.5,
+   "peakPssKiB": 123044,
+   "legitKnock": {
+    "attempts": 9,
+    "ok": 9,
+    "total": {
+     "n": 9,
+     "p50ms": 92.592,
+     "p90ms": 139.744,
+     "p99ms": 139.744,
+     "maxms": 139.744,
+     "minms": 65.773,
+     "meanms": 95.157
+    },
+    "exCaptcha": {
+     "n": 9,
+     "p50ms": 58.236,
+     "p90ms": 88.628,
+     "p99ms": 88.628,
+     "maxms": 88.628,
+     "minms": 56.12,
+     "meanms": 66.167
+    },
+    "afterLogin": {
+     "n": 9,
+     "p50ms": 1.695,
+     "p90ms": 2.47,
+     "p99ms": 2.47,
+     "maxms": 2.47,
+     "minms": 1.155,
+     "meanms": 1.678
+    },
+    "login": {
+     "n": 9,
+     "p50ms": 56.381,
+     "p90ms": 86.934,
+     "p99ms": 86.934,
+     "maxms": 86.934,
+     "minms": 54.472,
+     "meanms": 64.49
+    },
+    "captchaSolve": {
+     "n": 9,
+     "p50ms": 27.571,
+     "p90ms": 48.903,
+     "p99ms": 48.903,
+     "maxms": 48.903,
+     "minms": 5.166,
+     "meanms": 27.214
+    },
+    "captchaFetch": {
+     "n": 9,
+     "p50ms": 1.734,
+     "p90ms": 2.274,
+     "p99ms": 2.274,
+     "maxms": 2.274,
+     "minms": 1.092,
+     "meanms": 1.776
+    }
+   }
+  },
+  "http-badlogin-50000": {
+   "flood": {
+    "rps": 42283.44285673925,
+    "p50ms": 145.45099,
+    "p99ms": 230.99716800000002,
+    "ok": 0,
+    "non2xx": 1337,
+    "errors": 1690106,
+    "statusCodes": {
+     "400": 1337
+    },
+    "errorDist": {
+     "aborted due to deadline": 198,
+     "connection error": 1689908
+    }
+   },
+   "sutCpuPercent": 194.0,
+   "peakPssKiB": 119868,
+   "legitKnock": {
+    "attempts": 8,
+    "ok": 8,
+    "total": {
+     "n": 8,
+     "p50ms": 198.328,
+     "p90ms": 226.805,
+     "p99ms": 226.805,
+     "maxms": 226.805,
+     "minms": 146.932,
+     "meanms": 195.623
+    },
+    "exCaptcha": {
+     "n": 8,
+     "p50ms": 137.182,
+     "p90ms": 176.901,
+     "p99ms": 176.901,
+     "maxms": 176.901,
+     "minms": 119.737,
+     "meanms": 149.11
+    },
+    "afterLogin": {
+     "n": 8,
+     "p50ms": 10.491,
+     "p90ms": 24.948,
+     "p99ms": 24.948,
+     "maxms": 24.948,
+     "minms": 8.4,
+     "meanms": 13.125
+    },
+    "login": {
+     "n": 8,
+     "p50ms": 127.68,
+     "p90ms": 166.604,
+     "p99ms": 166.604,
+     "maxms": 166.604,
+     "minms": 100.101,
+     "meanms": 135.985
+    },
+    "captchaSolve": {
+     "n": 8,
+     "p50ms": 31.705,
+     "p90ms": 64.498,
+     "p99ms": 64.498,
+     "maxms": 64.498,
+     "minms": 12.454,
+     "meanms": 36.151
+    },
+    "captchaFetch": {
+     "n": 8,
+     "p50ms": 10.085,
+     "p90ms": 14.742,
+     "p99ms": 14.742,
+     "maxms": 14.742,
+     "minms": 3.741,
+     "meanms": 10.362
+    }
+   }
+  },
+  "tcp-unauth-conn-10000": {
+   "flood": {
+    "rps": 9999.779776049394,
+    "p50ms": 0,
+    "p99ms": 0,
+    "ok": 0,
+    "non2xx": 0,
+    "errors": 399999,
+    "statusCodes": {},
+    "errorDist": {
+     "aborted due to deadline": 6,
+     "connection closed before message completed": 25506,
+     "connection error": 374200,
+     "operation was canceled": 287
+    }
+   },
+   "sutCpuPercent": 72.0,
+   "peakPssKiB": 100580,
+   "legitKnock": {
+    "attempts": 7,
+    "ok": 7,
+    "total": {
+     "n": 7,
+     "p50ms": 453.934,
+     "p90ms": 2108.25,
+     "p99ms": 2108.25,
+     "maxms": 2108.25,
+     "minms": 388.778,
+     "meanms": 975.583
+    },
+    "exCaptcha": {
+     "n": 7,
+     "p50ms": 441.606,
+     "p90ms": 2067.698,
+     "p99ms": 2067.698,
+     "maxms": 2067.698,
+     "minms": 380.681,
+     "meanms": 953.555
+    },
+    "afterLogin": {
+     "n": 7,
+     "p50ms": 388.096,
+     "p90ms": 2013.165,
+     "p99ms": 2013.165,
+     "maxms": 2013.165,
+     "minms": 326.471,
+     "meanms": 893.736
+    },
+    "login": {
+     "n": 7,
+     "p50ms": 54.532,
+     "p90ms": 89.328,
+     "p99ms": 89.328,
+     "maxms": 89.328,
+     "minms": 53.51,
+     "meanms": 59.819
+    },
+    "captchaSolve": {
+     "n": 7,
+     "p50ms": 9.369,
+     "p90ms": 44.855,
+     "p99ms": 44.855,
+     "maxms": 44.855,
+     "minms": 0.756,
+     "meanms": 18.678
+    },
+    "captchaFetch": {
+     "n": 7,
+     "p50ms": 3.125,
+     "p90ms": 7.341,
+     "p99ms": 7.341,
+     "maxms": 7.341,
+     "minms": 1.216,
+     "meanms": 3.35
+    }
+   }
+  },
+  "tcp-unauth-conn-50000": {
+   "flood": {
+    "rps": 49996.17065019478,
+    "p50ms": 0,
+    "p99ms": 0,
+    "ok": 0,
+    "non2xx": 0,
+    "errors": 1999922,
+    "statusCodes": {},
+    "errorDist": {
+     "connection closed before message completed": 116870,
+     "connection error": 1882888,
+     "operation was canceled": 164
+    }
+   },
+   "sutCpuPercent": 122.4,
+   "peakPssKiB": 94976,
+   "legitKnock": {
+    "attempts": 5,
+    "ok": 1,
+    "total": {
+     "n": 1,
+     "p50ms": 1517.615,
+     "p90ms": 1517.615,
+     "p99ms": 1517.615,
+     "maxms": 1517.615,
+     "minms": 1517.615,
+     "meanms": 1517.615
+    },
+    "exCaptcha": {
+     "n": 1,
+     "p50ms": 1457.018,
+     "p90ms": 1457.018,
+     "p99ms": 1457.018,
+     "maxms": 1457.018,
+     "minms": 1457.018,
+     "meanms": 1457.018
+    },
+    "afterLogin": {
+     "n": 1,
+     "p50ms": 1386.958,
+     "p90ms": 1386.958,
+     "p99ms": 1386.958,
+     "maxms": 1386.958,
+     "minms": 1386.958,
+     "meanms": 1386.958
+    },
+    "login": {
+     "n": 1,
+     "p50ms": 70.061,
+     "p90ms": 70.061,
+     "p99ms": 70.061,
+     "maxms": 70.061,
+     "minms": 70.061,
+     "meanms": 70.061
+    },
+    "captchaSolve": {
+     "n": 1,
+     "p50ms": 59.513,
+     "p90ms": 59.513,
+     "p99ms": 59.513,
+     "maxms": 59.513,
+     "minms": 59.513,
+     "meanms": 59.513
+    },
+    "captchaFetch": {
+     "n": 1,
+     "p50ms": 1.084,
+     "p90ms": 1.084,
+     "p99ms": 1.084,
+     "maxms": 1.084,
+     "minms": 1.084,
+     "meanms": 1.084
+    },
+    "errors": [
+     null,
+     null,
+     null,
+     null
+    ]
+   }
+  }
+ },
+ "afterFlood": {
+  "pssKiB": 77896,
+  "rssKiB": 77912,
+  "cgroupKiB": 115160,
+  "cpuUsec": 194654678,
+  "procs": 3
+ },
+ "dataplane": {
+  "keepalive": {
+   "median": {
+    "rps": 140136.6,
+    "MBps": 168.93,
+    "p50ms": 0.444,
+    "p99ms": 1.01,
+    "non2xx": 0,
+    "sockErrors": 0,
+    "sutCpuPercent": 190.4,
+    "peakPssKiB": 78964
+   },
+   "runs": [
+    {
+     "rps": 144811.86,
+     "MBps": 174.56,
+     "p50ms": 0.43,
+     "p99ms": 0.95,
+     "non2xx": 0,
+     "sockErrors": 0,
+     "sutCpuPercent": 189.4,
+     "peakPssKiB": 78216
+    },
+    {
+     "rps": 140136.6,
+     "MBps": 168.93,
+     "p50ms": 0.444,
+     "p99ms": 1.01,
+     "non2xx": 0,
+     "sockErrors": 0,
+     "sutCpuPercent": 190.4,
+     "peakPssKiB": 78964
+    },
+    {
+     "rps": 135512.71,
+     "MBps": 163.35,
+     "p50ms": 0.458,
+     "p99ms": 1.04,
+     "non2xx": 0,
+     "sockErrors": 0,
+     "sutCpuPercent": 190.2,
+     "peakPssKiB": 79532
+    }
+   ]
+  },
+  "newconn": {
+   "median": {
+    "rps": 1886.219895636228,
+    "p50ms": 16.709440999999998,
+    "p99ms": 23.507113999999998,
+    "ok": 37694,
+    "non2xx": 0,
+    "errors": 32,
+    "sutCpuPercent": 133.9,
+    "peakPssKiB": 80368
+   },
+   "runs": [
+    {
+     "rps": 1886.219895636228,
+     "p50ms": 16.709440999999998,
+     "p99ms": 23.507113999999998,
+     "ok": 37694,
+     "non2xx": 0,
+     "errors": 32,
+     "sutCpuPercent": 133.9,
+     "peakPssKiB": 80368
+    },
+    {
+     "rps": 1893.7518666574235,
+     "p50ms": 16.648535,
+     "p99ms": 23.188737,
+     "ok": 37846,
+     "non2xx": 0,
+     "errors": 32,
+     "sutCpuPercent": 133.6,
+     "peakPssKiB": 80708
+    },
+    {
+     "rps": 1885.858140510026,
+     "p50ms": 16.696497,
+     "p99ms": 23.419434,
+     "ok": 37687,
+     "non2xx": 0,
+     "errors": 32,
+     "sutCpuPercent": 133.9,
+     "peakPssKiB": 80572
+    }
+   ]
+  }
+ },
+ "idleAfter": {
+  "pssKiB": 77208,
+  "rssKiB": 77224,
+  "cgroupKiB": 114748,
+  "cpuUsec": 399313065,
+  "procs": 3
+ }
+}

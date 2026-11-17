@@ -1,0 +1,23 @@
+{
+ "sut": "haproxy",
+ "httpsCheck": "200 1024 2",
+ "idle": {
+  "pssKiB": 35784,
+  "rssKiB": 45712,
+  "cgroupKiB": 40680,
+  "cpuUsec": 106244,
+  "procs": 2
+ },
+ "tests": {},
+ "info": "HAProxy version 3.2.26-3e0f11a 2026/10/14 - https://haproxy.org/",
+ "idleAfter": {
+  "pssKiB": 35784,
+  "rssKiB": 45712,
+  "cgroupKiB": 40696,
+  "cpuUsec": 137010,
+  "procs": 2
+ },
+ "startupSec": 0.331,
+ "image": "haproxy:3.2-alpine",
+ "imageBytes": 57967018
+}

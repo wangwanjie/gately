@@ -1,0 +1,23 @@
+{
+ "sut": "gately",
+ "tasks": 20,
+ "intervalSec": 30,
+ "window": {
+  "peakPssKiB": 56736,
+  "peakRssKiB": 56744,
+  "avgPssKiB": 52792,
+  "cpuSeconds": 0.494828,
+  "cpuPercent": 0.16470769901245927,
+  "elapsed": 300.42797207832336
+ },
+ "idle": {
+  "pssKiB": 54744,
+  "rssKiB": 54752,
+  "cgroupKiB": 30712,
+  "cpuUsec": 678212,
+  "procs": 1
+ },
+ "callbacksInWindow": 0,
+ "image": "ghcr.io/wangwanjie/gately:v0.6.8.1",
+ "imageBytes": 228676697
+}

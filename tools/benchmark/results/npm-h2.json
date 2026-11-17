@@ -1,0 +1,64 @@
+{
+ "sut": "npm",
+ "httpsCheck": "200 1024 2",
+ "idle": {
+  "pssKiB": 200544,
+  "rssKiB": 305160,
+  "cgroupKiB": 291088,
+  "cpuUsec": 3824011,
+  "procs": 22
+ },
+ "tests": {
+  "h2": {
+   "median": {
+    "rps": 34709.8,
+    "ok": 694196,
+    "failed": 0,
+    "errored": 0,
+    "proto": "h2",
+    "sutCpuPercent": 180.0,
+    "peakPssKiB": 220427
+   },
+   "runs": [
+    {
+     "rps": 33571.3,
+     "ok": 671426,
+     "failed": 0,
+     "errored": 0,
+     "proto": "h2",
+     "sutCpuPercent": 180.2,
+     "peakPssKiB": 213375
+    },
+    {
+     "rps": 34864.1,
+     "ok": 697282,
+     "failed": 0,
+     "errored": 0,
+     "proto": "h2",
+     "sutCpuPercent": 180.0,
+     "peakPssKiB": 218149
+    },
+    {
+     "rps": 34709.8,
+     "ok": 694196,
+     "failed": 0,
+     "errored": 0,
+     "proto": "h2",
+     "sutCpuPercent": 180.0,
+     "peakPssKiB": 220427
+    }
+   ]
+  }
+ },
+ "info": "\"version\": \"2.17.0\",\nnginx version: openresty/1.31.8.1",
+ "idleAfter": {
+  "pssKiB": 220439,
+  "rssKiB": 330384,
+  "cgroupKiB": 319656,
+  "cpuUsec": 123530763,
+  "procs": 21
+ },
+ "startupSec": 1.514,
+ "image": "jc21/nginx-proxy-manager:2.17.0",
+ "imageBytes": 1958686726
+}

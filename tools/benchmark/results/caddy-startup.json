@@ -1,0 +1,23 @@
+{
+ "sut": "caddy",
+ "httpsCheck": "200 1024 2",
+ "idle": {
+  "pssKiB": 50592,
+  "rssKiB": 50600,
+  "cgroupKiB": 57088,
+  "cpuUsec": 108191,
+  "procs": 1
+ },
+ "tests": {},
+ "info": "v2.11.9 h1:bhZtcRKQOq0fuLvEgCdPYvUxXyGn9kzjG4lh2332DTE=",
+ "idleAfter": {
+  "pssKiB": 50592,
+  "rssKiB": 50600,
+  "cgroupKiB": 57124,
+  "cpuUsec": 162718,
+  "procs": 1
+ },
+ "startupSec": 0.445,
+ "image": "caddy:2-alpine",
+ "imageBytes": 91672907
+}

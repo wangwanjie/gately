@@ -1,0 +1,23 @@
+{
+ "sut": "ddnsgo",
+ "tasks": 20,
+ "intervalSec": 30,
+ "window": {
+  "peakPssKiB": 18640,
+  "peakRssKiB": 18648,
+  "avgPssKiB": 17331,
+  "cpuSeconds": 0.131203,
+  "cpuPercent": 0.04370503706865251,
+  "elapsed": 300.2010953426361
+ },
+ "idle": {
+  "pssKiB": 17412,
+  "rssKiB": 17420,
+  "cgroupKiB": 20716,
+  "cpuUsec": 205637,
+  "procs": 1
+ },
+ "callbacksInWindow": 0,
+ "image": "jeessy/ddns-go:v6.17.9",
+ "imageBytes": 43158408
+}

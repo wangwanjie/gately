@@ -1,0 +1,28 @@
+{
+ "sut": "haproxy",
+ "sites": 1000,
+ "startupSec": 0.372,
+ "startupRuns": [
+  0.372,
+  0.371,
+  0.451
+ ],
+ "idle": {
+  "pssKiB": 52112,
+  "rssKiB": 63668,
+  "cgroupKiB": 57420,
+  "cpuUsec": 108049,
+  "procs": 2
+ },
+ "rps": 24056.62,
+ "p99ms": 30.03,
+ "non2xx": 0,
+ "watch": {
+  "peakPssKiB": 59632,
+  "peakRssKiB": 71188,
+  "avgPssKiB": 59201,
+  "cpuSeconds": 39.502514,
+  "cpuPercent": 179.22720558794566,
+  "elapsed": 22.040467500686646
+ }
+}

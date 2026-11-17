@@ -1,0 +1,599 @@
+{
+ "sut": "lucky",
+ "startupSec": 3.87,
+ "hash": "Lucky 站点认证用户以明文保存（BasicAuthUserList）；网页登录为 RSA-2048 挑战加密传输后直接比较明文",
+ "images": {
+  "gdy666/lucky:v3.8.1_lucky": 57602956
+ },
+ "tests": {
+  "cookie": {
+   "median": {
+    "rps": 10786.34,
+    "MBps": 14.37,
+    "p50ms": 11.53,
+    "p99ms": 27.06,
+    "non2xx": 0,
+    "sockErrors": 56,
+    "errorLines": [
+     "Socket errors: connect 56, read 0, write 0, timeout 0"
+    ],
+    "sutCpuPercent": 197.9,
+    "cpuPercentBy": {
+     "auth-sut": 197.9
+    },
+    "peakPssKiB": 149848,
+    "peakPssBy": {
+     "auth-sut": 149848
+    }
+   },
+   "runs": [
+    {
+     "rps": 10897.79,
+     "MBps": 14.52,
+     "p50ms": 11.42,
+     "p99ms": 26.78,
+     "non2xx": 0,
+     "sockErrors": 46,
+     "errorLines": [
+      "Socket errors: connect 46, read 0, write 0, timeout 0"
+     ],
+     "sutCpuPercent": 197.9,
+     "cpuPercentBy": {
+      "auth-sut": 197.9
+     },
+     "peakPssKiB": 150004,
+     "peakPssBy": {
+      "auth-sut": 150004
+     }
+    },
+    {
+     "rps": 10777.5,
+     "MBps": 14.36,
+     "p50ms": 11.56,
+     "p99ms": 26.76,
+     "non2xx": 0,
+     "sockErrors": 16,
+     "errorLines": [
+      "Socket errors: connect 16, read 0, write 0, timeout 0"
+     ],
+     "sutCpuPercent": 198.2,
+     "cpuPercentBy": {
+      "auth-sut": 198.2
+     },
+     "peakPssKiB": 150112,
+     "peakPssBy": {
+      "auth-sut": 150112
+     }
+    },
+    {
+     "rps": 10786.34,
+     "MBps": 14.37,
+     "p50ms": 11.53,
+     "p99ms": 27.06,
+     "non2xx": 0,
+     "sockErrors": 56,
+     "errorLines": [
+      "Socket errors: connect 56, read 0, write 0, timeout 0"
+     ],
+     "sutCpuPercent": 197.9,
+     "cpuPercentBy": {
+      "auth-sut": 197.9
+     },
+     "peakPssKiB": 149848,
+     "peakPssBy": {
+      "auth-sut": 149848
+     }
+    }
+   ]
+  },
+  "none": {
+   "median": {
+    "rps": 13840.87,
+    "MBps": 16.37,
+    "p50ms": 8.6,
+    "p99ms": 22.31,
+    "non2xx": 0,
+    "sockErrors": 3,
+    "errorLines": [
+     "Socket errors: connect 3, read 0, write 0, timeout 0"
+    ],
+    "sutCpuPercent": 197.8,
+    "cpuPercentBy": {
+     "auth-sut": 197.8
+    },
+    "peakPssKiB": 152716,
+    "peakPssBy": {
+     "auth-sut": 152716
+    }
+   },
+   "runs": [
+    {
+     "rps": 13847.21,
+     "MBps": 16.38,
+     "p50ms": 8.52,
+     "p99ms": 22.64,
+     "non2xx": 0,
+     "sockErrors": 10,
+     "errorLines": [
+      "Socket errors: connect 10, read 0, write 0, timeout 0"
+     ],
+     "sutCpuPercent": 198.2,
+     "cpuPercentBy": {
+      "auth-sut": 198.2
+     },
+     "peakPssKiB": 153416,
+     "peakPssBy": {
+      "auth-sut": 153416
+     }
+    },
+    {
+     "rps": 13840.87,
+     "MBps": 16.37,
+     "p50ms": 8.6,
+     "p99ms": 22.31,
+     "non2xx": 0,
+     "sockErrors": 3,
+     "errorLines": [
+      "Socket errors: connect 3, read 0, write 0, timeout 0"
+     ],
+     "sutCpuPercent": 197.8,
+     "cpuPercentBy": {
+      "auth-sut": 197.8
+     },
+     "peakPssKiB": 152716,
+     "peakPssBy": {
+      "auth-sut": 152716
+     }
+    },
+    {
+     "rps": 13789.82,
+     "MBps": 16.31,
+     "p50ms": 8.66,
+     "p99ms": 22.36,
+     "non2xx": 0,
+     "sockErrors": 0,
+     "sutCpuPercent": 198.0,
+     "cpuPercentBy": {
+      "auth-sut": 198.0
+     },
+     "peakPssKiB": 150096,
+     "peakPssBy": {
+      "auth-sut": 150096
+     }
+    }
+   ]
+  },
+  "basic": {
+   "median": {
+    "rps": 10107.18,
+    "MBps": 13.47,
+    "p50ms": 12.8,
+    "p99ms": 29.14,
+    "non2xx": 0,
+    "sockErrors": 14,
+    "errorLines": [
+     "Socket errors: connect 14, read 0, write 0, timeout 0"
+    ],
+    "sutCpuPercent": 198.1,
+    "cpuPercentBy": {
+     "auth-sut": 198.1
+    },
+    "peakPssKiB": 156712,
+    "peakPssBy": {
+     "auth-sut": 156712
+    }
+   },
+   "runs": [
+    {
+     "rps": 10107.18,
+     "MBps": 13.47,
+     "p50ms": 12.8,
+     "p99ms": 29.14,
+     "non2xx": 0,
+     "sockErrors": 14,
+     "errorLines": [
+      "Socket errors: connect 14, read 0, write 0, timeout 0"
+     ],
+     "sutCpuPercent": 198.1,
+     "cpuPercentBy": {
+      "auth-sut": 198.1
+     },
+     "peakPssKiB": 156712,
+     "peakPssBy": {
+      "auth-sut": 156712
+     }
+    },
+    {
+     "rps": 10118.79,
+     "MBps": 13.48,
+     "p50ms": 12.84,
+     "p99ms": 30.87,
+     "non2xx": 0,
+     "sockErrors": 1,
+     "errorLines": [
+      "Socket errors: connect 1, read 0, write 0, timeout 0"
+     ],
+     "sutCpuPercent": 197.7,
+     "cpuPercentBy": {
+      "auth-sut": 197.7
+     },
+     "peakPssKiB": 155648,
+     "peakPssBy": {
+      "auth-sut": 155648
+     }
+    },
+    {
+     "rps": 10020.95,
+     "MBps": 13.35,
+     "p50ms": 12.94,
+     "p99ms": 31.52,
+     "non2xx": 0,
+     "sockErrors": 23,
+     "errorLines": [
+      "Socket errors: connect 23, read 0, write 0, timeout 0"
+     ],
+     "sutCpuPercent": 197.7,
+     "cpuPercentBy": {
+      "auth-sut": 197.7
+     },
+     "peakPssKiB": 155884,
+     "peakPssBy": {
+      "auth-sut": 155884
+     }
+    }
+   ]
+  },
+  "loginOk": {
+   "median": {
+    "ok": 0,
+    "rejected": 24752,
+    "errors": 0,
+    "total": 24752,
+    "elapsed": 20.011252403259277,
+    "okPerSec": 0.0,
+    "rps": 1236.9,
+    "p50ms": 6.86,
+    "p99ms": 11.22,
+    "requestsPerLogin": 2,
+    "reasons": {
+     "challenge 500 1 create webauth session error": 24752
+    },
+    "sutCpuPercent": 112.4,
+    "cpuPercentBy": {
+     "auth-sut": 112.4
+    },
+    "peakPssKiB": 214144,
+    "peakPssBy": {
+     "auth-sut": 214144
+    }
+   },
+   "runs": [
+    {
+     "ok": 2153,
+     "rejected": 34927,
+     "errors": 0,
+     "total": 37080,
+     "elapsed": 20.01218271255493,
+     "okPerSec": 107.6,
+     "rps": 1852.9,
+     "p50ms": 4.25,
+     "p99ms": 10.73,
+     "requestsPerLogin": 2,
+     "reasons": {
+      "login 429 2 too many concurrent login attempts": 13934,
+      "challenge 429 2 too many concurrent webauth pre-login requests": 588,
+      "login 500 1 create webauth session error": 4,
+      "challenge 500 1 create webauth session error": 20401
+     },
+     "sutCpuPercent": 124.8,
+     "cpuPercentBy": {
+      "auth-sut": 124.8
+     },
+     "peakPssKiB": 213932,
+     "peakPssBy": {
+      "auth-sut": 213932
+     }
+    },
+    {
+     "ok": 0,
+     "rejected": 24200,
+     "errors": 0,
+     "total": 24200,
+     "elapsed": 20.01252007484436,
+     "okPerSec": 0.0,
+     "rps": 1209.2,
+     "p50ms": 7.02,
+     "p99ms": 11.43,
+     "requestsPerLogin": 2,
+     "reasons": {
+      "challenge 500 1 create webauth session error": 24200
+     },
+     "sutCpuPercent": 112.2,
+     "cpuPercentBy": {
+      "auth-sut": 112.2
+     },
+     "peakPssKiB": 214052,
+     "peakPssBy": {
+      "auth-sut": 214052
+     }
+    },
+    {
+     "ok": 0,
+     "rejected": 24752,
+     "errors": 0,
+     "total": 24752,
+     "elapsed": 20.011252403259277,
+     "okPerSec": 0.0,
+     "rps": 1236.9,
+     "p50ms": 6.86,
+     "p99ms": 11.22,
+     "requestsPerLogin": 2,
+     "reasons": {
+      "challenge 500 1 create webauth session error": 24752
+     },
+     "sutCpuPercent": 112.4,
+     "cpuPercentBy": {
+      "auth-sut": 112.4
+     },
+     "peakPssKiB": 214144,
+     "peakPssBy": {
+      "auth-sut": 214144
+     }
+    }
+   ]
+  },
+  "loginOkHighConc": {
+   "median": {
+    "ok": 0,
+    "rejected": 13010,
+    "errors": 0,
+    "total": 13010,
+    "elapsed": 10.041792154312134,
+    "okPerSec": 0.0,
+    "rps": 1295.6,
+    "p50ms": 24.42,
+    "p99ms": 37.94,
+    "requestsPerLogin": 2,
+    "reasons": {
+     "challenge 500 1 create webauth session error": 13010
+    },
+    "sutCpuPercent": 115.9,
+    "cpuPercentBy": {
+     "auth-sut": 115.9
+    },
+    "peakPssKiB": 216128,
+    "peakPssBy": {
+     "auth-sut": 216128
+    }
+   },
+   "runs": [
+    {
+     "ok": 0,
+     "rejected": 13010,
+     "errors": 0,
+     "total": 13010,
+     "elapsed": 10.041792154312134,
+     "okPerSec": 0.0,
+     "rps": 1295.6,
+     "p50ms": 24.42,
+     "p99ms": 37.94,
+     "requestsPerLogin": 2,
+     "reasons": {
+      "challenge 500 1 create webauth session error": 13010
+     },
+     "sutCpuPercent": 115.9,
+     "cpuPercentBy": {
+      "auth-sut": 115.9
+     },
+     "peakPssKiB": 216128,
+     "peakPssBy": {
+      "auth-sut": 216128
+     }
+    }
+   ]
+  },
+  "loginBad": {
+   "median": {
+    "ok": 0,
+    "rejected": 25183,
+    "errors": 0,
+    "total": 25183,
+    "elapsed": 10.010803937911987,
+    "okPerSec": 0.0,
+    "rps": 2515.6,
+    "p50ms": 1.55,
+    "p99ms": 10.12,
+    "requestsPerLogin": 2,
+    "reasons": {
+     "login 429 2 too many concurrent login attempts": 13913,
+     "login 200 2 Incorrect Login request.": 2154,
+     "challenge 429 2 too many concurrent webauth pre-login requests": 629,
+     "challenge 500 1 create webauth session error": 8484,
+     "login 500 1 create webauth session error": 3
+    },
+    "sutCpuPercent": 136.6,
+    "cpuPercentBy": {
+     "auth-sut": 136.6
+    },
+    "peakPssKiB": 205800,
+    "peakPssBy": {
+     "auth-sut": 205800
+    },
+    "correctLoginAfter": {
+     "status": "challenge 500 1 create webauth session error",
+     "gotCookie": false
+    },
+    "existingCookieAfter": "200 1024"
+   },
+   "runs": [
+    {
+     "ok": 0,
+     "rejected": 25486,
+     "errors": 0,
+     "total": 25486,
+     "elapsed": 10.015485048294067,
+     "okPerSec": 0.0,
+     "rps": 2544.7,
+     "p50ms": 1.53,
+     "p99ms": 10.19,
+     "requestsPerLogin": 2,
+     "reasons": {
+      "login 429 2 too many concurrent login attempts": 13912,
+      "challenge 429 2 too many concurrent webauth pre-login requests": 607,
+      "login 200 2 Incorrect Login request.": 2166,
+      "login 500 1 create webauth session error": 3,
+      "challenge 500 1 create webauth session error": 8798
+     },
+     "sutCpuPercent": 136.7,
+     "cpuPercentBy": {
+      "auth-sut": 136.7
+     },
+     "peakPssKiB": 203740,
+     "peakPssBy": {
+      "auth-sut": 203740
+     },
+     "correctLoginAfter": {
+      "status": "challenge 500 1 create webauth session error",
+      "gotCookie": false
+     },
+     "existingCookieAfter": "200 1024"
+    },
+    {
+     "ok": 0,
+     "rejected": 25183,
+     "errors": 0,
+     "total": 25183,
+     "elapsed": 10.010803937911987,
+     "okPerSec": 0.0,
+     "rps": 2515.6,
+     "p50ms": 1.55,
+     "p99ms": 10.12,
+     "requestsPerLogin": 2,
+     "reasons": {
+      "login 429 2 too many concurrent login attempts": 13913,
+      "login 200 2 Incorrect Login request.": 2154,
+      "challenge 429 2 too many concurrent webauth pre-login requests": 629,
+      "challenge 500 1 create webauth session error": 8484,
+      "login 500 1 create webauth session error": 3
+     },
+     "sutCpuPercent": 136.6,
+     "cpuPercentBy": {
+      "auth-sut": 136.6
+     },
+     "peakPssKiB": 205800,
+     "peakPssBy": {
+      "auth-sut": 205800
+     },
+     "correctLoginAfter": {
+      "status": "challenge 500 1 create webauth session error",
+      "gotCookie": false
+     },
+     "existingCookieAfter": "200 1024"
+    },
+    {
+     "ok": 0,
+     "rejected": 25086,
+     "errors": 0,
+     "total": 25086,
+     "elapsed": 10.010860919952393,
+     "okPerSec": 0.0,
+     "rps": 2505.9,
+     "p50ms": 1.54,
+     "p99ms": 10.56,
+     "requestsPerLogin": 2,
+     "reasons": {
+      "login 429 2 too many concurrent login attempts": 13909,
+      "login 200 2 Incorrect Login request.": 2158,
+      "challenge 429 2 too many concurrent webauth pre-login requests": 628,
+      "login 500 1 create webauth session error": 4,
+      "challenge 500 1 create webauth session error": 8387
+     },
+     "sutCpuPercent": 136.7,
+     "cpuPercentBy": {
+      "auth-sut": 136.7
+     },
+     "peakPssKiB": 205796,
+     "peakPssBy": {
+      "auth-sut": 205796
+     },
+     "correctLoginAfter": {
+      "status": "challenge 500 1 create webauth session error",
+      "gotCookie": false
+     },
+     "existingCookieAfter": "200 1024"
+    }
+   ]
+  }
+ },
+ "idle": {
+  "pssKiB": 129940,
+  "rssKiB": 129956,
+  "cgroupKiB": 163224,
+  "procs": 2,
+  "containers": {
+   "auth-sut": {
+    "pssKiB": 129940,
+    "rssKiB": 129956,
+    "cgroupKiB": 163224,
+    "cpuUsec": 2414536,
+    "procs": 2
+   }
+  }
+ },
+ "checks": {
+  "anonStatus": 403,
+  "loginStatus": 200,
+  "cookieNames": [
+   "LuckyWebAuthBrowserSession_km3fpere333gnslk"
+  ],
+  "cookieGet": "200 1024",
+  "basicAnon": 401,
+  "basicGet": "200 1024"
+ },
+ "idleAfterFirstLogin": {
+  "pssKiB": 130020,
+  "rssKiB": 130036,
+  "cgroupKiB": 163356,
+  "procs": 2,
+  "containers": {
+   "auth-sut": {
+    "pssKiB": 130020,
+    "rssKiB": 130036,
+    "cgroupKiB": 163356,
+    "cpuUsec": 2461535,
+    "procs": 2
+   }
+  }
+ },
+ "imageBytes": 57602956,
+ "idleAfterWrk": {
+  "pssKiB": 154308,
+  "rssKiB": 154324,
+  "cgroupKiB": 195488,
+  "procs": 2,
+  "containers": {
+   "auth-sut": {
+    "pssKiB": 154308,
+    "rssKiB": 154324,
+    "cgroupKiB": 195488,
+    "cpuUsec": 360231252,
+    "procs": 2
+   }
+  }
+ },
+ "idleAfterLogins": {
+  "pssKiB": 216128,
+  "rssKiB": 216144,
+  "cgroupKiB": 248204,
+  "procs": 2,
+  "containers": {
+   "auth-sut": {
+    "pssKiB": 216128,
+    "rssKiB": 216144,
+    "cgroupKiB": 248204,
+    "cpuUsec": 442252404,
+    "procs": 2
+   }
+  }
+ }
+}

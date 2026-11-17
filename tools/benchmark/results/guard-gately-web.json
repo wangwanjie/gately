@@ -1,0 +1,72 @@
+{
+ "sut": "gately-web",
+ "params": {
+  "maxretry": 5,
+  "findtime": 60,
+  "bantime": 3600,
+  "rates": [
+   1000,
+   5000,
+   20000
+  ],
+  "streamSec": 60.0,
+  "malFrac": 0.02,
+  "latSamples": 60,
+  "bigAttackers": 10000,
+  "bigRate": 5000,
+  "sutCpus": "0,1"
+ },
+ "info": {
+  "version": "{\"buildDate\":\"2026-11-17T12:17:45Z\",\"commit\":\"1869b4f1ee7cf175f235fbe11eceb2d57a3205fa\",\"go\":\"go1.26.11\",\"version\":\"v0.6.8.1\"}",
+  "image": "ghcr.io/wangwanjie/gately:v0.6.8.1",
+  "binaryBytes": 40505506,
+  "imageBytes": 228676697,
+  "nftInImage": "nftables v1.1.1 (Commodore Bullmoose #2)",
+  "variant": "web"
+ },
+ "tests": {
+  "idle": {
+   "readySec": 0.94,
+   "idle": {
+    "pssKiB": 41632,
+    "rssKiB": 41640,
+    "cgroupKiB": 18568,
+    "cpuUsec": 162711,
+    "procs": 1
+   },
+   "idlePssKiB": 41632,
+   "idleCpuPercent": 0.1,
+   "cpuset": "0-1"
+  },
+  "latency": {
+   "n": 60,
+   "p50ms": 10.1,
+   "p90ms": 11.1,
+   "p99ms": 13.3,
+   "maxms": 13.3,
+   "minms": 4.6,
+   "meanms": 9.2,
+   "missed": 0,
+   "polledFallback": 0,
+   "monitorErrors": [],
+   "detect": {
+    "n": 60,
+    "p50ms": 0.6,
+    "p90ms": 0.7,
+    "p99ms": 0.7,
+    "maxms": 0.7,
+    "minms": 0.4,
+    "meanms": 0.6
+   },
+   "sync": {
+    "n": 60,
+    "p50ms": 9.6,
+    "p90ms": 10.6,
+    "p99ms": 12.8,
+    "maxms": 12.8,
+    "minms": 4.1,
+    "meanms": 8.6
+   }
+  }
+ }
+}

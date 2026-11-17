@@ -1,0 +1,28 @@
+{
+ "sut": "traefik",
+ "sites": 1000,
+ "startupSec": 0.738,
+ "startupRuns": [
+  0.808,
+  0.684,
+  0.738
+ ],
+ "idle": {
+  "pssKiB": 118080,
+  "rssKiB": 118088,
+  "cgroupKiB": 139132,
+  "cpuUsec": 402785,
+  "procs": 1
+ },
+ "rps": 24229.44,
+ "p99ms": 18.81,
+ "non2xx": 0,
+ "watch": {
+  "peakPssKiB": 160596,
+  "peakRssKiB": 160604,
+  "avgPssKiB": 158614,
+  "cpuSeconds": 39.801929,
+  "cpuPercent": 180.46081205934308,
+  "elapsed": 22.055718660354614
+ }
+}

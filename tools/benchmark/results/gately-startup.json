@@ -1,0 +1,23 @@
+{
+ "sut": "gately",
+ "httpsCheck": "200 1024 2",
+ "idle": {
+  "pssKiB": 46656,
+  "rssKiB": 46664,
+  "cgroupKiB": 21020,
+  "cpuUsec": 116861,
+  "procs": 1
+ },
+ "tests": {},
+ "info": "{\"buildDate\":\"2026-11-17T12:17:45Z\",\"commit\":\"1869b4f1ee7cf175f235fbe11eceb2d57a3205fa\",\"go\":\"go1.26.11\",\"version\":\"v0.6.8.1\"}",
+ "idleAfter": {
+  "pssKiB": 46660,
+  "rssKiB": 46668,
+  "cgroupKiB": 21024,
+  "cpuUsec": 158306,
+  "procs": 1
+ },
+ "startupSec": 0.401,
+ "image": "ghcr.io/wangwanjie/gately:v0.6.8.1",
+ "imageBytes": 228676697
+}

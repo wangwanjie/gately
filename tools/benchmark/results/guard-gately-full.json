@@ -1,0 +1,42 @@
+{
+ "sut": "gately-full",
+ "params": {
+  "maxretry": 5,
+  "findtime": 60,
+  "bantime": 3600,
+  "rates": [
+   1000,
+   5000,
+   20000
+  ],
+  "streamSec": 60.0,
+  "malFrac": 0.02,
+  "latSamples": 60,
+  "bigAttackers": 10000,
+  "bigRate": 5000,
+  "sutCpus": "0,1"
+ },
+ "info": {
+  "version": "{\"buildDate\":\"2026-11-17T12:17:45Z\",\"commit\":\"1869b4f1ee7cf175f235fbe11eceb2d57a3205fa\",\"go\":\"go1.26.11\",\"version\":\"v0.6.8.1\"}",
+  "image": "ghcr.io/wangwanjie/gately:v0.6.8.1",
+  "binaryBytes": 40505506,
+  "imageBytes": 228676697,
+  "nftInImage": "nftables v1.1.1 (Commodore Bullmoose #2)",
+  "variant": "full"
+ },
+ "tests": {
+  "idle": {
+   "readySec": 1.52,
+   "idle": {
+    "pssKiB": 45508,
+    "rssKiB": 45516,
+    "cgroupKiB": 20340,
+    "cpuUsec": 208060,
+    "procs": 1
+   },
+   "idlePssKiB": 45508,
+   "idleCpuPercent": 0.2,
+   "cpuset": "0-1"
+  }
+ }
+}

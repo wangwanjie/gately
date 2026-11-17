@@ -1,0 +1,838 @@
+{
+ "sut": "gately-web",
+ "env": {
+  "sutCpus": "0,1",
+  "loadCpus": "4-7",
+  "kernel": "6.12.63+deb13-amd64",
+  "arch": "x86_64"
+ },
+ "startupSec": 0.59,
+ "idle": {
+  "pssKiB": 49892,
+  "rssKiB": 49900,
+  "cgroupKiB": 24576,
+  "cpuUsec": 394055,
+  "procs": 1
+ },
+ "image": "ghcr.io/wangwanjie/gately:v0.6.8.1",
+ "imageBytes": 228676697,
+ "info": {
+  "version": "{\"buildDate\":\"2026-11-17T12:17:45Z\",\"commit\":\"1869b4f1ee7cf175f235fbe11eceb2d57a3205fa\",\"go\":\"go1.26.11\",\"version\":\"v0.6.8.1\"}",
+  "programBytes": 40505506,
+  "programNote": "gately 单个静态二进制（含全部模块与管理界面）"
+ },
+ "stealth": {
+  "probe": {
+   "tcp/9100": {
+    "result": "超时（DROP）",
+    "ms": 3003.3
+   },
+   "tcp/8080": {
+    "result": "握手成功后被关闭（FIN）"
+   },
+   "tcp/16680": {
+    "result": "握手成功并返回数据",
+    "first": "HTTP/1.1 200 OK"
+   }
+  },
+  "nmap": [
+   "Host: 203.0.113.1 ()\tPorts: 8080/open/tcp//http-proxy///, 9100/filtered/tcp//jetdirect///, 16680/open/tcp/////"
+  ]
+ },
+ "latency": {
+  "attempts": 60,
+  "ok": 60,
+  "total": {
+   "n": 60,
+   "p50ms": 58.225,
+   "p90ms": 69.672,
+   "p99ms": 72.637,
+   "maxms": 72.637,
+   "minms": 53.866,
+   "meanms": 59.93
+  },
+  "exCaptcha": {
+   "n": 60,
+   "p50ms": 58.225,
+   "p90ms": 69.672,
+   "p99ms": 72.637,
+   "maxms": 72.637,
+   "minms": 53.866,
+   "meanms": 59.93
+  },
+  "afterLogin": {
+   "n": 60,
+   "p50ms": 2.709,
+   "p90ms": 3.053,
+   "p99ms": 7.008,
+   "maxms": 7.008,
+   "minms": 2.255,
+   "meanms": 2.818
+  },
+  "login": {
+   "n": 60,
+   "p50ms": 54.626,
+   "p90ms": 66.608,
+   "p99ms": 69.738,
+   "maxms": 69.738,
+   "minms": 50.844,
+   "meanms": 56.738
+  },
+  "runs": [
+   {
+    "ok": true,
+    "loginMs": 69.73752699923352,
+    "redirectMs": 0.3777639994950732,
+    "ms": 72.63704300021345,
+    "exCaptchaMs": 72.63704300021345,
+    "afterLoginMs": 2.521752001484856
+   },
+   {
+    "ok": true,
+    "loginMs": 52.418317000046954,
+    "redirectMs": 0.39523200030089356,
+    "ms": 55.72937900069519,
+    "exCaptchaMs": 55.72937900069519,
+    "afterLoginMs": 2.9158300003473414
+   },
+   {
+    "ok": true,
+    "loginMs": 52.938918001018465,
+    "redirectMs": 0.4039449995616451,
+    "ms": 56.01032200138434,
+    "exCaptchaMs": 56.01032200138434,
+    "afterLoginMs": 2.6674590008042287
+   },
+   {
+    "ok": true,
+    "loginMs": 52.30646299969521,
+    "redirectMs": 0.5497450001712423,
+    "ms": 55.65816699891002,
+    "exCaptchaMs": 55.65816699891002,
+    "afterLoginMs": 2.8019589990435634
+   },
+   {
+    "ok": true,
+    "loginMs": 69.35883999904036,
+    "redirectMs": 0.3939520011044806,
+    "ms": 72.37545499992848,
+    "exCaptchaMs": 72.37545499992848,
+    "afterLoginMs": 2.6226629997836426
+   },
+   {
+    "ok": true,
+    "loginMs": 66.60812399968563,
+    "redirectMs": 0.3198200010956498,
+    "ms": 69.67213799907768,
+    "exCaptchaMs": 69.67213799907768,
+    "afterLoginMs": 2.744193998296396
+   },
+   {
+    "ok": true,
+    "loginMs": 51.60981299923151,
+    "redirectMs": 0.4072270003234735,
+    "ms": 54.78733999916585,
+    "exCaptchaMs": 54.78733999916585,
+    "afterLoginMs": 2.77029999961087
+   },
+   {
+    "ok": true,
+    "loginMs": 65.26864899933571,
+    "redirectMs": 0.3848929991363548,
+    "ms": 68.40633499996329,
+    "exCaptchaMs": 68.40633499996329,
+    "afterLoginMs": 2.752793001491227
+   },
+   {
+    "ok": true,
+    "loginMs": 68.16043899925717,
+    "redirectMs": 0.3546530006133253,
+    "ms": 71.10024699977657,
+    "exCaptchaMs": 71.10024699977657,
+    "afterLoginMs": 2.5851549999060808
+   },
+   {
+    "ok": true,
+    "loginMs": 51.5702409993537,
+    "redirectMs": 0.321147001159261,
+    "ms": 54.47407199972076,
+    "exCaptchaMs": 54.47407199972076,
+    "afterLoginMs": 2.582683999207802
+   },
+   {
+    "ok": true,
+    "loginMs": 54.40242600161582,
+    "redirectMs": 0.29791299857606646,
+    "ms": 57.19199500163086,
+    "exCaptchaMs": 57.19199500163086,
+    "afterLoginMs": 2.491656001438969
+   },
+   {
+    "ok": true,
+    "loginMs": 55.30030600129976,
+    "redirectMs": 0.39553999886265956,
+    "ms": 58.35595000098692,
+    "exCaptchaMs": 58.35595000098692,
+    "afterLoginMs": 2.6601040008245036
+   },
+   {
+    "ok": true,
+    "loginMs": 55.09411100138095,
+    "redirectMs": 0.3810759990301449,
+    "ms": 58.24817000029725,
+    "exCaptchaMs": 58.24817000029725,
+    "afterLoginMs": 2.7729829998861533
+   },
+   {
+    "ok": true,
+    "loginMs": 65.21093100127473,
+    "redirectMs": 0.33135199919342995,
+    "ms": 68.28451300134475,
+    "exCaptchaMs": 68.28451300134475,
+    "afterLoginMs": 2.7422300008765887
+   },
+   {
+    "ok": true,
+    "loginMs": 51.61457599933783,
+    "redirectMs": 0.30724700081918854,
+    "ms": 54.630575999908615,
+    "exCaptchaMs": 54.630575999908615,
+    "afterLoginMs": 2.708752999751596
+   },
+   {
+    "ok": true,
+    "loginMs": 64.2596269990463,
+    "redirectMs": 0.37942600101814605,
+    "ms": 67.37882099878334,
+    "exCaptchaMs": 67.37882099878334,
+    "afterLoginMs": 2.7397679987188894
+   },
+   {
+    "ok": true,
+    "loginMs": 50.843671999246,
+    "redirectMs": 0.37148999945202377,
+    "ms": 54.060729999036994,
+    "exCaptchaMs": 54.060729999036994,
+    "afterLoginMs": 2.8455680003389716
+   },
+   {
+    "ok": true,
+    "loginMs": 68.75776500055508,
+    "redirectMs": 0.3132879992335802,
+    "ms": 71.63630800096144,
+    "exCaptchaMs": 71.63630800096144,
+    "afterLoginMs": 2.5652550011727726
+   },
+   {
+    "ok": true,
+    "loginMs": 55.91966699830664,
+    "redirectMs": 0.426176000473788,
+    "ms": 59.09344799874816,
+    "exCaptchaMs": 59.09344799874816,
+    "afterLoginMs": 2.7476049999677343
+   },
+   {
+    "ok": true,
+    "loginMs": 51.36778399901232,
+    "redirectMs": 0.3672399998322362,
+    "ms": 54.35987499913608,
+    "exCaptchaMs": 54.35987499913608,
+    "afterLoginMs": 2.624851000291528
+   },
+   {
+    "ok": true,
+    "loginMs": 53.59152399978484,
+    "redirectMs": 0.3402229995117523,
+    "ms": 56.61156299902359,
+    "exCaptchaMs": 56.61156299902359,
+    "afterLoginMs": 2.6798159997269977
+   },
+   {
+    "ok": true,
+    "loginMs": 51.51864800063777,
+    "redirectMs": 0.40851700032362714,
+    "ms": 54.1824310002994,
+    "exCaptchaMs": 54.1824310002994,
+    "afterLoginMs": 2.2552659993380075
+   },
+   {
+    "ok": true,
+    "loginMs": 63.53491899972141,
+    "redirectMs": 0.356151000232785,
+    "ms": 66.86611800068931,
+    "exCaptchaMs": 66.86611800068931,
+    "afterLoginMs": 2.9750480007351143
+   },
+   {
+    "ok": true,
+    "loginMs": 57.03878899839765,
+    "redirectMs": 0.38999200114631094,
+    "ms": 60.37984499926097,
+    "exCaptchaMs": 60.37984499926097,
+    "afterLoginMs": 2.9510639997170074
+   },
+   {
+    "ok": true,
+    "loginMs": 55.474762000812916,
+    "redirectMs": 0.426922999395174,
+    "ms": 58.502554000369855,
+    "exCaptchaMs": 58.502554000369855,
+    "afterLoginMs": 2.600869000161765
+   },
+   {
+    "ok": true,
+    "loginMs": 51.5212820009765,
+    "redirectMs": 0.38071299968578387,
+    "ms": 54.87669100148196,
+    "exCaptchaMs": 54.87669100148196,
+    "afterLoginMs": 2.9746960008196766
+   },
+   {
+    "ok": true,
+    "loginMs": 55.477886999142356,
+    "redirectMs": 0.27913900157727767,
+    "ms": 58.381401000588085,
+    "exCaptchaMs": 58.381401000588085,
+    "afterLoginMs": 2.6243749998684507
+   },
+   {
+    "ok": true,
+    "loginMs": 53.89954000020225,
+    "redirectMs": 0.3364200001669815,
+    "ms": 57.03328200070246,
+    "exCaptchaMs": 57.03328200070246,
+    "afterLoginMs": 2.7973220003332244
+   },
+   {
+    "ok": true,
+    "loginMs": 52.286862999608275,
+    "redirectMs": 0.33304600037808996,
+    "ms": 59.62767600067309,
+    "exCaptchaMs": 59.62767600067309,
+    "afterLoginMs": 7.0077670006867265
+   },
+   {
+    "ok": true,
+    "loginMs": 52.274753999881796,
+    "redirectMs": 0.37341200004448183,
+    "ms": 55.15074100003403,
+    "exCaptchaMs": 55.15074100003403,
+    "afterLoginMs": 2.502575000107754
+   },
+   {
+    "ok": true,
+    "loginMs": 54.71108100027777,
+    "redirectMs": 0.35958199987362605,
+    "ms": 58.22489000092901,
+    "exCaptchaMs": 58.22489000092901,
+    "afterLoginMs": 3.1542270007776096
+   },
+   {
+    "ok": true,
+    "loginMs": 52.532460998918395,
+    "redirectMs": 0.30892500035406556,
+    "ms": 55.70036299832282,
+    "exCaptchaMs": 55.70036299832282,
+    "afterLoginMs": 2.8589769990503555
+   },
+   {
+    "ok": true,
+    "loginMs": 55.24563099970692,
+    "redirectMs": 0.49922700054594316,
+    "ms": 58.309940999606624,
+    "exCaptchaMs": 58.309940999606624,
+    "afterLoginMs": 2.5650829993537627
+   },
+   {
+    "ok": true,
+    "loginMs": 53.835672999412054,
+    "redirectMs": 0.3027000002475688,
+    "ms": 56.82597499981057,
+    "exCaptchaMs": 56.82597499981057,
+    "afterLoginMs": 2.687602000150946
+   },
+   {
+    "ok": true,
+    "loginMs": 51.982913000756525,
+    "redirectMs": 0.3490349990897812,
+    "ms": 54.891900001166505,
+    "exCaptchaMs": 54.891900001166505,
+    "afterLoginMs": 2.559952001320198
+   },
+   {
+    "ok": true,
+    "loginMs": 53.09846399904927,
+    "redirectMs": 0.4373940009827493,
+    "ms": 56.11699799919734,
+    "exCaptchaMs": 56.11699799919734,
+    "afterLoginMs": 2.581139999165316
+   },
+   {
+    "ok": true,
+    "loginMs": 55.745118001141236,
+    "redirectMs": 0.37316699854272883,
+    "ms": 58.59082599999965,
+    "exCaptchaMs": 58.59082599999965,
+    "afterLoginMs": 2.4725410003156867
+   },
+   {
+    "ok": true,
+    "loginMs": 54.54435200044827,
+    "redirectMs": 0.4544650000752881,
+    "ms": 57.91387499994016,
+    "exCaptchaMs": 57.91387499994016,
+    "afterLoginMs": 2.9150579994166037
+   },
+   {
+    "ok": true,
+    "loginMs": 57.46929300039483,
+    "redirectMs": 0.4073709988006158,
+    "ms": 60.9294410005532,
+    "exCaptchaMs": 60.9294410005532,
+    "afterLoginMs": 3.0527770013577538
+   },
+   {
+    "ok": true,
+    "loginMs": 60.24085299941362,
+    "redirectMs": 0.37984300070093013,
+    "ms": 62.933535999036394,
+    "exCaptchaMs": 62.933535999036394,
+    "afterLoginMs": 2.312839998921845
+   },
+   {
+    "ok": true,
+    "loginMs": 63.85761499950604,
+    "redirectMs": 0.36028899921802804,
+    "ms": 66.8810429997393,
+    "exCaptchaMs": 66.8810429997393,
+    "afterLoginMs": 2.6631390010152245
+   },
+   {
+    "ok": true,
+    "loginMs": 54.62623600033112,
+    "redirectMs": 0.41015799979504663,
+    "ms": 57.68247999913001,
+    "exCaptchaMs": 57.68247999913001,
+    "afterLoginMs": 2.6460859990038443
+   },
+   {
+    "ok": true,
+    "loginMs": 52.275484000347205,
+    "redirectMs": 0.37627900019288063,
+    "ms": 55.487958999947296,
+    "exCaptchaMs": 55.487958999947296,
+    "afterLoginMs": 2.8361959994072095
+   },
+   {
+    "ok": true,
+    "loginMs": 66.86580099994899,
+    "redirectMs": 0.40145599996321835,
+    "ms": 69.96538699968369,
+    "exCaptchaMs": 69.96538699968369,
+    "afterLoginMs": 2.6981299997714814
+   },
+   {
+    "ok": true,
+    "loginMs": 55.9861270012334,
+    "redirectMs": 0.38782199953857344,
+    "ms": 58.928264001224306,
+    "exCaptchaMs": 58.928264001224306,
+    "afterLoginMs": 2.554315000452334
+   },
+   {
+    "ok": true,
+    "loginMs": 50.969522999366745,
+    "redirectMs": 0.27994099946226925,
+    "ms": 53.8656999997329,
+    "exCaptchaMs": 53.8656999997329,
+    "afterLoginMs": 2.616236000903882
+   },
+   {
+    "ok": true,
+    "loginMs": 63.104024000494974,
+    "redirectMs": 0.38647300061711576,
+    "ms": 66.43833400084986,
+    "exCaptchaMs": 66.43833400084986,
+    "afterLoginMs": 2.947836999737774
+   },
+   {
+    "ok": true,
+    "loginMs": 52.500349998808815,
+    "redirectMs": 0.3561290013749385,
+    "ms": 55.88057299974025,
+    "exCaptchaMs": 55.88057299974025,
+    "afterLoginMs": 3.0240939995564986
+   },
+   {
+    "ok": true,
+    "loginMs": 51.54120800034434,
+    "redirectMs": 0.2216140001110034,
+    "ms": 55.11316999945848,
+    "exCaptchaMs": 55.11316999945848,
+    "afterLoginMs": 3.3503479990031337
+   },
+   {
+    "ok": true,
+    "loginMs": 57.95410700011416,
+    "redirectMs": 0.3691689998959191,
+    "ms": 61.59749900143652,
+    "exCaptchaMs": 61.59749900143652,
+    "afterLoginMs": 3.274223001426435
+   },
+   {
+    "ok": true,
+    "loginMs": 53.53640700013784,
+    "redirectMs": 0.41661799878056627,
+    "ms": 56.805713998983265,
+    "exCaptchaMs": 56.805713998983265,
+    "afterLoginMs": 2.8526890000648564
+   },
+   {
+    "ok": true,
+    "loginMs": 54.45189300007769,
+    "redirectMs": 0.4291259992896812,
+    "ms": 57.353569000042626,
+    "exCaptchaMs": 57.353569000042626,
+    "afterLoginMs": 2.4725500006752554
+   },
+   {
+    "ok": true,
+    "loginMs": 56.438158000673866,
+    "redirectMs": 0.4766429992741905,
+    "ms": 60.1814519995969,
+    "exCaptchaMs": 60.1814519995969,
+    "afterLoginMs": 3.2666509996488458
+   },
+   {
+    "ok": true,
+    "loginMs": 57.566220000808244,
+    "redirectMs": 0.38904999928490724,
+    "ms": 61.10926600013045,
+    "exCaptchaMs": 61.10926600013045,
+    "afterLoginMs": 3.1539960000372957
+   },
+   {
+    "ok": true,
+    "loginMs": 55.32885200045712,
+    "redirectMs": 0.40399099998467136,
+    "ms": 58.52160199901846,
+    "exCaptchaMs": 58.52160199901846,
+    "afterLoginMs": 2.788758998576668
+   },
+   {
+    "ok": true,
+    "loginMs": 66.99090499932936,
+    "redirectMs": 0.37684300150431227,
+    "ms": 69.93539200084342,
+    "exCaptchaMs": 69.93539200084342,
+    "afterLoginMs": 2.56764400000975
+   },
+   {
+    "ok": true,
+    "loginMs": 53.65823099964473,
+    "redirectMs": 0.3119240009255009,
+    "ms": 56.908999000370386,
+    "exCaptchaMs": 56.908999000370386,
+    "afterLoginMs": 2.938843999800156
+   },
+   {
+    "ok": true,
+    "loginMs": 65.02356600140047,
+    "redirectMs": 0.39602199831278995,
+    "ms": 68.31807100024889,
+    "exCaptchaMs": 68.31807100024889,
+    "afterLoginMs": 2.8984830005356343
+   },
+   {
+    "ok": true,
+    "loginMs": 51.83669699908933,
+    "redirectMs": 0.3834180006379029,
+    "ms": 54.76255099893024,
+    "exCaptchaMs": 54.76255099893024,
+    "afterLoginMs": 2.5424359992030077
+   },
+   {
+    "ok": true,
+    "loginMs": 50.969513000381994,
+    "redirectMs": 0.380461999156978,
+    "ms": 53.9302109991695,
+    "exCaptchaMs": 53.9302109991695,
+    "afterLoginMs": 2.5802359996305313
+   }
+  ]
+ },
+ "flood": {
+  "http-badlogin-10000": {
+   "flood": {
+    "rps": 9999.760314745039,
+    "p50ms": 0.6337400000000001,
+    "p99ms": 16.070118,
+    "ok": 0,
+    "non2xx": 399993,
+    "errors": 7,
+    "statusCodes": {
+     "401": 399993
+    },
+    "errorDist": {
+     "aborted due to deadline": 7
+    }
+   },
+   "sutCpuPercent": 124.0,
+   "peakPssKiB": 80440,
+   "legitKnock": {
+    "attempts": 10,
+    "ok": 10,
+    "total": {
+     "n": 10,
+     "p50ms": 67.374,
+     "p90ms": 74.701,
+     "p99ms": 74.701,
+     "maxms": 74.701,
+     "minms": 59.614,
+     "meanms": 65.629
+    },
+    "exCaptcha": {
+     "n": 10,
+     "p50ms": 67.374,
+     "p90ms": 74.701,
+     "p99ms": 74.701,
+     "maxms": 74.701,
+     "minms": 59.614,
+     "meanms": 65.629
+    },
+    "afterLogin": {
+     "n": 10,
+     "p50ms": 5.411,
+     "p90ms": 10.086,
+     "p99ms": 10.086,
+     "maxms": 10.086,
+     "minms": 3.115,
+     "meanms": 5.36
+    },
+    "login": {
+     "n": 10,
+     "p50ms": 59.788,
+     "p90ms": 63.934,
+     "p99ms": 63.934,
+     "maxms": 63.934,
+     "minms": 53.795,
+     "meanms": 58.585
+    }
+   },
+   "statusBefore": {
+    "counters": {
+     "accepted": 0,
+     "rejected": 0,
+     "ignored": 0
+    },
+    "firewall": {
+     "backend": "nftables",
+     "version": "nftables v1.1.1 (Commodore Bullmoose #2)",
+     "dropped": 387,
+     "allowed": 108
+    }
+   },
+   "statusAfter": {
+    "counters": {
+     "accepted": 0,
+     "rejected": 0,
+     "ignored": 0
+    },
+    "firewall": {
+     "backend": "nftables",
+     "version": "nftables v1.1.1 (Commodore Bullmoose #2)",
+     "dropped": 544,
+     "allowed": 139
+    }
+   }
+  },
+  "http-badlogin-50000": {
+   "flood": {
+    "rps": 16893.043139415866,
+    "p50ms": 14.777185999999999,
+    "p99ms": 34.722209,
+    "ok": 0,
+    "non2xx": 675544,
+    "errors": 229,
+    "statusCodes": {
+     "401": 675544
+    },
+    "errorDist": {
+     "aborted due to deadline": 229
+    }
+   },
+   "sutCpuPercent": 197.7,
+   "peakPssKiB": 76440,
+   "legitKnock": {
+    "attempts": 10,
+    "ok": 10,
+    "total": {
+     "n": 10,
+     "p50ms": 160.264,
+     "p90ms": 210.17,
+     "p99ms": 210.17,
+     "maxms": 210.17,
+     "minms": 134.376,
+     "meanms": 165.611
+    },
+    "exCaptcha": {
+     "n": 10,
+     "p50ms": 160.264,
+     "p90ms": 210.17,
+     "p99ms": 210.17,
+     "maxms": 210.17,
+     "minms": 134.376,
+     "meanms": 165.611
+    },
+    "afterLogin": {
+     "n": 10,
+     "p50ms": 22.108,
+     "p90ms": 27.95,
+     "p99ms": 27.95,
+     "maxms": 27.95,
+     "minms": 9.34,
+     "meanms": 21.647
+    },
+    "login": {
+     "n": 10,
+     "p50ms": 126.858,
+     "p90ms": 155.023,
+     "p99ms": 155.023,
+     "maxms": 155.023,
+     "minms": 101.814,
+     "meanms": 123.6
+    }
+   },
+   "statusBefore": {
+    "counters": {
+     "accepted": 0,
+     "rejected": 0,
+     "ignored": 0
+    },
+    "firewall": {
+     "backend": "nftables",
+     "version": "nftables v1.1.1 (Commodore Bullmoose #2)",
+     "dropped": 544,
+     "allowed": 139
+    }
+   },
+   "statusAfter": {
+    "counters": {
+     "accepted": 0,
+     "rejected": 0,
+     "ignored": 0
+    },
+    "firewall": {
+     "backend": "nftables",
+     "version": "nftables v1.1.1 (Commodore Bullmoose #2)",
+     "dropped": 947,
+     "allowed": 159
+    }
+   }
+  }
+ },
+ "afterFlood": {
+  "pssKiB": 74268,
+  "rssKiB": 74276,
+  "cgroupKiB": 55704,
+  "cpuUsec": 133550227,
+  "procs": 1
+ },
+ "dataplane": {
+  "keepalive": {
+   "median": {
+    "rps": 143839.28,
+    "MBps": 173.39,
+    "p50ms": 0.44,
+    "p99ms": 0.528,
+    "non2xx": 0,
+    "sockErrors": 0,
+    "sutCpuPercent": 0.3,
+    "peakPssKiB": 74276
+   },
+   "runs": [
+    {
+     "rps": 141375.95,
+     "MBps": 170.42,
+     "p50ms": 0.444,
+     "p99ms": 0.534,
+     "non2xx": 0,
+     "sockErrors": 0,
+     "sutCpuPercent": 0.1,
+     "peakPssKiB": 80260
+    },
+    {
+     "rps": 143839.28,
+     "MBps": 173.39,
+     "p50ms": 0.44,
+     "p99ms": 0.528,
+     "non2xx": 0,
+     "sockErrors": 0,
+     "sutCpuPercent": 0.3,
+     "peakPssKiB": 74276
+    },
+    {
+     "rps": 147863.92,
+     "MBps": 178.24,
+     "p50ms": 0.434,
+     "p99ms": 0.522,
+     "non2xx": 0,
+     "sockErrors": 0,
+     "sutCpuPercent": 0.1,
+     "peakPssKiB": 58452
+    }
+   ]
+  },
+  "newconn": {
+   "median": {
+    "rps": 63556.26962655572,
+    "p50ms": 0.490111,
+    "p99ms": 1.043109,
+    "ok": 1271219,
+    "non2xx": 0,
+    "errors": 31,
+    "sutCpuPercent": 0.6,
+    "peakPssKiB": 60068
+   },
+   "runs": [
+    {
+     "rps": 64091.199150637214,
+     "p50ms": 0.48848800000000003,
+     "p99ms": 0.996764,
+     "ok": 1281914,
+     "non2xx": 0,
+     "errors": 30,
+     "sutCpuPercent": 2.6,
+     "peakPssKiB": 60608
+    },
+    {
+     "rps": 62275.186073739256,
+     "p50ms": 0.501802,
+     "p99ms": 1.034184,
+     "ok": 1245698,
+     "non2xx": 0,
+     "errors": 29,
+     "sutCpuPercent": 0.9,
+     "peakPssKiB": 59512
+    },
+    {
+     "rps": 63556.26962655572,
+     "p50ms": 0.490111,
+     "p99ms": 1.043109,
+     "ok": 1271219,
+     "non2xx": 0,
+     "errors": 31,
+     "sutCpuPercent": 0.6,
+     "peakPssKiB": 60068
+    }
+   ]
+  }
+ },
+ "idleAfter": {
+  "pssKiB": 60076,
+  "rssKiB": 60084,
+  "cgroupKiB": 54832,
+  "cpuUsec": 134663719,
+  "procs": 1
+ }
+}

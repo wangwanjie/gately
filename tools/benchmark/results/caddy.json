@@ -1,0 +1,284 @@
+{
+ "sut": "caddy",
+ "startupSec": 0.616,
+ "httpsCheck": "200 1024 2",
+ "idle": {
+  "pssKiB": 49940,
+  "rssKiB": 49948,
+  "cgroupKiB": 56648,
+  "cpuUsec": 120335,
+  "procs": 1
+ },
+ "tests": {
+  "http_ka": {
+   "median": {
+    "rps": 24459.19,
+    "MBps": 29.3,
+    "p50ms": 4.8,
+    "p99ms": 13.58,
+    "non2xx": 0,
+    "sockErrors": 0,
+    "sutCpuPercent": 179.2,
+    "peakPssKiB": 74324
+   },
+   "runs": [
+    {
+     "rps": 24586.95,
+     "MBps": 29.45,
+     "p50ms": 4.78,
+     "p99ms": 13.79,
+     "non2xx": 0,
+     "sockErrors": 0,
+     "sutCpuPercent": 178.9,
+     "peakPssKiB": 71728
+    },
+    {
+     "rps": 24423.35,
+     "MBps": 29.25,
+     "p50ms": 4.8,
+     "p99ms": 13.82,
+     "non2xx": 0,
+     "sockErrors": 0,
+     "sutCpuPercent": 178.9,
+     "peakPssKiB": 71020
+    },
+    {
+     "rps": 24459.19,
+     "MBps": 29.3,
+     "p50ms": 4.8,
+     "p99ms": 13.58,
+     "non2xx": 0,
+     "sockErrors": 0,
+     "sutCpuPercent": 179.2,
+     "peakPssKiB": 74324
+    }
+   ]
+  },
+  "https_ka": {
+   "median": {
+    "rps": 22871.26,
+    "MBps": 28.12,
+    "p50ms": 5.1,
+    "p99ms": 14.84,
+    "non2xx": 0,
+    "sockErrors": 0,
+    "sutCpuPercent": 179.4,
+    "peakPssKiB": 75924
+   },
+   "runs": [
+    {
+     "rps": 22831.33,
+     "MBps": 28.07,
+     "p50ms": 5.11,
+     "p99ms": 14.77,
+     "non2xx": 0,
+     "sockErrors": 0,
+     "sutCpuPercent": 179.4,
+     "peakPssKiB": 76676
+    },
+    {
+     "rps": 22883.25,
+     "MBps": 28.13,
+     "p50ms": 5.11,
+     "p99ms": 14.82,
+     "non2xx": 0,
+     "sockErrors": 0,
+     "sutCpuPercent": 179.5,
+     "peakPssKiB": 75784
+    },
+    {
+     "rps": 22871.26,
+     "MBps": 28.12,
+     "p50ms": 5.1,
+     "p99ms": 14.84,
+     "non2xx": 0,
+     "sockErrors": 0,
+     "sutCpuPercent": 179.4,
+     "peakPssKiB": 75924
+    }
+   ]
+  },
+  "https_new": {
+   "median": {
+    "rps": 3987.4737580557794,
+    "p50ms": 15.81596,
+    "p99ms": 32.353569,
+    "ok": 79692,
+    "non2xx": 0,
+    "errors": 64,
+    "sutCpuPercent": 179.0,
+    "peakPssKiB": 63984
+   },
+   "runs": [
+    {
+     "rps": 3972.194957874169,
+     "p50ms": 15.864547,
+     "p99ms": 31.587659999999996,
+     "ok": 79385,
+     "non2xx": 0,
+     "errors": 64,
+     "sutCpuPercent": 179.4,
+     "peakPssKiB": 71644
+    },
+    {
+     "rps": 3988.3441322656818,
+     "p50ms": 15.855184000000001,
+     "p99ms": 32.356397,
+     "ok": 79712,
+     "non2xx": 0,
+     "errors": 64,
+     "sutCpuPercent": 179.5,
+     "peakPssKiB": 65160
+    },
+    {
+     "rps": 3987.4737580557794,
+     "p50ms": 15.81596,
+     "p99ms": 32.353569,
+     "ok": 79692,
+     "non2xx": 0,
+     "errors": 64,
+     "sutCpuPercent": 179.0,
+     "peakPssKiB": 63984
+    }
+   ]
+  },
+  "h2": {
+   "median": {
+    "rps": 11745.75,
+    "ok": 234915,
+    "failed": 0,
+    "errored": 0,
+    "proto": "h2",
+    "sutCpuPercent": 180.3,
+    "peakPssKiB": 126156
+   },
+   "runs": [
+    {
+     "rps": 11834.95,
+     "ok": 236699,
+     "failed": 0,
+     "errored": 0,
+     "proto": "h2",
+     "sutCpuPercent": 179.7,
+     "peakPssKiB": 125812
+    },
+    {
+     "rps": 11745.75,
+     "ok": 234915,
+     "failed": 0,
+     "errored": 0,
+     "proto": "h2",
+     "sutCpuPercent": 180.3,
+     "peakPssKiB": 126156
+    },
+    {
+     "rps": 11702.75,
+     "ok": 234055,
+     "failed": 0,
+     "errored": 0,
+     "proto": "h2",
+     "sutCpuPercent": 180.1,
+     "peakPssKiB": 131608
+    }
+   ]
+  },
+  "fixed5k": {
+   "median": {
+    "rps": 4999.585156225581,
+    "p50ms": 0.37893,
+    "p99ms": 3.52775,
+    "ok": 99993,
+    "non2xx": 0,
+    "errors": 4,
+    "sutCpuPercent": 67.5,
+    "peakPssKiB": 132556
+   },
+   "runs": [
+    {
+     "rps": 4999.548998444572,
+     "p50ms": 0.37646,
+     "p99ms": 3.357418,
+     "ok": 100000,
+     "non2xx": 0,
+     "errors": 1,
+     "sutCpuPercent": 67.1,
+     "peakPssKiB": 123132
+    },
+    {
+     "rps": 4999.585156225581,
+     "p50ms": 0.37893,
+     "p99ms": 3.52775,
+     "ok": 99993,
+     "non2xx": 0,
+     "errors": 4,
+     "sutCpuPercent": 67.5,
+     "peakPssKiB": 132556
+    },
+    {
+     "rps": 4999.590006271455,
+     "p50ms": 0.37702800000000003,
+     "p99ms": 3.598321,
+     "ok": 99997,
+     "non2xx": 0,
+     "errors": 2,
+     "sutCpuPercent": 67.0,
+     "peakPssKiB": 132924
+    }
+   ]
+  },
+  "big": {
+   "median": {
+    "rps": 41.09,
+    "MBps": 4116.48,
+    "non2xx": 0,
+    "sockErrors": 0,
+    "sutCpuPercent": 176.5,
+    "peakPssKiB": 134772
+   },
+   "runs": [
+    {
+     "rps": 41.34,
+     "MBps": 4147.2,
+     "non2xx": 0,
+     "sockErrors": 0,
+     "sutCpuPercent": 175.5,
+     "peakPssKiB": 134772
+    },
+    {
+     "rps": 41.09,
+     "MBps": 4116.48,
+     "non2xx": 0,
+     "sockErrors": 0,
+     "sutCpuPercent": 176.5,
+     "peakPssKiB": 134772
+    },
+    {
+     "rps": 40.64,
+     "MBps": 4075.52,
+     "non2xx": 0,
+     "sockErrors": 0,
+     "sutCpuPercent": 175.4,
+     "peakPssKiB": 134516
+    }
+   ]
+  },
+  "conn10k": {
+   "median": {
+    "ok": 10000,
+    "pssBeforeKiB": 134324,
+    "pssDuringKiB": 412444,
+    "perConnKiB": 27.81
+   }
+  }
+ },
+ "info": "v2.11.9 h1:bhZtcRKQOq0fuLvEgCdPYvUxXyGn9kzjG4lh2332DTE=",
+ "idleAfter": {
+  "pssKiB": 412448,
+  "rssKiB": 412456,
+  "cgroupKiB": 425040,
+  "cpuUsec": 637415301,
+  "procs": 1
+ },
+ "image": "caddy:2-alpine",
+ "imageBytes": 91672907
+}

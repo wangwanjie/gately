@@ -1,0 +1,279 @@
+{
+ "sut": "gately",
+ "rates": {
+  "1000": {
+   "flood": {
+    "mode": "spoof",
+    "targetPps": 1000.0,
+    "sent": 39998,
+    "sendErrors": 0,
+    "achievedPps": 999.9,
+    "seconds": 40.0
+   },
+   "sutCpuPercent": 11.2,
+   "legitKnock": {
+    "attempts": 8,
+    "ok": 8,
+    "total": {
+     "n": 8,
+     "p50ms": 11.311,
+     "p90ms": 12.999,
+     "p99ms": 12.999,
+     "maxms": 12.999,
+     "minms": 3.623,
+     "meanms": 9.801
+    }
+   },
+   "statusBefore": {
+    "counters": {
+     "accepted": 0,
+     "rejected": 0,
+     "ignored": 0
+    },
+    "firewall": {
+     "backend": "nftables",
+     "version": "nftables v1.1.1 (Commodore Bullmoose #2)",
+     "dropped": 0,
+     "allowed": 0
+    }
+   },
+   "statusAfter": {
+    "counters": {
+     "accepted": 8,
+     "rejected": 39998,
+     "ignored": 0
+    },
+    "firewall": {
+     "backend": "nftables",
+     "version": "nftables v1.1.1 (Commodore Bullmoose #2)",
+     "dropped": 136,
+     "allowed": 15
+    }
+   }
+  },
+  "2000": {
+   "flood": {
+    "mode": "spoof",
+    "targetPps": 2000.0,
+    "sent": 79998,
+    "sendErrors": 0,
+    "achievedPps": 1999.9,
+    "seconds": 40.0
+   },
+   "sutCpuPercent": 16.6,
+   "legitKnock": {
+    "attempts": 8,
+    "ok": 5,
+    "total": {
+     "n": 5,
+     "p50ms": 9.704,
+     "p90ms": 11.009,
+     "p99ms": 11.009,
+     "maxms": 11.009,
+     "minms": 5.118,
+     "meanms": 8.526
+    },
+    "errors": [
+     null,
+     null,
+     null
+    ]
+   },
+   "statusBefore": {
+    "counters": {
+     "accepted": 8,
+     "rejected": 39998,
+     "ignored": 0
+    },
+    "firewall": {
+     "backend": "nftables",
+     "version": "nftables v1.1.1 (Commodore Bullmoose #2)",
+     "dropped": 136,
+     "allowed": 15
+    }
+   },
+   "statusAfter": {
+    "counters": {
+     "accepted": 13,
+     "rejected": 97437,
+     "ignored": 22562
+    },
+    "firewall": {
+     "backend": "nftables",
+     "version": "nftables v1.1.1 (Commodore Bullmoose #2)",
+     "dropped": 14813,
+     "allowed": 26
+    }
+   }
+  },
+  "3000": {
+   "flood": {
+    "mode": "spoof",
+    "targetPps": 3000.0,
+    "sent": 119998,
+    "sendErrors": 0,
+    "achievedPps": 2999.9,
+    "seconds": 40.0
+   },
+   "sutCpuPercent": 15.5,
+   "legitKnock": {
+    "attempts": 8,
+    "ok": 5,
+    "total": {
+     "n": 5,
+     "p50ms": 6.924,
+     "p90ms": 7.723,
+     "p99ms": 7.723,
+     "maxms": 7.723,
+     "minms": 4.954,
+     "meanms": 6.688
+    },
+    "errors": [
+     null,
+     null,
+     null
+    ]
+   },
+   "statusBefore": {
+    "counters": {
+     "accepted": 13,
+     "rejected": 97437,
+     "ignored": 22562
+    },
+    "firewall": {
+     "backend": "nftables",
+     "version": "nftables v1.1.1 (Commodore Bullmoose #2)",
+     "dropped": 14813,
+     "allowed": 26
+    }
+   },
+   "statusAfter": {
+    "counters": {
+     "accepted": 18,
+     "rejected": 155750,
+     "ignored": 84250
+    },
+    "firewall": {
+     "backend": "nftables",
+     "version": "nftables v1.1.1 (Commodore Bullmoose #2)",
+     "dropped": 29586,
+     "allowed": 35
+    }
+   }
+  },
+  "5000": {
+   "flood": {
+    "mode": "spoof",
+    "targetPps": 5000.0,
+    "sent": 199998,
+    "sendErrors": 0,
+    "achievedPps": 4999.9,
+    "seconds": 40.0
+   },
+   "sutCpuPercent": 17.2,
+   "legitKnock": {
+    "attempts": 8,
+    "ok": 3,
+    "total": {
+     "n": 3,
+     "p50ms": 8.786,
+     "p90ms": 9.132,
+     "p99ms": 9.132,
+     "maxms": 9.132,
+     "minms": 3.214,
+     "meanms": 7.044
+    },
+    "errors": [
+     null,
+     null,
+     null,
+     null,
+     null
+    ]
+   },
+   "statusBefore": {
+    "counters": {
+     "accepted": 18,
+     "rejected": 155750,
+     "ignored": 84250
+    },
+    "firewall": {
+     "backend": "nftables",
+     "version": "nftables v1.1.1 (Commodore Bullmoose #2)",
+     "dropped": 29586,
+     "allowed": 35
+    }
+   },
+   "statusAfter": {
+    "counters": {
+     "accepted": 21,
+     "rejected": 215205,
+     "ignored": 224798
+    },
+    "firewall": {
+     "backend": "nftables",
+     "version": "nftables v1.1.1 (Commodore Bullmoose #2)",
+     "dropped": 49131,
+     "allowed": 42
+    }
+   }
+  },
+  "10000": {
+   "flood": {
+    "mode": "spoof",
+    "targetPps": 10000.0,
+    "sent": 399996,
+    "sendErrors": 0,
+    "achievedPps": 9999.8,
+    "seconds": 40.0
+   },
+   "sutCpuPercent": 18.0,
+   "legitKnock": {
+    "attempts": 8,
+    "ok": 2,
+    "total": {
+     "n": 2,
+     "p50ms": 14.451,
+     "p90ms": 14.451,
+     "p99ms": 14.451,
+     "maxms": 14.451,
+     "minms": 7.423,
+     "meanms": 10.937
+    },
+    "errors": [
+     null,
+     null,
+     null,
+     null,
+     null
+    ]
+   },
+   "statusBefore": {
+    "counters": {
+     "accepted": 21,
+     "rejected": 215205,
+     "ignored": 224798
+    },
+    "firewall": {
+     "backend": "nftables",
+     "version": "nftables v1.1.1 (Commodore Bullmoose #2)",
+     "dropped": 53952,
+     "allowed": 42
+    }
+   },
+   "statusAfter": {
+    "counters": {
+     "accepted": 23,
+     "rejected": 274773,
+     "ignored": 565232
+    },
+    "firewall": {
+     "backend": "nftables",
+     "version": "nftables v1.1.1 (Commodore Bullmoose #2)",
+     "dropped": 83259,
+     "allowed": 44
+    }
+   }
+  }
+ }
+}

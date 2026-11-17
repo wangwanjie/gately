@@ -1,0 +1,600 @@
+{
+ "sut": "caddy-authelia",
+ "startupSec": 0.793,
+ "hash": "Authelia argon2id t=3 m=65536KiB p=4；basic_auth 为 bcrypt cost 10",
+ "images": {
+  "caddy:2-alpine": 91672907,
+  "authelia/authelia:4.39.28": 109852072
+ },
+ "tests": {
+  "cookie": {
+   "median": {
+    "rps": 7141.1,
+    "MBps": 8.78,
+    "p50ms": 17.38,
+    "p99ms": 39.52,
+    "non2xx": 0,
+    "sockErrors": 0,
+    "sutCpuPercent": 194.2,
+    "cpuPercentBy": {
+     "auth-sut": 145.4,
+     "auth-authelia": 48.8
+    },
+    "peakPssKiB": 187668,
+    "peakPssBy": {
+     "auth-sut": 85128,
+     "auth-authelia": 105364
+    }
+   },
+   "runs": [
+    {
+     "rps": 7297.34,
+     "MBps": 8.97,
+     "p50ms": 16.98,
+     "p99ms": 39.47,
+     "non2xx": 0,
+     "sockErrors": 0,
+     "sutCpuPercent": 194.5,
+     "cpuPercentBy": {
+      "auth-sut": 145.5,
+      "auth-authelia": 49.0
+     },
+     "peakPssKiB": 337512,
+     "peakPssBy": {
+      "auth-sut": 83576,
+      "auth-authelia": 257924
+     }
+    },
+    {
+     "rps": 7141.1,
+     "MBps": 8.78,
+     "p50ms": 17.38,
+     "p99ms": 39.52,
+     "non2xx": 0,
+     "sockErrors": 0,
+     "sutCpuPercent": 194.2,
+     "cpuPercentBy": {
+      "auth-sut": 145.4,
+      "auth-authelia": 48.8
+     },
+     "peakPssKiB": 187668,
+     "peakPssBy": {
+      "auth-sut": 85128,
+      "auth-authelia": 105364
+     }
+    },
+    {
+     "rps": 7127.55,
+     "MBps": 8.76,
+     "p50ms": 17.33,
+     "p99ms": 40.88,
+     "non2xx": 0,
+     "sockErrors": 0,
+     "sutCpuPercent": 193.4,
+     "cpuPercentBy": {
+      "auth-sut": 144.5,
+      "auth-authelia": 48.8
+     },
+     "peakPssKiB": 191732,
+     "peakPssBy": {
+      "auth-sut": 84828,
+      "auth-authelia": 107512
+     }
+    }
+   ]
+  },
+  "none": {
+   "median": {
+    "rps": 22703.02,
+    "MBps": 27.91,
+    "p50ms": 5.14,
+    "p99ms": 15.17,
+    "non2xx": 0,
+    "sockErrors": 0,
+    "sutCpuPercent": 196.1,
+    "cpuPercentBy": {
+     "auth-sut": 196.1,
+     "auth-authelia": 0.0
+    },
+    "peakPssKiB": 217892,
+    "peakPssBy": {
+     "auth-sut": 79540,
+     "auth-authelia": 139824
+    }
+   },
+   "runs": [
+    {
+     "rps": 22731.45,
+     "MBps": 27.94,
+     "p50ms": 5.11,
+     "p99ms": 15.4,
+     "non2xx": 0,
+     "sockErrors": 0,
+     "sutCpuPercent": 195.9,
+     "cpuPercentBy": {
+      "auth-sut": 195.7,
+      "auth-authelia": 0.2
+     },
+     "peakPssKiB": 185712,
+     "peakPssBy": {
+      "auth-sut": 82296,
+      "auth-authelia": 105664
+     }
+    },
+    {
+     "rps": 22603.04,
+     "MBps": 27.79,
+     "p50ms": 5.13,
+     "p99ms": 15.32,
+     "non2xx": 0,
+     "sockErrors": 0,
+     "sutCpuPercent": 195.9,
+     "cpuPercentBy": {
+      "auth-sut": 195.7,
+      "auth-authelia": 0.2
+     },
+     "peakPssKiB": 212452,
+     "peakPssBy": {
+      "auth-sut": 81160,
+      "auth-authelia": 133744
+     }
+    },
+    {
+     "rps": 22703.02,
+     "MBps": 27.91,
+     "p50ms": 5.14,
+     "p99ms": 15.17,
+     "non2xx": 0,
+     "sockErrors": 0,
+     "sutCpuPercent": 196.1,
+     "cpuPercentBy": {
+      "auth-sut": 196.1,
+      "auth-authelia": 0.0
+     },
+     "peakPssKiB": 217892,
+     "peakPssBy": {
+      "auth-sut": 79540,
+      "auth-authelia": 139824
+     }
+    }
+   ]
+  },
+  "basicBcrypt": {
+   "median": {
+    "rps": 21212.7,
+    "MBps": 26.08,
+    "p50ms": 5.48,
+    "p99ms": 16.27,
+    "non2xx": 0,
+    "sockErrors": 0,
+    "sutCpuPercent": 196.0,
+    "cpuPercentBy": {
+     "auth-sut": 195.8,
+     "auth-authelia": 0.2
+    },
+    "peakPssKiB": 220024,
+    "peakPssBy": {
+     "auth-sut": 80200,
+     "auth-authelia": 139824
+    }
+   },
+   "runs": [
+    {
+     "rps": 21212.7,
+     "MBps": 26.08,
+     "p50ms": 5.48,
+     "p99ms": 16.27,
+     "non2xx": 0,
+     "sockErrors": 0,
+     "sutCpuPercent": 196.0,
+     "cpuPercentBy": {
+      "auth-sut": 195.8,
+      "auth-authelia": 0.2
+     },
+     "peakPssKiB": 220024,
+     "peakPssBy": {
+      "auth-sut": 80200,
+      "auth-authelia": 139824
+     }
+    },
+    {
+     "rps": 21236.75,
+     "MBps": 26.11,
+     "p50ms": 5.47,
+     "p99ms": 16.39,
+     "non2xx": 0,
+     "sockErrors": 0,
+     "sutCpuPercent": 195.9,
+     "cpuPercentBy": {
+      "auth-sut": 195.7,
+      "auth-authelia": 0.2
+     },
+     "peakPssKiB": 220248,
+     "peakPssBy": {
+      "auth-sut": 80424,
+      "auth-authelia": 139824
+     }
+    },
+    {
+     "rps": 21188.82,
+     "MBps": 26.05,
+     "p50ms": 5.48,
+     "p99ms": 16.17,
+     "non2xx": 0,
+     "sockErrors": 0,
+     "sutCpuPercent": 195.6,
+     "cpuPercentBy": {
+      "auth-sut": 195.4,
+      "auth-authelia": 0.2
+     },
+     "peakPssKiB": 222524,
+     "peakPssBy": {
+      "auth-sut": 82700,
+      "auth-authelia": 139824
+     }
+    }
+   ]
+  },
+  "loginOk": {
+   "median": {
+    "rps": 13.79827949459956,
+    "p50ms": 588.05,
+    "p99ms": 881.37,
+    "codes": {
+     "200": 268
+    },
+    "total": 268,
+    "errors": 8,
+    "elapsed": 20.002493797,
+    "okPerSec": 13.4,
+    "ok": 268,
+    "sutCpuPercent": 199.4,
+    "cpuPercentBy": {
+     "auth-sut": 0.7,
+     "auth-authelia": 198.6
+    },
+    "peakPssKiB": 1301844,
+    "peakPssBy": {
+     "auth-sut": 84200,
+     "auth-authelia": 1221864
+    }
+   },
+   "runs": [
+    {
+     "rps": 13.749127404754693,
+     "p50ms": 569.87,
+     "p99ms": 965.26,
+     "codes": {
+      "200": 267
+     },
+     "total": 267,
+     "errors": 8,
+     "elapsed": 20.00126931,
+     "okPerSec": 13.3,
+     "ok": 267,
+     "sutCpuPercent": 199.6,
+     "cpuPercentBy": {
+      "auth-sut": 0.7,
+      "auth-authelia": 198.9
+     },
+     "peakPssKiB": 1183964,
+     "peakPssBy": {
+      "auth-sut": 84200,
+      "auth-authelia": 1105056
+     }
+    },
+    {
+     "rps": 13.79827949459956,
+     "p50ms": 588.05,
+     "p99ms": 881.37,
+     "codes": {
+      "200": 268
+     },
+     "total": 268,
+     "errors": 8,
+     "elapsed": 20.002493797,
+     "okPerSec": 13.4,
+     "ok": 268,
+     "sutCpuPercent": 199.4,
+     "cpuPercentBy": {
+      "auth-sut": 0.7,
+      "auth-authelia": 198.6
+     },
+     "peakPssKiB": 1301844,
+     "peakPssBy": {
+      "auth-sut": 84200,
+      "auth-authelia": 1221864
+     }
+    },
+    {
+     "rps": 13.848825820378407,
+     "p50ms": 566.02,
+     "p99ms": 876.8,
+     "codes": {
+      "200": 269
+     },
+     "total": 269,
+     "errors": 8,
+     "elapsed": 20.00169571,
+     "okPerSec": 13.4,
+     "ok": 269,
+     "sutCpuPercent": 199.4,
+     "cpuPercentBy": {
+      "auth-sut": 0.7,
+      "auth-authelia": 198.8
+     },
+     "peakPssKiB": 1188580,
+     "peakPssBy": {
+      "auth-sut": 83044,
+      "auth-authelia": 1105692
+     }
+    }
+   ]
+  },
+  "loginOkHighConc": {
+   "median": {
+    "rps": 13.598038209667687,
+    "p50ms": 2407.42,
+    "p99ms": 4576.39,
+    "codes": {
+     "200": 104
+    },
+    "total": 104,
+    "errors": 32,
+    "elapsed": 10.001442701,
+    "okPerSec": 10.4,
+    "ok": 104,
+    "sutCpuPercent": 199.0,
+    "cpuPercentBy": {
+     "auth-sut": 0.7,
+     "auth-authelia": 198.3
+    },
+    "peakPssKiB": 3977028,
+    "peakPssBy": {
+     "auth-sut": 83452,
+     "auth-authelia": 3893576
+    }
+   },
+   "runs": [
+    {
+     "rps": 13.598038209667687,
+     "p50ms": 2407.42,
+     "p99ms": 4576.39,
+     "codes": {
+      "200": 104
+     },
+     "total": 104,
+     "errors": 32,
+     "elapsed": 10.001442701,
+     "okPerSec": 10.4,
+     "ok": 104,
+     "sutCpuPercent": 199.0,
+     "cpuPercentBy": {
+      "auth-sut": 0.7,
+      "auth-authelia": 198.3
+     },
+     "peakPssKiB": 3977028,
+     "peakPssBy": {
+      "auth-sut": 83452,
+      "auth-authelia": 3893576
+     }
+    }
+   ]
+  },
+  "loginBad": {
+   "median": {
+    "rps": 8.797211228618096,
+    "p50ms": 959.49,
+    "p99ms": 1057.67,
+    "codes": {
+     "401": 80
+    },
+    "total": 80,
+    "errors": 8,
+    "elapsed": 10.003170063,
+    "okPerSec": 0.0,
+    "ok": 0,
+    "sutCpuPercent": 19.0,
+    "cpuPercentBy": {
+     "auth-sut": 1.4,
+     "auth-authelia": 17.6
+    },
+    "peakPssKiB": 688836,
+    "peakPssBy": {
+     "auth-sut": 52224,
+     "auth-authelia": 636612
+    },
+    "correctLoginAfter": {
+     "status": 401,
+     "gotCookie": false
+    },
+    "existingCookieAfter": "200 1024"
+   },
+   "runs": [
+    {
+     "rps": 8.797435863273803,
+     "p50ms": 960.55,
+     "p99ms": 1035.84,
+     "codes": {
+      "401": 80
+     },
+     "total": 80,
+     "errors": 8,
+     "elapsed": 10.002914641,
+     "okPerSec": 0.0,
+     "ok": 0,
+     "sutCpuPercent": 19.1,
+     "cpuPercentBy": {
+      "auth-sut": 1.4,
+      "auth-authelia": 17.7
+     },
+     "peakPssKiB": 676220,
+     "peakPssBy": {
+      "auth-sut": 52112,
+      "auth-authelia": 624108
+     },
+     "correctLoginAfter": {
+      "status": 401,
+      "gotCookie": false
+     },
+     "existingCookieAfter": "200 1024"
+    },
+    {
+     "rps": 8.797211228618096,
+     "p50ms": 959.49,
+     "p99ms": 1057.67,
+     "codes": {
+      "401": 80
+     },
+     "total": 80,
+     "errors": 8,
+     "elapsed": 10.003170063,
+     "okPerSec": 0.0,
+     "ok": 0,
+     "sutCpuPercent": 19.0,
+     "cpuPercentBy": {
+      "auth-sut": 1.4,
+      "auth-authelia": 17.6
+     },
+     "peakPssKiB": 688836,
+     "peakPssBy": {
+      "auth-sut": 52224,
+      "auth-authelia": 636612
+     },
+     "correctLoginAfter": {
+      "status": 401,
+      "gotCookie": false
+     },
+     "existingCookieAfter": "200 1024"
+    },
+    {
+     "rps": 8.792683128288452,
+     "p50ms": 955.86,
+     "p99ms": 1027.52,
+     "codes": {
+      "401": 80
+     },
+     "total": 80,
+     "errors": 8,
+     "elapsed": 10.008321546,
+     "okPerSec": 0.0,
+     "ok": 0,
+     "sutCpuPercent": 18.9,
+     "cpuPercentBy": {
+      "auth-sut": 1.4,
+      "auth-authelia": 17.5
+     },
+     "peakPssKiB": 687836,
+     "peakPssBy": {
+      "auth-sut": 52348,
+      "auth-authelia": 635488
+     },
+     "correctLoginAfter": {
+      "status": 401,
+      "gotCookie": false
+     },
+     "existingCookieAfter": "200 1024"
+    }
+   ]
+  }
+ },
+ "idle": {
+  "pssKiB": 152208,
+  "rssKiB": 152224,
+  "cgroupKiB": 116764,
+  "procs": 2,
+  "containers": {
+   "auth-sut": {
+    "pssKiB": 49644,
+    "rssKiB": 49652,
+    "cgroupKiB": 55880,
+    "cpuUsec": 90134,
+    "procs": 1
+   },
+   "auth-authelia": {
+    "pssKiB": 102564,
+    "rssKiB": 102572,
+    "cgroupKiB": 60884,
+    "cpuUsec": 348997,
+    "procs": 1
+   }
+  }
+ },
+ "checks": {
+  "anonStatus": 401,
+  "loginStatus": 200,
+  "cookieNames": [
+   "authelia_session"
+  ],
+  "cookieGet": "200 1024",
+  "basicBcryptAnon": 401,
+  "basicBcryptGet": "200 1024"
+ },
+ "idleAfterFirstLogin": {
+  "pssKiB": 217960,
+  "rssKiB": 217976,
+  "cgroupKiB": 182300,
+  "procs": 2,
+  "containers": {
+   "auth-sut": {
+    "pssKiB": 49880,
+    "rssKiB": 49888,
+    "cgroupKiB": 56100,
+    "cpuUsec": 170547,
+    "procs": 1
+   },
+   "auth-authelia": {
+    "pssKiB": 168080,
+    "rssKiB": 168088,
+    "cgroupKiB": 126200,
+    "cpuUsec": 565020,
+    "procs": 1
+   }
+  }
+ },
+ "imageBytes": 201524979,
+ "idleAfterWrk": {
+  "pssKiB": 209500,
+  "rssKiB": 209516,
+  "cgroupKiB": 214660,
+  "procs": 2,
+  "containers": {
+   "auth-sut": {
+    "pssKiB": 78892,
+    "rssKiB": 78900,
+    "cgroupKiB": 110572,
+    "cpuUsec": 323359400,
+    "procs": 1
+   },
+   "auth-authelia": {
+    "pssKiB": 130608,
+    "rssKiB": 130616,
+    "cgroupKiB": 104088,
+    "cpuUsec": 30273917,
+    "procs": 1
+   }
+  }
+ },
+ "idleAfterLogins": {
+  "pssKiB": 2749168,
+  "rssKiB": 2749184,
+  "cgroupKiB": 2752920,
+  "procs": 2,
+  "containers": {
+   "auth-sut": {
+    "pssKiB": 83452,
+    "rssKiB": 83460,
+    "cgroupKiB": 94412,
+    "cpuUsec": 323840520,
+    "procs": 1
+   },
+   "auth-authelia": {
+    "pssKiB": 2665716,
+    "rssKiB": 2665724,
+    "cgroupKiB": 2658508,
+    "cpuUsec": 173798084,
+    "procs": 1
+   }
+  }
+ }
+}
