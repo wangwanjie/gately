@@ -1,6 +1,6 @@
 {
   "title": "共用使用者",
-  "cardDesc": "WebDAV、FTP、SMB 共用，在「檔案共用使用者」頁面統一維護",
+  "cardDesc": "WebDAV、FTP、SMB 共用，在「檔案共用」頁的「共用使用者」分頁統一維護",
   "usersDesc": "儲存後 WebDAV、FTP、SMB 同時生效",
   "enable": "允許共用使用者登入",
   "count": "共 {count} 個共用使用者",

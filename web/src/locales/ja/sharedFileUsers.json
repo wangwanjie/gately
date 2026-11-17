@@ -1,6 +1,6 @@
 {
   "title": "共有ユーザー",
-  "cardDesc": "WebDAV・FTP・SMB で共用し、「ファイル共有ユーザー」ページでまとめて管理します",
+  "cardDesc": "WebDAV・FTP・SMB で共用し、「ファイル共有」ページの「共有ユーザー」タブでまとめて管理します",
   "usersDesc": "保存すると WebDAV・FTP・SMB に同時に反映されます",
   "enable": "共有ユーザーのログインを許可",
   "count": "共有ユーザー {count} 人",

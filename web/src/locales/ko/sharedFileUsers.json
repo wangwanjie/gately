@@ -1,6 +1,6 @@
 {
   "title": "공유 사용자",
-  "cardDesc": "WebDAV, FTP, SMB가 함께 쓰며 '파일 공유 사용자' 페이지에서 한곳에서 관리합니다",
+  "cardDesc": "WebDAV, FTP, SMB가 함께 쓰며 '파일 공유' 페이지의 '공유 사용자' 탭에서 한곳에서 관리합니다",
   "usersDesc": "저장하면 WebDAV, FTP, SMB에 동시에 적용됩니다",
   "enable": "공유 사용자 로그인 허용",
   "count": "공유 사용자 {count}명",

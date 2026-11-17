@@ -1,6 +1,6 @@
 {
   "title": "Usuarios compartidos",
-  "cardDesc": "Compartidos por WebDAV, FTP y SMB y gestionados en la página Usuarios compartidos de archivos",
+  "cardDesc": "Compartidos por WebDAV, FTP y SMB y gestionados en la pestaña Usuarios compartidos de la página Compartir archivos",
   "usersDesc": "Al guardar se aplica a WebDAV, FTP y SMB a la vez",
   "enable": "Permitir usuarios compartidos",
   "count": "{count} usuarios compartidos",

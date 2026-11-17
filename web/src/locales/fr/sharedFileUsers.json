@@ -1,6 +1,6 @@
 {
   "title": "Utilisateurs partagés",
-  "cardDesc": "Communs à WebDAV, FTP et SMB et gérés sur la page Utilisateurs partagés de fichiers",
+  "cardDesc": "Communs à WebDAV, FTP et SMB et gérés dans l’onglet Utilisateurs partagés de la page Partage de fichiers",
   "usersDesc": "L’enregistrement s’applique à WebDAV, FTP et SMB en même temps",
   "enable": "Autoriser les utilisateurs partagés",
   "count": "{count} utilisateurs partagés",

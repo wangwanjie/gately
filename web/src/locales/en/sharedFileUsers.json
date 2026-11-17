@@ -1,6 +1,6 @@
 {
   "title": "Shared users",
-  "cardDesc": "Shared by WebDAV, FTP and SMB and managed on the File shared users page",
+  "cardDesc": "Shared by WebDAV, FTP and SMB and managed on the Shared users tab of the File Sharing page",
   "usersDesc": "Saving applies to WebDAV, FTP and SMB at once",
   "enable": "Allow shared users",
   "count": "{count} shared users",
