@@ -2,6 +2,7 @@
   "login": "Anmelden",
   "groups": {
     "network": "Netzwerk",
+    "security": "Sicherheit",
     "tunnel": "Vernetzung & Tunnel",
     "web": "Web",
     "storage": "Dateidienste",
@@ -35,6 +36,9 @@
     "stun": {
       "title": "STUN-Traversal",
       "desc": "Dienste hinter NAT1 ohne öffentliche IP erreichen"
+    },
+    "mesh": {
+      "title": "Mesh-VPN"
     },
     "tailscale": {
       "title": "Tailscale",
@@ -85,6 +89,9 @@
       "title": "Speicher-Einbindungen",
       "desc": "Lokale Verzeichnisse, entferntes WebDAV oder SMB-Freigaben einbinden und Dateien online verwalten"
     },
+    "files": {
+      "title": "Dateifreigabe"
+    },
     "webdav": {
       "title": "WebDAV-Dienst",
       "desc": "WebDAV-Dateifreigabedienst"
@@ -133,6 +140,9 @@
       "title": "Leistung",
       "desc": "Leistungsverläufe und Schwellwert-Warnungen"
     },
+    "logsHub": {
+      "title": "Protokolle"
+    },
     "logs": {
       "title": "Systemprotokolle"
     },
@@ -154,5 +164,12 @@
     "about": {
       "title": "Über"
     }
+  },
+  "tabs": {
+    "webSites": "Sites",
+    "webdav": "WebDAV",
+    "ftp": "FTP",
+    "smb": "SMB",
+    "fileusers": "Gemeinsame Benutzer"
   }
 }

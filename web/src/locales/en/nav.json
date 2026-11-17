@@ -2,6 +2,7 @@
   "login": "Sign in",
   "groups": {
     "network": "Network",
+    "security": "Security",
     "tunnel": "Networking & Tunnels",
     "web": "Web",
     "storage": "File Services",
@@ -35,6 +36,9 @@
     "stun": {
       "title": "STUN Traversal",
       "desc": "Reach services behind NAT1 without a public IP"
+    },
+    "mesh": {
+      "title": "Mesh VPN"
     },
     "tailscale": {
       "title": "Tailscale",
@@ -85,6 +89,9 @@
       "title": "Storage Mounts",
       "desc": "Mount local directories, remote WebDAV or SMB shares and manage files online"
     },
+    "files": {
+      "title": "File Sharing"
+    },
     "webdav": {
       "title": "WebDAV Service",
       "desc": "WebDAV file sharing service"
@@ -133,6 +140,9 @@
       "title": "Performance",
       "desc": "Performance trends and threshold alerts"
     },
+    "logsHub": {
+      "title": "Logs"
+    },
     "logs": {
       "title": "System Logs"
     },
@@ -154,5 +164,12 @@
     "about": {
       "title": "About"
     }
+  },
+  "tabs": {
+    "webSites": "Sites",
+    "webdav": "WebDAV",
+    "ftp": "FTP",
+    "smb": "SMB",
+    "fileusers": "Shared users"
   }
 }

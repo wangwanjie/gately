@@ -2,6 +2,7 @@
   "login": "ログイン",
   "groups": {
     "network": "ネットワーク",
+    "security": "セキュリティ",
     "tunnel": "ネットワーク接続と NAT 越え",
     "web": "Web",
     "storage": "ファイルサービス",
@@ -35,6 +36,9 @@
     "stun": {
       "title": "STUN 穿孔",
       "desc": "NAT1 環境でグローバル IP なしで外部公開"
+    },
+    "mesh": {
+      "title": "メッシュ VPN"
     },
     "tailscale": {
       "title": "Tailscale",
@@ -85,6 +89,9 @@
       "title": "ストレージマウント",
       "desc": "ローカルディレクトリ、リモート WebDAV、SMB 共有をマウントしてオンラインで管理"
     },
+    "files": {
+      "title": "ファイル共有"
+    },
     "webdav": {
       "title": "WebDAV サービス",
       "desc": "WebDAV ファイル共有サービス"
@@ -133,6 +140,9 @@
       "title": "パフォーマンス監視",
       "desc": "パフォーマンス推移としきい値アラート"
     },
+    "logsHub": {
+      "title": "ログ"
+    },
     "logs": {
       "title": "システムログ"
     },
@@ -154,5 +164,12 @@
     "about": {
       "title": "バージョン情報"
     }
+  },
+  "tabs": {
+    "webSites": "サイト",
+    "webdav": "WebDAV",
+    "ftp": "FTP",
+    "smb": "SMB",
+    "fileusers": "共有ユーザー"
   }
 }
