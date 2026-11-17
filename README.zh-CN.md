@@ -21,6 +21,13 @@
 
 <img src="docs/images/zh-CN/overview.webp" alt="Gately 概览页" width="100%">
 
+<table>
+<tr>
+<td width="50%" valign="top"><a href="https://gately.cn/videos/gately-promo.zh.mp4"><img src="docs/images/zh-CN/video-promo.jpg" alt="Gately 宣传片" width="100%"></a><br><b>▶ 宣传片（42 秒）</b><br>一个程序替代 nginx、certbot、ddns-go、fail2ban 等</td>
+<td width="50%" valign="top"><a href="https://gately.cn/videos/gately-overview.zh.mp4"><img src="docs/images/zh-CN/video-overview.jpg" alt="Gately 功能全览视频" width="100%"></a><br><b>▶ 功能全览（5 分钟）</b><br>概览、Web 服务、证书、动态域名、协议分流、入侵防护、内网穿透、配置回滚</td>
+</tr>
+</table>
+
 ## 能替代哪些工具
 
 | 你现在在用 | Gately 里对应 |

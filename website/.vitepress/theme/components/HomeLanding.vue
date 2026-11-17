@@ -60,13 +60,47 @@ const tourSrc = computed(() => withBase(`/videos/gately-tour.${shotLang.value.st
 const tourDialog = ref<HTMLDialogElement>()
 const tourVideo = ref<HTMLVideoElement>()
 const tourOpen = ref(false)
+// 对话框当前播放的视频：巡览视频是 16:10 无声录屏，宣传片与功能全览是 16:9 带配乐
+const playing = ref({ src: '', aspect: '16 / 10', muted: true })
 
-function openTour() {
+// 宣传片与功能全览视频只有简体中文版（随官网部署在 /videos/，不进 git），只在中文页面展示
+const isZh = computed(() => shotLang.value.startsWith('zh'))
+const filmsText = computed(() => (shotLang.value === 'zh-TW'
+  ? { title: '影片介紹', desc: '短片看懂 Gately，再用 5 分鐘逐項看完主要功能。畫面均為真實介面截圖，影片為簡體中文。', play: '播放' }
+  : { title: '视频介绍', desc: '先用短片看懂 Gately，再花 5 分钟逐项看完主要功能。画面均为真实界面截图与录屏。', play: '播放' }))
+const films = computed(() => {
+  const tw = shotLang.value === 'zh-TW'
+  return [
+    {
+      key: 'promo',
+      title: tw ? '宣傳片' : '宣传片',
+      text: tw ? '一個程式替代 nginx、certbot、ddns-go、fail2ban 等，自架、無遙測、Apache-2.0。' : '一个程序替代 nginx、certbot、ddns-go、fail2ban 等，自托管、无遥测、Apache-2.0。',
+      dur: '0:42',
+      src: withBase('/videos/gately-promo.zh.mp4'),
+      poster: withBase('/videos/gately-promo.zh.jpg')
+    },
+    {
+      key: 'overview',
+      title: tw ? '功能全覽' : '功能全览',
+      text: tw ? '安裝登入、概覽、Web 服務、憑證、動態網域、協定分流、入侵防護、內網穿透與設定回滾。' : '安装登录、概览、Web 服务、证书、动态域名、协议分流、入侵防护、内网穿透与配置回滚。',
+      dur: '5:08',
+      src: withBase('/videos/gately-overview.zh.mp4'),
+      poster: withBase('/videos/gately-overview.zh.jpg')
+    }
+  ]
+})
+
+function openVideo(src: string, aspect: string, muted: boolean) {
+  playing.value = { src, aspect, muted }
   tourOpen.value = true
   tourDialog.value?.showModal()
   nextTick(() => {
     tourVideo.value?.play().catch(() => {})
   })
+}
+
+function openTour() {
+  openVideo(tourSrc.value, '16 / 10', true)
 }
 
 // 关闭对话框（按钮、Esc 或点击遮罩）时暂停播放
@@ -284,9 +318,46 @@ function onSpot(e: PointerEvent) {
     <dialog ref="tourDialog" class="tour" :aria-label="h.product.tour" @close="onTourClose" @click="onTourBackdrop">
       <div class="tour-box">
         <button class="tour-close" :aria-label="h.product.close" @click="tourDialog?.close()"><X :size="18" /></button>
-        <video ref="tourVideo" :src="tourOpen ? tourSrc : undefined" controls playsinline muted preload="none" width="1440" height="900" />
+        <video
+          ref="tourVideo"
+          :src="tourOpen ? playing.src : undefined"
+          :style="{ aspectRatio: playing.aspect }"
+          :muted="playing.muted"
+          controls
+          playsinline
+          preload="none"
+          width="1440"
+          height="900"
+        />
       </div>
     </dialog>
+
+    <!-- 视频介绍：宣传片与功能全览，只在中文页面展示；点击封面在上面的对话框里播放 -->
+    <section v-if="isZh" id="videos" class="wrap films">
+      <header class="head" data-r>
+        <h2>{{ filmsText.title }}</h2>
+        <p>{{ filmsText.desc }}</p>
+      </header>
+      <div class="films-grid">
+        <button
+          v-for="(f, i) in films"
+          :key="f.key"
+          class="film"
+          data-r
+          :style="{ '--i': i }"
+          :aria-label="`${filmsText.play}：${f.title}`"
+          @click="openVideo(f.src, '16 / 9', false)"
+        >
+          <span class="film-poster">
+            <img :src="f.poster" :alt="f.title" width="1280" height="720" loading="lazy" decoding="async" />
+            <span class="film-play"><Play :size="26" /></span>
+            <span class="film-dur">{{ f.dur }}</span>
+          </span>
+          <span class="film-title">{{ f.title }}</span>
+          <span class="film-text">{{ f.text }}</span>
+        </button>
+      </div>
+    </section>
 
     <!-- 能替代哪些工具：左侧是常见做法，右侧是 Gately 里对应的模块，内容与 README 对照表一致 -->
     <section class="wrap replaces">
@@ -576,6 +647,25 @@ h1 .sub { margin-top: 12px; font-size: .56em; line-height: 1.3; letter-spacing: 
 .tour video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 10; }
 .tour-close { position: absolute; z-index: 1; top: 10px; right: 10px; display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; color: #fff; background: rgba(0, 0, 0, .55); border: 1px solid rgba(255, 255, 255, .25); cursor: pointer; }
 .tour-close:hover { background: rgba(0, 0, 0, .8); }
+
+/* ---- 视频介绍 ---- */
+.films { padding-top: 72px; }
+.films .head { margin-bottom: 32px; }
+.films-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 22px; }
+.film { display: flex; flex-direction: column; gap: 6px; padding: 0; text-align: left; font: inherit; color: inherit; background: transparent; border: 0; cursor: pointer; }
+.film-poster { position: relative; display: block; aspect-ratio: 16 / 9; border-radius: 14px; overflow: hidden; border: 1px solid var(--vp-c-divider); background: #0b1a18; box-shadow: 0 24px 50px -30px rgba(11, 60, 50, .5); }
+.film-poster img { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform .5s var(--ease); }
+.film:hover .film-poster img { transform: scale(1.03); }
+.film-play { position: absolute; left: 50%; top: 50%; display: grid; place-items: center; width: 64px; height: 64px; margin: -32px 0 0 -32px; border-radius: 50%; color: #fff; background: rgba(14, 124, 102, .92); box-shadow: 0 10px 30px -8px rgba(0, 0, 0, .55); transition: transform .25s var(--ease); }
+.film-play svg { margin-left: 3px; }
+.film:hover .film-play { transform: scale(1.08); }
+.film-dur { position: absolute; right: 10px; bottom: 10px; padding: 2px 8px; border-radius: 6px; font-size: 12.5px; font-family: var(--vp-font-family-mono); color: #fff; background: rgba(0, 0, 0, .62); }
+.film-title { margin-top: 10px; font-size: 18px; font-weight: 700; color: var(--vp-c-text-1); }
+.film:hover .film-title { color: var(--vp-c-brand-1); }
+.film-text { font-size: 14px; line-height: 1.65; color: var(--vp-c-text-2); }
+@media (max-width: 760px) {
+  .films-grid { grid-template-columns: 1fr; }
+}
 
 /* ---- 能替代哪些工具 ---- */
 .replaces { padding-top: 72px; padding-bottom: 56px; }
