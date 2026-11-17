@@ -73,6 +73,7 @@ func TestPanelLayoutApp(t *testing.T) {
 		Links: []PanelLink{
 			{Name: "NAS", URL: "https://nas.example.com", Description: "群晖", Alts: []PanelAlt{{Name: "IPv6", URL: "https://[2001:db8::1]:5001"}, {Name: "STUN", URL: "http://{STUN_none_ADDR}/"}}},
 			{Name: "小", URL: "https://s.example.com", Size: PanelSizeSmall, Alts: []PanelAlt{{Name: "frp", URL: "https://frp.example.com"}}},
+			{Name: "群晖NAS", URL: "https://dsm.example.com"},
 		}}
 	if err := p.validate(); err != nil {
 		t.Fatal(err)
@@ -93,16 +94,24 @@ func TestPanelLayoutApp(t *testing.T) {
 		}
 	}
 	nas := cardOf(t, body, "NAS")
-	if !strings.Contains(nas, `<details class="am"><summary title="其他访问方式"`) || !strings.Contains(nas, `<a href="https://[2001:db8::1]:5001" target="_blank" rel="noopener noreferrer"`) ||
-		!strings.Contains(nas, `<span class="off" title="暂不可用">STUN</span>`) {
-		t.Errorf("访问方式菜单: %s", nas)
+	// 其他访问方式不显示在卡片上，留给脚本的选择列表；整卡链接标明会弹出列表
+	if !strings.Contains(nas, `<span class="alts" hidden><a class="alt" href="https://[2001:db8::1]:5001" target="_blank" rel="noopener noreferrer"`) ||
+		!strings.Contains(nas, `<span class="alt off" title="暂不可用">STUN</span>`) || !strings.Contains(nas, `aria-haspopup="dialog"`) || !strings.Contains(nas, `card link multi`) {
+		t.Errorf("访问方式列表: %s", nas)
+	}
+	// 角标与分组数量默认不显示
+	if strings.Contains(body, `class="mb"`) || strings.Contains(body, `class="n"`) {
+		t.Error("角标与分组数量默认不显示")
 	}
 	// 描述仍在页面中（卡片样式与搜索要用），由样式隐藏
 	if !strings.Contains(nas, "群晖") {
 		t.Error("描述应保留在页面中")
 	}
-	if strings.Contains(cardOf(t, body, "小"), `class="am"`) {
-		t.Error("小卡片不显示其他访问方式")
+	if !strings.Contains(cardOf(t, body, "小"), `class="alts" hidden`) {
+		t.Error("小卡片也可以选择访问地址")
+	}
+	if strings.Contains(cardOf(t, body, "群晖NAS"), "alts") {
+		t.Error("只有一个地址的链接不带访问方式列表")
 	}
 }
 
@@ -143,11 +152,30 @@ func TestPanelLayoutPreview(t *testing.T) {
 		t.Fatalf("预览: %d %v", code, out)
 	}
 	html := out["html"].(string)
-	if strings.Contains(html, "<script") || !strings.Contains(html, `class="app"`) || !strings.Contains(html, "--is:80px") || !strings.Contains(html, `<details class="am">`) {
+	if strings.Contains(html, "<script") || !strings.Contains(html, `class="app"`) || !strings.Contains(html, "--is:80px") || !strings.Contains(html, `<span class="alts" hidden="">`) {
 		t.Fatalf("预览页面: %.800s", html)
 	}
 	p.IconSize = 500
 	if code, _ = do("POST", "/api/webservice/panels/preview", PanelPreviewRequest{Panel: p}); code != 400 {
 		t.Fatalf("越界的图标大小应拒绝预览: %d", code)
+	}
+}
+
+// 分组数量与多地址角标是开关，默认关闭；打开后分组标题旁显示链接数，多地址链接的图标右上角显示地址总数。
+func TestPanelGroupCountAndAltBadge(t *testing.T) {
+	p := Panel{Key: "p1", Name: "家里", Enable: true, GroupCount: true, AltBadge: true, Links: []PanelLink{
+		{Name: "NAS", Group: "存储", URL: "https://nas.example.com", Alts: []PanelAlt{{Name: "IPv6", URL: "https://[2001:db8::1]"}, {Name: "frp", URL: "https://frp.example.com"}}},
+		{Name: "相册", Group: "存储", URL: "https://photo.example.com"},
+	}}
+	h, _ := panelHandler(t, []Panel{p})
+	body := panelGet(h, "/", "203.0.113.9:1").Body.String()
+	if !strings.Contains(body, `<span class="n">2</span>`) {
+		t.Error("打开后应显示分组链接数")
+	}
+	if !strings.Contains(cardOf(t, body, "NAS"), `<span class="mb" title="3 个访问地址">3</span>`) {
+		t.Errorf("多地址链接应有角标: %s", cardOf(t, body, "NAS"))
+	}
+	if strings.Contains(cardOf(t, body, "相册"), `class="mb"`) {
+		t.Error("单地址链接不应有角标")
 	}
 }
