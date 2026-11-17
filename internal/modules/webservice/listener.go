@@ -149,8 +149,32 @@ func (t *siteTable) all() []*siteHandler {
 
 // route 按 Host 选择站点：精确匹配优先，其次最长通配，最后 *。
 func (l *listenerRunner) route(host string) *siteHandler {
-	host = hostOnly(host)
 	t := l.current()
+	if s := t.match(hostOnly(host)); s != nil {
+		return s
+	}
+	return t.deflt
+}
+
+// misdirected 判断 HTTPS 请求是否被浏览器复用到了不属于它的连接上：Host 与 TLS SNI 不同，且本监听没有配置该域名的站点。
+// 多个域名解析到同一 IP 且证书都覆盖（如通配证书）时，浏览器会把新域名的请求放进已打开的 HTTP/2 连接（连接合并）；
+// 前面有按 SNI 分流的协议分流或另一台网关时，这条连接实际通往别的 Gately，域名在这里没有站点。
+// 此时应答 421 Misdirected Request，浏览器会为该域名新建连接重试，而不是显示「站点不存在」或交给默认站点。
+// SNI 为空（用 IP 访问）或 Host 与 SNI 相同时不算误投，照常处理。只有 HTTP/2、HTTP/3 存在连接合并，
+// HTTP/1.1 不判断，以免影响把 SNI 设成后端地址、Host 设成原域名再转来的反向代理（常见为 HTTP/1.1）。
+func (l *listenerRunner) misdirected(r *http.Request) bool {
+	if r.ProtoMajor < 2 || r.TLS == nil || r.TLS.ServerName == "" {
+		return false
+	}
+	host := hostOnly(r.Host)
+	if host == hostOnly(r.TLS.ServerName) {
+		return false
+	}
+	return l.current().match(host) == nil
+}
+
+// match 返回明确配置了该域名（已规范化）的站点，没有时为 nil，不回落到默认站点。
+func (t *siteTable) match(host string) *siteHandler {
 	// 精确匹配的优先级最高，命中索引即可直接返回
 	if s, ok := t.exact[host]; ok {
 		return s
@@ -178,10 +202,7 @@ func (l *listenerRunner) route(host string) *siteHandler {
 			}
 		}
 	}
-	if best != nil {
-		return best
-	}
-	return t.deflt
+	return best
 }
 
 // redirectable 判断明文请求能否跳转到 HTTPS：域名没有对应站点（也没有默认站点），或默认站点是断开连接时不跳转，
@@ -249,6 +270,11 @@ func (l *listenerRunner) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			l.auth.serveOIDC(w, r, e, l.log)
 			return
 		}
+	}
+	// 浏览器连接合并把别的域名的请求投到了这里：应答 421 让其新建连接重试，不计入未知域名与路径探测
+	if l.misdirected(r) {
+		http.Error(w, "421 Misdirected Request", http.StatusMisdirectedRequest)
+		return
 	}
 	s := l.route(r.Host)
 	if s == nil {
