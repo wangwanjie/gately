@@ -345,8 +345,8 @@ Eigene Build-Tags, Tests mit zusätzlichen Voraussetzungen, Anforderungen an Mod
 
 - Gately ist unter Version 1.0. Versionsnummern haben bis zu vier Teile (zum Beispiel `v0.6.6.6`); der letzte Teil steigt bei Folge-Releases einer Nebenversion.
 - Jedes `v*`-Tag startet den [Release-Workflow](../../.github/workflows/release.yml), der die Binärdateien, OpenWrt- und fnOS-Pakete sowie das Multi-Arch-Docker-Image baut und die Artefakte signiert. Images tragen die Version und `latest`; `latest` zeigt immer auf das neueste Release.
-- Releases erscheinen häufig: 56 Versions-Tags zwischen dem 17. Oktober und dem 17. November 2026. Die Notizen in den [GitHub Releases](https://github.com/wangwanjie/gately/releases) sind nach Modulen gegliedert und weisen auf Upgrade-Hinweise hin; das [Änderungsprotokoll](https://gately.cn/de/news/) auf der Website enthält die Ankündigungen.
-- Sicherheitskorrekturen erscheinen nur für die neueste Version ([SECURITY.md](../../SECURITY.md)). Für den Produktivbetrieb empfiehlt sich ein fester Image-Tag wie `ghcr.io/wangwanjie/gately:v0.6.8`; lesen Sie vor dem Upgrade die Release-Notes und setzen Sie Einstellungen über den Konfigurationsverlauf zurück.
+- Releases erscheinen häufig: 57 Versions-Tags zwischen dem 17. Oktober und dem 17. November 2026. Die Notizen in den [GitHub Releases](https://github.com/wangwanjie/gately/releases) sind nach Modulen gegliedert und weisen auf Upgrade-Hinweise hin; das [Änderungsprotokoll](https://gately.cn/de/news/) auf der Website enthält die Ankündigungen.
+- Sicherheitskorrekturen erscheinen nur für die neueste Version ([SECURITY.md](../../SECURITY.md)). Für den Produktivbetrieb empfiehlt sich ein fester Image-Tag wie `ghcr.io/wangwanjie/gately:v0.6.8.1`; lesen Sie vor dem Upgrade die Release-Notes und setzen Sie Einstellungen über den Konfigurationsverlauf zurück.
 
 ## Mitwirken
 
