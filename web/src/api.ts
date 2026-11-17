@@ -332,6 +332,8 @@ export interface UpgradeStatus {
   total: number
   error?: string
   startedAt: string
+  // 目标版本没有发布签名（签名上线之前的版本），只核对了 SHA-256
+  unsigned?: boolean
 }
 
 // UpgradeResult 对应上传升级包的返回。

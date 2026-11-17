@@ -1247,6 +1247,9 @@
           "reason": {
             "type": "string"
           },
+          "redirect": {
+            "type": "boolean"
+          },
           "trapPorts": {
             "type": "string"
           },
@@ -2492,6 +2495,9 @@
           "maxConnections": {
             "type": "integer"
           },
+          "maxConnsPerSource": {
+            "type": "integer"
+          },
           "mode": {
             "type": "string"
           },
@@ -2641,6 +2647,9 @@
             "type": "string"
           },
           "maxConnections": {
+            "type": "integer"
+          },
+          "maxConnsPerSource": {
             "type": "integer"
           },
           "name": {
@@ -3347,6 +3356,9 @@
           },
           "paranoia": {
             "type": "integer"
+          },
+          "regexPrefilter": {
+            "type": "boolean"
           },
           "remark": {
             "type": "string"
@@ -44081,7 +44093,7 @@
     },
     "/api/system/upgrade": {
       "post": {
-        "description": "Session (admin) only, Linux binary installs only. Downloads the release package for this platform in the background, checks its SHA-256 against checksums.txt, test-runs the new binary, replaces the executable and restarts. The previous version is kept as `\u003cfile name\u003e.old` in the same directory. Returns 202 immediately; see `GET /api/system/upgrade/status` for progress. Custom builds get 409: online upgrade downloads the full edition, so generate a new version with the same options at https://build.gately.cn and upgrade through the upload endpoint.\n\n**Available only to login sessions; API tokens cannot access this endpoint.**",
+        "description": "Session (admin) only, Linux binary installs only. Downloads the release package for this platform in the background, verifies the minisign signature of checksums.txt (checksums.txt.minisig) with the built-in public key (an invalid signature refuses the upgrade; releases from before signing have no such file and upgrade anyway), checks its SHA-256 against checksums.txt, test-runs the new binary, replaces the executable and restarts. The previous version is kept as `\u003cfile name\u003e.old` in the same directory. Returns 202 immediately; see `GET /api/system/upgrade/status` for progress. Custom builds get 409: online upgrade downloads the full edition, so generate a new version with the same options at https://build.gately.cn and upgrade through the upload endpoint.\n\n**Available only to login sessions; API tokens cannot access this endpoint.**",
         "responses": {
           "200": {
             "description": "Success"
@@ -44173,7 +44185,7 @@
     },
     "/api/system/upgrade/status": {
       "get": {
-        "description": "Session only. `state` goes through `checking`, `downloading`, `verifying`, `installing` and `restarting`; on failure it is `failed` with the reason in `error`, and `canceled` when canceled. `downloaded` / `total` are the bytes of the upgrade package downloaded so far and in total.\n\n**Available only to login sessions; API tokens cannot access this endpoint.**",
+        "description": "Session only. `state` goes through `checking`, `downloading`, `verifying`, `installing` and `restarting`; on failure it is `failed` with the reason in `error`, and `canceled` when canceled. `downloaded` / `total` are the bytes of the upgrade package downloaded so far and in total. `unsigned` is true when the release has no signature and only its SHA-256 was checked.\n\n**Available only to login sessions; API tokens cannot access this endpoint.**",
         "responses": {
           "200": {
             "description": "Success"

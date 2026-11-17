@@ -4,6 +4,7 @@ import (
 	"archive/tar"
 	"bytes"
 	"compress/gzip"
+	"crypto/rand"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
@@ -17,6 +18,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/wangwanjie/gately/internal/logbuf"
+	"github.com/wangwanjie/gately/internal/minisign"
 	"github.com/wangwanjie/gately/internal/module"
 	"github.com/wangwanjie/gately/internal/version"
 )
@@ -114,6 +117,9 @@ func setupUpgrade(t *testing.T) string {
 	oldGOOS, oldExe, oldMarkers, oldVer, oldAPI := upgradeGOOS, upgradeExecutable, containerMarkers, version.Version, releaseAPI
 	oldReleases, oldAdvisories := releasesAPI, advisoriesAPI
 	oldPkgExe, oldOpkg, oldApk := packagedExecutable, opkgControlFile, apkInstalledDB
+	oldKeys := upgradeTrustedKeys
+	// 默认信任测试密钥，签名用例用 testReleaseKey 签名
+	upgradeTrustedKeys = []string{testReleaseKey.Public().String()}
 	upgradeGOOS = "linux"
 	upgradeExecutable = func() (string, error) { return exe, nil }
 	containerMarkers = nil
@@ -130,12 +136,39 @@ func setupUpgrade(t *testing.T) string {
 		upgradeGOOS, upgradeExecutable, containerMarkers, version.Version, releaseAPI = oldGOOS, oldExe, oldMarkers, oldVer, oldAPI
 		packagedExecutable, opkgControlFile, apkInstalledDB = oldPkgExe, oldOpkg, oldApk
 		releasesAPI, advisoriesAPI = oldReleases, oldAdvisories
+		upgradeTrustedKeys = oldKeys
 	})
 	return exe
 }
 
-// fakeRelease 模拟 GitHub 的版本查询与下载；sumOverride 非空时 checksums.txt 写入该校验值。
+// fakeRelease 模拟 GitHub 的版本查询与下载（没有发布签名）；sumOverride 非空时 checksums.txt 写入该校验值。
 func fakeRelease(t *testing.T, tag string, pkg []byte, sumOverride string) *httptest.Server {
+	t.Helper()
+	return fakeReleaseSigned(t, tag, pkg, sumOverride, nil)
+}
+
+// testReleaseKey 为测试用的发布签名私钥
+var testReleaseKey = func() *minisign.PrivateKey {
+	k, err := minisign.GenerateKey(rand.Reader)
+	if err != nil {
+		panic(err)
+	}
+	return k
+}()
+
+// signWith 返回用 k 对 checksums.txt 签名的函数，供 fakeReleaseSigned 使用。
+func signWith(k *minisign.PrivateKey) func([]byte) []byte {
+	return func(sums []byte) []byte {
+		sig, err := k.Sign(sums, "test", "gately test")
+		if err != nil {
+			panic(err)
+		}
+		return sig
+	}
+}
+
+// fakeReleaseSigned 同 fakeRelease；sign 非空时发布中带 checksums.txt.minisig，内容为 sign(实际提供的 checksums.txt)。
+func fakeReleaseSigned(t *testing.T, tag string, pkg []byte, sumOverride string, sign func(sums []byte) []byte) *httptest.Server {
 	t.Helper()
 	name := fmt.Sprintf("gately_%s_linux_%s.tar.gz", tag, upgradeGOARCH)
 	sum := sha256.Sum256(pkg)
@@ -143,16 +176,20 @@ func fakeRelease(t *testing.T, tag string, pkg []byte, sumOverride string) *http
 	if sumOverride != "" {
 		hexSum = sumOverride
 	}
+	sums := []byte(fmt.Sprintf("%s  %s\n", hexSum, name))
 	var srv *httptest.Server
 	srv = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case "/latest":
+			assets := []map[string]any{
+				{"name": name, "browser_download_url": srv.URL + "/dl/" + name},
+				{"name": "checksums.txt", "browser_download_url": srv.URL + "/dl/checksums.txt"},
+			}
+			if sign != nil {
+				assets = append(assets, map[string]any{"name": "checksums.txt.minisig", "browser_download_url": srv.URL + "/dl/checksums.txt.minisig"})
+			}
 			_ = json.NewEncoder(w).Encode(map[string]any{
-				"tag_name": tag, "html_url": "https://example.com", "published_at": time.Now(),
-				"assets": []map[string]any{
-					{"name": name, "browser_download_url": srv.URL + "/dl/" + name},
-					{"name": "checksums.txt", "browser_download_url": srv.URL + "/dl/checksums.txt"},
-				},
+				"tag_name": tag, "html_url": "https://example.com", "published_at": time.Now(), "assets": assets,
 			})
 		case "/releases":
 			// 检查更新读取发布列表与安全公告
@@ -162,7 +199,13 @@ func fakeRelease(t *testing.T, tag string, pkg []byte, sumOverride string) *http
 		case "/dl/" + name:
 			_, _ = w.Write(pkg)
 		case "/dl/checksums.txt":
-			fmt.Fprintf(w, "%s  %s\n", hexSum, name)
+			_, _ = w.Write(sums)
+		case "/dl/checksums.txt.minisig":
+			if sign == nil {
+				http.NotFound(w, r)
+				return
+			}
+			_, _ = w.Write(sign(sums))
 		default:
 			http.NotFound(w, r)
 		}
@@ -264,6 +307,111 @@ func TestUpgradeRejectsBadChecksum(t *testing.T) {
 	}
 	if _, err := os.Stat(exe + ".old"); err == nil {
 		t.Fatal("校验失败时不应生成 .old")
+	}
+}
+
+// runOnlineUpgrade 发起在线升级并等待结束。
+func runOnlineUpgrade(t *testing.T, c *http.Client, base string) upgradeStatus {
+	t.Helper()
+	if code, body := doJSON(t, c, "POST", base+"/api/system/upgrade", nil); code != http.StatusAccepted {
+		t.Fatalf("应在后台开始: %d %s", code, body)
+	}
+	return waitUpgrade(t, c, base)
+}
+
+// 签名正确时继续升级，不显示未签名警告
+func TestUpgradeSignedRelease(t *testing.T) {
+	exe := setupUpgrade(t)
+	a, srv, c := loginApp(t)
+	newBin := fakeBinary("v0.2.0")
+	fakeReleaseSigned(t, "v0.2.0", tarGz(t, map[string][]byte{"gately": newBin}), "", signWith(testReleaseKey))
+	st := runOnlineUpgrade(t, c, srv.URL)
+	if st.State != upgradeStateRestarting || st.Unsigned {
+		t.Fatalf("签名正确时应完成升级且不提示未签名: %+v", st)
+	}
+	if got, _ := os.ReadFile(exe); !bytes.Equal(got, newBin) {
+		t.Fatal("可执行文件应被替换为新版本")
+	}
+	if !sysLogHas(a, logbuf.LevelInfo, "已验证版本 v0.2.0 的发布签名") {
+		t.Fatal("系统日志应记录签名验证通过")
+	}
+}
+
+// 签名无效、来自未知密钥或 checksums.txt 被改动时拒绝升级，可执行文件不变
+func TestUpgradeRejectsBadSignature(t *testing.T) {
+	stranger, _ := minisign.GenerateKey(rand.Reader)
+	// tamperSig 改动签名行中的一个字符，模拟签名被篡改
+	tamperSig := func(sums []byte) []byte {
+		sig := signWith(testReleaseKey)(sums)
+		lines := strings.Split(string(sig), "\n")
+		b := []byte(lines[1])
+		i := len(b) - 10
+		if b[i] == 'A' {
+			b[i] = 'B'
+		} else {
+			b[i] = 'A'
+		}
+		lines[1] = string(b)
+		return []byte(strings.Join(lines, "\n"))
+	}
+	cases := []struct {
+		name string
+		// override 非空时 checksums.txt 写入该校验值（攻击者换了升级包并改了校验值）
+		override string
+		sign     func([]byte) []byte
+	}{
+		{"签名被篡改", "", tamperSig},
+		{"未知密钥签名", "", signWith(stranger)},
+		// 签名针对原始 checksums.txt，攻击者改了其中的校验值
+		{"checksums 被改动", strings.Repeat("ab", 32), func([]byte) []byte {
+			return signWith(testReleaseKey)([]byte("original checksums\n"))
+		}},
+		{"签名文件格式无效", "", func([]byte) []byte { return []byte("not a signature") }},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			exe := setupUpgrade(t)
+			a, srv, c := loginApp(t)
+			fakeReleaseSigned(t, "v0.2.0", tarGz(t, map[string][]byte{"gately": fakeBinary("v0.2.0")}), tc.override, tc.sign)
+			st := runOnlineUpgrade(t, c, srv.URL)
+			// 接口返回的原因按请求语言翻译，这里检查未翻译的原文
+			if raw := a.upgradeSnapshot(); st.State != upgradeStateFailed || !strings.Contains(raw.Error, "签名验证失败") {
+				t.Fatalf("应因签名验证失败拒绝升级: %+v", raw)
+			}
+			if got, _ := os.ReadFile(exe); string(got) != "old-binary" {
+				t.Fatal("验签失败时不应改动可执行文件")
+			}
+		})
+	}
+}
+
+// 没有签名文件（签名上线前的版本）时继续升级，进度与系统日志给出警告
+func TestUpgradeUnsignedWarns(t *testing.T) {
+	exe := setupUpgrade(t)
+	a, srv, c := loginApp(t)
+	newBin := fakeBinary("v0.2.0")
+	fakeRelease(t, "v0.2.0", tarGz(t, map[string][]byte{"gately": newBin}), "")
+	st := runOnlineUpgrade(t, c, srv.URL)
+	if st.State != upgradeStateRestarting || !st.Unsigned {
+		t.Fatalf("未签名版本应继续升级并标记 unsigned: %+v", st)
+	}
+	if got, _ := os.ReadFile(exe); !bytes.Equal(got, newBin) {
+		t.Fatal("可执行文件应被替换为新版本")
+	}
+	if !sysLogHas(a, logbuf.LevelWarn, "没有发布签名") {
+		t.Fatal("系统日志应警告该版本未签名")
+	}
+}
+
+// 轮换：第二把受信公钥签名的版本同样可以升级
+func TestUpgradeRotationKey(t *testing.T) {
+	setupUpgrade(t)
+	next, _ := minisign.GenerateKey(rand.Reader)
+	upgradeTrustedKeys = []string{testReleaseKey.Public().String(), next.Public().String()}
+	_, srv, c := loginApp(t)
+	fakeReleaseSigned(t, "v0.2.0", tarGz(t, map[string][]byte{"gately": fakeBinary("v0.2.0")}), "", signWith(next))
+	if st := runOnlineUpgrade(t, c, srv.URL); st.State != upgradeStateRestarting || st.Unsigned {
+		t.Fatalf("第二把公钥签名的版本应能升级: %+v", st)
 	}
 }
 

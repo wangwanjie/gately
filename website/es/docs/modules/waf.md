@@ -19,6 +19,10 @@ Un cortafuegos de aplicaciones web basado en [Coraza](https://coraza.io/) y OWAS
 2. Ajusta los archivos de reglas o añade excepciones personalizadas para los falsos positivos;
 3. Después cambia a «Bloquear».
 
+## Prefiltro de expresiones regulares
+
+Cada instancia tiene un interruptor «Prefiltro de expresiones regulares», activado por defecto (las instancias existentes antes de la actualización cuentan como activadas). Al activarlo, el WAF descarta primero, con palabras clave literales de las reglas, las expresiones que no pueden coincidir, y reduce la CPU de detección en torno a un 16 %. Se sabe que con el nivel de protección por defecto (nivel de paranoia 1) una muestra de la prueba de regresión CRS 942220 #2 no se detecta. Desactive el interruptor para recuperar la detección completa.
+
 ## Solicitudes del panel de administración
 
 Cuando el panel de administración se publica mediante proxy inverso a través de un sitio con WAF, las solicitudes con una sesión de administrador válida de esta instancia no pasan por el WAF (SafeLine incluido). Las configuraciones guardadas suelen contener rutas de archivo (como las notas que escribe la importación de nginx), HTML (páginas de error personalizadas) y scripts (despliegue de certificados), que las reglas de CRS contra recorrido de rutas, XSS e inyección de comandos bloquearían con 403. La sesión está firmada por el servidor y solo cuenta el rol de administrador; las solicitudes de cuentas de solo lectura, visitantes y paneles de otras instancias se siguen comprobando.
