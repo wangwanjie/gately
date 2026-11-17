@@ -91,8 +91,8 @@
   "home": {
     "pill": "Gratuito e de código aberto · Apache-2.0",
     "announce": {
-      "text": "v0.6.6.6: busca e links visíveis só após o login no painel de navegação, 16 novos provedores de DNS, origens confiáveis para o frpc →",
-      "link": "/pt-BR/news/v0.6.6.6"
+      "text": "v0.6.8: correções de segurança, busca global e assistente rápido de sites, importação do NPM / Sun-Panel, assinatura das versões →",
+      "link": "/pt-BR/news/v0.6.8"
     },
     "titleLine1": "Uma única entrada para os seus serviços auto-hospedados",
     "titleLine2": "Proxy reverso, HTTPS, DDNS, travessia de NAT, WAF e bloqueios em um único binário",

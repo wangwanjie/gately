@@ -91,8 +91,8 @@
   "home": {
     "pill": "Free and open source · Apache-2.0",
     "announce": {
-      "text": "v0.6.6.6 released: navigation panel search and sign-in-only links, 16 new DNS providers, trusted sources for frpc →",
-      "link": "/en/news/v0.6.6.6"
+      "text": "v0.6.8 released: security fixes, global search and quick site wizard, NPM / Sun-Panel import, release signing →",
+      "link": "/en/news/v0.6.8"
     },
     "titleLine1": "One gateway for your self-hosted services",
     "titleLine2": "Reverse proxy, HTTPS, DDNS, NAT traversal, WAF and bans, in one binary",

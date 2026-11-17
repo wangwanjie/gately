@@ -91,8 +91,8 @@
   "home": {
     "pill": "開源免費 · Apache-2.0",
     "announce": {
-      "text": "v0.6.6.6 發佈：導覽面板搜尋與登入可見連結、16 家新 DNS 服務商、frpc 可信來源 →",
-      "link": "/zh-TW/news/v0.6.6.6"
+      "text": "v0.6.8 發佈：安全修復、全域搜尋與快速建站精靈、NPM / Sun-Panel 匯入、發佈簽章 →",
+      "link": "/zh-TW/news/v0.6.8"
     },
     "titleLine1": "自架服務的統一入口",
     "titleLine2": "反向代理、憑證、動態網域、穿透、WAF 與封鎖，一個程式",

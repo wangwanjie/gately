@@ -7,6 +7,10 @@ description: Gately 各版本的發布公告與更新說明。
 
 重要版本的發布公告如下，每個版本的完整變更與下載檔案見 [GitHub Releases](https://github.com/wangwanjie/gately/releases)。
 
+## [v0.6.8](/zh-TW/news/v0.6.8)
+
+2026 年 11 月 17 日 · 安全修復（寫入權杖讀取設定目錄、站點第三方登入回跳、SMB 認證前崩潰等）與發佈簽章；全域搜尋、首次使用引導與快速建站精靈，側邊欄精簡為 27 項；匯入 Nginx Proxy Manager 與 Sun-Panel；導覽面板版面與位址選擇器；入侵防護、連接埠轉發並行連線限制、frps KCP/QUIC、DNS 並行查詢與日誌等級。
+
 ## [v0.6.6.6](/zh-TW/news/v0.6.6.6)
 
 2026 年 11 月 15 日 · 導覽面板新增搜尋引擎、僅登入可見連結、背景圖等；動態網域新增 16 家 DNS 服務商並改進 TTL 與 Cloudflare 代理狀態；入侵防護可信來源讓 frpc 不再被掃描偵測誤封；後台登入免認證改為管理員主動發起；回應快取修復。

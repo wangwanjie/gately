@@ -7,6 +7,10 @@ description: Release-Ankündigungen und Versionshinweise zu jeder Gately-Version
 
 Unten stehen die Ankündigungen zu wichtigen Releases. Alle Änderungen und Downloads jeder Version finden Sie unter [GitHub Releases](https://github.com/wangwanjie/gately/releases).
 
+## [v0.6.8](/de/news/v0.6.8)
+
+17. November 2026 · Sicherheitskorrekturen (Schreib-Token mit Lesezugriff auf das Konfigurationsverzeichnis, Rücksprungadresse der Drittanbieter-Anmeldung bei Sites, SMB-Absturz vor der Authentifizierung u. a.) und signierte Releases; globale Suche, Einrichtungsassistent und schneller Site-Assistent bei auf 27 Einträge verkleinerter Seitenleiste; Import von Nginx Proxy Manager und Sun-Panel; Layout des Navigationspanels und Adressauswahl; Einbruchschutz, Verbindungslimit bei der Portweiterleitung, KCP/QUIC für frps, parallele DNS-Abfragen und Log-Level.
+
 ## [v0.6.6.6](/de/news/v0.6.6.6)
 
 15. November 2026 · Das Navigationspanel erhält Suchmaschinen, nur nach der Anmeldung sichtbare Links, ein Hintergrundbild und mehr; Dynamisches DNS bringt 16 weitere DNS-Anbieter und verbessert TTL und den Cloudflare-Proxy-Status; vertrauenswürdige Quellen verhindern, dass die Scan-Erkennung frpc sperrt; die Anmeldung an der Verwaltung ohne Site-Authentifizierung startet der Administrator selbst; Korrekturen am Antwort-Cache.
