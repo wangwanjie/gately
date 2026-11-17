@@ -20,6 +20,15 @@ func TestPanelHideAppName(t *testing.T) {
 	if !strings.Contains(cardOf(t, body, "NAS"), `class="nm">NAS`) || !strings.Contains(cardOf(t, body, "宽块"), `card wd link`) {
 		t.Error("名称仍输出，由样式按尺寸隐藏")
 	}
+	// 图标样式的基础规则悬停时把卡片重置为占一列，1×2、2×2 的跨列规则必须同时覆盖悬停状态，否则悬停时块缩小、来回跳动
+	for _, want := range []string{
+		"html.app .grid .card.xl,html.app .grid .card.xl.link:hover{grid-column:span 2;grid-row:span 2;",
+		"html.app .grid .card.wd,html.app .grid .card.wd.link:hover{grid-column:span 2;",
+	} {
+		if !strings.Contains(body, want) {
+			t.Errorf("缺少悬停时的跨列规则 %s", want)
+		}
+	}
 	p.HideAppName = false
 	h, _ = panelHandler(t, []Panel{p})
 	if b := panelGet(h, "/", "203.0.113.9:1").Body.String(); regexp.MustCompile(`<html[^>]* class="[^"]*\ban\b`).MatchString(b) {
@@ -33,8 +42,8 @@ func TestPanelSingleColumnSpans(t *testing.T) {
 	h, _ := panelHandler(t, []Panel{p})
 	body := panelGet(h, "/", "203.0.113.9:1").Body.String()
 	for _, want := range []string{
-		"@media (min-width:641px){html.app.lc .grid .card.wd,html.app.lc .grid .card.xl{grid-column:span 1}}",
-		"html.lm.app .grid .card.wd,html.lm.app .grid .card.xl{grid-column:span 1}}",
+		"@media (min-width:641px){html.app.lc .grid .card.wd,html.app.lc .grid .card.xl,html.app.lc .grid .card.wd.link:hover,html.app.lc .grid .card.xl.link:hover{grid-column:span 1}}",
+		"html.lm.app .grid .card.wd,html.lm.app .grid .card.xl,html.lm.app .grid .card.wd.link:hover,html.lm.app .grid .card.xl.link:hover{grid-column:span 1}}",
 	} {
 		if !strings.Contains(body, want) {
 			t.Errorf("缺少 %s", want)

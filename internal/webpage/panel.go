@@ -122,7 +122,7 @@ func layoutCSS(l PanelLayout) (css string, classes []string) {
 	}
 	// App 图标样式每行只有一个时，1×2、2×2 的块跨两列会撑出多余的一列，改为占一列
 	if cols == 1 {
-		css += "@media (min-width:641px){html.app.lc .grid .card.wd,html.app.lc .grid .card.xl{grid-column:span 1}}"
+		css += "@media (min-width:641px){html.app.lc .grid .card.wd,html.app.lc .grid .card.xl,html.app.lc .grid .card.wd.link:hover,html.app.lc .grid .card.xl.link:hover{grid-column:span 1}}"
 	}
 	if mcols > 0 {
 		classes = append(classes, "lm")
@@ -130,7 +130,7 @@ func layoutCSS(l PanelLayout) (css string, classes []string) {
 		css += "@media (max-width:640px){html.lm .grid{grid-template-columns:repeat(" + strconv.Itoa(mcols*2) + ",minmax(0,1fr))}" +
 			"html.lm.app .grid{grid-template-columns:repeat(" + strconv.Itoa(mcols) + ",minmax(0,1fr))}"
 		if mcols == 1 {
-			css += "html.lm.app .grid .card.wd,html.lm.app .grid .card.xl{grid-column:span 1}"
+			css += "html.lm.app .grid .card.wd,html.lm.app .grid .card.xl,html.lm.app .grid .card.wd.link:hover,html.lm.app .grid .card.xl.link:hover{grid-column:span 1}"
 		}
 		css += "}"
 	}
