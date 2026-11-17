@@ -567,6 +567,9 @@ function confirm() {
   }
   .sp-footer {
     flex-wrap: wrap;
+    /* 按钮放不下一行时，换到下一行的主按钮靠右，与对话框其他按钮对齐 */
+    justify-content: flex-end;
+    row-gap: 10px;
   }
 }
 </style>
