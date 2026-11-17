@@ -153,7 +153,7 @@ func (m *Module) deleteRemote(ctx context.Context, t Task, targets []remoteTarge
 	results := make([]RemoteDeleteResult, 0, len(targets))
 	provider, err := providerFactory(t.Provider, t.Credentials, outbound.NewClient(timeout))
 	for _, tg := range targets {
-		rec := dnsprovider.Record{Zone: tg.rec.Zone, Sub: tg.rec.Sub, Type: tg.rec.Type, Value: tg.value, Line: tg.rec.Line}
+		rec := dnsprovider.Record{Zone: tg.rec.Zone, Sub: strings.ToLower(tg.rec.Sub), Type: tg.rec.Type, Value: tg.value, Line: tg.rec.Line}
 		res := RemoteDeleteResult{Key: tg.rec.Key, Domain: rec.FQDN(), Type: rec.Type}
 		if err != nil {
 			res.Error = err.Error()

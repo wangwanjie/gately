@@ -264,8 +264,9 @@ func (r *runner) syncOnce(ctx context.Context, force bool) {
 			continue
 		}
 		cctx, cancel := context.WithTimeout(ctx, timeout*3)
+		// 保存时已转小写；旧配置可能还带大写字母，同步前再转一次
 		action, err := provider.Upsert(cctx, dnsprovider.Record{
-			Zone: rec.Zone, Sub: rec.Sub, Type: rec.Type, Value: value, TTL: rec.TTL, Line: rec.Line, Remark: t.remarkOf(rec),
+			Zone: rec.Zone, Sub: strings.ToLower(rec.Sub), Type: rec.Type, Value: value, TTL: rec.TTL, Line: rec.Line, Remark: t.remarkOf(rec),
 		})
 		cancel()
 		if err != nil && ctx.Err() != nil {

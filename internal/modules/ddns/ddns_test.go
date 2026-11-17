@@ -773,3 +773,41 @@ func TestCanceledSyncIsNotFailure(t *testing.T) {
 		t.Fatalf("不应发出失败通知: %d", failedEvents)
 	}
 }
+
+// 主机记录保存时统一小写（issue #99：Porkbun 按名称查询区分大小写，带大写字母时查不到已有记录）。
+func TestValidateLowercasesSub(t *testing.T) {
+	task := sampleTask()
+	task.Records[1].Sub = " NAS.Home "
+	if err := task.Validate(); err != nil {
+		t.Fatal(err)
+	}
+	if task.Records[1].Sub != "nas.home" {
+		t.Fatalf("主机记录应转小写: %q", task.Records[1].Sub)
+	}
+	// 只有大小写不同的两条记录视为重复
+	task = sampleTask()
+	task.Records = append(task.Records, Record{Key: "d", Enable: true, Zone: "example.com", Sub: "NAS", Type: "AAAA"})
+	if task.Validate() == nil {
+		t.Fatal("只差大小写的记录应判为重复")
+	}
+}
+
+// 旧配置里带大写字母的主机记录（未经新版保存）同步时也以小写传给服务商。
+func TestSyncLowercasesLegacySub(t *testing.T) {
+	fp, _ := setupFakes(t)
+	task := sampleTask()
+	if err := task.Validate(); err != nil {
+		t.Fatal(err)
+	}
+	task.Records[1].Sub = "NAS"
+	r := newRunner(task, testLogger(), nil, nil)
+	r.syncOnce(context.Background(), false)
+	for _, c := range fp.calls {
+		if c.Type == "AAAA" && c.Sub != "nas" {
+			t.Fatalf("应以小写主机记录同步: %+v", c)
+		}
+	}
+	if fp.callCount() != 2 {
+		t.Fatalf("应同步 2 条记录，实际 %d", fp.callCount())
+	}
+}

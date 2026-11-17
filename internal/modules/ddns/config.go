@@ -206,7 +206,8 @@ func (r *Record) validate() error {
 		return err
 	}
 	r.Zone = strings.ToLower(strings.Trim(strings.TrimSpace(r.Zone), "."))
-	r.Sub = strings.TrimSpace(r.Sub)
+	// 域名不区分大小写，服务商处一般以小写保存；主机记录统一小写，避免按名称查询时因大小写不同查不到已有记录
+	r.Sub = strings.ToLower(strings.TrimSpace(r.Sub))
 	r.Type = strings.ToUpper(strings.TrimSpace(r.Type))
 	r.Value = strings.TrimSpace(r.Value)
 	if r.Sub == "" {
