@@ -144,7 +144,11 @@ var bootstrap = &http.Client{
 	},
 }
 
-// exchanger 把一次 DNS 查询依次发往各服务器，第一个成功的结果返回。
+// hedgeDelay 为等待当前服务器多久没有结果后，并行启动下一个服务器。
+// Go 解析器每次尝试只给约 5 秒期限，若逐个串行等待，首个服务器卡住时会耗尽期限，后面的服务器永远轮不到。
+var hedgeDelay = time.Second
+
+// exchanger 把一次 DNS 查询发往各服务器，第一个成功的结果返回。
 type exchanger struct {
 	servers []Server
 	mu      sync.Mutex
@@ -152,23 +156,67 @@ type exchanger struct {
 	preferred int
 }
 
+type exchangeResult struct {
+	idx  int
+	resp []byte
+	err  error
+}
+
+// exchange 从首选服务器开始查询；某个服务器失败或超过 hedgeDelay 仍无结果时，启动下一个服务器并行查询，
+// 先成功的结果胜出，其余查询随即取消。
 func (e *exchanger) exchange(ctx context.Context, msg []byte) ([]byte, error) {
 	e.mu.Lock()
 	start := e.preferred
 	e.mu.Unlock()
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	n := len(e.servers)
+	// 带缓冲，返回后仍在进行的查询写入结果时不会阻塞
+	results := make(chan exchangeResult, n)
+	launched := 0
+	launch := func() {
+		idx := (start + launched) % n
+		launched++
+		go func() {
+			resp, err := e.query(ctx, e.servers[idx], msg)
+			results <- exchangeResult{idx: idx, resp: resp, err: err}
+		}()
+	}
+	launch()
+
+	timer := time.NewTimer(hedgeDelay)
+	defer timer.Stop()
 	var lastErr error
-	for i := range e.servers {
-		idx := (start + i) % len(e.servers)
-		resp, err := e.query(ctx, e.servers[idx], msg)
-		if err == nil {
-			e.mu.Lock()
-			e.preferred = idx
-			e.mu.Unlock()
-			return resp, nil
-		}
-		lastErr = err
-		if ctx.Err() != nil {
-			break
+	pending := 1
+	for pending > 0 {
+		select {
+		case r := <-results:
+			pending--
+			if r.err == nil {
+				e.mu.Lock()
+				e.preferred = r.idx
+				e.mu.Unlock()
+				return r.resp, nil
+			}
+			lastErr = r.err
+			// 失败后立即换下一个服务器，不必等计时器
+			if launched < n && ctx.Err() == nil {
+				launch()
+				pending++
+				timer.Reset(hedgeDelay)
+			}
+		case <-timer.C:
+			if launched < n {
+				launch()
+				pending++
+				timer.Reset(hedgeDelay)
+			}
+		case <-ctx.Done():
+			if lastErr == nil {
+				lastErr = ctx.Err()
+			}
+			return nil, lastErr
 		}
 	}
 	return nil, lastErr
