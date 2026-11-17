@@ -81,7 +81,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Download, PackageCheck, PackageX, RefreshCw, Tag, Trash2, Undo2 } from 'lucide-vue-next'
@@ -132,7 +132,7 @@ const props = defineProps<{
 }>()
 const emit = defineEmits<{ changed: [] }>()
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const { labelPosition } = useFormLayout()
 const info = ref<InstallView>({
   state: { running: false, stage: '', version: '', downloaded: 0, total: 0, error: '' },
@@ -297,6 +297,11 @@ async function removeBackup(b: Backup) {
     ElMessage.error((e as Error).message)
   }
 }
+
+// 不支持当前平台等说明由后端按请求语言翻译，切换语言后重新获取
+watch(locale, () => {
+  load().catch(() => {})
+})
 
 onMounted(async () => {
   try {
