@@ -130,7 +130,7 @@
             <el-input v-model="editingChannel.webhook.body" type="textarea" :rows="4" class="mono" />
           </el-form-item>
           <el-form-item :label="t('notify.variables')">
-            <div class="form-help mono">{title} {message} {text} {type} {source} {level} {time}</div>
+            <div class="form-help mono">{title} {server} {message} {text} {type} {source} {level} {time}</div>
           </el-form-item>
         </template>
 
