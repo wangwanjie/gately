@@ -26,6 +26,14 @@ const (
 // setupDemo 在演示模式下确保存在名为 demo 的只读账号，并关闭演示中不可用的模块与 HTTPS 管理端口。
 func (a *App) setupDemo() error {
 	if !demo.Enabled() {
+		// 演示账号的密码写在源码里、人人可知：同一配置目录曾以演示模式启动过时，
+		// 正常启动会留下一个任何人都能登录的只读账号，这里把仍使用该密码的演示账号删除
+		if a.auth.UserPasswordIs(demoUsername, demoPassword) {
+			if err := a.auth.DeleteUser(demoUsername); err != nil {
+				return err
+			}
+			a.sysLogs.Add(logbuf.LevelWarn, "auth", "已删除演示模式留下的只读账号 demo（其密码公开），当前未以演示模式运行")
+		}
 		return nil
 	}
 	exists := false
