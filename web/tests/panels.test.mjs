@@ -301,13 +301,14 @@ test('尺寸：默认尺寸在卡片样式下为 1×2、图标样式下为 1×1�
   assert.deepEqual(['1x1', '1x2', '2x2'].map((c) => sizeValue(c, 'app')), ['', 'wide', 'big'])
 })
 
-test('开关：旧配置载入后语言切换隐藏、换肤与锁标记显示', () => {
+test('开关：旧配置载入后语言切换隐藏、换肤与锁标记显示、点击弹出选择；未知点击方式按默认', () => {
   const old = toPanel({ name: 'x', enable: true, links: [] })
-  assert.deepEqual([old.hideAppName, old.hideLock, old.showLang, old.hideSkin], [false, false, false, false])
+  assert.deepEqual([old.altClick, old.hideAppName, old.hideLock, old.showLang, old.hideSkin], ['', false, false, false, false])
   const p = emptyPanel()
-  assert.deepEqual([p.hideAppName, p.hideLock, p.showLang, p.hideSkin], [false, false, false, false])
-  const on = toPanel({ name: 'x', enable: true, links: [], hideAppName: true, hideLock: true, showLang: true, hideSkin: true })
-  assert.deepEqual([on.hideAppName, on.hideLock, on.showLang, on.hideSkin], [true, true, true, true])
+  assert.deepEqual([p.altClick, p.hideAppName, p.hideLock, p.showLang, p.hideSkin], ['', false, false, false, false])
+  const on = toPanel({ name: 'x', enable: true, links: [], altClick: 'direct', hideAppName: true, hideLock: true, showLang: true, hideSkin: true })
+  assert.deepEqual([on.altClick, on.hideAppName, on.hideLock, on.showLang, on.hideSkin], ['direct', true, true, true, true])
+  assert.equal(toPanel({ name: 'x', enable: true, links: [], altClick: 'menu' }).altClick, '')
   // 链接尺寸原样保留
   const q = toPanel({ name: 'x', enable: true, links: [{ ...emptyLink(), name: 'a', url: 'https://a.example.com', size: 'wide' }, { ...emptyLink(), name: 'b', url: 'https://b.example.com', size: 'big' }] })
   assert.deepEqual(q.links.map((l) => l.size), ['wide', 'big'])

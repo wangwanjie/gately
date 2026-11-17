@@ -159,6 +159,7 @@ html.app .card.xl .ic{--s:calc(var(--is,64px) * 2)}
 html.app .card.xl .nm{font-size:13.5px;font-weight:600}
 html.app .card.xl .ds{display:none}
 html.app .card.xl .lock{left:max(1px,calc(50% - var(--is,64px) - 6px))}
+html.ad .card.multi a.hit{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
 .card.multi .hit{cursor:pointer}
 .st .seg{gap:6px}
 .st .seg .sb{flex:1}
@@ -279,7 +280,7 @@ var top=Object.keys(hits).filter(function(k){return hits[k]>=2}).sort(function(a
 top.forEach(function(k){var c=document.querySelector('[data-k="'+k+'"]');if(c&&c.querySelector(".hit")){list.push(c)}});if(!list.length){return}
 var s=h("section","grp");s.id="fq";var t=h("h2","",T.frequent);s.appendChild(t);var g=h("div","grid");
 list.forEach(function(c){var n=c.cloneNode(true);n.removeAttribute("data-s");n.removeAttribute("data-k");n.setAttribute("data-fk",c.getAttribute("data-k"));g.appendChild(n)});s.appendChild(g);main.insertBefore(s,main.firstChild)}
-document.addEventListener("click",function(e){var a=e.target.closest&&e.target.closest(".hit");if(!a){return}var c=a.closest("[data-k],[data-fk]");if(!c||(c.querySelector(".alts")&&e.button===0&&!e.metaKey&&!e.ctrlKey&&!e.shiftKey&&!e.altKey)){return}var k=c.getAttribute("data-k")||c.getAttribute("data-fk");hits[k]=(hits[k]||0)+1;put(KH,JSON.stringify(hits))});
+document.addEventListener("click",function(e){var a=e.target.closest&&e.target.closest(".hit");if(!a){return}var c=a.closest("[data-k],[data-fk]");if(!c||(c.querySelector(".alts")&&!(D.direct&&a.tagName==="A")&&e.button===0&&!e.metaKey&&!e.ctrlKey&&!e.shiftKey&&!e.altKey)){return}var k=c.getAttribute("data-k")||c.getAttribute("data-fk");hits[k]=(hits[k]||0)+1;put(KH,JSON.stringify(hits))});
 freq();
 // ---- language: written to a cookie, the server renders texts by it; also stored under the admin UI key
 var lb=document.getElementById("lang-btn");
@@ -377,5 +378,16 @@ m.addEventListener("mousedown",function(e){if(e.target===m){closeCh(false)}});m.
 document.addEventListener("keydown",chKey,true);window.addEventListener("resize",onMove);window.addEventListener("scroll",onMove,true);
 ch={m:m,from:hit};void p.offsetWidth;m.classList.add("in");p.tabIndex=-1;var f=byKey&&p.querySelector("a.ci");(f||p).focus({preventScroll:true})}
 document.addEventListener("click",function(e){var hit=e.target.closest&&e.target.closest(".hit");if(!hit){return}var card=hit.closest(".card");
-if(!card||!card.querySelector(".alts")||e.button!==0||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey){return}e.preventDefault();openCh(card,hit,e.detail===0)});
+if(!card||!card.querySelector(".alts")||e.button!==0||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey||(D.direct&&hit.tagName==="A")){return}e.preventDefault();openCh(card,hit,e.detail===0)});
+// direct mode: a click opens the default address, the context menu (right click, the menu key, a long press) opens the chooser.
+// iOS does not fire contextmenu for a long press on a link, so touches are timed here; the click that follows a long press is swallowed
+if(D.direct){root.classList.add("ad");var lp={t:0,x:0,y:0,on:false,fired:false};
+function multiHit(t){var hit=t&&t.closest&&t.closest(".hit"),card=hit&&hit.closest(".card");return card&&card.querySelector(".alts")?[card,hit]:null}
+document.addEventListener("contextmenu",function(e){var m=multiHit(e.target);if(!m){return}e.preventDefault();clearTimeout(lp.t);if(lp.on){lp.fired=true}if(ch&&ch.from===m[1]){return}openCh(m[0],m[1],false)});
+document.addEventListener("touchstart",function(e){clearTimeout(lp.t);lp.fired=false;lp.on=true;var m=e.touches.length===1&&multiHit(e.target);if(!m){return}var p=e.touches[0];lp.x=p.clientX;lp.y=p.clientY;
+lp.t=setTimeout(function(){lp.fired=true;if(!(ch&&ch.from===m[1])){openCh(m[0],m[1],false)}},500)},{passive:true});
+document.addEventListener("touchmove",function(e){var p=e.touches[0];if(p&&Math.abs(p.clientX-lp.x)+Math.abs(p.clientY-lp.y)>10){clearTimeout(lp.t)}},{passive:true});
+document.addEventListener("touchend",function(e){clearTimeout(lp.t);lp.on=false;if(lp.fired&&e.cancelable){e.preventDefault()}},{passive:false});
+document.addEventListener("touchcancel",function(){clearTimeout(lp.t);lp.on=false},{passive:true});
+document.addEventListener("click",function(e){if(lp.fired){lp.fired=false;e.preventDefault();e.stopPropagation()}},true)}
 apply()})();`

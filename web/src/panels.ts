@@ -101,6 +101,8 @@ export interface Panel {
   // groupCount 为在分组标题旁显示链接数；altBadge 为在有多个访问地址的链接图标右上角显示地址数，都默认关闭
   groupCount: boolean
   altBadge: boolean
+  // altClick 为多地址链接的点击方式：空为点击弹出地址选择，direct 为点击直接打开默认地址、右键或长按弹出选择
+  altClick: '' | 'direct'
   // hideAppName 为 App 图标样式下不显示图标下方的名称；hideLock 为已登录访客不显示锁标记
   hideAppName: boolean
   hideLock: boolean
@@ -207,7 +209,7 @@ export function moveEngine(engines: PanelEngine[], def: number, i: number, delta
 }
 
 export function emptyPanel(): Panel {
-  return { name: '', enable: true, title: '', subtitle: '', icon: '', tabTitle: '', favicon: '', description: '', footer: '', footerUrl: '', hideFooter: false, theme: '', skin: '', engines: [], defaultEngine: 0, background: '', bgDim: 0, bgBlur: 0, cardStyle: '', iconSize: 0, columns: 0, mobileColumns: 0, gap: 0, maxWidth: 0, groupCount: false, altBadge: false, hideAppName: false, hideLock: false, showLang: false, hideSkin: false, lanCidrs: [], links: [], remark: '' }
+  return { name: '', enable: true, title: '', subtitle: '', icon: '', tabTitle: '', favicon: '', description: '', footer: '', footerUrl: '', hideFooter: false, theme: '', skin: '', engines: [], defaultEngine: 0, background: '', bgDim: 0, bgBlur: 0, cardStyle: '', iconSize: 0, columns: 0, mobileColumns: 0, gap: 0, maxWidth: 0, groupCount: false, altBadge: false, altClick: '', hideAppName: false, hideLock: false, showLang: false, hideSkin: false, lanCidrs: [], links: [], remark: '' }
 }
 
 export function emptyLink(group = ''): PanelLink {
@@ -243,6 +245,7 @@ export function toPanel(v: PanelView | Panel): Panel {
     maxWidth: v.maxWidth ?? 0,
     groupCount: v.groupCount ?? false,
     altBadge: v.altBadge ?? false,
+    altClick: v.altClick === 'direct' ? 'direct' : '',
     hideAppName: v.hideAppName ?? false,
     hideLock: v.hideLock ?? false,
     showLang: v.showLang ?? false,
