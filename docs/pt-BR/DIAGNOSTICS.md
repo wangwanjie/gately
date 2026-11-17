@@ -26,7 +26,7 @@ O pacote é gerado na sua própria máquina e nunca é enviado a lugar nenhum. C
 ## Como a anonimização funciona
 
 - **Configuração**: os valores são removidos por padrão. Só sobrevivem nomes de campos, números, booleanos, uma lista fixa de campos de enumeração (`protocol`, `mode`, `provider`, …) e timestamps. Campos de endereço mantêm apenas a porta e a categoria do IP.
-- **Logs**: endereços IP, domínios, e-mails, URLs, pares no estilo `password=…`, tokens `Bearer`, strings longas parecidas com tokens, endereços MAC e diretórios de usuário são mascarados. Domínios de serviços públicos como `github.com` e `letsencrypt.org` são mantidos porque mostram se uma falha é um problema de rede.
+- **Logs**: endereços IP, domínios, e-mails, URLs, pares no estilo `password=…`, tokens `Bearer`, o valor inteiro dos cabeçalhos `Authorization` e `Cookie`, credenciais após `Basic` e `Digest`, valores de chaves cujo nome contém uma palavra de segredo (como `client_secret`, `X-Api-Key`, `TS_AUTHKEY`), valores de opções de linha de comando separados por espaço (`--auth-key valor`), strings longas parecidas com tokens, endereços MAC e diretórios de usuário são mascarados. Domínios de serviços públicos como `github.com` e `letsencrypt.org` são mantidos porque mostram se uma falha é um problema de rede.
 - Um nome que você digitou (por exemplo a observação de uma regra) ainda pode aparecer em uma linha de log se não parecer um IP ou domínio. Dê uma olhada em `logs/*.log` antes de publicar e remova o que você não quiser compartilhar.
 
 ## Investigar saídas anormais

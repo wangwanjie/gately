@@ -146,7 +146,7 @@
     "title": "Netzwerk",
     "dnsServers": "DNS-Server",
     "dnsPlaceholder": "Leer lassen für System-DNS; eine IP oder IP:Port eingeben",
-    "dnsHelp": "Wirkt auf alle ausgehenden Namensauflösungen (DDNS, Webhook, ACME usw.). Bei mehreren Servern wird zufällig einer gewählt, mit automatischem Failover.",
+    "dnsHelp": "Wirkt auf alle ausgehenden Namensauflösungen (DDNS, Webhook, ACME usw.). Möglich sind IP, IP:Port, doh{'@'}Host oder eine https://-DoH-Adresse. Bei mehreren Servern beginnt die Abfrage beim zuletzt erfolgreichen Server; scheitert er oder antwortet er nicht innerhalb von 1 Sekunde, wird parallel der nächste gefragt und die erste Antwort verwendet.",
     "updateProxy": "Update-Proxy",
     "updateProxyPlaceholder": "Leer für direkt, z. B. http://127.0.0.1:7890",
     "updateProxyHelp": "Wird für den Zugriff auf GitHub bei Update-Prüfung und Online-Upgrade verwendet. Unterstützt http://, https:// und socks5://; leer wird die Umgebungsvariable HTTPS_PROXY beachtet.",

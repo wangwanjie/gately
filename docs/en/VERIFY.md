@@ -45,6 +45,7 @@ Online upgrades of Linux binary deployments ("Upgrade now") first download `chec
 
 - Invalid signature, unknown key or modified `checksums.txt`: the upgrade is refused, the upgrade dialog and the system log show why, and the installed program stays as it is;
 - No `checksums.txt.minisig` in the release (published before signing was introduced): the upgrade goes ahead, and the upgrade dialog and the system log warn that the release is unsigned and only its SHA-256 was checked.
+- A release of v0.6.8 or later without `checksums.txt.minisig`: every release from v0.6.8 on is signed, so a missing signature file means the release page may have been tampered with, and the online upgrade refuses it. To install it anyway, download it from the release page and use "Upload upgrade package".
 
 The program has a second public key slot for key rotation: a new public key is first built into a release and published on this page, and only later releases are signed with it, so deployed instances keep upgrading. "Upload upgrade package" does not check signatures; verify the archive with the steps above before uploading. Docker image upgrades rely on the cosign image signatures below.
 

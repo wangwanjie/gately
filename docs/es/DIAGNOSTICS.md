@@ -26,7 +26,7 @@ El paquete se genera en tu propia máquina y nunca se sube a ningún sitio. Puls
 ## Cómo funciona el ocultamiento
 
 - **Configuración**: los valores se eliminan por defecto. Solo se conservan los nombres de campos, los números, los booleanos, una lista fija de campos enumerados (`protocol`, `mode`, `provider`, …) y las marcas de tiempo. Los campos de dirección conservan solo el puerto y la categoría de la IP.
-- **Registros**: se enmascaran las direcciones IP, los dominios, los correos electrónicos, las URL, los pares del tipo `password=…`, los tokens `Bearer`, las cadenas largas con aspecto de token, las direcciones MAC y los directorios de usuario. Los dominios de servicios públicos como `github.com` y `letsencrypt.org` se conservan porque indican si un fallo es un problema de red.
+- **Registros**: se enmascaran las direcciones IP, los dominios, los correos electrónicos, las URL, los pares del tipo `password=…`, los tokens `Bearer`, el valor completo de las cabeceras `Authorization` y `Cookie`, las credenciales tras `Basic` y `Digest`, los valores de claves cuyo nombre contiene una palabra de secreto (como `client_secret`, `X-Api-Key`, `TS_AUTHKEY`), los valores de opciones de línea de comandos separados por un espacio (`--auth-key valor`), las cadenas largas con aspecto de token, las direcciones MAC y los directorios de usuario. Los dominios de servicios públicos como `github.com` y `letsencrypt.org` se conservan porque indican si un fallo es un problema de red.
 - Un nombre que hayas escrito (por ejemplo la nota de una regla) todavía puede aparecer en una línea de registro si no parece una IP o un dominio. Echa un vistazo a `logs/*.log` antes de publicarlo y quita lo que no quieras compartir.
 
 ## Diagnosticar salidas anómalas

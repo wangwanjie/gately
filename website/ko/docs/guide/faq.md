@@ -39,3 +39,5 @@
 ## 문제를 제보하거나 개발에 참여하려면 어떻게 하나요?
 
 [GitHub Issues](https://github.com/wangwanjie/gately/issues)에 문제를 등록하세요. 개발 규칙은 [기여 가이드](/ko/docs/guide/contributing)를 참고하세요.
+
+사용 질문은 [GitHub Discussions Q&A](https://github.com/wangwanjie/gately/discussions/categories/q-a)에 올려 주세요. 답변이 검색 가능한 형태로 남습니다. 실시간 대화는 Telegram 그룹 [t.me/gately_chat](https://t.me/gately_chat)을 이용하세요.

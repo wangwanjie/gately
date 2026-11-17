@@ -5,7 +5,7 @@ A web application firewall based on [Coraza](https://coraza.io/) and OWASP CRS v
 ## Capabilities
 
 - Built-in OWASP CRS v4 rule set, with rule files that can be enabled individually;
-- Custom SecLang rules;
+- Custom SecLang rules; official builds leave out the `@validateSchema` operator to save size, and a rule that uses it is reported so you can remove or rewrite it;
 - Rule groups can be reordered; match logs record the client IP, domain, path and rule ID, and can be filtered by domain, IP or keywords;
 - Blocking mode and detection-only mode;
 - Adjustable request body inspection limit: over the limit, reject the request or inspect only the first part; request body inspection can be skipped by path;

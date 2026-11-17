@@ -206,7 +206,7 @@ func convertLuckyListeners(raw json.RawMessage, opts luckyimport.Options) ([]Lis
 			// 沿用 Lucky 的自动放行防火墙设置
 			AutoFirewall: ll.AutoOptionsFirewall,
 		}
-		// HTTP/3 与 Lucky 一样跑在同号 UDP 端口上，只能和 HTTPS 一起开启
+		// Gately 的 HTTP/3 跑在同号 UDP 端口上，只能和 HTTPS 一起开启，Lucky 中未开 TLS 的监听不导入 HTTP/3
 		if ll.Http3 {
 			if ll.EnableTLS {
 				l.HTTP3 = true

@@ -998,6 +998,23 @@ func (m *Manager) SetUserPassword(username, password string) error {
 	return ErrUserNotFound
 }
 
+// UserPasswordIs 判断附加账号 username 存在且密码为 password（不计入登录失败次数，只供启动时的内部检查使用）。
+func (m *Manager) UserPasswordIs(username, password string) bool {
+	m.mu.RLock()
+	hash := ""
+	for _, u := range m.acc.Users {
+		if u.Username == username {
+			hash = u.PasswordHash
+			break
+		}
+	}
+	m.mu.RUnlock()
+	if hash == "" {
+		return false
+	}
+	return checkPassword(hash, password) == nil
+}
+
 // DeleteUser 删除附加账号，其会话随之失效。
 func (m *Manager) DeleteUser(username string) error {
 	m.mu.Lock()

@@ -346,6 +346,14 @@ func fromCommand(ctx context.Context, command string, fam Family) ([]netip.Addr,
 	return Extract(string(out), fam), nil
 }
 
+// DemoInterfaces 返回演示模式下展示的示例网卡，地址全部取自文档保留地址段。
+func DemoInterfaces() []InterfaceInfo {
+	return []InterfaceInfo{
+		{Name: "eth0", Addrs: []string{"192.0.2.10/24", "2001:db8:10::10/64"}},
+		{Name: "eth1", Addrs: []string{"198.51.100.20/24"}},
+	}
+}
+
 // InterfaceInfo 是网卡及其地址，供界面选择。
 type InterfaceInfo struct {
 	Name  string   `json:"name"`
@@ -354,6 +362,10 @@ type InterfaceInfo struct {
 
 // ListInterfaces 列出处于启用状态的网卡。
 func ListInterfaces() ([]InterfaceInfo, error) {
+	// 演示实例对公众开放：返回文档保留地址的示例网卡，不暴露宿主机真实的网卡与地址
+	if demo.Enabled() {
+		return DemoInterfaces(), nil
+	}
 	ifaces, err := net.Interfaces()
 	if err != nil {
 		return nil, err

@@ -4128,6 +4128,9 @@
       },
       "webservice.Panel": {
         "properties": {
+          "altBadge": {
+            "type": "boolean"
+          },
           "background": {
             "type": "string"
           },
@@ -4135,6 +4138,12 @@
             "type": "integer"
           },
           "bgDim": {
+            "type": "integer"
+          },
+          "cardStyle": {
+            "type": "string"
+          },
+          "columns": {
             "type": "integer"
           },
           "defaultEngine": {
@@ -4161,11 +4170,20 @@
           "footerUrl": {
             "type": "string"
           },
+          "gap": {
+            "type": "integer"
+          },
+          "groupCount": {
+            "type": "boolean"
+          },
           "hideFooter": {
             "type": "boolean"
           },
           "icon": {
             "type": "string"
+          },
+          "iconSize": {
+            "type": "integer"
           },
           "key": {
             "type": "string"
@@ -4181,6 +4199,12 @@
               "$ref": "#/components/schemas/webservice.PanelLink"
             },
             "type": "array"
+          },
+          "maxWidth": {
+            "type": "integer"
+          },
+          "mobileColumns": {
+            "type": "integer"
           },
           "name": {
             "type": "string"
