@@ -98,17 +98,39 @@ var remoteAddrOf = func(c net.Conn) (netip.Addr, bool) {
 	return ap.Addr().Unmap(), true
 }
 
-// sourceLimitWarnEvery 为单来源超限警告的最短间隔：同一监听持续被单个来源占满时不逐个连接记录
+// sourceLimitWarnEvery 为超限警告的最短间隔：同一监听持续被占满时不逐个连接（数据包）记录
 const sourceLimitWarnEvery = 10 * time.Second
+
+// WarnThrottle 限制同一类超限警告的记录频率，每 10 秒最多一条，可并发使用，零值可用。
+// 连接数、会话数被占满时，每个被拒绝的连接或数据包都写一条警告会在洪水下把日志刷满，
+// 格式化、翻译与落盘的开销也会超过拒绝本身。
+type WarnThrottle struct {
+	mu sync.Mutex
+	// at 为最近一次记录警告的时间，suppressed 为其后被拒绝而未单独记录的次数
+	at         time.Time
+	suppressed int
+}
+
+// Allow 判断这次超限是否记录警告，返回自上次警告以来未记录的次数。
+func (t *WarnThrottle) Allow(now time.Time) (bool, int) {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	if !t.at.IsZero() && now.Sub(t.at) < sourceLimitWarnEvery {
+		t.suppressed++
+		return false, 0
+	}
+	n := t.suppressed
+	t.at, t.suppressed = now, 0
+	return true, n
+}
 
 // sourceLimiter 按来源（IPv4 地址、IPv6 /64）统计并发连接数。
 type sourceLimiter struct {
 	limit int
 	mu    sync.Mutex
 	count map[netip.Prefix]int
-	// warnAt 为最近一次记录超限警告的时间，suppressed 为其后被拒绝而未单独记录的连接数
-	warnAt     time.Time
-	suppressed int
+	// warn 为超限警告的节流
+	warn WarnThrottle
 }
 
 // exemptSource 判断来源是否不受单来源上限约束：回环、内网（含运营商级 NAT 与 IPv6 ULA）与链路本地地址。
@@ -151,20 +173,12 @@ func (l *sourceLimiter) acquire(a netip.Addr, ok bool) (release func(), allowed 
 
 // shouldWarn 判断这次超限是否记录警告，返回自上次警告以来未记录的次数。
 func (l *sourceLimiter) shouldWarn(now time.Time) (bool, int) {
-	l.mu.Lock()
-	defer l.mu.Unlock()
-	if !l.warnAt.IsZero() && now.Sub(l.warnAt) < sourceLimitWarnEvery {
-		l.suppressed++
-		return false, 0
-	}
-	n := l.suppressed
-	l.warnAt, l.suppressed = now, 0
-	return true, n
+	return l.warn.Allow(now)
 }
 
 // ServeTCP 在 addr 上监听 TCP，每个连接在独立协程中交给 handle 处理，handle 返回后连接计数释放。
 // 被封禁地址的连接在 Accept 时直接关闭；并发连接超过 limits.Max、或单个来源超过 limits.PerSource 时新连接被拒绝，
-// 并通过 warnf 记录（单来源超限每 10 秒最多记录一条）。handle 负责关闭连接。
+// 并通过 warnf 记录（两种超限各自每 10 秒最多记录一条）。handle 负责关闭连接。
 func (s *Server) ServeTCP(ctx context.Context, network, addr string, limits Limits, warnf func(format string, args ...any), handle func(net.Conn)) error {
 	var lc net.ListenConfig
 	ln, err := lc.Listen(ctx, network, addr)
@@ -174,6 +188,8 @@ func (s *Server) ServeTCP(ctx context.Context, network, addr string, limits Limi
 	ln = banlist.Default.Listener(ln)
 	s.Track(ln)
 	sem := make(chan struct{}, limits.Max)
+	// full 为总连接数超限警告的节流
+	var full WarnThrottle
 	var perSrc *sourceLimiter
 	if limits.PerSource > 0 {
 		perSrc = &sourceLimiter{limit: limits.PerSource, count: map[netip.Prefix]int{}}
@@ -206,7 +222,13 @@ func (s *Server) ServeTCP(ctx context.Context, network, addr string, limits Limi
 			case sem <- struct{}{}:
 			default:
 				release()
-				warnf("%s 超过最大连接数 %d，拒绝 %s", addr, limits.Max, conn.RemoteAddr())
+				if warn, more := full.Allow(time.Now()); warn {
+					if more > 0 {
+						warnf("%s 超过最大连接数 %d，拒绝 %s（此前 10 秒内另有 %d 个连接因此被拒绝）", addr, limits.Max, conn.RemoteAddr(), more)
+					} else {
+						warnf("%s 超过最大连接数 %d，拒绝 %s", addr, limits.Max, conn.RemoteAddr())
+					}
+				}
 				conn.Close()
 				continue
 			}
