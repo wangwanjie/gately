@@ -337,9 +337,14 @@ func TestSecrets(t *testing.T) {
 	if m.cfg.Clients[0].Token != "secret-2" {
 		t.Fatalf("应更新令牌: %+v", m.cfg.Clients[0])
 	}
-	// 界面视图包含运行状态，直接提交会被拒绝（未知字段），前端只提交实例字段
-	if code := doJSON(t, "PUT", api+"/clients/"+c.Key, c, nil); code != 400 {
-		t.Fatalf("提交含状态字段的视图应被拒绝，实际 %d", code)
+	// 界面视图包含运行状态等只读字段，原样提交时忽略这些字段，实例字段照常保存
+	c.Remark = "视图提交"
+	if code := doJSON(t, "PUT", api+"/clients/"+c.Key, c, nil); code != 200 || m.cfg.Clients[0].Remark != "视图提交" || m.cfg.Clients[0].Token != "secret-2" {
+		t.Fatalf("提交含状态字段的视图应忽略只读字段并保存: %d %+v", code, m.cfg.Clients[0])
+	}
+	// 其他未知字段仍拒绝
+	if code := doJSON(t, "PUT", api+"/clients/"+c.Key, map[string]any{"name": "x", "bogus": 1}, nil); code != 400 {
+		t.Fatalf("未知字段应被拒绝，实际 %d", code)
 	}
 
 	var s ServerView
