@@ -440,6 +440,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/webservice/panels-delete` | `webservice:write` | 내비게이션 패널 일괄 삭제 |
 | POST | `/api/webservice/panels/preview` | `webservice:write` | 내비게이션 패널 미리보기 |
 | GET | `/api/webservice/panels/icons` | `webservice:read` | 내비게이션 패널 내장 아이콘 목록 |
+| POST | `/api/webservice/panels/sunpanel` | `webservice:write` | Sun-Panel 설정 변환 |
 | GET | `/api/webservice/users` | `webservice:read` | 공유 사용자와 OIDC ID 공급자 조회 |
 | PUT | `/api/webservice/users` | `webservice:write` | 공유 사용자와 OIDC ID 공급자 저장, 사이트 일괄 설정 |
 | DELETE | `/api/webservice/users/{id}/passkeys/{cred}` | `webservice:write` | 공유 사용자의 Passkey를 삭제합니다(id는 공유 사용자 ID, cred는 Passkey 식별자). Passkey는 사용자 본인만 등록할 수 있고 관리자는 삭제만 가능합니다(예: 기기 분실 시) |
@@ -3095,6 +3096,38 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `topCountries` | Array of `webservice.TopItem` |
 | `topIps` | Array of `webservice.TopItem` |
 | `upstreams` | Array of `webservice.UpstreamStatus` |
+
+### webservice.SunPanelIconStats
+
+| 필드 | 타입 |
+| --- | --- |
+| `builtin` | integer |
+| `fallback` | integer |
+| `iconify` | integer |
+| `inline` | integer |
+| `remote` | integer |
+| `text` | integer |
+
+### webservice.SunPanelImportResult
+
+| 필드 | 타입 |
+| --- | --- |
+| `appVersion` | string |
+| `format` | string |
+| `groups` | integer |
+| `icons` | `webservice.SunPanelIconStats` |
+| `links` | Array of `webservice.PanelLink` |
+| `notes` | Array of `webservice.SunPanelNote` |
+| `total` | integer |
+
+### webservice.SunPanelNote
+
+| 필드 | 타입 |
+| --- | --- |
+| `group` | string |
+| `kind` | string |
+| `name` | string |
+| `value` | string |
 
 ### webservice.TopItem
 

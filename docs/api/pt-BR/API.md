@@ -440,6 +440,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | POST | `/api/webservice/panels-delete` | `webservice:write` | Excluir em lote: Painéis de navegação |
 | POST | `/api/webservice/panels/preview` | `webservice:write` | Prévia do painel de navegação |
 | GET | `/api/webservice/panels/icons` | `webservice:read` | Ícones embutidos dos painéis de navegação |
+| POST | `/api/webservice/panels/sunpanel` | `webservice:write` | Converter configuração do Sun-Panel |
 | GET | `/api/webservice/users` | `webservice:read` | Ler usuários compartilhados e provedor de identidade OIDC |
 | PUT | `/api/webservice/users` | `webservice:write` | Salvar usuários compartilhados e provedor de identidade OIDC, configurar sites em lote |
 | DELETE | `/api/webservice/users/{id}/passkeys/{cred}` | `webservice:write` | Exclui uma Passkey de um usuário compartilhado (id é o ID do usuário compartilhado, cred é o ID da Passkey); as Passkeys só podem ser registradas pelos próprios usuários e os administradores só podem excluí-las, por exemplo ao perder um dispositivo |
@@ -3095,6 +3096,38 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `topCountries` | Array de `webservice.TopItem` |
 | `topIps` | Array de `webservice.TopItem` |
 | `upstreams` | Array de `webservice.UpstreamStatus` |
+
+### webservice.SunPanelIconStats
+
+| Campo | Tipo |
+| --- | --- |
+| `builtin` | integer |
+| `fallback` | integer |
+| `iconify` | integer |
+| `inline` | integer |
+| `remote` | integer |
+| `text` | integer |
+
+### webservice.SunPanelImportResult
+
+| Campo | Tipo |
+| --- | --- |
+| `appVersion` | string |
+| `format` | string |
+| `groups` | integer |
+| `icons` | `webservice.SunPanelIconStats` |
+| `links` | Array de `webservice.PanelLink` |
+| `notes` | Array de `webservice.SunPanelNote` |
+| `total` | integer |
+
+### webservice.SunPanelNote
+
+| Campo | Tipo |
+| --- | --- |
+| `group` | string |
+| `kind` | string |
+| `name` | string |
+| `value` | string |
 
 ### webservice.TopItem
 

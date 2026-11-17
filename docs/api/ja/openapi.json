@@ -5065,6 +5065,78 @@
         },
         "type": "object"
       },
+      "webservice.SunPanelIconStats": {
+        "properties": {
+          "builtin": {
+            "type": "integer"
+          },
+          "fallback": {
+            "type": "integer"
+          },
+          "iconify": {
+            "type": "integer"
+          },
+          "inline": {
+            "type": "integer"
+          },
+          "remote": {
+            "type": "integer"
+          },
+          "text": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.SunPanelImportResult": {
+        "properties": {
+          "appVersion": {
+            "type": "string"
+          },
+          "format": {
+            "type": "string"
+          },
+          "groups": {
+            "type": "integer"
+          },
+          "icons": {
+            "$ref": "#/components/schemas/webservice.SunPanelIconStats"
+          },
+          "links": {
+            "items": {
+              "$ref": "#/components/schemas/webservice.PanelLink"
+            },
+            "type": "array"
+          },
+          "notes": {
+            "items": {
+              "$ref": "#/components/schemas/webservice.SunPanelNote"
+            },
+            "type": "array"
+          },
+          "total": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.SunPanelNote": {
+        "properties": {
+          "group": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "webservice.TopItem": {
         "properties": {
           "count": {
@@ -52202,6 +52274,64 @@
           }
         ],
         "summary": "ナビゲーションパネルのプレビュー",
+        "tags": [
+          "Web サービス"
+        ],
+        "x-required-scope": "webservice:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/panels/sunpanel": {
+      "post": {
+        "description": "multipart フォーム：`file` は Sun-Panel からエクスポートしたファイル（1.x の `.sun-panel.json` または 2.x の `.zip`、16 MB まで）、`baseUrl` は任意で、アップロード済みアイコンの完全な URL を組み立てるための Sun-Panel のアドレスです。変換したリンク `links`、アイコン統計 `icons`、変換メモ `notes`（`kind` はメモの種類）を返し、何も保存しません。リンクをパネルに入れてからパネルの作成・更新 API で保存します。2.x の zip に含まれるアイコンは data:image として埋め込みます。認識できないファイルには 400 を返します。\n\n必要な権限: `webservice:write`。",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/webservice.SunPanelImportResult"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Sun-Panel 設定の変換",
         "tags": [
           "Web サービス"
         ],

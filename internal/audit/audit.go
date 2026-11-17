@@ -283,9 +283,9 @@ func skipped(method, path string) bool {
 	if method != http.MethodPost {
 		return false
 	}
-	// 网络诊断、自检、Passkey 注册参数下发、导航面板预览都只是读取或计算，不改变配置
+	// 网络诊断、自检、Passkey 注册参数下发、导航面板预览与 Sun-Panel 配置转换都只是读取或计算，不改变配置
 	switch path {
-	case "/api/system/selfcheck", "/api/account/passkeys/begin", "/api/webservice/panels/preview":
+	case "/api/system/selfcheck", "/api/account/passkeys/begin", "/api/webservice/panels/preview", "/api/webservice/panels/sunpanel":
 		return true
 	}
 	return strings.HasPrefix(path, "/api/nettools/")

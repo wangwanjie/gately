@@ -440,6 +440,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | POST | `/api/webservice/panels-delete` | `webservice:write` | Delete in bulk: Navigation panels |
 | POST | `/api/webservice/panels/preview` | `webservice:write` | Navigation panel preview |
 | GET | `/api/webservice/panels/icons` | `webservice:read` | Built-in icons for navigation panels |
+| POST | `/api/webservice/panels/sunpanel` | `webservice:write` | Convert Sun-Panel config |
 | GET | `/api/webservice/users` | `webservice:read` | Read shared users and the OIDC identity provider |
 | PUT | `/api/webservice/users` | `webservice:write` | Save shared users and the OIDC identity provider, set sites in bulk |
 | DELETE | `/api/webservice/users/{id}/passkeys/{cred}` | `webservice:write` | Delete a Passkey of a shared user (id is the shared user ID, cred is the Passkey ID); Passkeys can only be registered by the users themselves, administrators can only delete them, for example when a device is lost |
@@ -3095,6 +3096,38 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `topCountries` | Array of `webservice.TopItem` |
 | `topIps` | Array of `webservice.TopItem` |
 | `upstreams` | Array of `webservice.UpstreamStatus` |
+
+### webservice.SunPanelIconStats
+
+| Field | Type |
+| --- | --- |
+| `builtin` | integer |
+| `fallback` | integer |
+| `iconify` | integer |
+| `inline` | integer |
+| `remote` | integer |
+| `text` | integer |
+
+### webservice.SunPanelImportResult
+
+| Field | Type |
+| --- | --- |
+| `appVersion` | string |
+| `format` | string |
+| `groups` | integer |
+| `icons` | `webservice.SunPanelIconStats` |
+| `links` | Array of `webservice.PanelLink` |
+| `notes` | Array of `webservice.SunPanelNote` |
+| `total` | integer |
+
+### webservice.SunPanelNote
+
+| Field | Type |
+| --- | --- |
+| `group` | string |
+| `kind` | string |
+| `name` | string |
+| `value` | string |
 
 ### webservice.TopItem
 

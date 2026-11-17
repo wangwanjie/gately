@@ -440,6 +440,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/webservice/panels-delete` | `webservice:write` | 批次刪除導覽面板 |
 | POST | `/api/webservice/panels/preview` | `webservice:write` | 導覽面板預覽 |
 | GET | `/api/webservice/panels/icons` | `webservice:read` | 導覽面板的內建圖示清單 |
+| POST | `/api/webservice/panels/sunpanel` | `webservice:write` | 轉換 Sun-Panel 設定 |
 | GET | `/api/webservice/users` | `webservice:read` | 讀取共用使用者與 OIDC 身分提供者 |
 | PUT | `/api/webservice/users` | `webservice:write` | 儲存共用使用者與 OIDC 身分提供者，批次設定站點 |
 | DELETE | `/api/webservice/users/{id}/passkeys/{cred}` | `webservice:write` | 刪除共用使用者的一個 Passkey（id 為共用使用者的 ID，cred 為 Passkey 標識）；使用者的 Passkey 只能由使用者自助註冊，管理員只能刪除，例如裝置遺失時 |
@@ -3095,6 +3096,38 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `topCountries` | 陣列 of `webservice.TopItem` |
 | `topIps` | 陣列 of `webservice.TopItem` |
 | `upstreams` | 陣列 of `webservice.UpstreamStatus` |
+
+### webservice.SunPanelIconStats
+
+| 欄位 | 類型 |
+| --- | --- |
+| `builtin` | integer |
+| `fallback` | integer |
+| `iconify` | integer |
+| `inline` | integer |
+| `remote` | integer |
+| `text` | integer |
+
+### webservice.SunPanelImportResult
+
+| 欄位 | 類型 |
+| --- | --- |
+| `appVersion` | string |
+| `format` | string |
+| `groups` | integer |
+| `icons` | `webservice.SunPanelIconStats` |
+| `links` | 陣列 of `webservice.PanelLink` |
+| `notes` | 陣列 of `webservice.SunPanelNote` |
+| `total` | integer |
+
+### webservice.SunPanelNote
+
+| 欄位 | 類型 |
+| --- | --- |
+| `group` | string |
+| `kind` | string |
+| `name` | string |
+| `value` | string |
 
 ### webservice.TopItem
 

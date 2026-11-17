@@ -5065,6 +5065,78 @@
         },
         "type": "object"
       },
+      "webservice.SunPanelIconStats": {
+        "properties": {
+          "builtin": {
+            "type": "integer"
+          },
+          "fallback": {
+            "type": "integer"
+          },
+          "iconify": {
+            "type": "integer"
+          },
+          "inline": {
+            "type": "integer"
+          },
+          "remote": {
+            "type": "integer"
+          },
+          "text": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.SunPanelImportResult": {
+        "properties": {
+          "appVersion": {
+            "type": "string"
+          },
+          "format": {
+            "type": "string"
+          },
+          "groups": {
+            "type": "integer"
+          },
+          "icons": {
+            "$ref": "#/components/schemas/webservice.SunPanelIconStats"
+          },
+          "links": {
+            "items": {
+              "$ref": "#/components/schemas/webservice.PanelLink"
+            },
+            "type": "array"
+          },
+          "notes": {
+            "items": {
+              "$ref": "#/components/schemas/webservice.SunPanelNote"
+            },
+            "type": "array"
+          },
+          "total": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.SunPanelNote": {
+        "properties": {
+          "group": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "webservice.TopItem": {
         "properties": {
           "count": {
@@ -52202,6 +52274,64 @@
           }
         ],
         "summary": "导航面板预览",
+        "tags": [
+          "Web 服务"
+        ],
+        "x-required-scope": "webservice:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/panels/sunpanel": {
+      "post": {
+        "description": "multipart 表单：`file` 为 Sun-Panel 导出的文件（1.x 的 `.sun-panel.json` 或 2.x 的 `.zip`，不超过 16 MB），`baseUrl` 可选，为 Sun-Panel 的访问地址，用于拼出上传图标的完整地址。返回转换得到的链接 `links`、图标统计 `icons` 与转换说明 `notes`（`kind` 为说明种类），不保存任何内容；把链接放进面板后按新增或修改面板保存。2.x 的 zip 带有图标文件时图标内联为 data:image。文件无法识别时返回 400。\n\n所需权限：`webservice:write`。",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/webservice.SunPanelImportResult"
+                }
+              }
+            },
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "转换 Sun-Panel 配置",
         "tags": [
           "Web 服务"
         ],

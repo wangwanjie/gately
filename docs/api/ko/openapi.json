@@ -5065,6 +5065,78 @@
         },
         "type": "object"
       },
+      "webservice.SunPanelIconStats": {
+        "properties": {
+          "builtin": {
+            "type": "integer"
+          },
+          "fallback": {
+            "type": "integer"
+          },
+          "iconify": {
+            "type": "integer"
+          },
+          "inline": {
+            "type": "integer"
+          },
+          "remote": {
+            "type": "integer"
+          },
+          "text": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.SunPanelImportResult": {
+        "properties": {
+          "appVersion": {
+            "type": "string"
+          },
+          "format": {
+            "type": "string"
+          },
+          "groups": {
+            "type": "integer"
+          },
+          "icons": {
+            "$ref": "#/components/schemas/webservice.SunPanelIconStats"
+          },
+          "links": {
+            "items": {
+              "$ref": "#/components/schemas/webservice.PanelLink"
+            },
+            "type": "array"
+          },
+          "notes": {
+            "items": {
+              "$ref": "#/components/schemas/webservice.SunPanelNote"
+            },
+            "type": "array"
+          },
+          "total": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.SunPanelNote": {
+        "properties": {
+          "group": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "webservice.TopItem": {
         "properties": {
           "count": {
@@ -52202,6 +52274,64 @@
           }
         ],
         "summary": "내비게이션 패널 미리보기",
+        "tags": [
+          "Web 서비스"
+        ],
+        "x-required-scope": "webservice:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/panels/sunpanel": {
+      "post": {
+        "description": "multipart 폼: `file`은 Sun-Panel에서 내보낸 파일(1.x의 `.sun-panel.json` 또는 2.x의 `.zip`, 최대 16 MB), `baseUrl`은 선택 사항으로 업로드 아이콘의 전체 URL을 만들 Sun-Panel 주소입니다. 변환된 링크 `links`, 아이콘 통계 `icons`, 변환 메모 `notes`(`kind`는 메모 종류)를 반환하며 아무것도 저장하지 않습니다. 링크를 패널에 넣은 뒤 패널 생성·수정 API로 저장하세요. 2.x zip에 포함된 아이콘은 data:image로 내장합니다. 인식할 수 없는 파일은 400을 반환합니다.\n\n필요한 권한: `webservice:write`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/webservice.SunPanelImportResult"
+                }
+              }
+            },
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Sun-Panel 설정 변환",
         "tags": [
           "Web 서비스"
         ],

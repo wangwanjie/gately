@@ -5065,6 +5065,78 @@
         },
         "type": "object"
       },
+      "webservice.SunPanelIconStats": {
+        "properties": {
+          "builtin": {
+            "type": "integer"
+          },
+          "fallback": {
+            "type": "integer"
+          },
+          "iconify": {
+            "type": "integer"
+          },
+          "inline": {
+            "type": "integer"
+          },
+          "remote": {
+            "type": "integer"
+          },
+          "text": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.SunPanelImportResult": {
+        "properties": {
+          "appVersion": {
+            "type": "string"
+          },
+          "format": {
+            "type": "string"
+          },
+          "groups": {
+            "type": "integer"
+          },
+          "icons": {
+            "$ref": "#/components/schemas/webservice.SunPanelIconStats"
+          },
+          "links": {
+            "items": {
+              "$ref": "#/components/schemas/webservice.PanelLink"
+            },
+            "type": "array"
+          },
+          "notes": {
+            "items": {
+              "$ref": "#/components/schemas/webservice.SunPanelNote"
+            },
+            "type": "array"
+          },
+          "total": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.SunPanelNote": {
+        "properties": {
+          "group": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "webservice.TopItem": {
         "properties": {
           "count": {
@@ -52202,6 +52274,64 @@
           }
         ],
         "summary": "Navigation panel preview",
+        "tags": [
+          "Web service"
+        ],
+        "x-required-scope": "webservice:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/panels/sunpanel": {
+      "post": {
+        "description": "Multipart form: `file` is the file exported from Sun-Panel (`.sun-panel.json` from 1.x or `.zip` from 2.x, up to 16 MB); optional `baseUrl` is the Sun-Panel address used to build full URLs for uploaded icons. Returns the converted links `links`, icon statistics `icons` and conversion notes `notes` (`kind` is the note type) without saving anything; put the links into a panel and save it with the create or update panel API. Icons bundled in a 2.x zip are inlined as data:image. Returns 400 for unrecognized files.\n\nRequired permission: `webservice:write`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/webservice.SunPanelImportResult"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Convert Sun-Panel config",
         "tags": [
           "Web service"
         ],
