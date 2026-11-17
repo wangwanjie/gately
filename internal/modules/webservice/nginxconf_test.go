@@ -114,6 +114,27 @@ func TestNginxIncludeFanOutLimit(t *testing.T) {
 	}
 }
 
+// 层层重复包含、最内层文件没有任何指令（只有注释）：展开结果始终为空，但展开次数仍是指数级，
+// 每次展开 include 本身也要计入上限，否则几百字节的输入就能让解析一直占满 CPU。
+func TestNginxIncludeFanOutEmptyLeaf(t *testing.T) {
+	var b strings.Builder
+	for i := 0; i < 16; i++ {
+		fmt.Fprintf(&b, "# configuration file /etc/nginx/f%d.conf:\n", i)
+		if i == 15 {
+			b.WriteString("# empty\n")
+			continue
+		}
+		b.WriteString(strings.Repeat(fmt.Sprintf("include f%d.conf;\n", i+1), 10))
+	}
+	if b.Len() > 4096 {
+		t.Fatalf("测试输入应保持很小，实际 %d 字节", b.Len())
+	}
+	_, _, err := parseNginxTimed(t, b.String())
+	if err == nil || !strings.Contains(err.Error(), "include") {
+		t.Fatalf("展开次数超过上限时应报错，实际 %v", err)
+	}
+}
+
 // 同一个片段被多处包含是正常用法，照常全部展开；上限以内的重复包含不受影响。
 func TestNginxIncludeRepeatedSnippet(t *testing.T) {
 	text := `# configuration file /etc/nginx/nginx.conf:
