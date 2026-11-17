@@ -199,7 +199,7 @@
 - 用户：每行 `用户名:密码`，密码可填 bcrypt 哈希。保存时明文密码会转为 bcrypt 哈希，接口与界面只显示 `********`，原密码无法再查看；编辑时保持 `用户名:********` 或只写 `用户名:` 表示不修改该用户的密码。旧版本保存的明文密码照常可用，下次保存所在监听时转换，已登录这些用户的访客需要重新登录一次。启用基本认证时至少需要一个用户；启用网页认证时至少需要一个用户或第三方登录身份；
 - 第三方登录：支持 GitHub、Google、QQ、OIDC，使用自己的 OAuth 应用。允许的身份每行一条，格式 `提供方标识:账号`，例如 `github:octocat`、`google:me@gmail.com`，行尾可用 `#` 加备注，`github:*` 表示该提供方的任意账号。
 
-第三方登录的提供方在「全局设置」中配置：填写自己的 Client ID / Secret 并启用，同时设置回调地址（需由 Gately 的某个监听提供，例如 `https://auth.example.com`）。登记到 GitHub / Google / QQ 的回调 URL 为：
+第三方登录的提供方在「全局设置」中配置：填写自己的 Client ID / Secret，保存后即可在站点中使用（提供方没有单独的启用开关，不用时删除即可），同时设置回调地址（需由 Gately 的某个监听提供，例如 `https://auth.example.com`）。登记到 GitHub / Google / QQ 的回调 URL 为：
 
 ```text
 https://auth.example.com/__gately_auth/oauth/callback
