@@ -1,0 +1,17 @@
+{
+  "open": "Suchen",
+  "ariaLabel": "Globale Suche",
+  "placeholder": "Seiten, Sites, Regeln, Zertifikate suchen…",
+  "empty": "Keine Treffer",
+  "loading": "Konfigurationsdaten werden geladen…",
+  "hintSelect": "Auswählen",
+  "hintOpen": "Öffnen",
+  "hintClose": "Schließen",
+  "kinds": {
+    "page": "Seiten",
+    "site": "Sites",
+    "forward": "Portweiterleitung",
+    "ddns": "Dynamisches DNS",
+    "cert": "SSL-Zertifikate"
+  }
+}

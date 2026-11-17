@@ -1,0 +1,17 @@
+{
+  "open": "搜索",
+  "ariaLabel": "全局搜索",
+  "placeholder": "搜索页面、站点、规则、证书…",
+  "empty": "没有匹配的结果",
+  "loading": "正在加载配置数据…",
+  "hintSelect": "选择",
+  "hintOpen": "打开",
+  "hintClose": "关闭",
+  "kinds": {
+    "page": "页面",
+    "site": "站点",
+    "forward": "端口转发",
+    "ddns": "动态域名",
+    "cert": "SSL 证书"
+  }
+}

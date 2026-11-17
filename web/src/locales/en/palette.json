@@ -1,0 +1,17 @@
+{
+  "open": "Search",
+  "ariaLabel": "Global search",
+  "placeholder": "Search pages, sites, rules, certificates…",
+  "empty": "No matches",
+  "loading": "Loading configuration data…",
+  "hintSelect": "Select",
+  "hintOpen": "Open",
+  "hintClose": "Close",
+  "kinds": {
+    "page": "Pages",
+    "site": "Sites",
+    "forward": "Port forwarding",
+    "ddns": "Dynamic DNS",
+    "cert": "SSL certificates"
+  }
+}
