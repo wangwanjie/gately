@@ -21,7 +21,9 @@ On the "Restore configuration" card, choose a backup file, click "Restore", and 
 - Restoring overwrites all current configuration. The upload size limit is 64 MB.
 - Before overwriting, the existing configuration is copied to a `backup-<time>` folder in the configuration directory (time format `YYYYMMDD-HHMMSS`), and the UI shows that path after a successful restore.
 - Gately restarts automatically after the restore.
-- The backup must contain the account configuration; a backup without it is rejected.
+- By default the account configuration in the backup replaces the current one, and a backup without `account.json` is rejected. With "Keep the current administrator account" ticked the account is left alone: the current account, password, two-factor authentication, read-only accounts, API tokens and the management UI's third-party login stay unchanged, and the backup may omit `account.json`, which suits carrying the rules over from another machine.
+- When the account configuration is restored, a new session secret is used and every login session issued before the restore becomes invalid.
+- The restore is refused while the default password is still in use; change the administrator password first.
 - Only `*.json` files located at the zip root, not hidden, and containing valid JSON are accepted from the backup. All other entries are ignored.
 - When you choose a `.enc` file, a "Backup passphrase" input appears. Enter the passphrase that was set when the backup was created. A wrong passphrase or a damaged file makes the restore fail.
 

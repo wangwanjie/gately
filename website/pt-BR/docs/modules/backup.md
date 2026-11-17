@@ -21,7 +21,9 @@ No cartão "Restaurar configuração", escolha um arquivo de backup, clique em "
 - A restauração sobrescreve toda a configuração atual. O limite de tamanho do envio é 64 MB.
 - Antes de sobrescrever, a configuração existente é copiada para uma pasta `backup-<hora>` no diretório de configuração (formato de hora `YYYYMMDD-HHMMSS`), e a interface mostra esse caminho após uma restauração bem-sucedida.
 - O Gately reinicia automaticamente após a restauração.
-- O backup precisa conter a configuração da conta; um backup sem ela é rejeitado.
+- Por padrão, a configuração da conta do backup sobrescreve a conta atual; um backup sem `account.json` é rejeitado. Com "Manter a conta de administrador atual" marcada, a conta não é sobrescrita: conta, senha, verificação em duas etapas, usuários somente leitura, tokens de API e o login de terceiros na interface de administração permanecem inalterados, e o backup pode não conter `account.json`. Isso serve para trazer as regras de outra máquina.
+- Quando a configuração da conta é restaurada, passa a valer uma nova chave de sessão, e todas as sessões de login emitidas antes da restauração deixam de valer.
+- Enquanto a senha padrão ainda estiver em uso, a restauração é recusada; altere antes a senha do administrador.
 - Do backup, só são aceitos arquivos `*.json` localizados na raiz do zip, que não sejam ocultos e que contenham JSON válido. Todas as demais entradas são ignoradas.
 - Ao escolher um arquivo `.enc`, aparece o campo "Senha do backup". Informe a senha definida quando o backup foi criado. Uma senha errada ou um arquivo danificado faz a restauração falhar.
 
