@@ -21,6 +21,11 @@ func WaitFirstData(ctx context.Context, a, b net.Conn, d time.Duration) error {
 	if !okA || !okB || d <= 0 {
 		return nil
 	}
+	// 快速路径：任一端已经可读就不必等待。客户端先发言的协议（HTTP、TLS）在连接目标的这一个往返里首包通常已经到了，
+	// 这样多数连接不必起两个等待协程、反复设置读截止时间
+	if ReadableNow(ra) || ReadableNow(rb) {
+		return nil
+	}
 	deadline := time.Now().Add(d)
 	_ = a.SetReadDeadline(deadline)
 	_ = b.SetReadDeadline(deadline)

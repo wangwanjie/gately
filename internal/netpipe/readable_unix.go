@@ -36,3 +36,22 @@ func WaitReadable(raw syscall.RawConn) error {
 	}
 	return peekErr
 }
+
+// ReadableNow 不阻塞地判断套接字此刻是否可读（有数据、对端已关闭或有待报告的错误），不取走数据。
+func ReadableNow(raw syscall.RawConn) bool {
+	ready := false
+	var b [1]byte
+	_ = raw.Read(func(fd uintptr) bool {
+		for {
+			_, _, err := syscall.Recvfrom(int(fd), b[:], syscall.MSG_PEEK)
+			if errors.Is(err, syscall.EINTR) {
+				continue
+			}
+			// EAGAIN 表示暂无数据；其余情况（拿到数据、读到对端关闭、套接字错误）都算有动静
+			ready = !errors.Is(err, syscall.EAGAIN) && !errors.Is(err, syscall.EWOULDBLOCK)
+			// 返回 true：只看这一次，不交给轮询器等待
+			return true
+		}
+	})
+	return ready
+}
