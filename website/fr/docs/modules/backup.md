@@ -21,7 +21,9 @@ Sur la carte « Restaurer la configuration », choisissez un fichier de sauvegar
 - La restauration écrase toute la configuration actuelle. La taille maximale du téléversement est de 64 Mo.
 - Avant l'écrasement, la configuration existante est copiée dans un dossier `backup-<time>` du répertoire de configuration (format de l'heure `YYYYMMDD-HHMMSS`), et l'interface affiche ce chemin après une restauration réussie.
 - Gately redémarre automatiquement après la restauration.
-- La sauvegarde doit contenir la configuration du compte ; une sauvegarde qui en est dépourvue est rejetée.
+- Par défaut, la configuration du compte de la sauvegarde écrase le compte actuel, et une sauvegarde sans `account.json` est rejetée. Si vous cochez « Conserver le compte administrateur actuel », le compte n'est pas écrasé : le compte actuel, le mot de passe, l'authentification à deux facteurs, les comptes en lecture seule, les jetons d'API et la connexion tierce de l'interface d'administration restent inchangés, et la sauvegarde peut ne pas contenir `account.json` ; pratique pour importer les règles d'une autre machine.
+- Lorsque la configuration du compte est restaurée, une nouvelle clé de session est utilisée et toutes les sessions de connexion émises avant la restauration deviennent invalides.
+- Tant que le mot de passe par défaut est utilisé, la restauration est rejetée ; il faut d'abord modifier le mot de passe administrateur.
 - Seuls les fichiers `*.json` situés à la racine du zip, non cachés et contenant du JSON valide sont acceptés. Toutes les autres entrées sont ignorées.
 - Lorsque vous choisissez un fichier `.enc`, un champ « Phrase secrète de la sauvegarde » apparaît. Saisissez la phrase secrète définie lors de la création de la sauvegarde. Une phrase secrète erronée ou un fichier endommagé fait échouer la restauration.
 

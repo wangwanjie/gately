@@ -21,7 +21,9 @@ En la tarjeta «Restaurar configuración», elige un archivo de copia, pulsa «R
 - La restauración sobrescribe toda la configuración actual. El límite de tamaño de subida es de 64 MB.
 - Antes de sobrescribir, la configuración existente se copia en una carpeta `backup-<hora>` dentro del directorio de configuración (formato de hora `YYYYMMDD-HHMMSS`), y la interfaz muestra esa ruta tras una restauración correcta.
 - Gately se reinicia automáticamente tras la restauración.
-- La copia debe contener la configuración de la cuenta; una copia que no la tenga se rechaza.
+- Por defecto, la configuración de la cuenta de la copia sobrescribe la cuenta actual, y una copia sin `account.json` se rechaza. Si marcas «Conservar la cuenta de administrador actual», la cuenta no se sobrescribe: la cuenta actual, la contraseña, la autenticación de dos factores, las cuentas de solo lectura, los tokens de API y el inicio de sesión de terceros de la interfaz de administración se mantienen, y la copia puede no incluir `account.json`; es útil para traer las reglas de otra máquina.
+- Cuando se restaura la configuración de la cuenta se usa una clave de sesión nueva, y todas las sesiones emitidas antes de la restauración dejan de ser válidas.
+- Mientras se siga usando la contraseña predeterminada, la restauración se rechaza; primero hay que cambiar la contraseña de administrador.
 - De la copia solo se aceptan los archivos `*.json` situados en la raíz del zip, que no estén ocultos y que contengan JSON válido. El resto de entradas se ignoran.
 - Al elegir un archivo `.enc`, aparece un campo «Contraseña de la copia». Introduce la contraseña que se definió al crear la copia. Una contraseña incorrecta o un archivo dañado hacen que la restauración falle.
 

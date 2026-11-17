@@ -21,7 +21,9 @@ Wählen Sie auf der Karte „Konfiguration wiederherstellen“ eine Sicherungsda
 - Die Wiederherstellung überschreibt die gesamte aktuelle Konfiguration. Die Upload-Größe ist auf 64 MB begrenzt.
 - Vor dem Überschreiben wird die vorhandene Konfiguration in einen Ordner `backup-<Zeit>` im Konfigurationsverzeichnis kopiert (Zeitformat `YYYYMMDD-HHMMSS`); die Oberfläche zeigt diesen Pfad nach erfolgreicher Wiederherstellung an.
 - Gately startet nach der Wiederherstellung automatisch neu.
-- Die Sicherung muss die Kontokonfiguration enthalten; eine Sicherung ohne sie wird abgelehnt.
+- Standardmäßig überschreibt die Kontokonfiguration aus der Sicherung das aktuelle Konto; enthält die Sicherung keine `account.json`, wird die Wiederherstellung abgelehnt. Ist „Aktuelles Administratorkonto beibehalten“ angehakt, wird das Konto nicht überschrieben: Konto, Passwort, Zwei-Faktor-Authentifizierung, Nur-Lese-Benutzer, API-Token und die Drittanbieter-Anmeldung an der Verwaltungsoberfläche bleiben unverändert, und die Sicherung darf `account.json` weglassen. Das eignet sich, um die Regeln einer anderen Maschine zu übernehmen.
+- Wurde die Kontokonfiguration wiederhergestellt, wird ein neuer Sitzungsschlüssel verwendet, und alle vor der Wiederherstellung ausgestellten Anmeldesitzungen werden ungültig.
+- Solange noch das Standardpasswort verwendet wird, wird die Wiederherstellung abgelehnt; ändern Sie zuerst das Administratorpasswort.
 - Aus der Sicherung werden nur `*.json`-Dateien akzeptiert, die im Zip-Stamm liegen, nicht versteckt sind und gültiges JSON enthalten. Alle anderen Einträge werden ignoriert.
 - Wählen Sie eine `.enc`-Datei, erscheint das Eingabefeld „Passphrase der Sicherung“. Geben Sie die Passphrase ein, die beim Erstellen der Sicherung gesetzt wurde. Eine falsche Passphrase oder eine beschädigte Datei lässt die Wiederherstellung fehlschlagen.
 
