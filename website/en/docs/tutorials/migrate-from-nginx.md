@@ -1,4 +1,5 @@
 ---
+time: 30 min
 description: Migrate from nginx or Nginx Proxy Manager to Gately. Import nginx -T output (run inside the container for NPM), verify alongside nginx, switch over site by site and roll back, with what each NPM setting becomes.
 ---
 

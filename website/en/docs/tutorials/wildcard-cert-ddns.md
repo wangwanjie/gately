@@ -1,4 +1,5 @@
 ---
+time: 10 min
 description: Set up dynamic DNS and a wildcard HTTPS certificate with Gately in about ten minutes, with a Cloudflare version and an Alibaba Cloud version. DNS-01 validation needs no open port 80 or 443, and renewal is automatic.
 ---
 

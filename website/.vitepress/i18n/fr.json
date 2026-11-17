@@ -7,6 +7,7 @@
   "nav": {
     "home": "Accueil",
     "docs": "Documentation",
+    "tutorials": "Tutoriels",
     "modules": "Modules",
     "download": "Télécharger",
     "changelog": "Journal des modifications",
@@ -15,10 +16,15 @@
   "sidebar": {
     "groups": {
       "start": "Prise en main",
-      "tutorials": "Tutoriels",
       "modules": "Modules",
       "security": "Sécurité",
       "reference": "Référence"
+    },
+    "tutorialsHome": "Tous les tutoriels",
+    "tutorialGroups": {
+      "basics": "Premiers pas",
+      "advanced": "Pour aller plus loin",
+      "scenarios": "Cas concrets"
     },
     "items": {
       "guide/introduction": "Introduction",

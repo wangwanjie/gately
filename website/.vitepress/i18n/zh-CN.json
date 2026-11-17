@@ -7,6 +7,7 @@
   "nav": {
     "home": "首页",
     "docs": "文档",
+    "tutorials": "教程",
     "modules": "功能模块",
     "download": "下载",
     "changelog": "更新日志",
@@ -15,10 +16,15 @@
   "sidebar": {
     "groups": {
       "start": "开始使用",
-      "tutorials": "教程",
       "modules": "功能模块",
       "security": "安全",
       "reference": "参考"
+    },
+    "tutorialsHome": "教程首页",
+    "tutorialGroups": {
+      "basics": "入门",
+      "advanced": "进阶",
+      "scenarios": "实战场景"
     },
     "items": {
       "guide/introduction": "项目简介",
@@ -64,7 +70,26 @@
       "reference/webterminal-api": "Web 终端 API",
       "reference/diagnostics": "诊断包",
       "reference/monitoring": "监控指标",
-      "guide/contributing": "参与贡献"
+      "guide/contributing": "参与贡献",
+      "tutorials/getting-started": "安装后的第一步",
+      "tutorials/first-site": "第一个反向代理站点",
+      "tutorials/https-certificate": "申请 HTTPS 证书",
+      "tutorials/ddns-basics": "动态域名入门",
+      "tutorials/port-forward-basics": "端口转发入门",
+      "tutorials/site-access-control": "站点访问控制与登录认证",
+      "tutorials/guard-waf": "入侵防护与 WAF",
+      "tutorials/notify-alerts": "通知与告警",
+      "tutorials/history-backup": "配置历史、备份与迁移",
+      "tutorials/navigation-panel": "搭建导航面板",
+      "tutorials/stun-traversal": "STUN 穿透",
+      "tutorials/frp-tunnel": "frp 内网穿透",
+      "tutorials/mesh-vpn": "异地组网",
+      "tutorials/port-knocking": "端口敲门",
+      "tutorials/docker-terminal": "Docker 管理与 Web 终端",
+      "tutorials/oidc-sso": "OIDC 单点登录",
+      "tutorials/api-automation": "API、命令行与 MCP 自动化",
+      "tutorials/home-nas-end-to-end": "家庭 NAS 外网访问全流程",
+      "tutorials/vps-front-door": "云服务器做入口，回家保留真实 IP"
     }
   },
   "ui": {

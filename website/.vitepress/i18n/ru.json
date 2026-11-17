@@ -7,6 +7,7 @@
   "nav": {
     "home": "Главная",
     "docs": "Документация",
+    "tutorials": "Руководства",
     "modules": "Модули",
     "download": "Скачать",
     "changelog": "История изменений",
@@ -15,10 +16,15 @@
   "sidebar": {
     "groups": {
       "start": "Начало работы",
-      "tutorials": "Руководства",
       "modules": "Модули",
       "security": "Безопасность",
       "reference": "Справочник"
+    },
+    "tutorialsHome": "Все руководства",
+    "tutorialGroups": {
+      "basics": "Основы",
+      "advanced": "Продвинутые темы",
+      "scenarios": "Практические сценарии"
     },
     "items": {
       "guide/introduction": "Введение",

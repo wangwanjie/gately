@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { defineConfig, type DefaultTheme, type HeadConfig } from 'vitepress'
-import { FALLBACK_CODE, sidebarGroups, siteLocales, type SiteLocale } from './i18n/structure'
+import { FALLBACK_CODE, sidebarGroups, siteLocales, tutorialGroups, type SidebarGroup, type SiteLocale } from './i18n/structure'
 
 const SITE = 'https://gately.cn'
 const REPO = 'https://github.com/wangwanjie/gately'
@@ -158,11 +158,11 @@ function prefixOf(loc: SiteLocale) {
   return loc.dir ? `/${loc.dir}` : ''
 }
 
-// 侧边栏：各语言共用同一骨架，标题取自语言包
-function buildSidebar(loc: SiteLocale, pack: any): DefaultTheme.SidebarItem[] {
-  return sidebarGroups
+// 侧边栏：各语言共用同一骨架，标题取自语言包；groupTitles 为分组标题所在的语言包节点
+function buildSidebar(loc: SiteLocale, pack: any, groups: SidebarGroup[], groupTitles: Record<string, string>): DefaultTheme.SidebarItem[] {
+  return groups
     .map((g) => ({
-      text: pack.sidebar.groups[g.id],
+      text: groupTitles[g.id],
       items: g.slugs
         // onlyExisting 的分组只列出该语言实际存在的页面
         .filter((slug) => !g.onlyExisting || existsSync(resolve(here, '..', loc.dir, 'docs', `${slug}.md`)))
@@ -176,19 +176,39 @@ function buildSidebar(loc: SiteLocale, pack: any): DefaultTheme.SidebarItem[] {
     .map(({ onlyExisting, ...group }) => group)
 }
 
+// 该语言是否提供教程首页（docs/tutorials/index.md）；没有时不显示顶栏「教程」入口与教程侧边栏
+function hasTutorials(loc: SiteLocale) {
+  return existsSync(resolve(here, '..', loc.dir, 'docs', 'tutorials', 'index.md'))
+}
+
 function buildThemeConfig(loc: SiteLocale, pack: any): DefaultTheme.Config & Record<string, unknown> {
   const p = prefixOf(loc)
   const ui = pack.ui
   return {
     nav: [
       { text: pack.nav.home, link: `${p}/` },
-      { text: pack.nav.docs, link: `${p}/docs/guide/introduction`, activeMatch: `${p}/docs/` },
+      // 「文档」高亮除教程、功能模块以外的文档页
+      { text: pack.nav.docs, link: `${p}/docs/guide/introduction`, activeMatch: `^${p}/docs/(guide|reference)/` },
+      ...(hasTutorials(loc)
+        ? [{ text: pack.nav.tutorials, link: `${p}/docs/tutorials/`, activeMatch: `^${p}/docs/tutorials/` }]
+        : []),
       { text: pack.nav.modules, link: `${p}/docs/modules/`, activeMatch: `${p}/docs/modules/` },
       { text: pack.nav.download, link: `${p}/download` },
       { text: pack.nav.changelog, link: `${p}/news/`, activeMatch: `${p}/news/` },
       { text: pack.nav.sponsor, link: `${p}/sponsor` }
     ],
-    sidebar: { [`${p}/docs/`]: buildSidebar(loc, pack) },
+    // 教程页使用独立侧边栏（按难度分组）；VitePress 优先匹配更长的路径前缀
+    sidebar: {
+      [`${p}/docs/`]: buildSidebar(loc, pack, sidebarGroups, pack.sidebar.groups),
+      ...(hasTutorials(loc)
+        ? {
+            [`${p}/docs/tutorials/`]: [
+              { text: pack.sidebar.tutorialsHome, link: `${p}/docs/tutorials/` },
+              ...buildSidebar(loc, pack, tutorialGroups, pack.sidebar.tutorialGroups)
+            ]
+          }
+        : {})
+    },
     editLink: { pattern: `${REPO}/edit/main/website/:path`, text: ui.editLink },
     lastUpdated: { text: ui.lastUpdated },
     outline: { label: ui.outlineLabel, level: [2, 3] },

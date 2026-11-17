@@ -1,4 +1,5 @@
 ---
+time: 20 分钟
 description: 没有公网 IPv4 怎么从外面访问 NAS：IPv6 加 DDNS、STUN 穿透、frp（自有 VPS）、Cloudflare Tunnel 四条路线的前提、优缺点和在 Gately 里的配置步骤。
 ---
 

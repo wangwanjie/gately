@@ -4,6 +4,8 @@ import Layout from './Layout.vue'
 import HomeLanding from './components/HomeLanding.vue'
 import DownloadList from './components/DownloadList.vue'
 import SponsorPanel from './components/SponsorPanel.vue'
+import TutorialCatalog from './components/TutorialCatalog.vue'
+import TutorialVideo from './components/TutorialVideo.vue'
 import './custom.css'
 
 export default {
@@ -29,5 +31,7 @@ export default {
     app.component('HomeLanding', HomeLanding)
     app.component('DownloadList', DownloadList)
     app.component('SponsorPanel', SponsorPanel)
+    app.component('TutorialCatalog', TutorialCatalog)
+    app.component('TutorialVideo', TutorialVideo)
   }
 } satisfies Theme

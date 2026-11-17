@@ -1,4 +1,5 @@
 ---
+time: 15 min
 description: Use Gately protocol routing to share one port 443 between HTTPS sites, SSH and RDP while keeping the visitor's real IP. Steps, test commands and troubleshooting.
 ---
 
