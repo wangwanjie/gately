@@ -43,8 +43,12 @@
             <button class="user-btn">
               <span class="avatar">{{ (username || 'A').slice(0, 1).toUpperCase() }}</span>
               <span v-if="!isMobile" class="user-name">{{ username }}</span>
-              <el-tag v-if="role === 'readonly'" size="small" type="info" effect="light">{{ t('layout.readonlyBadge') }}</el-tag>
-              <ChevronDown :size="14" class="muted" />
+              <!-- 手机顶栏放不下文字标签，只读身份改用图标表示，留出位置显示页面名 -->
+              <template v-if="role === 'readonly'">
+                <Eye v-if="isMobile" :size="16" class="muted" :aria-label="t('layout.readonlyBadge')" role="img" data-test="readonly-icon" />
+                <el-tag v-else size="small" type="info" effect="light">{{ t('layout.readonlyBadge') }}</el-tag>
+              </template>
+              <ChevronDown v-if="!isMobile" :size="14" class="muted" />
             </button>
             <template #dropdown>
               <el-dropdown-menu>
@@ -93,7 +97,7 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { ElMessageBox } from 'element-plus'
-import { BookOpen, Braces, ChevronDown, ChevronRight, KeyRound, LogOut, Menu, PanelLeftClose, PanelLeftOpen, Search, Settings } from 'lucide-vue-next'
+import { BookOpen, Braces, ChevronDown, ChevronRight, Eye, KeyRound, LogOut, Menu, PanelLeftClose, PanelLeftOpen, Search, Settings } from 'lucide-vue-next'
 import { docsUrl } from '../docsUrl'
 import { api } from '../api'
 import { bannerLevel, fixTarget, SEC_SNOOZE_KEY, SEC_SNOOZE_MS, snoozeKey } from '../security'
