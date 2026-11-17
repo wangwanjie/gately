@@ -21,6 +21,13 @@ Gately sits at the edge of a home network or a server and handles the path from 
 
 <img src="docs/images/en/overview.webp" alt="Gately overview page" width="100%">
 
+<table>
+<tr>
+<td width="50%" valign="top"><a href="https://gately.cn/videos/gately-promo.zh.mp4"><img src="docs/images/zh-CN/video-promo.jpg" alt="Gately promo video" width="100%"></a><br><b>▶ Promo (42 s, Chinese)</b><br>One program in place of nginx, certbot, ddns-go, fail2ban and more</td>
+<td width="50%" valign="top"><a href="https://gately.cn/videos/gately-overview.zh.mp4"><img src="docs/images/zh-CN/video-overview.jpg" alt="Gately feature walkthrough video" width="100%"></a><br><b>▶ Feature walkthrough (5 min, Chinese)</b><br>Overview, web services, certificates, DDNS, protocol routing, intrusion protection, tunnels, config rollback</td>
+</tr>
+</table>
+
 ## What it replaces
 
 | You run today | In Gately |
