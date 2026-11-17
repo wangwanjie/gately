@@ -22,6 +22,8 @@ docker run -d --name gately --network host --cap-add NET_ADMIN \
 
 瀏覽器開啟 `http://<裝置IP>:16680`，使用者名稱 `admin`，預設密碼 `gately.cn`。預設密碼是公開的，登入後會跳出修改密碼對話框，改成至少 10 位、不易猜到的新密碼後才能繼續使用。
 
+全新安裝修改密碼後，會先詢問「你打算用 Gately 做什麼？」：可複選「把內網服務發佈成網域」「連接埠轉發 / 打洞」「動態網域」「異地組網」「檔案共享」「VPS 入口」或「全部功能」。只保留所選情境相關的功能模組，其餘模組關閉（設定不會刪除），隨後自動重新啟動一次；之後隨時可在「設定 → 功能模組」或側邊欄底部的「新增更多功能」中開啟。選擇「略過」保留全部功能。升級的實例不會出現這一步。總覽頂部的「開始使用」清單依所選情境列出接下來要做的事，並根據實際設定自動打勾，可收合或關閉。
+
 ## 3. 完成基礎強化
 
 登入後立即在「設定」中：
@@ -33,6 +35,8 @@ docker run -d --name gately --network host --cap-add NET_ADMIN \
 更多建議請見 [強化建議](/zh-TW/docs/guide/hardening)。
 
 ## 4. 新增第一條規則
+
+Web 服務頁的「快速建站」三步發佈一個站台：填網域，填後端位址（可「測試連線」，也可從 Home Assistant、Jellyfin、Emby、Vaultwarden、Nextcloud、Immich、Proxmox VE、Synology DSM、飛牛 fnOS 範本預填連接埠與建議選項），再選 HTTP 或 HTTPS。監聽自動重用或新增，詳見 [Web 服務 · 快速建站](/zh-TW/docs/modules/web#quick-site)。
 
 依需求選擇一個模組開始：
 
