@@ -131,3 +131,45 @@ func TestDialerNoRace(t *testing.T) {
 		t.Fatal("原拨号器不应被修改")
 	}
 }
+
+// 首选服务器卡住不返回时，应在 hedgeDelay 后并行查询下一个服务器，而不是耗尽 Go 解析器每次尝试的期限后整体失败。
+func TestHungServerFallsBack(t *testing.T) {
+	release := make(chan struct{})
+	hung := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		select {
+		case <-release:
+		case <-r.Context().Done():
+		}
+	}))
+	defer hung.Close()
+	defer close(release)
+	good := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		q, _ := io.ReadAll(r.Body)
+		w.Header().Set("Content-Type", "application/dns-message")
+		_, _ = w.Write(buildAnswer(q, net.IPv4(203, 0, 113, 9)))
+	}))
+	defer good.Close()
+
+	old := bootstrap
+	// 两个测试服务器的证书不同，跳过校验
+	tr := good.Client().Transport.(*http.Transport).Clone()
+	tr.TLSClientConfig.InsecureSkipVerify = true
+	bootstrap = &http.Client{Transport: tr}
+	defer func() { bootstrap = old }()
+	oldDelay := hedgeDelay
+	hedgeDelay = 200 * time.Millisecond
+	defer func() { hedgeDelay = oldDelay }()
+
+	r := New([]Server{{URL: hung.URL + "/dns-query"}, {URL: good.URL + "/dns-query"}})
+	// 期限短于 queryDoH 的 8 秒：旧实现会一直等第一个服务器直到期限耗尽
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	begin := time.Now()
+	ips, err := r.LookupIP(ctx, "ip4", "example.test")
+	if err != nil || len(ips) != 1 || !ips[0].Equal(net.IPv4(203, 0, 113, 9)) {
+		t.Fatalf("应由第二个服务器解析成功: %v %v", ips, err)
+	}
+	if d := time.Since(begin); d > 2*time.Second {
+		t.Fatalf("回退太慢: %v", d)
+	}
+}
