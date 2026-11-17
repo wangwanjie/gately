@@ -27,6 +27,18 @@
 
 在另一台（或同一台）的 Gately 里添加 HTTPS 监听与站点：域名 `demo.gately.cn`，类型「反向代理」，目标 `http://127.0.0.1:16680`，证书用 ACME 签发。站点里开启「转发请求头」，让演示实例据 `X-Forwarded-Proto` 给会话 Cookie 加 Secure。
 
+#### 前置是 Gately 时的 Cookie 改名
+
+v0.6.8.1 及更早的 Gately 反代到非本机管理后台的后端时，会剥离所有名为 `gately_token` 的 Cookie（防止后台会话泄露给同机其他应用），演示实例签发的会话因此到不了演示实例：「演示账号一键进入」返回 200，随后每个请求都是 401。之后的版本只剥离前置实例自己签发的会话，前置升级后不需要下面的做法。
+
+前置还是旧版本时，叠加 `docker-compose.cookie.yml` 启动：演示实例不再发布端口，由一个 nginx（`cookie-rename.nginx.conf`）监听 `127.0.0.1:${DEMO_PORT}`，把浏览器一侧的会话 Cookie 改名为 `gately_demo_token`，请求时再改回 `gately_token` 交给演示实例。
+
+```sh
+docker compose -f docker-compose.yml -f docker-compose.cookie.yml up -d --build
+```
+
+demo.gately.cn（hk-tyy）现在就是这样部署的：`.env` 里 `DEMO_PORT=16690`，主 Gately 的 `demo.gately.cn` 站点目标仍是 `http://127.0.0.1:16690`，配置未改动。主 Gately 升级到包含该修复的版本后，去掉 `-f docker-compose.cookie.yml` 重新 `up -d`，并删除 `gately-demo-cookie` 容器（`docker compose -f docker-compose.yml up -d --remove-orphans`），服务器上的基础 compose 端口一直是 `127.0.0.1:16690:16680`，不用再改。
+
 ### 用 nginx 反向代理
 
 ```nginx
