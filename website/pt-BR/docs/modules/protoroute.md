@@ -11,7 +11,7 @@ Cada regra tem:
 - Um destino padrão: os endereços de destino, as portas de destino e a configuração do protocolo PROXY da própria regra, usado quando nenhuma rota corresponde ou o protocolo não é reconhecido;
 - Um tempo de detecção: quantos segundos esperar por dados reconhecíveis do cliente; 0 usa o padrão de 5 segundos.
 
-Cada porta também limita as conexões simultâneas de uma única origem (um endereço IPv4 ou um /64 IPv6), por padrão a metade do máximo de conexões; defina «Máximo de conexões por origem» na regra ou altere o padrão nas configurações globais. Endereços de loopback e privados não são limitados; conexões que não enviam dados ficam a cargo do tempo de detecção.
+Cada porta também limita as conexões simultâneas de uma única origem (um endereço IPv4 ou um /64 IPv6), por padrão a metade do máximo de conexões; defina «Máximo de conexões por origem» na regra ou altere o padrão nas configurações globais. Endereços de loopback e privados não são limitados; conexões que não enviam dados ficam a cargo do tempo de detecção. Se um relay público ou proxy de entrada faz todos os visitantes aparecerem como a mesma origem, adicione o endereço dele (IP ou CIDR) a "Origens sem limite por origem" nas configurações globais.
 
 ## Protocolos reconhecidos
 

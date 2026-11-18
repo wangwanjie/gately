@@ -11,7 +11,7 @@ Cada regla tiene:
 - Un destino predeterminado: las direcciones de destino, los puertos de destino y el ajuste de protocolo PROXY propios de la regla, que se usa cuando ninguna ruta coincide o el protocolo no se reconoce;
 - Un tiempo de detección: cuántos segundos se espera a que el cliente envíe datos reconocibles; 0 equivale al valor predeterminado de 5 segundos.
 
-Cada puerto limita también las conexiones simultáneas de un solo origen (una dirección IPv4 o un /64 IPv6), por defecto a la mitad del máximo de conexiones; indica «Máx. de conexiones por origen» en la regla o cambia el valor por defecto en la configuración global. Las direcciones de loopback y privadas no se limitan; las conexiones que no envían datos las gestiona el tiempo de detección.
+Cada puerto limita también las conexiones simultáneas de un solo origen (una dirección IPv4 o un /64 IPv6), por defecto a la mitad del máximo de conexiones; indica «Máx. de conexiones por origen» en la regla o cambia el valor por defecto en la configuración global. Las direcciones de loopback y privadas no se limitan; las conexiones que no envían datos las gestiona el tiempo de detección. Si un relé público o un proxy frontal hace que todos los visitantes aparezcan como el mismo origen, añada su dirección (IP o CIDR) a «Orígenes sin límite por origen» en la configuración global.
 
 ## Protocolos reconocidos
 
