@@ -1,28 +1,28 @@
 {
  "sut": "gately-head",
  "sites": 1000,
- "startupSec": 0.405,
+ "startupSec": 0.388,
  "startupRuns": [
-  0.557,
-  0.405,
-  0.376
+  0.385,
+  0.388,
+  0.434
  ],
  "idle": {
-  "pssKiB": 97712,
-  "rssKiB": 97720,
-  "cgroupKiB": 105800,
-  "cpuUsec": 169596,
+  "pssKiB": 95964,
+  "rssKiB": 95972,
+  "cgroupKiB": 103892,
+  "cpuUsec": 167690,
   "procs": 1
  },
- "rps": 38839.25,
- "p99ms": 11.7,
+ "rps": 37423.0,
+ "p99ms": 12.94,
  "non2xx": 0,
  "watch": {
-  "peakPssKiB": 503896,
-  "peakRssKiB": 503904,
-  "avgPssKiB": 474517,
-  "cpuSeconds": 39.680041,
-  "cpuPercent": 179.92635695159694,
-  "elapsed": 22.053489923477173
+  "peakPssKiB": 230772,
+  "peakRssKiB": 230780,
+  "avgPssKiB": 218941,
+  "cpuSeconds": 39.856676,
+  "cpuPercent": 180.8784395351449,
+  "elapsed": 22.035061836242676
  }
 }
