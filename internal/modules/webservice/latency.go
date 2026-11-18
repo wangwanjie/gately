@@ -15,7 +15,7 @@ import (
 // 同一桶内的请求耗时接近（相邻边界相差约 10%~25%），估算误差不超过桶宽，常见的“请求都差不多慢”场景几乎精确。
 //
 // 每个站点只保留两份细分直方图：累计值（Prometheus 导出与性能监控按窗口取差值）与当前分钟；
-// 24 小时分钟环只存每分钟算好的 P50 / P95（每站点约 23 KB），站点收到第一个计入延迟的请求时才分配。
+// 24 小时分钟环只存每分钟算好的 P50 / P95，按小时分块（每块 480 字节，全天约 12 KB），站点收到第一个计入延迟的请求时才分配。
 
 // latBounds 为各延迟桶的上界（毫秒），最后一个桶（+Inf）不在其中。
 // 包含 Prometheus 导出用的全部边界（latExportBounds），导出的累计计数因此是精确值。
@@ -95,7 +95,6 @@ func LatencyQuantile(n []uint64, sum []float64, q float64) float64 {
 
 // latMinute 是 24 小时分钟环中的一分钟：该分钟的 P50、P95（毫秒），minute 为 Unix 分钟。
 type latMinute struct {
-	minute   int64
 	p50, p95 float32
 }
 
@@ -106,7 +105,8 @@ type latState struct {
 	// cur 为当前分钟（curMin）的直方图，进入新的一分钟时把分位数写入 ring 并清零
 	cur    latHist
 	curMin int64
-	ring   [metricMinutes]latMinute
+	// ring 为 24 小时的每分钟分位数，按小时分块（每块 480 字节），见 minuteRing
+	ring minuteRing[latMinute]
 }
 
 // flush 把当前分钟的分位数写入分钟环。
@@ -118,10 +118,9 @@ func (l *latState) flush() {
 	if total == 0 {
 		return
 	}
-	l.ring[int(l.curMin%metricMinutes)] = latMinute{
-		minute: l.curMin,
-		p50:    float32(latQuantile(l.cur.n[:], l.cur.sum[:], 0.5)),
-		p95:    float32(latQuantile(l.cur.n[:], l.cur.sum[:], 0.95)),
+	*l.ring.slot(l.curMin) = latMinute{
+		p50: float32(latQuantile(l.cur.n[:], l.cur.sum[:], 0.5)),
+		p95: float32(latQuantile(l.cur.n[:], l.cur.sum[:], 0.95)),
 	}
 }
 
@@ -173,8 +172,8 @@ func (m *siteMetrics) minuteQuantiles(min int64) (p50, p95 float64) {
 	if l.curMin == min {
 		return latQuantile(l.cur.n[:], l.cur.sum[:], 0.5), latQuantile(l.cur.n[:], l.cur.sum[:], 0.95)
 	}
-	b := l.ring[int(min%metricMinutes)]
-	if b.minute != min {
+	b := l.ring.at(min)
+	if b == nil {
 		return 0, 0
 	}
 	return float64(b.p50), float64(b.p95)

@@ -21,17 +21,19 @@ const (
 	topKeysCap = 5000
 )
 
+// minuteBucket 是一分钟的请求统计。分钟号由所在的小时块确定（见 minuteRing），不再逐桶保存；
+// 计数用 32 位（每分钟上限约 43 亿次），字节数可能超过 4 GB 仍用 64 位。2xx、3xx 只计入累计值（status），不按分钟保存
 type minuteBucket struct {
-	minute                 int64
-	req, bytes             int64
-	s2xx, s3xx, s4xx, s5xx int64
+	bytes           uint64
+	req, s4xx, s5xx uint32
 }
 
 // siteMetrics 记录站点最近 24 小时的分钟级统计与来源排行。
 type siteMetrics struct {
 	mu sync.Mutex
-	// ring 为 24 小时分钟环（约 80 KB），首次登记请求时才分配：没有流量的站点不占这块内存
-	ring      *[metricMinutes]minuteBucket
+	// ring 为 24 小时分钟统计，首次登记请求时才分配：没有流量的站点不占这块内存；
+	// 按小时分块，每块约 1.4 KB，全天都有流量时约 35 KB（见 minuteRing）
+	ring      *minuteRing[minuteBucket]
 	ips       map[string]int64
 	countries map[string]int64
 	bytesOut  int64
@@ -50,7 +52,6 @@ func newSiteMetrics() *siteMetrics {
 // record 登记一次请求；lat 为首字节延迟，小于 0 表示不计入延迟统计。请求计数与延迟在同一次加锁内登记。
 func (m *siteMetrics) record(ip netip.Addr, status int, bytes int64, lat time.Duration, now time.Time) {
 	min := now.Unix() / 60
-	idx := int(min % metricMinutes)
 	class := status / 100
 	var country string
 	if geoip.Default.Info().Loaded && !geoip.IsLocal(ip) {
@@ -60,20 +61,15 @@ func (m *siteMetrics) record(ip netip.Addr, status int, bytes int64, lat time.Du
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	if m.ring == nil {
-		m.ring = new([metricMinutes]minuteBucket)
+		m.ring = &minuteRing[minuteBucket]{}
 	}
-	b := &m.ring[idx]
-	if b.minute != min {
-		*b = minuteBucket{minute: min}
-	}
+	b := m.ring.slot(min)
 	b.req++
-	b.bytes += bytes
+	if bytes > 0 {
+		b.bytes += uint64(bytes)
+	}
 	m.bytesOut += bytes
 	switch class {
-	case 2:
-		b.s2xx++
-	case 3:
-		b.s3xx++
 	case 4:
 		b.s4xx++
 	case 5:
@@ -162,14 +158,20 @@ func (m *siteMetrics) view(minutes int, now time.Time) SiteStatsView {
 	cur := now.Unix() / 60
 	m.mu.Lock()
 	defer m.mu.Unlock()
+	if m.ring != nil {
+		m.ring.prune(cur)
+	}
+	if m.lat != nil {
+		m.lat.ring.prune(cur)
+	}
 	series := make([]Point, 0, minutes)
 	for i := minutes - 1; i >= 0; i-- {
 		min := cur - int64(i)
 		p := Point{Time: min * 60}
 		// 分钟环未分配表示站点还没有请求，各分钟均为 0
 		if m.ring != nil {
-			if b := m.ring[int(min%metricMinutes)]; b.minute == min {
-				p.Requests, p.Bytes, p.S4xx, p.S5xx = b.req, b.bytes, b.s4xx, b.s5xx
+			if b := m.ring.at(min); b != nil {
+				p.Requests, p.Bytes, p.S4xx, p.S5xx = int64(b.req), int64(b.bytes), int64(b.s4xx), int64(b.s5xx)
 			}
 		}
 		p.P50, p.P95 = m.minuteQuantiles(min)
