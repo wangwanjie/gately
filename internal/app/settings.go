@@ -9,10 +9,12 @@ import (
 	"net"
 	"net/http"
 	"net/netip"
+	"os"
 	"path/filepath"
 	"runtime"
 	"runtime/debug"
 	"slices"
+	"strconv"
 	"strings"
 	"time"
 
@@ -290,11 +292,24 @@ func (a *App) applyRuntime() {
 	if s.GCPercent > 0 {
 		debug.SetGCPercent(s.GCPercent)
 	} else {
-		debug.SetGCPercent(defaultGCPercent(sysstat.MemoryLimit()))
+		debug.SetGCPercent(unsetGCPercent(os.Getenv("GOGC"), sysstat.MemoryLimit()))
 	}
 	if s.MaxProcs > 0 {
 		runtime.GOMAXPROCS(s.MaxProcs)
 	}
+}
+
+// unsetGCPercent 返回设置中 GC 百分比为 0 时使用的值：环境变量 GOGC 有效（数字或 off）时沿用它，
+// 否则按可用内存取 defaultGCPercent。设置项总会调用 SetGCPercent，不先看环境变量会覆盖用户在容器里设的 GOGC。
+func unsetGCPercent(env string, memLimit uint64) int {
+	env = strings.TrimSpace(env)
+	if strings.EqualFold(env, "off") {
+		return -1
+	}
+	if n, err := strconv.Atoi(env); err == nil {
+		return n
+	}
+	return defaultGCPercent(memLimit)
 }
 
 // defaultGCPercent 返回未设置 GC 百分比时使用的值。
