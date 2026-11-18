@@ -145,8 +145,8 @@
       </template>
     </el-dialog>
 
-    <el-dialog v-model="settingsVisible" :title="t('portForward.settingsTitle')" width="520px" :fullscreen="isMobile">
-      <el-form v-if="settingsForm" :model="settingsForm" label-width="150px" :label-position="labelPosition">
+    <el-dialog v-model="settingsVisible" :title="t('portForward.settingsTitle')" width="560px" :fullscreen="isMobile">
+      <el-form v-if="settingsForm" :model="settingsForm" label-width="170px" :label-position="labelPosition">
         <el-form-item :label="t('portForward.enableModule')"><el-switch v-model="settingsForm.enable" /></el-form-item>
         <el-form-item :label="t('portForward.defaultMaxConnections')"><el-input-number v-model="settingsForm.defaultMaxConnections" :min="1" /></el-form-item>
         <el-form-item :label="t('portForward.defaultMaxConnsPerSource')">
