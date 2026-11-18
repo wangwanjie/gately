@@ -3265,6 +3265,7 @@
   "请求超时": "Request Timeout",
   "请求过于频繁": "Too Many Requests",
   "请求过于频繁，请稍后再试": "Too many requests, please try again later",
+  "请求过多，请稍后重试": "Too many requests, please try again later",
   "请求返回 %s": "Request returned %s",
   "请稍后重试；如果问题持续出现，请联系网站管理员。": "Please try again later. If the problem persists, contact the website administrator.",
   "请粘贴 nginx 配置": "Paste the nginx config",

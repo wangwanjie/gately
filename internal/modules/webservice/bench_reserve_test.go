@@ -1,6 +1,7 @@
 package webservice
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -12,7 +13,7 @@ func BenchmarkReserveManySources(b *testing.B) {
 	keys := make([]string, 20000)
 	for i := range keys {
 		keys[i] = fmt.Sprintf("10.%d.%d.%d", i>>16, i>>8&255, i&255)
-		if a.reserve(keys[i]) {
+		if a.reserve(context.Background(), keys[i]) == reserveOK {
 			a.release(keys[i], true)
 		}
 	}
@@ -20,7 +21,7 @@ func BenchmarkReserveManySources(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		k := keys[i%len(keys)]
-		if a.reserve(k) {
+		if a.reserve(context.Background(), k) == reserveOK {
 			a.release(k, true)
 		}
 	}
@@ -31,7 +32,7 @@ func TestReserveSweepsExpired(t *testing.T) {
 	a := newAuthenticator("secret")
 	for i := 0; i < 5000; i++ {
 		k := fmt.Sprintf("old-%d", i)
-		if !a.reserve(k) {
+		if a.reserve(context.Background(), k) != reserveOK {
 			t.Fatal("首次占位应成功")
 		}
 		if i != 0 {
@@ -44,7 +45,7 @@ func TestReserveSweepsExpired(t *testing.T) {
 	}
 	a.lastFailSweep = time.Time{}
 	a.mu.Unlock()
-	if !a.reserve("fresh") {
+	if a.reserve(context.Background(), "fresh") != reserveOK {
 		t.Fatal("新来源应成功")
 	}
 	a.mu.Lock()

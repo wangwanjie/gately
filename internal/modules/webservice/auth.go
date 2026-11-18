@@ -1,6 +1,7 @@
 package webservice
 
 import (
+	"context"
 	"crypto/hmac"
 	"crypto/sha256"
 	"crypto/subtle"
@@ -108,7 +109,15 @@ func (a *authenticator) oauthEnv() oauthEnv {
 type failCount struct {
 	n        int
 	inflight int
-	first    time.Time
+	// waiting 为排队等待校验空位的请求数，wake 在有校验结束时关闭以唤醒它们
+	waiting int
+	wake    chan struct{}
+	first   time.Time
+}
+
+// idle 表示没有进行中或排队的校验，可以安全删除
+func (f *failCount) idle() bool {
+	return f.inflight == 0 && f.waiting == 0
 }
 
 func newAuthenticator(secret string) *authenticator {
@@ -150,8 +159,38 @@ func limitKey(ip string) string {
 	return a.String()
 }
 
-// reserve 为一次密码校验占位；失败次数加上进行中的校验达到上限时拒绝，防止并发绕过。
-func (a *authenticator) reserve(key string) bool {
+// reserveResult 为一次密码校验占位的结果
+type reserveResult int
+
+const (
+	// reserveOK 表示已占位，校验结束后须调用 release
+	reserveOK reserveResult = iota
+	// reserveLocked 表示该来源失败次数已达上限，处于锁定期
+	reserveLocked
+	// reserveBusy 表示该来源同时校验的请求过多，排队超时或队列已满；不计入失败次数
+	reserveBusy
+)
+
+// 同一来源的并发密码校验限制：bcrypt 每次约 90 毫秒 CPU，需限制同一来源同时进行的校验数，
+// 超出的请求排队等待空位，等待过久或排队过多时返回「请求过多」
+const (
+	maxInflight    = 8
+	maxAuthWaiting = 64
+	authWaitMax    = 5 * time.Second
+)
+
+// reserveDenyText 返回占位被拒时给访客的提示：锁定期为失败次数过多，并发过多为请求过多（不是密码错误）。
+func reserveDenyText(res reserveResult) string {
+	if res == reserveLocked {
+		return "失败次数过多，请稍后再试"
+	}
+	return "请求过多，请稍后重试"
+}
+
+// reserve 为一次密码校验占位。失败次数达到上限时返回 reserveLocked；
+// 失败次数加上进行中的校验达到上限（防止并发绕过失败上限），或进行中的校验达到并发上限时排队等待，
+// 进行中的校验结束（可能是正确登录，不计失败）后再判断，等待超时、请求取消或排队过多时返回 reserveBusy。
+func (a *authenticator) reserve(ctx context.Context, key string) reserveResult {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 	now := time.Now()
@@ -160,21 +199,56 @@ func (a *authenticator) reserve(key string) bool {
 	if len(a.fails) > 4096 && now.Sub(a.lastFailSweep) >= time.Second {
 		a.lastFailSweep = now
 		for k, f := range a.fails {
-			if f.inflight == 0 && now.Sub(f.first) > failureReset {
+			if f.idle() && now.Sub(f.first) > failureReset {
 				delete(a.fails, k)
 			}
 		}
 	}
 	f := a.fails[key]
-	if f == nil || (f.inflight == 0 && now.Sub(f.first) > failureReset) {
+	if f == nil {
 		f = &failCount{first: now}
 		a.fails[key] = f
 	}
-	if f.n+f.inflight >= maxFailures {
-		return false
+	var timer *time.Timer
+	for {
+		// 计数过期后原地重置，排队中的请求仍持有同一条记录
+		if f.inflight == 0 && time.Since(f.first) > failureReset {
+			f.n, f.first = 0, time.Now()
+		}
+		if f.n >= maxFailures {
+			return reserveLocked
+		}
+		if f.n+f.inflight < maxFailures && f.inflight < maxInflight {
+			f.inflight++
+			return reserveOK
+		}
+		if f.waiting >= maxAuthWaiting {
+			return reserveBusy
+		}
+		if timer == nil {
+			timer = time.NewTimer(authWaitMax)
+			defer timer.Stop()
+		}
+		if f.wake == nil {
+			f.wake = make(chan struct{})
+		}
+		wake := f.wake
+		f.waiting++
+		a.mu.Unlock()
+		timedOut := false
+		select {
+		case <-wake:
+		case <-timer.C:
+			timedOut = true
+		case <-ctx.Done():
+			timedOut = true
+		}
+		a.mu.Lock()
+		f.waiting--
+		if timedOut {
+			return reserveBusy
+		}
 	}
-	f.inflight++
-	return true
 }
 
 // release 结束占位并记录结果；成功不清零计数，避免交替使用正确密码重置限流。
@@ -185,13 +259,20 @@ func (a *authenticator) release(key string, ok bool) {
 	if f == nil {
 		return
 	}
-	f.inflight--
+	if f.inflight > 0 {
+		f.inflight--
+	}
 	if !ok {
 		f.n++
 		// 恰好达到上限时触发一次自动封禁
 		if f.n == maxFailures {
 			a.autoBanFor(key)
 		}
+	}
+	// 唤醒排队的请求重新判断
+	if f.wake != nil {
+		close(f.wake)
+		f.wake = nil
 	}
 }
 
@@ -388,7 +469,8 @@ func (a *authenticator) checkUser(w http.ResponseWriter, r *http.Request, s Site
 			return v, true
 		}
 		key := limitKey(ip)
-		if !a.reserve(key) {
+		if a.reserve(r.Context(), key) != reserveOK {
+			w.Header().Set("Retry-After", "1")
 			http.Error(w, "429 Too Many Requests", http.StatusTooManyRequests)
 			return visitor{}, false
 		}
@@ -648,8 +730,13 @@ func (a *authenticator) handleLogin(w http.ResponseWriter, r *http.Request, s Si
 			// 其他网站代为提交的登录表单（登录 CSRF）：不校验密码，也不计入失败次数
 			data["Error"] = "请求来源无效，请刷新登录页后重试"
 			status = http.StatusForbidden
-		} else if !a.reserve(key) {
-			data["Error"] = "失败次数过多，请稍后再试"
+		} else if res := a.reserve(r.Context(), key); res != reserveOK {
+			data["Error"] = reserveDenyText(res)
+			if res == reserveBusy {
+				// 同一来源同时登录的请求过多：不是密码错误，也不计入失败次数
+				status = http.StatusTooManyRequests
+				w.Header().Set("Retry-After", "1")
+			}
 		} else if token := r.PostForm.Get("pending"); token != "" && s.SharedUsers {
 			// 第二步：校验动态验证码
 			u, msg, expired := a.finishTOTPStep(token, host, s, r.PostForm.Get("code"))

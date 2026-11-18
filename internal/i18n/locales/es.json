@@ -3265,6 +3265,7 @@
   "请求超时": "Tiempo de espera de la solicitud agotado",
   "请求过于频繁": "Demasiadas solicitudes",
   "请求过于频繁，请稍后再试": "Demasiadas solicitudes; inténtelo de nuevo más tarde",
+  "请求过多，请稍后重试": "Demasiadas solicitudes, inténtelo de nuevo más tarde",
   "请求返回 %s": "La solicitud devolvió %s",
   "请稍后重试；如果问题持续出现，请联系网站管理员。": "Inténtalo de nuevo más tarde. Si el problema persiste, contacta con el administrador del sitio web.",
   "请粘贴 nginx 配置": "Pega la configuración de nginx",
