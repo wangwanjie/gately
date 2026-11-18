@@ -317,11 +317,13 @@ func buildSiteTable(cfg Listener, log *logbuf.Logger, auth *authenticator, waf W
 		t.missPage = newErrorPager(cfg.Default, auth.errPages)
 	}
 	origins := newOAuthOrigins(cfg, log)
+	// 本站点表内各站点共用后端连接池（连接设置相同的后端只建一个），见 siteHandler.shared
+	shared := map[transportKey]*http.Transport{}
 	build := func(s Site) (*siteHandler, error) {
 		s.scope = cfg.Key + "/" + s.Key
 		s.oauth = origins
 		o := old[s.Key]
-		h, err := buildSiteHandler(s, log, auth, waf, o)
+		h, err := buildSiteHandlerShared(s, log, auth, waf, o, shared)
 		if err != nil {
 			return nil, err
 		}

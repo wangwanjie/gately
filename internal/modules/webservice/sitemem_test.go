@@ -275,3 +275,75 @@ func TestReloadReusesDuplicateTransports(t *testing.T) {
 		t.Fatalf("协议升级用的 HTTP/1.1 连接池应沿用原来的两个连接池: %d", reused)
 	}
 }
+
+// 同一监听器内反代到同一后端、连接设置相同的站点共用一个连接池，热更新后仍共用；连接设置不同的站点各自独立。
+func TestSitesShareTransport(t *testing.T) {
+	var c connCounter
+	be := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = io.WriteString(w, "ok")
+	}))
+	be.Config.ConnState = c.hook
+	be.Start()
+	defer be.Close()
+	l := Listener{Key: "l1", Sites: []Site{
+		{Enable: true, Key: "a", Domains: []string{"a.test"}, Targets: []string{be.URL}},
+		{Enable: true, Key: "b", Domains: []string{"b.test"}, Targets: []string{be.URL}},
+		{Enable: true, Key: "c", Domains: []string{"c.test"}, Targets: []string{be.URL}, Timeouts: BackendTimeouts{Connect: 7}},
+	}}
+	addr, run := startRunner(t, l, nil, nil)
+	defer run.stop()
+	get := func(host string) {
+		t.Helper()
+		req, _ := http.NewRequest("GET", "http://"+addr+"/", nil)
+		req.Host = host
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		_, _ = io.Copy(io.Discard, resp.Body)
+		resp.Body.Close()
+		if resp.StatusCode != 200 {
+			t.Fatalf("%s 返回 %d", host, resp.StatusCode)
+		}
+	}
+	trOf := func(key string) *http.Transport {
+		for _, h := range run.current().sites {
+			if h.site.Key == key {
+				if len(h.transports) != 1 {
+					t.Fatalf("站点 %s 应只有一个连接池: %d", key, len(h.transports))
+				}
+				return h.transports[0].tr
+			}
+		}
+		t.Fatalf("找不到站点 %s", key)
+		return nil
+	}
+	if trOf("a") != trOf("b") {
+		t.Fatal("连接设置相同的站点应共用连接池")
+	}
+	if trOf("c") == trOf("a") {
+		t.Fatal("连接设置不同的站点不应共用连接池")
+	}
+	// a 与 b 顺序请求只建一条后端连接
+	get("a.test")
+	get("b.test")
+	get("a.test")
+	if opened, _ := c.get(); opened != 1 {
+		t.Fatalf("共用连接池时 a、b 的请求应复用同一条后端连接: 新建 %d 次", opened)
+	}
+	// 只改 b 的名称后热更新，a、b 仍共用原来的连接池，空闲连接不重建
+	old := trOf("a")
+	l2 := run.cfg
+	l2.Sites = append([]Site(nil), run.cfg.Sites...)
+	l2.Sites[1].Name = "renamed"
+	if err := run.reload(l2, nil); err != nil {
+		t.Fatal(err)
+	}
+	if trOf("a") != old || trOf("b") != old {
+		t.Fatal("热更新后应继续共用原来的连接池")
+	}
+	get("b.test")
+	if opened, closed := c.get(); opened != 1 || closed != 0 {
+		t.Fatalf("热更新后空闲连接应继续复用: 新建 %d 次，关闭 %d 次", opened, closed)
+	}
+}

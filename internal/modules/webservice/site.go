@@ -97,7 +97,10 @@ type siteHandler struct {
 	// 站点被替换时新处理器据此沿用设置未变的连接池，旧站点表只关闭不再使用的连接池的空闲连接
 	transports []keyedTransport
 	// reuse 为构建期间可沿用的旧连接池（来自被替换的同 key 站点），按连接设置分组、按出现顺序取用；构建完成后清空
-	reuse    map[transportKey][]*http.Transport
+	reuse map[transportKey][]*http.Transport
+	// shared 为同一站点表内各站点共用的连接池（按连接设置索引），构建期间有效、构建完成后清空：
+	// 很多站点反代到同一后端时只保留一份空闲连接，避免每个站点各自囤积空闲连接（1000 个站点时内存成倍增长）
+	shared   map[transportKey]*http.Transport
 	limiter  *limiter
 	cache    *respCache
 	rewrites []compiledRewrite
@@ -186,7 +189,13 @@ func newSiteHandler(s Site, log *logbuf.Logger, auth *authenticator, waf WAFProv
 // 非 nil 时直接沿用它的请求统计、分钟曲线与连接登记表，不再先分配新的再丢弃；
 // 连接设置未变的后端沿用它的连接池，已建立的空闲后端连接继续复用。后端转发统计由 inherit 按地址对应沿用。
 func buildSiteHandler(s Site, log *logbuf.Logger, auth *authenticator, waf WAFProvider, old *siteHandler) (*siteHandler, error) {
-	h := &siteHandler{site: s, log: log, auth: auth}
+	return buildSiteHandlerShared(s, log, auth, waf, old, nil)
+}
+
+// buildSiteHandlerShared 同 buildSiteHandler，shared 为站点表内共用的连接池索引（见 siteHandler.shared），可为 nil。
+func buildSiteHandlerShared(s Site, log *logbuf.Logger, auth *authenticator, waf WAFProvider, old *siteHandler,
+	shared map[transportKey]*http.Transport) (*siteHandler, error) {
+	h := &siteHandler{site: s, log: log, auth: auth, shared: shared}
 	if old != nil {
 		h.stats, h.metrics, h.conns = old.stats, old.metrics, old.conns
 		h.reuse = old.transportsByKey()
@@ -196,6 +205,7 @@ func buildSiteHandler(s Site, log *logbuf.Logger, auth *authenticator, waf WAFPr
 	// 构建结束（成功或失败）后不再需要旧连接池的索引，避免一直引用
 	defer func() {
 		h.reuse = nil
+		h.shared = nil
 	}()
 	// 断开连接的站点在 ServeHTTP 中直接断开，其余设置都不生效（保存时也不校验），不再编译重写、名单等规则；
 	// 保留一个只会断开的处理器，以防其他调用路径意外写出响应
@@ -383,15 +393,29 @@ func newTransportKey(s Site, up *upstream) transportKey {
 	}
 }
 
-// transportFor 返回后端 up 使用的连接池：有可沿用的旧连接池时取出（同一设置出现多次时按顺序一一对应），否则新建。
+// transportFor 返回后端 up 使用的连接池：站点表内已有同一连接设置的连接池时共用；
+// 否则有可沿用的旧连接池时取出（同一设置出现多次时按顺序一一对应），再否则新建。
+// 连接设置（transportKey）包含拨号地址、TLS、超时、PROXY 协议等全部影响连接的选项，设置相同的后端共用连接池不会串用连接；
+// 开启“使用访问域名作为 SNI”时 Transport 按请求 URL 的主机名（访问域名）分别维护连接，同样安全。
 func (h *siteHandler) transportFor(s Site, up *upstream) *http.Transport {
 	k := newTransportKey(s, up)
-	var tr *http.Transport
-	if list := h.reuse[k]; len(list) > 0 {
-		tr = list[0]
-		h.reuse[k] = list[1:]
-	} else {
-		tr = newTransport(s, up)
+	tr := h.shared[k]
+	if tr == nil {
+		if list := h.reuse[k]; len(list) > 0 {
+			tr = list[0]
+			h.reuse[k] = list[1:]
+		} else {
+			tr = newTransport(s, up)
+		}
+		if h.shared != nil {
+			h.shared[k] = tr
+		}
+	}
+	// 同一站点内同一连接池只登记一次，热更新时按出现顺序沿用
+	for _, kt := range h.transports {
+		if kt.tr == tr {
+			return tr
+		}
 	}
 	h.transports = append(h.transports, keyedTransport{key: k, tr: tr})
 	return tr
