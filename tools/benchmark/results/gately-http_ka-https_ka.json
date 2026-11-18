@@ -1,0 +1,112 @@
+{
+ "sut": "gately",
+ "httpsCheck": "200 1024 2",
+ "idle": {
+  "pssKiB": 46652,
+  "rssKiB": 46660,
+  "cgroupKiB": 21176,
+  "cpuUsec": 140642,
+  "procs": 1
+ },
+ "tests": {
+  "http_ka": {
+   "median": {
+    "rps": 35968.37,
+    "MBps": 42.53,
+    "p50ms": 3.23,
+    "p99ms": 10.43,
+    "non2xx": 0,
+    "sockErrors": 0,
+    "sutCpuPercent": 180.9,
+    "peakPssKiB": 66060
+   },
+   "runs": [
+    {
+     "rps": 35538.07,
+     "MBps": 42.03,
+     "p50ms": 3.28,
+     "p99ms": 10.9,
+     "non2xx": 0,
+     "sockErrors": 0,
+     "sutCpuPercent": 179.8,
+     "peakPssKiB": 66372
+    },
+    {
+     "rps": 35968.37,
+     "MBps": 42.53,
+     "p50ms": 3.23,
+     "p99ms": 10.43,
+     "non2xx": 0,
+     "sockErrors": 0,
+     "sutCpuPercent": 180.9,
+     "peakPssKiB": 66060
+    },
+    {
+     "rps": 36511.77,
+     "MBps": 43.18,
+     "p50ms": 3.2,
+     "p99ms": 10.21,
+     "non2xx": 0,
+     "sockErrors": 0,
+     "sutCpuPercent": 180.6,
+     "peakPssKiB": 69796
+    }
+   ]
+  },
+  "https_ka": {
+   "median": {
+    "rps": 34071.65,
+    "MBps": 40.29,
+    "p50ms": 3.41,
+    "p99ms": 11.49,
+    "non2xx": 0,
+    "sockErrors": 0,
+    "sutCpuPercent": 180.4,
+    "peakPssKiB": 74900
+   },
+   "runs": [
+    {
+     "rps": 34125.22,
+     "MBps": 40.35,
+     "p50ms": 3.42,
+     "p99ms": 11.46,
+     "non2xx": 0,
+     "sockErrors": 0,
+     "sutCpuPercent": 180.2,
+     "peakPssKiB": 74244
+    },
+    {
+     "rps": 33637.03,
+     "MBps": 39.78,
+     "p50ms": 3.45,
+     "p99ms": 11.58,
+     "non2xx": 0,
+     "sockErrors": 0,
+     "sutCpuPercent": 180.5,
+     "peakPssKiB": 73856
+    },
+    {
+     "rps": 34071.65,
+     "MBps": 40.29,
+     "p50ms": 3.41,
+     "p99ms": 11.49,
+     "non2xx": 0,
+     "sockErrors": 0,
+     "sutCpuPercent": 180.4,
+     "peakPssKiB": 74900
+    }
+   ]
+  }
+ },
+ "info": "{\"buildDate\":\"2026-11-17T12:17:45Z\",\"commit\":\"1869b4f1ee7cf175f235fbe11eceb2d57a3205fa\",\"go\":\"go1.26.11\",\"version\":\"v0.6.8.1\"}",
+ "idleAfter": {
+  "pssKiB": 72904,
+  "rssKiB": 72912,
+  "cgroupKiB": 58684,
+  "cpuUsec": 238744151,
+  "procs": 1
+ },
+ "startupSec": 0.352,
+ "image": "ghcr.io/wangwanjie/gately:v0.6.8.1",
+ "imageBytes": 228676697
+}

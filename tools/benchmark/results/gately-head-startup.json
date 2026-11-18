@@ -1,0 +1,23 @@
+{
+ "sut": "gately-head",
+ "httpsCheck": "200 1024 2",
+ "idle": {
+  "pssKiB": 46596,
+  "rssKiB": 46604,
+  "cgroupKiB": 20732,
+  "cpuUsec": 104850,
+  "procs": 1
+ },
+ "tests": {},
+ "info": "{\"buildDate\":\"unknown\",\"commit\":\"3d579389\",\"go\":\"go1.26.11\",\"version\":\"v0.6.8.1-3d579389\"}",
+ "idleAfter": {
+  "pssKiB": 46604,
+  "rssKiB": 46612,
+  "cgroupKiB": 20740,
+  "cpuUsec": 144315,
+  "procs": 1
+ },
+ "startupSec": 0.337,
+ "image": "gately:bench-head",
+ "imageBytes": 281600377
+}
