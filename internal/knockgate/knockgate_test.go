@@ -88,3 +88,35 @@ func TestAllowCap(t *testing.T) {
 		t.Fatalf("到期授权清理后应能登记: %v", err)
 	}
 }
+
+// AllowSPA 记录敲门身份：同一地址再次敲门时改记为最近一次的身份，到期时间取较晚的；网页登录的授权保持不变。
+func TestAllowSPAOwner(t *testing.T) {
+	r := New()
+	now := time.Unix(1_800_000_000, 0)
+	r.SetClock(func() time.Time { return now })
+	r.SetRules([]Rule{{Key: "k", Name: "ssh", Enable: true}})
+	a := netip.MustParseAddr("203.0.113.1")
+	if err := r.AllowSPA(a, "k", now.Add(time.Minute), Owner{User: "alice", Cred: "i1:aa"}); err != nil {
+		t.Fatal(err)
+	}
+	if err := r.AllowSPA(a, "k", now.Add(30*time.Second), Owner{User: "bob", Cred: "i2:bb"}); err != nil {
+		t.Fatal(err)
+	}
+	g := r.List()[0]
+	if g.User != "bob" || g.Cred != "i2:bb" || !g.Until.Equal(now.Add(time.Minute)) || g.Source != SourceSPA {
+		t.Fatalf("应改记为 bob 并保留较晚的到期时间: %+v", g)
+	}
+	// 网页登录的授权：敲门只延长到期时间，不改记录
+	b := netip.MustParseAddr("203.0.113.2")
+	if err := r.AllowWeb(netip.PrefixFrom(b, 32), "k", now.Add(time.Minute), Owner{User: "web-user", Site: "l/s"}, b); err != nil {
+		t.Fatal(err)
+	}
+	if err := r.AllowSPA(b, "k", now.Add(time.Hour), Owner{User: "alice"}); err != nil {
+		t.Fatal(err)
+	}
+	for _, g := range r.List() {
+		if g.Addr() == b && (g.Source != SourceWeb || g.User != "web-user" || !g.Until.Equal(now.Add(time.Hour))) {
+			t.Fatalf("网页授权应保持记录、延长到期: %+v", g)
+		}
+	}
+}
