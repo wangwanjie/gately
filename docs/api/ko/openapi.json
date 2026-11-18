@@ -4176,6 +4176,9 @@
           "gap": {
             "type": "integer"
           },
+          "group": {
+            "type": "string"
+          },
           "groupCount": {
             "type": "boolean"
           },
@@ -52150,6 +52153,66 @@
           }
         ],
         "summary": "내비게이션 패널 일괄 사용/사용 안 함",
+        "tags": [
+          "Web 서비스"
+        ],
+        "x-required-scope": "webservice:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/panels-group": {
+      "put": {
+        "description": "필요한 권한: `webservice:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "내비게이션 패널 그룹 일괄 설정",
         "tags": [
           "Web 서비스"
         ],

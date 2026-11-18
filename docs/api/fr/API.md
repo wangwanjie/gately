@@ -438,6 +438,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | PUT | `/api/webservice/panels-order` | `webservice:write` | Réordonner Panneaux de navigation |
 | PUT | `/api/webservice/panels-enable` | `webservice:write` | Activer ou désactiver en lot : Panneaux de navigation |
 | POST | `/api/webservice/panels-delete` | `webservice:write` | Supprimer en lot : Panneaux de navigation |
+| PUT | `/api/webservice/panels-group` | `webservice:write` | Définir le groupe de plusieurs éléments : Panneaux de navigation |
 | POST | `/api/webservice/panels/preview` | `webservice:write` | Aperçu du panneau de navigation |
 | GET | `/api/webservice/panels/icons` | `webservice:read` | Icônes intégrées des panneaux de navigation |
 | POST | `/api/webservice/panels/sunpanel` | `webservice:write` | Convertir la configuration Sun-Panel |
@@ -2749,6 +2750,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `footer` | string |
 | `footerUrl` | string |
 | `gap` | integer |
+| `group` | string |
 | `groupCount` | boolean |
 | `hideAppName` | boolean |
 | `hideFooter` | boolean |

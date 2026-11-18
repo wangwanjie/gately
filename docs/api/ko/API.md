@@ -438,6 +438,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/webservice/panels-order` | `webservice:write` | 내비게이션 패널 순서 변경 |
 | PUT | `/api/webservice/panels-enable` | `webservice:write` | 내비게이션 패널 일괄 사용/사용 안 함 |
 | POST | `/api/webservice/panels-delete` | `webservice:write` | 내비게이션 패널 일괄 삭제 |
+| PUT | `/api/webservice/panels-group` | `webservice:write` | 내비게이션 패널 그룹 일괄 설정 |
 | POST | `/api/webservice/panels/preview` | `webservice:write` | 내비게이션 패널 미리보기 |
 | GET | `/api/webservice/panels/icons` | `webservice:read` | 내비게이션 패널 내장 아이콘 목록 |
 | POST | `/api/webservice/panels/sunpanel` | `webservice:write` | Sun-Panel 설정 변환 |
@@ -2749,6 +2750,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `footer` | string |
 | `footerUrl` | string |
 | `gap` | integer |
+| `group` | string |
 | `groupCount` | boolean |
 | `hideAppName` | boolean |
 | `hideFooter` | boolean |

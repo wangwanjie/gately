@@ -4176,6 +4176,9 @@
           "gap": {
             "type": "integer"
           },
+          "group": {
+            "type": "string"
+          },
           "groupCount": {
             "type": "boolean"
           },
@@ -52150,6 +52153,66 @@
           }
         ],
         "summary": "ナビゲーションパネル の一括有効化・無効化",
+        "tags": [
+          "Web サービス"
+        ],
+        "x-required-scope": "webservice:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/panels-group": {
+      "put": {
+        "description": "必要な権限: `webservice:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "ナビゲーションパネル のグループを一括設定",
         "tags": [
           "Web サービス"
         ],

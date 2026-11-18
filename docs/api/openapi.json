@@ -4176,6 +4176,9 @@
           "gap": {
             "type": "integer"
           },
+          "group": {
+            "type": "string"
+          },
           "groupCount": {
             "type": "boolean"
           },
@@ -52150,6 +52153,66 @@
           }
         ],
         "summary": "批量启用或停用导航面板",
+        "tags": [
+          "Web 服务"
+        ],
+        "x-required-scope": "webservice:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/panels-group": {
+      "put": {
+        "description": "所需权限：`webservice:write`。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "批量设置导航面板分组",
         "tags": [
           "Web 服务"
         ],

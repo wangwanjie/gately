@@ -438,6 +438,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/webservice/panels-order` | `webservice:write` | ナビゲーションパネル の並び順を変更 |
 | PUT | `/api/webservice/panels-enable` | `webservice:write` | ナビゲーションパネル の一括有効化・無効化 |
 | POST | `/api/webservice/panels-delete` | `webservice:write` | ナビゲーションパネル の一括削除 |
+| PUT | `/api/webservice/panels-group` | `webservice:write` | ナビゲーションパネル のグループを一括設定 |
 | POST | `/api/webservice/panels/preview` | `webservice:write` | ナビゲーションパネルのプレビュー |
 | GET | `/api/webservice/panels/icons` | `webservice:read` | ナビゲーションパネルの組み込みアイコン一覧 |
 | POST | `/api/webservice/panels/sunpanel` | `webservice:write` | Sun-Panel 設定の変換 |
@@ -2749,6 +2750,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `footer` | string |
 | `footerUrl` | string |
 | `gap` | integer |
+| `group` | string |
 | `groupCount` | boolean |
 | `hideAppName` | boolean |
 | `hideFooter` | boolean |

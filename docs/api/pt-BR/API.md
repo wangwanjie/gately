@@ -438,6 +438,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | PUT | `/api/webservice/panels-order` | `webservice:write` | Reordenar Painéis de navegação |
 | PUT | `/api/webservice/panels-enable` | `webservice:write` | Ativar ou desativar em lote: Painéis de navegação |
 | POST | `/api/webservice/panels-delete` | `webservice:write` | Excluir em lote: Painéis de navegação |
+| PUT | `/api/webservice/panels-group` | `webservice:write` | Definir o grupo de vários itens: Painéis de navegação |
 | POST | `/api/webservice/panels/preview` | `webservice:write` | Prévia do painel de navegação |
 | GET | `/api/webservice/panels/icons` | `webservice:read` | Ícones embutidos dos painéis de navegação |
 | POST | `/api/webservice/panels/sunpanel` | `webservice:write` | Converter configuração do Sun-Panel |
@@ -2749,6 +2750,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `footer` | string |
 | `footerUrl` | string |
 | `gap` | integer |
+| `group` | string |
 | `groupCount` | boolean |
 | `hideAppName` | boolean |
 | `hideFooter` | boolean |

@@ -70,11 +70,13 @@ func (m *Module) checkPanelRefsLocked(l *Listener) error {
 // registerPanels 注册面板库的增删改查与预览接口。
 func (m *Module) registerPanels(r module.Router) {
 	panels := &crud.Collection[Panel]{
-		Mu:       &m.mu,
-		Items:    &m.cfg.Panels,
-		Save:     m.saveLocked,
-		Key:      func(p *Panel) *string { return &p.Key },
-		Enabled:  func(p *Panel) *bool { return &p.Enable },
+		Mu:      &m.mu,
+		Items:   &m.cfg.Panels,
+		Save:    m.saveLocked,
+		Key:     func(p *Panel) *string { return &p.Key },
+		Enabled: func(p *Panel) *bool { return &p.Enable },
+		// 面板分组只影响管理界面的面板列表，修改分组与顺序不影响访客页面
+		Group:    func(p *Panel) *string { return &p.Group },
 		Validate: func(p *Panel) error { return p.validate() },
 		Check: func(p *Panel) error {
 			for _, x := range m.cfg.Panels {

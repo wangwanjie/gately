@@ -438,6 +438,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | PUT | `/api/webservice/panels-order` | `webservice:write` | Reordenar Paneles de navegación |
 | PUT | `/api/webservice/panels-enable` | `webservice:write` | Activar o desactivar en lote: Paneles de navegación |
 | POST | `/api/webservice/panels-delete` | `webservice:write` | Eliminar en lote: Paneles de navegación |
+| PUT | `/api/webservice/panels-group` | `webservice:write` | Asignar grupo a varios elementos: Paneles de navegación |
 | POST | `/api/webservice/panels/preview` | `webservice:write` | Vista previa del panel de navegación |
 | GET | `/api/webservice/panels/icons` | `webservice:read` | Iconos integrados de los paneles de navegación |
 | POST | `/api/webservice/panels/sunpanel` | `webservice:write` | Convertir configuración de Sun-Panel |
@@ -2749,6 +2750,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `footer` | string |
 | `footerUrl` | string |
 | `gap` | integer |
+| `group` | string |
 | `groupCount` | boolean |
 | `hideAppName` | boolean |
 | `hideFooter` | boolean |

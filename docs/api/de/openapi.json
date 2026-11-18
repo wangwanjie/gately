@@ -4176,6 +4176,9 @@
           "gap": {
             "type": "integer"
           },
+          "group": {
+            "type": "string"
+          },
           "groupCount": {
             "type": "boolean"
           },
@@ -52150,6 +52153,66 @@
           }
         ],
         "summary": "Im Stapel aktivieren oder deaktivieren: Navigationspanels",
+        "tags": [
+          "Web-Dienst"
+        ],
+        "x-required-scope": "webservice:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/panels-group": {
+      "put": {
+        "description": "Erforderliche Berechtigung: `webservice:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/crud.groupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Gruppe mehrerer Einträge festlegen: Navigationspanels",
         "tags": [
           "Web-Dienst"
         ],
