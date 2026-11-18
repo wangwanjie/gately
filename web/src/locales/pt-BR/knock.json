@@ -95,6 +95,22 @@
     "usedBy": "Usada por",
     "webOnly": "Nenhuma (liberado apenas por login web)"
   },
+  "identity": {
+    "title": "Identidades",
+    "help": "Adicione uma identidade para cada pessoa ou dispositivo, para que cada um bata com as próprias chaves: logs, notificações e autorizações atuais mostram quem foi, e desativar, excluir ou trocar as chaves de uma identidade afeta só essa pessoa. As chaves de criptografia e HMAC acima são as chaves compartilhadas. As identidades usam as portas, o algoritmo HMAC e a duração da regra.",
+    "namePlaceholder": "Nome, ex.: alice ou pc-escritorio",
+    "keys": "Chaves",
+    "add": "Adicionar identidade",
+    "needPorts": "Uma regra sem portas não aceita pacotes de batida, então não pode ter identidades",
+    "sharedOff": "Desativar chaves compartilhadas",
+    "sharedOffHelp": "Só as chaves das identidades são aceitas; clientes com as chaves compartilhadas não conseguem mais bater.",
+    "singleAddr": "Um endereço por vez",
+    "singleAddrHelp": "Cada identidade (as chaves compartilhadas contam como uma) mantém autorização para apenas um endereço por vez: após uma batida bem-sucedida de um endereço novo, os outros endereços que ela abriu por batida são revogados na hora, impedindo que várias pessoas usem as mesmas chaves ao mesmo tempo. Conexões já estabelecidas não são afetadas.",
+    "sharedOffTag": "Chaves compartilhadas desativadas",
+    "singleAddrTag": "Um endereço por vez",
+    "disabled": "Desativada",
+    "defaultName": "Membro {n}"
+  },
   "settings": {
     "button": "Configurações globais",
     "title": "Configurações de port knocking",
@@ -137,6 +153,9 @@
     "loading": "Lendo as chaves…",
     "needServer": "Informe o endereço do servidor",
     "needPorts": "Selecione pelo menos uma porta",
-    "needFixed": "Informe o endereço a abrir"
+    "needFixed": "Informe o endereço a abrir",
+    "identity": "Identidade",
+    "sharedKey": "Chaves compartilhadas",
+    "noKeys": "A regra não tem chaves utilizáveis: as chaves compartilhadas estão desativadas e nenhuma identidade está ativada"
   }
 }

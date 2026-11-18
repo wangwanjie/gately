@@ -95,6 +95,22 @@
     "usedBy": "Utilisée par",
     "webOnly": "Aucun (autorisé uniquement par connexion web)"
   },
+  "identity": {
+    "title": "Identités",
+    "help": "Ajoutez une identité par personne ou appareil pour que chacun frappe avec ses propres clés : les journaux, les notifications et les autorisations en cours indiquent qui c'était, et désactiver, supprimer ou changer les clés d'une identité n'affecte que cette personne. Les clés de chiffrement et HMAC ci-dessus sont les clés partagées. Les identités utilisent les ports, l'algorithme HMAC et la durée de la règle.",
+    "namePlaceholder": "Nom, p. ex. alice ou pc-bureau",
+    "keys": "Clés",
+    "add": "Ajouter une identité",
+    "needPorts": "Une règle sans ports n'accepte aucun paquet de frappe et ne peut donc pas avoir d'identités",
+    "sharedOff": "Désactiver les clés partagées",
+    "sharedOffHelp": "Seules les clés des identités sont acceptées ; les clients qui détiennent les clés partagées ne peuvent plus frapper.",
+    "singleAddr": "Une adresse à la fois",
+    "singleAddrHelp": "Chaque identité (les clés partagées comptent pour une) n'autorise qu'une adresse à la fois : après une frappe réussie depuis une nouvelle adresse, les autres adresses qu'elle avait ouvertes par frappe sont révoquées aussitôt, ce qui empêche plusieurs personnes d'utiliser les mêmes clés en même temps. Les connexions établies ne sont pas affectées.",
+    "sharedOffTag": "Clés partagées désactivées",
+    "singleAddrTag": "Une adresse à la fois",
+    "disabled": "Désactivée",
+    "defaultName": "Membre {n}"
+  },
   "settings": {
     "button": "Paramètres globaux",
     "title": "Paramètres du port knocking",
@@ -137,6 +153,9 @@
     "loading": "Lecture des clés…",
     "needServer": "Saisissez l'adresse du serveur",
     "needPorts": "Sélectionnez au moins un port",
-    "needFixed": "Saisissez l'adresse à ouvrir"
+    "needFixed": "Saisissez l'adresse à ouvrir",
+    "identity": "Identité",
+    "sharedKey": "Clés partagées",
+    "noKeys": "La règle n'a aucune clé utilisable : les clés partagées sont désactivées et aucune identité n'est activée"
   }
 }

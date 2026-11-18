@@ -95,6 +95,22 @@
     "usedBy": "Verwendet von",
     "webOnly": "Keine (nur per Web-Anmeldung freigegeben)"
   },
+  "identity": {
+    "title": "Identitäten",
+    "help": "Legen Sie für jede Person oder jedes Gerät eine Identität an, damit jede mit eigenen Schlüsseln anklopft: Protokolle, Benachrichtigungen und aktuelle Freigaben zeigen, wer es war, und das Deaktivieren, Löschen oder Erneuern der Schlüssel einer Identität betrifft nur diese Person. Die Verschlüsselungs- und HMAC-Schlüssel oben sind die gemeinsamen Schlüssel. Identitäten verwenden die Ports, den HMAC-Algorithmus und die Freigabedauer der Regel.",
+    "namePlaceholder": "Name, z. B. alice oder buero-pc",
+    "keys": "Schlüssel",
+    "add": "Identität hinzufügen",
+    "needPorts": "Eine Regel ohne Ports nimmt keine Klopfpakete an und kann daher keine Identitäten haben",
+    "sharedOff": "Gemeinsame Schlüssel deaktivieren",
+    "sharedOffHelp": "Nur die Schlüssel der Identitäten werden angenommen; Clients mit den gemeinsamen Schlüsseln können nicht mehr anklopfen.",
+    "singleAddr": "Nur eine Adresse gleichzeitig",
+    "singleAddrHelp": "Jede Identität (die gemeinsamen Schlüssel zählen als eine) hat gleichzeitig nur für eine Adresse eine Freigabe: Nach erfolgreichem Anklopfen von einer neuen Adresse werden die anderen per Anklopfen freigegebenen Adressen sofort widerrufen, sodass nicht mehrere Personen dieselben Schlüssel gleichzeitig nutzen können. Bestehende Verbindungen sind nicht betroffen.",
+    "sharedOffTag": "Gemeinsame Schlüssel deaktiviert",
+    "singleAddrTag": "Nur eine Adresse",
+    "disabled": "Deaktiviert",
+    "defaultName": "Mitglied {n}"
+  },
   "settings": {
     "button": "Globale Einstellungen",
     "title": "Port-Knocking-Einstellungen",
@@ -137,6 +153,9 @@
     "loading": "Schlüssel werden gelesen …",
     "needServer": "Serveradresse eingeben",
     "needPorts": "Mindestens einen Port auswählen",
-    "needFixed": "Zu öffnende Adresse eingeben"
+    "needFixed": "Zu öffnende Adresse eingeben",
+    "identity": "Identität",
+    "sharedKey": "Gemeinsame Schlüssel",
+    "noKeys": "Die Regel hat keine nutzbaren Schlüssel: Die gemeinsamen Schlüssel sind deaktiviert und keine Identität ist aktiviert"
   }
 }

@@ -71,6 +71,7 @@
               <span class="mono grant-addr">{{ g.addr }}</span>
               <el-tag size="small" effect="plain">{{ g.ruleName || g.rule }}</el-tag>
               <el-tag v-if="g.source === 'web'" size="small" type="success" effect="plain" data-test="grant-web">{{ t('knock.grants.web') }}</el-tag>
+              <el-tag v-else-if="g.identity" size="small" type="primary" effect="plain" class="ident-tag" data-test="grant-identity"><UserRound :size="12" />{{ g.identity }}</el-tag>
             </div>
             <div v-if="g.source === 'web'" class="grant-who muted" data-test="grant-who">{{ t('knock.grants.webWho', { user: g.user || '-', site: g.siteName || g.site || '-' }) }}</div>
             <div class="grant-meta">
@@ -106,6 +107,15 @@
           </Field>
           <Field :label="t('knock.rule.timeout')">{{ timeoutText(r) }}</Field>
           <Field v-if="r.user" :label="t('knock.rule.user')" mono>{{ r.user }}</Field>
+          <Field v-if="r.identities?.length || r.singleAddr" :label="t('knock.identity.title')" wide>
+            <div class="ident-tags" data-test="rule-identities">
+              <el-tag v-if="r.sharedKeyOff" size="small" type="info" effect="plain">{{ t('knock.identity.sharedOffTag') }}</el-tag>
+              <el-tag v-if="r.singleAddr" size="small" type="warning" effect="plain">{{ t('knock.identity.singleAddrTag') }}</el-tag>
+              <el-tag v-for="id in r.identities ?? []" :key="id.id" size="small" :type="id.enable ? 'primary' : 'info'" effect="plain" :class="{ 'ident-off': !id.enable }" :title="identityTitle(r, id)">
+                {{ id.name }}<span class="ident-count">{{ (id.id && r.identityStats?.[id.id]?.knocks) || 0 }}</span>
+              </el-tag>
+            </div>
+          </Field>
           <Field :label="t('knock.rule.knocks')">
             {{ t('knock.rule.knockStats', { ok: r.stats.knocks, bad: r.stats.rejected }) }}
             <div v-if="r.stats.lastAt" class="muted">{{ t('knock.rule.lastKnock', { addr: r.stats.lastAddr, time: formatTime(r.stats.lastAt) }) }}</div>
@@ -184,6 +194,44 @@
           <el-switch v-model="editing.requireAddr" />
           <div class="form-help">{{ t('knock.rule.requireAddrHelp') }}</div>
         </el-form-item>
+        <!-- 身份：每人一份密钥，敲门时据此识别是谁，可单独停用、删除或更换 -->
+        <el-form-item :label="t('knock.identity.title')">
+          <div class="identities">
+            <div class="form-help">{{ t('knock.identity.help') }}</div>
+            <div v-for="(id, i) in editing.identities ?? []" :key="uidOf(id)" class="identity" data-test="identity-row">
+              <div class="identity-head">
+                <el-switch v-model="id.enable" :aria-label="t('common.toggleItem', { name: id.name || '-' })" />
+                <el-input v-model="id.name" class="identity-name" :placeholder="t('knock.identity.namePlaceholder')" data-test="identity-name" />
+                <el-button text size="small" :icon="KeyRound" :type="openIdentities.has(id) ? 'primary' : undefined" data-test="identity-keys" @click="toggleIdentity(id)">{{ t('knock.identity.keys') }}</el-button>
+                <el-button text size="small" type="danger" :icon="Trash2" :aria-label="t('common.delete')" data-test="identity-remove" @click="removeIdentity(i)" />
+              </div>
+              <div v-if="openIdentities.has(id)" class="identity-keys">
+                <div class="key-label">{{ t('knock.rule.encKey') }}</div>
+                <div class="key-row">
+                  <SecretInput v-model="id.encKey" class="mono" autocomplete="off" :placeholder="t('knock.rule.keyAuto')" :reveal="identitySecret(id, 'encKey')" />
+                  <el-button :icon="RefreshCw" @click="id.encKey = randomKey(32)">{{ t('knock.rule.generate') }}</el-button>
+                </div>
+                <div class="key-label">{{ t('knock.rule.hmacKey') }}</div>
+                <div class="key-row">
+                  <SecretInput v-model="id.hmacKey" class="mono" autocomplete="off" :placeholder="t('knock.rule.keyAuto')" :reveal="identitySecret(id, 'hmacKey')" />
+                  <el-button :icon="RefreshCw" @click="id.hmacKey = randomKey(64)">{{ t('knock.rule.generate') }}</el-button>
+                </div>
+                <div class="key-label">{{ t('common.remark') }}</div>
+                <el-input v-model="id.remark" />
+              </div>
+            </div>
+            <el-button size="small" :icon="UserPlus" :disabled="!editing.ports.length || (editing.identities?.length ?? 0) >= maxIdentities" data-test="identity-add" @click="addIdentity">{{ t('knock.identity.add') }}</el-button>
+            <div v-if="!editing.ports.length" class="form-help">{{ t('knock.identity.needPorts') }}</div>
+          </div>
+        </el-form-item>
+        <el-form-item v-if="editing.identities?.length" :label="t('knock.identity.sharedOff')">
+          <el-switch v-model="editing.sharedKeyOff" data-test="shared-off" />
+          <div class="form-help">{{ t('knock.identity.sharedOffHelp') }}</div>
+        </el-form-item>
+        <el-form-item :label="t('knock.identity.singleAddr')">
+          <el-switch v-model="editing.singleAddr" data-test="single-addr" />
+          <div class="form-help">{{ t('knock.identity.singleAddrHelp') }}</div>
+        </el-form-item>
         <el-form-item :label="t('common.remark')"><el-input v-model="editing.remark" /></el-form-item>
       </el-form>
       <template #footer>
@@ -226,6 +274,12 @@
     <!-- 客户端配置：生成 fwknop 命令与 .fwknoprc 配置段 -->
     <el-dialog v-model="clientVisible" :title="t('knock.client.title', { name: clientRule?.name })" width="680px" :fullscreen="isMobile">
       <el-form label-width="120px" :label-position="labelPosition">
+        <!-- 规则有身份时按身份生成：每人拿到的只有自己的密钥 -->
+        <el-form-item v-if="clientIdentities.length > 1" :label="t('knock.client.identity')">
+          <el-select v-model="client.identity" class="w-200" data-test="client-identity" @change="loadClientKeys">
+            <el-option v-for="o in clientIdentities" :key="o.value" :label="o.label" :value="o.value" />
+          </el-select>
+        </el-form-item>
         <el-form-item :label="t('knock.client.server')">
           <el-input v-model="client.server" class="mono" :placeholder="t('knock.client.serverPlaceholder')" />
         </el-form-item>
@@ -281,12 +335,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref, shallowReactive } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
-import { Activity, Copy, CopyPlus, FileCode, KeyRound, Lock, Pencil, Plus, RefreshCw, Settings2, Terminal, Trash2, Unlock } from 'lucide-vue-next'
+import { Activity, Copy, CopyPlus, FileCode, KeyRound, Lock, Pencil, Plus, RefreshCw, Settings2, Terminal, Trash2, Unlock, UserPlus, UserRound } from 'lucide-vue-next'
 import { api, errorText } from '../api'
-import { fetchSecret, secretOf } from '../secrets'
+import { secretOf } from '../secrets'
 import SecretInput from '../components/SecretInput.vue'
 import PageHeader from '../components/PageHeader.vue'
 import EntityCard from '../components/EntityCard.vue'
@@ -325,12 +379,35 @@ interface Rule {
   maxTimeout: number
   user: string
   requireAddr: boolean
+  // identities 为规则的身份（每人一份密钥）；sharedKeyOff 停用规则自身的共享密钥；singleAddr 每个身份同时只放行一个地址
+  identities?: Identity[]
+  sharedKeyOff?: boolean
+  singleAddr?: boolean
   remark: string
+}
+
+interface Identity {
+  // id 为身份在规则内的标识，新身份留空由服务端分配
+  id?: string
+  name: string
+  enable: boolean
+  encKey: string
+  hmacKey: string
+  remark?: string
+}
+
+interface KnockStats {
+  knocks: number
+  rejected: number
+  lastAt?: string
+  lastAddr?: string
 }
 
 interface RuleView extends Rule {
   key: string
-  stats: { knocks: number; rejected: number; lastAt?: string; lastAddr?: string }
+  stats: KnockStats
+  // identityStats 为各身份的统计：身份 ID -> 统计
+  identityStats?: Record<string, KnockStats>
   // usedBy 为引用该规则的端口转发、协议分流、STUN 规则与路由
   usedBy: string[]
 }
@@ -352,6 +429,8 @@ interface Grant {
   ports: string[]
   // source 为授权来源：spa（敲门报文）、web（在 Web 站点的放行入口登录）；addr 为网段时带前缀长度
   source?: string
+  // identity 为敲门报文授权的身份名称（共享密钥为空）
+  identity?: string
   // user、siteName 为网页登录放行的用户与入口站点
   user?: string
   site?: string
@@ -398,7 +477,7 @@ const gl = useGroupedList<RuleView>({
   items: () => rules.value,
   base: '/api/knock/rules',
   reload: load,
-  matches: (r, q) => [r.name, r.group ?? '', r.remark, r.user, ...r.ports].join('\n').toLowerCase().includes(q),
+  matches: (r, q) => [r.name, r.group ?? '', r.remark, r.user, ...r.ports, ...(r.identities ?? []).map((i) => i.name)].join('\n').toLowerCase().includes(q),
 })
 const hmacTypes = ['sha256', 'sha384', 'sha512']
 const saving = ref(false)
@@ -426,7 +505,14 @@ const rulesText = ref('')
 const clientVisible = ref(false)
 const clientRule = ref<RuleView>()
 const clientKeys = ref<{ encKey: string; hmacKey: string }>()
-const client = reactive({ server: '', via: 'udp', tcpPort: 443, addr: 'resolve', fixed: '', ports: [] as string[] })
+// identity 为生成配置所用的身份 ID，空串为共享密钥
+const client = reactive({ server: '', via: 'udp', tcpPort: 443, addr: 'resolve', fixed: '', ports: [] as string[], identity: '' })
+// maxIdentities 与后端每条规则的身份上限一致
+const maxIdentities = 64
+// openIdentities 为编辑框中展开了密钥的身份；uidOf 为身份草稿分配列表 key（新身份还没有 ID，不能用 id）
+const openIdentities = shallowReactive(new Set<Identity>())
+const uids = new WeakMap<Identity, number>()
+let nextUid = 0
 
 // 每 5 秒刷新状态与授权；剩余时间每秒更新
 usePolling(load, 5000)
@@ -447,9 +533,66 @@ function empty(): Rule {
     maxTimeout: 300,
     user: '',
     requireAddr: false,
+    identities: [],
+    sharedKeyOff: false,
+    singleAddr: false,
     remark: '',
     group: '',
   }
+}
+
+function uidOf(id: Identity) {
+  let n = uids.get(id)
+  if (n === undefined) {
+    n = ++nextUid
+    uids.set(id, n)
+  }
+  return n
+}
+
+function addIdentity() {
+  const list = (editing.value.identities ??= [])
+  // 默认名称“成员 N”：取不重复的最小序号，用户再改成真实的人名或设备名
+  const names = new Set(list.map((x) => x.name.trim().toLowerCase()))
+  let n = list.length + 1
+  while (names.has(t('knock.identity.defaultName', { n }).toLowerCase())) {
+    n++
+  }
+  list.push({ name: t('knock.identity.defaultName', { n }), enable: true, encKey: '', hmacKey: '', remark: '' })
+}
+
+function removeIdentity(i: number) {
+  const list = editing.value.identities ?? []
+  const [id] = list.splice(i, 1)
+  if (id) {
+    openIdentities.delete(id)
+  }
+}
+
+function toggleIdentity(id: Identity) {
+  if (openIdentities.has(id)) {
+    openIdentities.delete(id)
+  } else {
+    openIdentities.add(id)
+  }
+}
+
+// identitySecret 返回已保存身份的密钥明文读取函数；新身份与复制中的规则没有明文可读
+function identitySecret(id: Identity, field: 'encKey' | 'hmacKey') {
+  return secretOf(editing.value.key && !copyFrom.value && id.id && `/api/knock/rules/${editing.value.key}/secrets`, `identities.${id.id}.${field}`)
+}
+
+// identityTitle 为卡片上身份标签的悬停说明：敲门次数与最近一次
+function identityTitle(r: RuleView, id: Identity) {
+  const st = id.id ? r.identityStats?.[id.id] : undefined
+  const parts = [t('knock.rule.knockStats', { ok: st?.knocks ?? 0, bad: st?.rejected ?? 0 })]
+  if (st?.lastAt) {
+    parts.push(t('knock.rule.lastKnock', { addr: st.lastAddr, time: formatTime(st.lastAt) }))
+  }
+  if (!id.enable) {
+    parts.unshift(t('knock.identity.disabled'))
+  }
+  return parts.join('\n')
 }
 
 async function load() {
@@ -549,10 +692,12 @@ function randomKey(n: number) {
 
 function openEditor(r?: RuleView, duplicate = false) {
   copyFrom.value = null
+  openIdentities.clear()
   if (!r) {
     editing.value = empty()
   } else {
-    const draft: Rule = JSON.parse(JSON.stringify({ ...r, stats: undefined, usedBy: undefined }))
+    const draft: Rule = JSON.parse(JSON.stringify({ ...r, stats: undefined, usedBy: undefined, identityStats: undefined }))
+    draft.identities ??= []
     if (duplicate) {
       // 复制的规则留空密钥，由服务端生成新密钥：共用密钥时敲门只会匹配到前一条规则
       copyFrom.value = { key: r.key, name: r.name }
@@ -560,6 +705,11 @@ function openEditor(r?: RuleView, duplicate = false) {
       draft.name = uniqueName(r.name, rules.value.map((x) => x.name))
       draft.encKey = ''
       draft.hmacKey = ''
+      // 复制的身份同样由服务端生成新密钥：各人的密钥只属于原规则
+      for (const id of draft.identities ?? []) {
+        id.encKey = ''
+        id.hmacKey = ''
+      }
     }
     editing.value = draft
   }
@@ -654,25 +804,69 @@ async function openClient(r: RuleView) {
   if (r.requireAddr && client.addr === 'source') {
     client.addr = 'resolve'
   }
+  // 默认选第一个可用的密钥：共享密钥停用时为第一个启用的身份
+  client.identity = clientOptions(r)[0]?.value ?? ''
   clientVisible.value = true
+  await loadClientKeys()
+}
+
+// clientOptions 返回规则可生成客户端配置的密钥：未停用的共享密钥与启用的身份
+function clientOptions(r?: RuleView) {
+  if (!r) {
+    return []
+  }
+  const out: { value: string; label: string }[] = []
+  if (!r.sharedKeyOff) {
+    out.push({ value: '', label: t('knock.client.sharedKey') })
+  }
+  for (const id of r.identities ?? []) {
+    if (id.enable && id.id) {
+      out.push({ value: id.id, label: id.name })
+    }
+  }
+  return out
+}
+
+const clientIdentities = computed(() => clientOptions(clientRule.value))
+
+// loadClientKeys 读取所选身份（或共享密钥）的密钥明文
+async function loadClientKeys() {
+  const r = clientRule.value
+  if (!r) {
+    return
+  }
+  clientKeys.value = undefined
+  const want = client.identity
+  const prefix = want ? `identities.${want}.` : ''
   try {
-    const [enc, mac] = await Promise.all([
-      fetchSecret(`/api/knock/rules/${r.key}/secrets`, 'encKey'),
-      fetchSecret(`/api/knock/rules/${r.key}/secrets`, 'hmacKey'),
-    ])
-    clientKeys.value = { encKey: enc ?? '', hmacKey: mac ?? '' }
+    const m = await api.get<Record<string, string>>(`/api/knock/rules/${r.key}/secrets`)
+    // 等待期间切换了身份时丢弃旧结果
+    if (client.identity !== want || clientRule.value !== r) {
+      return
+    }
+    clientKeys.value = { encKey: m?.[prefix + 'encKey'] ?? '', hmacKey: m?.[prefix + 'hmacKey'] ?? '' }
   } catch (e) {
     ElMessage.error((e as Error).message)
   }
 }
 
 // stanzaName 为 .fwknoprc 中的配置段名称，只保留字母数字与连字符
+// 选了身份时加上身份名称，同一台电脑保存多个身份的配置段时不会重名
 const stanzaName = computed(() => {
-  const base = (clientRule.value?.name ?? '').toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/^-+|-+$/g, '')
-  return 'gately-' + (base || clientRule.value?.key || 'knock')
+  const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/^-+|-+$/g, '')
+  const r = clientRule.value
+  let name = 'gately-' + (slug(r?.name ?? '') || r?.key || 'knock')
+  const id = r?.identities?.find((x) => x.id === client.identity && client.identity)
+  if (id) {
+    name += '-' + (slug(id.name) || id.id)
+  }
+  return name
 })
 
 const clientError = computed(() => {
+  if (!clientIdentities.value.length) {
+    return t('knock.client.noKeys')
+  }
   if (!clientKeys.value) {
     return t('knock.client.loading')
   }
@@ -859,6 +1053,62 @@ onMounted(load)
 }
 .used-by {
   word-break: break-all;
+}
+.ident-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.ident-count {
+  margin-left: 6px;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.7;
+}
+.ident-off {
+  text-decoration: line-through;
+}
+.ident-tag :deep(.el-tag__content) {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+.identities {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+}
+.identity {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--g-border);
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+.identity-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.identity-head .el-button + .el-button {
+  margin-left: 0;
+}
+.identity-name {
+  flex: 1;
+  min-width: 0;
+}
+.identity-keys {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+.key-label {
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
+  line-height: 1.4;
 }
 .client-btn {
   margin-left: auto;

@@ -95,6 +95,22 @@
     "usedBy": "Used by",
     "webOnly": "None (released by web login only)"
   },
+  "identity": {
+    "title": "Identities",
+    "help": "Add an identity for each person or device so each knocks with their own keys: logs, notifications and current grants show who it was, and disabling, deleting or rotating one identity affects only that person. The encryption and HMAC keys above are the shared keys. Identities use the rule's ports, HMAC algorithm and grant duration.",
+    "namePlaceholder": "Name, e.g. alice or office-pc",
+    "keys": "Keys",
+    "add": "Add identity",
+    "needPorts": "A rule without ports accepts no knock packets, so it cannot have identities",
+    "sharedOff": "Disable shared keys",
+    "sharedOffHelp": "Only the identities' keys are accepted; clients holding the shared keys can no longer knock.",
+    "singleAddr": "One address at a time",
+    "singleAddrHelp": "Each identity (the shared keys count as one) holds a grant for only one address at a time: after a successful knock from a new address, the other addresses it opened by knocking are revoked at once, so one set of keys cannot be used by several people at the same time. Established connections are not affected.",
+    "sharedOffTag": "Shared keys disabled",
+    "singleAddrTag": "One address at a time",
+    "disabled": "Disabled",
+    "defaultName": "Member {n}"
+  },
   "settings": {
     "button": "Global settings",
     "title": "Port Knocking settings",
@@ -137,6 +153,9 @@
     "loading": "Reading keys…",
     "needServer": "Enter the server address",
     "needPorts": "Select at least one port",
-    "needFixed": "Enter the address to open"
+    "needFixed": "Enter the address to open",
+    "identity": "Identity",
+    "sharedKey": "Shared keys",
+    "noKeys": "The rule has no usable keys: the shared keys are disabled and no identity is enabled"
   }
 }

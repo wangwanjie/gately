@@ -95,6 +95,22 @@
     "usedBy": "Usada por",
     "webOnly": "Ninguno (solo se permite por inicio de sesión web)"
   },
+  "identity": {
+    "title": "Identidades",
+    "help": "Añade una identidad por persona o dispositivo para que cada uno toque con sus propias claves: los registros, las notificaciones y las autorizaciones actuales muestran quién fue, y desactivar, eliminar o cambiar las claves de una identidad solo afecta a esa persona. Las claves de cifrado y HMAC de arriba son las claves compartidas. Las identidades usan los puertos, el algoritmo HMAC y la duración de la regla.",
+    "namePlaceholder": "Nombre, p. ej. alice o pc-oficina",
+    "keys": "Claves",
+    "add": "Añadir identidad",
+    "needPorts": "Una regla sin puertos no acepta paquetes de toque, así que no puede tener identidades",
+    "sharedOff": "Desactivar claves compartidas",
+    "sharedOffHelp": "Solo se aceptan las claves de las identidades; los clientes con las claves compartidas ya no pueden tocar.",
+    "singleAddr": "Una dirección a la vez",
+    "singleAddrHelp": "Cada identidad (las claves compartidas cuentan como una) solo mantiene autorizada una dirección a la vez: tras un toque correcto desde una dirección nueva, las demás direcciones que abrió tocando se revocan de inmediato, de modo que varias personas no pueden usar las mismas claves a la vez. Las conexiones establecidas no se ven afectadas.",
+    "sharedOffTag": "Claves compartidas desactivadas",
+    "singleAddrTag": "Una dirección a la vez",
+    "disabled": "Desactivada",
+    "defaultName": "Miembro {n}"
+  },
   "settings": {
     "button": "Ajustes globales",
     "title": "Ajustes de port knocking",
@@ -137,6 +153,9 @@
     "loading": "Leyendo claves…",
     "needServer": "Introduce la dirección del servidor",
     "needPorts": "Selecciona al menos un puerto",
-    "needFixed": "Introduce la dirección a abrir"
+    "needFixed": "Introduce la dirección a abrir",
+    "identity": "Identidad",
+    "sharedKey": "Claves compartidas",
+    "noKeys": "La regla no tiene claves utilizables: las claves compartidas están desactivadas y no hay ninguna identidad activada"
   }
 }
