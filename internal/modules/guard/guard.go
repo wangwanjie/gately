@@ -317,6 +317,10 @@ func (m *Module) Init(env module.Env) error {
 	if m.cfg.Jails == nil {
 		m.cfg.Jails = []Jail{}
 	}
+	// 加载后补全留空参数的默认值；只改内存，不回写文件，下次保存时随其他改动一并写入
+	for i := range m.cfg.Jails {
+		m.cfg.Jails[i].fillDefaults()
+	}
 	s := m.cfg.Settings
 	m.settings.Store(&s)
 	m.fw = newFirewall(m.logs.Logger("防火墙"))
