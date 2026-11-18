@@ -14,7 +14,7 @@ func TestMinuteRingChunks(t *testing.T) {
 	var r minuteRing[minuteBucket]
 	base := int64(testHourMin) // 某个整点小时的第 0 分钟
 	r.slot(base + 5).req = 3
-	r.slot(base + 5).req++
+	r.slot(base+5).req++
 	if got := r.at(base + 5); got == nil || got.req != 4 {
 		t.Fatalf("同一分钟应累加: %+v", got)
 	}
@@ -74,7 +74,7 @@ func TestMinuteRingExpire(t *testing.T) {
 	var q minuteRing[minuteBucket]
 	q.slot(base + 10).req = 9
 	q.lastHour = 0 // 模拟中间没有写入、也没有清理
-	q.slot(base + ringHours*60 + 10).req++
+	q.slot(base+ringHours*60+10).req++
 	if got := q.at(base + ringHours*60 + 10); got == nil || got.req != 1 {
 		t.Fatalf("复用的块应清零: %+v", got)
 	}
