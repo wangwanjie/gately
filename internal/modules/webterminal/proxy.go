@@ -29,20 +29,13 @@ type Proxy struct {
 	Password string `json:"password"`
 }
 
-// validate 校验并补全默认值；未启用时不做任何检查，保留用户已填内容。
-func (p *Proxy) validate() error {
+// fillDefaults 为已启用代理中留空（零值）的类型与端口补默认值，不做校验、不会失败；未启用时不改动。
+func (p *Proxy) fillDefaults() {
 	if !p.Enabled {
-		return nil
+		return
 	}
-	switch p.Type {
-	case "", ProxySOCKS5:
+	if p.Type == "" {
 		p.Type = ProxySOCKS5
-	case ProxyHTTP:
-	default:
-		return fmt.Errorf("未知的代理类型 %q", p.Type)
-	}
-	if p.Host == "" {
-		return errors.New("请填写代理地址")
 	}
 	if p.Port == 0 {
 		if p.Type == ProxyHTTP {
@@ -50,6 +43,22 @@ func (p *Proxy) validate() error {
 		} else {
 			p.Port = 1080
 		}
+	}
+}
+
+// validate 校验并补全默认值；未启用时不做任何检查，保留用户已填内容。
+func (p *Proxy) validate() error {
+	if !p.Enabled {
+		return nil
+	}
+	p.fillDefaults()
+	switch p.Type {
+	case ProxySOCKS5, ProxyHTTP:
+	default:
+		return fmt.Errorf("未知的代理类型 %q", p.Type)
+	}
+	if p.Host == "" {
+		return errors.New("请填写代理地址")
 	}
 	if p.Port < 1 || p.Port > 65535 {
 		return errors.New("代理端口无效")
