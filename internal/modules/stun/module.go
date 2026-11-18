@@ -4,6 +4,7 @@ package stun
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"reflect"
 	"sync"
@@ -54,6 +55,10 @@ func (m *Module) Init(env module.Env) error {
 		return err
 	}
 	m.cfg.Settings.normalize()
+	// 加载后补全默认值；只改内存，不回写文件，下次保存时随其他改动一并写入
+	for _, msg := range normalizeLoaded(m.cfg.Rules) {
+		m.logs.Add(logbuf.LevelError, "", "规则配置无效，已跳过（在界面中修改并保存后恢复）: "+msg)
+	}
 	// 模块启动前先登记一次，Web 服务的 IP 列表页也能看到引用
 	m.publishIPSetUsersLocked()
 	return nil
@@ -87,7 +92,8 @@ func (m *Module) Stop() error {
 }
 
 func (m *Module) startLocked(rule Rule) {
-	if m.ctx == nil {
+	// 加载时校验失败的规则不启动，各启动路径（模块启动、修改、重启、全局设置、导入）都经过这里
+	if m.ctx == nil || rule.loadErr != "" {
 		return
 	}
 	m.stopLocked(rule.Key)
@@ -175,7 +181,14 @@ func (m *Module) Routes(r module.Router) {
 			return r.Validate()
 		},
 		Check: func(r *Rule) error { return r.Access.CheckSets() },
-		View:  m.viewLocked,
+		// 加载时校验失败的规则需先修改保存，直接启用会以缺省零值运行
+		CheckEnable: func(r *Rule) error {
+			if r.loadErr != "" {
+				return fmt.Errorf("规则配置无效，请编辑修正后保存: %s", r.loadErr)
+			}
+			return nil
+		},
+		View: m.viewLocked,
 		Changed: func(key string) {
 			m.publishIPSetUsersLocked()
 			m.applyLocked(key)
