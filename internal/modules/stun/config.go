@@ -1,6 +1,7 @@
 package stun
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net"
@@ -94,6 +95,10 @@ type Rule struct {
 	// 修改名单时不重启穿透，公网端口保持不变
 	iplist.Access
 	Remark string `json:"remark"`
+	// loadErr 记录从配置文件加载时的校验错误（不落盘）。非空的规则不会启动，
+	// 避免手工编辑的配置缺字段时以零值运行（如心跳间隔为 0 时 time.NewTicker 直接 panic）；
+	// 通过界面或 API 保存规则时重新校验并清空。
+	loadErr string
 }
 
 // Settings 是模块级配置。
@@ -157,6 +162,36 @@ func cleanList(in []string) []string {
 	return out
 }
 
+// normalizeLoaded 对从配置文件加载的规则逐条执行 Validate，补全默认值并规范化字段，
+// 返回校验失败的规则说明。保存过的配置已经过校验，重复执行不改变合法值；
+// 手工编辑或外部工具生成的配置可能缺字段（例如没有 heartbeatInterval），在这里补上。
+// 校验失败的规则保持原样并记下 loadErr，不让一条坏规则拖累整个模块。
+func normalizeLoaded(rules []Rule) []string {
+	var bad []string
+	for i := range rules {
+		// Validate 会就地改写服务器列表、目标地址等切片，先经 JSON 深拷贝一份，失败时原规则不被改成半成品
+		var cand Rule
+		raw, err := json.Marshal(rules[i])
+		if err == nil {
+			err = json.Unmarshal(raw, &cand)
+		}
+		if err == nil {
+			err = cand.Validate()
+		}
+		if err != nil {
+			rules[i].loadErr = err.Error()
+			name := rules[i].Name
+			if name == "" {
+				name = rules[i].Key
+			}
+			bad = append(bad, fmt.Sprintf("%s: %v", name, err))
+			continue
+		}
+		rules[i] = cand
+	}
+	return bad
+}
+
 // withDefaultPort 为缺少端口的地址补上默认端口。
 func withDefaultPort(addr, port string) string {
 	if _, _, err := net.SplitHostPort(addr); err == nil {
@@ -167,6 +202,7 @@ func withDefaultPort(addr, port string) string {
 
 // Validate 校验并补全默认值。
 func (r *Rule) Validate() error {
+	r.loadErr = ""
 	if err := crud.NormalizeGroup(&r.Group); err != nil {
 		return err
 	}
