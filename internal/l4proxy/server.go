@@ -232,13 +232,16 @@ func (s *Server) ServeTCP(ctx context.Context, network, addr string, limits Limi
 				time.Sleep(100 * time.Millisecond)
 				continue
 			}
-			release, ok := perSrc.acquire(remoteAddrOf(conn))
+			src, srcOK := remoteAddrOf(conn)
+			release, ok := perSrc.acquire(src, srcOK)
 			if !ok {
 				if warn, more := perSrc.shouldWarn(time.Now()); warn {
+					// 写明按哪个来源（IPv6 为 /64）、哪个上限拒绝，并提示处理办法：公网中转或前置代理会把所有访客汇聚成同一个来源
+					key := sourceKey(src.Unmap())
 					if more > 0 {
-						warnf("%s 单个来源超过最大连接数 %d，拒绝 %s（此前 10 秒内另有 %d 个连接因此被拒绝）", addr, limits.PerSource, conn.RemoteAddr(), more)
+						warnf("%s 来源 %s 的并发连接数已达单来源上限 %d，拒绝 %s（此前 10 秒内另有 %d 个连接因此被拒绝）。若它是中转或前置代理，请调高规则的单来源最大连接数，或把它加入全局设置的不受单来源限制的来源", addr, key, limits.PerSource, conn.RemoteAddr(), more)
 					} else {
-						warnf("%s 单个来源超过最大连接数 %d，拒绝 %s", addr, limits.PerSource, conn.RemoteAddr())
+						warnf("%s 来源 %s 的并发连接数已达单来源上限 %d，拒绝 %s。若它是中转或前置代理，请调高规则的单来源最大连接数，或把它加入全局设置的不受单来源限制的来源", addr, key, limits.PerSource, conn.RemoteAddr())
 					}
 				}
 				conn.Close()
