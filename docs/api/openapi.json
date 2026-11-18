@@ -4607,9 +4607,6 @@
       },
       "webservice.Settings": {
         "properties": {
-          "adminPassEntry": {
-            "type": "string"
-          },
           "authMarkerKey": {
             "type": "string"
           },

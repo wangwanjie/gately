@@ -2950,7 +2950,6 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 
 | Field | Type |
 | --- | --- |
-| `adminPassEntry` | string |
 | `authMarkerKey` | string |
 | `authSecret` | string |
 | `authUsers` | Array of `webservice.AuthUser` |
