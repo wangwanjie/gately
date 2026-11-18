@@ -874,6 +874,8 @@
   "任务正在执行": "La tarea se está ejecutando",
   "任务至少保留一条记录，如需全部删除请删除任务": "Una tarea necesita al menos un registro. Para quitarlos todos, elimine la tarea",
   "任务详情与输出": "Detalles y salida de la tarea",
+  "任务配置无效，已跳过（在界面中修改并保存后恢复）: ": "Configuración de tarea no válida, omitida (edítala y guárdala para restaurarla): ",
+  "任务配置无效，请编辑修正后保存: %s": "Configuración de tarea no válida, edítala y guárdala: %s",
   "任意": "Cualquiera",
   "任意有效令牌": "Cualquier token válido",
   "会话不存在或已结束": "La sesión no existe o ha finalizado",
