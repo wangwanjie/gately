@@ -156,21 +156,25 @@ func (l *listenerRunner) route(host string) *siteHandler {
 	return t.deflt
 }
 
-// misdirected 判断 HTTPS 请求是否被浏览器复用到了不属于它的连接上：Host 与 TLS SNI 不同，且本监听没有配置该域名的站点。
+// misdirected 判断 HTTPS 请求是否被浏览器复用到了不属于它的连接上：Host 与 TLS SNI 不同，本监听没有配置该域名的站点，
+// 而 SNI 是本监听明确配置的站点域名。
 // 多个域名解析到同一 IP 且证书都覆盖（如通配证书）时，浏览器会把新域名的请求放进已打开的 HTTP/2 连接（连接合并）；
 // 前面有按 SNI 分流的协议分流或另一台网关时，这条连接实际通往别的 Gately，域名在这里没有站点。
 // 此时应答 421 Misdirected Request，浏览器会为该域名新建连接重试，而不是显示「站点不存在」或交给默认站点。
-// SNI 为空（用 IP 访问）或 Host 与 SNI 相同时不算误投，照常处理。只有 HTTP/2、HTTP/3 存在连接合并，
-// HTTP/1.1 不判断，以免影响把 SNI 设成后端地址、Host 设成原域名再转来的反向代理（常见为 HTTP/1.1）。
+// 浏览器只会把请求合并进为某个已访问域名建立的连接，SNI 必是本机站点的域名；SNI 不是本机站点域名时，
+// 是把 SNI 设成后端地址、Host 保留原域名再转来的反向代理（如另一台 Gately 以 HTTP/2 连 https://home.lan:5443），
+// 这类请求照常路由、交给默认站点，不能回 421（反向代理收到 421 不会重试，访客会一直打不开）。
+// SNI 为空（用 IP 访问）或 Host 与 SNI 相同时不算误投。只有 HTTP/2、HTTP/3 存在连接合并，HTTP/1.1 不判断。
 func (l *listenerRunner) misdirected(r *http.Request) bool {
 	if r.ProtoMajor < 2 || r.TLS == nil || r.TLS.ServerName == "" {
 		return false
 	}
-	host := hostOnly(r.Host)
-	if host == hostOnly(r.TLS.ServerName) {
+	host, sni := hostOnly(r.Host), hostOnly(r.TLS.ServerName)
+	if host == sni {
 		return false
 	}
-	return l.current().match(host) == nil
+	t := l.current()
+	return t.match(host) == nil && t.match(sni) != nil
 }
 
 // match 返回明确配置了该域名（已规范化）的站点，没有时为 nil，不回落到默认站点。
