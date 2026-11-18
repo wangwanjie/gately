@@ -580,7 +580,7 @@
             <el-form-item v-if="site.webAuth || site.basicAuth" :label="t('web.adminPass')" data-test="admin-pass">
               <el-checkbox v-model="site.adminPass">{{ t('web.adminPassLabel') }}</el-checkbox>
               <div class="form-help">{{ t('web.adminPassHelp') }}</div>
-              <el-alert v-if="site.adminPass && !adminPassReady" type="warning" :closable="false" show-icon style="margin-top: 8px" data-test="admin-pass-sso-warn" :title="t('web.adminPassNoSSO')" />
+              <el-alert v-if="site.adminPass && !ssoDomainSet" type="warning" :closable="false" show-icon style="margin-top: 8px" data-test="admin-pass-sso-warn" :title="t('web.adminPassNoSSO')" />
             </el-form-item>
             <!-- 信任已认证用户（#81）：只认 Gately 自己的基本认证与网页认证，转发认证由外部服务判断身份，不显示 -->
             <el-form-item v-if="site.webAuth || site.basicAuth" :label="t('web.trustAuthUsers')" data-test="trust-auth-users">
@@ -663,12 +663,6 @@
           <div class="form-help">{{ t('web.realPortHeaderHelp') }}</div>
         </el-form-item>
         <!-- 双层 Gately（#81）：外层只做 WAF、内层负责登录时，两端填写相同的密钥，内层签发认证标记、外层校验放行 -->
-        <!-- 后台登录免认证的跨父域握手：站点与后台不在同一单点登录域下时，经后台入口取得凭据 -->
-        <el-divider content-position="left">{{ t('web.adminPassDivider') }}</el-divider>
-        <el-form-item :label="t('web.adminPassEntry')" data-test="admin-pass-entry">
-          <el-input v-model="settings.adminPassEntry" :placeholder="t('web.adminPassEntryPh')" />
-          <div class="form-help">{{ t('web.adminPassEntryHelp') }}</div>
-        </el-form-item>
         <el-divider content-position="left">{{ t('web.authMarkerDivider') }}</el-divider>
         <el-form-item :label="t('web.authMarkerKey')" data-test="auth-marker-key">
           <div class="marker-key">
@@ -1089,14 +1083,12 @@ interface WebSettings {
   oidc: OIDCSettings
   // selfServicePassword 为是否允许共享用户自助修改密码
   selfServicePassword: boolean
-  // adminPassEntry 为 Gately 管理后台的外部入口（http(s)://域名[:端口]），站点与后台不在同一单点登录域下时用于后台登录免认证的跳转握手
-  adminPassEntry?: string
   // authMarkerKey 为认证标记密钥（双层 Gately 两端相同），已保存时为脱敏占位符
   authMarkerKey?: string
 }
 const settings = ref<WebSettings>()
-// adminPassReady 表示全局设置中已配置单点登录域或后台入口地址，站点的「后台登录免认证」依赖其一；打开站点编辑时刷新（读取失败时不提示）
-const adminPassReady = ref(true)
+// ssoDomainSet 表示全局设置中已配置单点登录域，站点的「后台登录免认证」依赖它；打开站点编辑时刷新（读取失败时不提示）
+const ssoDomainSet = ref(true)
 // 定时刷新，标签页在后台时暂停；编辑对话框打开时也暂停，避免列表重新渲染打断编辑。
 // 轮询带上次的 ETag，列表没变化时服务端返回 304，跳过解析与重新渲染
 const polling = usePolling(() => (listenerVisible.value || siteVisible.value || settingsVisible.value ? undefined : poll()), 5000)
@@ -2139,10 +2131,10 @@ function openSite(l: ListenerView, row?: SiteRow, copy = false) {
   void nextTick(() => siteForm.value?.clearValidate())
   fetchSettings()
     .then((s) => {
-      adminPassReady.value = !!s.ssoDomain || !!s.adminPassEntry
+      ssoDomainSet.value = !!s.ssoDomain
     })
     .catch(() => {
-      adminPassReady.value = true
+      ssoDomainSet.value = true
     })
 }
 
