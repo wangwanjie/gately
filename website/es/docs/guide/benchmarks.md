@@ -80,7 +80,7 @@ Cada programa se configura con 1000 sitios de proxy inverso con dominios distint
 | Traefik | 24,229 | -38% | 18.8 ms | 0.74 s | 115 MiB | 157 MiB |
 
 - HAProxy compara regla por regla con `use_backend ... if { hdr(host) -i dominio }`, por lo que se vuelve más lento cuantos más sitios hay; usar un archivo map lo evita, pero aquí se mantiene la forma habitual de «una regla por sitio».
-- El pico de memoria de Gately procede sobre todo de las estadísticas de acceso de cada sitio: cada sitio con tráfico guarda 24 horas de estadísticas por minuto, historial de conexiones y distribución de latencias, así que con los 1000 sitios recibiendo tráfico a la vez ocupa algo más de 200 MiB residentes.
+- El pico de memoria de Gately procede sobre todo de las estadísticas de acceso de cada sitio: en v0.6.8.1 cada sitio con tráfico guarda un bloque entero de estadísticas por minuto de 24 horas y cuantiles de latencia (unos 108 KiB). La versión de desarrollo las guarda en bloques por hora, lo que baja el pico a 225 MiB; consulta [Optimizaciones de la versión de desarrollo](#optimizaciones-de-la-version-de-desarrollo).
 
 ## Autenticación web
 
@@ -215,11 +215,12 @@ Un único Gately con todo esto activado a la vez: dos sitios de proxy inverso (H
 
 ## Optimizaciones de la versión de desarrollo
 
-A partir de los resultados anteriores, la versión de desarrollo (sin publicar, posterior al commit `3d579389`) introdujo los cambios siguientes y se volvió a medir en el mismo entorno. El proxy inverso y los 1000 sitios usan la compilación del commit `3d579389`; la prevención de intrusiones usa una compilación que incluye los dos últimos cambios. La columna de referencia es v0.6.8.1 medida de nuevo el mismo día (ese día solo se repitieron las filas de HTTP y HTTPS; las demás referencias proceden de los datos anteriores).
+A partir de los resultados anteriores, la versión de desarrollo (sin publicar, posterior al commit `3d579389`) introdujo los cambios siguientes y se volvió a medir en el mismo entorno. El proxy inverso usa la compilación del commit `3d579389`; los 1000 sitios y la prevención de intrusiones usan una compilación que incluye los cambios posteriores. La columna de referencia es v0.6.8.1 medida de nuevo el mismo día (ese día solo se repitieron las filas de HTTP y HTTPS; las demás referencias proceden de los datos anteriores).
 
 - Los sitios de un mismo oyente que hacen proxy inverso al mismo backend con la misma configuración de conexión comparten un grupo de conexiones.
 - Con al menos 1 GiB de memoria disponible, el valor por defecto del porcentaje de GC pasa de 100 a 200 (se puede cambiar en los ajustes; los dispositivos con poca memoria mantienen 100).
 - El proxy inverso copia la petición una vez menos y crea tres valores de contexto menos por petición.
+- Las estadísticas por minuto de 24 horas de cada sitio se guardan en bloques por hora que se reservan al usarse, y los campos de los cubos pasan a contadores de 32 bits (un sitio con tráfico durante una sola hora baja de unos 108 KiB a unos 5 KiB, y uno con tráfico todo el día ocupa unos 50 KiB).
 - La prevención de intrusiones lee los archivos de registro con inotify, de modo que lee en cuanto se escribe (se mantiene el sondeo cada segundo como respaldo); las escrituras de bloqueos en el firewall se combinan como máximo una vez cada 250 milisegundos.
 
 | Métrica | v0.6.8.1 | Versión de desarrollo | Cambio |
@@ -228,8 +229,9 @@ A partir de los resultados anteriores, la versión de desarrollo (sin publicar, 
 | Peticiones HTTPS/s (referencia del mismo día) | 34,072 | 36,079 | +5.9% |
 | Conexiones TLS nuevas/s | 4,636 | 4,942 | +6.6% |
 | Peticiones HTTP/2/s | 21,591 | 23,788 | +10% |
-| 1000 sitios: peticiones/s | 33,211 | 38,839 | +17% |
-| 1000 sitios: latencia p99 | 29.8 ms | 11.7 ms | -61% |
+| 1000 sitios: peticiones/s | 33,211 | 37,423 | +13% |
+| 1000 sitios: latencia p99 | 29.8 ms | 12.9 ms | -57% |
+| 1000 sitios: pico de memoria durante la prueba | 463 MiB | 225 MiB | -51% |
 | Pico de memoria en la prueba HTTP | 64.5 MiB | 81.1 MiB | +26% |
 | Prevención de intrusiones: latencia de bloqueo de un solo atacante p50 / p99 | 478 / 996 ms | 9.8 / 129 ms | |
 | Prevención de intrusiones: latencia de bloqueo con ataque sostenido p50 / p99 (20,000 líneas/s) | 509 / 1006 ms | 143 / 269 ms | |
@@ -238,7 +240,7 @@ A partir de los resultados anteriores, la versión de desarrollo (sin publicar, 
 | Prevención de intrusiones: bloquear las 10,000 IP atacantes | 12.3 s, 10.1 s de CPU | 10.1 s, 2.5 s de CPU | |
 
 - La mejora del rendimiento procede sobre todo del ajuste de GC, a cambio de un pico de memoria unos diez MiB mayor durante la prueba. El análisis de perfil muestra que casi toda la sobrecarga restante en la ruta del proxy está en la implementación HTTP de la biblioteca estándar de Go y en el GC; la diferencia con nginx y HAProxy corresponde al lenguaje y al entorno de ejecución.
-- Con 1000 sitios, el rendimiento sube y la latencia baja porque, al compartir el grupo de conexiones, hay muchas menos conexiones hacia el origen; el pico de memoria no baja, por el motivo indicado arriba.
+- Con 1000 sitios, el rendimiento sube y la latencia baja porque, al compartir el grupo de conexiones, hay muchas menos conexiones hacia el origen; el pico de memoria se reduce a la mitad gracias al almacenamiento de las estadísticas en bloques.
 - La latencia de un bloqueo individual ya es menor que la de fail2ban (280 / 864 ms). Con pocas líneas de registro por segundo, la CPU es mayor que en la versión anterior porque el firewall se escribe como máximo 4 veces por segundo, frente a 1 vez antes; sigue siendo cuatro décimas partes de la de fail2ban (20.4%).
 
 ## Reproducir

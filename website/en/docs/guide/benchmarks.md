@@ -80,7 +80,7 @@ Each program is configured with 1000 reverse proxy sites with different domains,
 | Traefik | 24,229 | -38% | 18.8 ms | 0.74 s | 115 MiB | 157 MiB |
 
 - HAProxy matches rules one by one with `use_backend ... if { hdr(host) -i domain }`, so it slows down as sites grow; a map file avoids this, but the test keeps the common "one rule per site" style.
-- Gately's peak memory comes mainly from per-site access statistics: each site with traffic keeps 24 hours of per-minute statistics, connection history and latency distribution, so with all 1000 sites receiving traffic it holds a little over 200 MiB resident.
+- Gately's peak memory comes mainly from per-site access statistics: in v0.6.8.1 each site with traffic keeps one whole block of 24-hour per-minute statistics and latency quantiles (about 108 KiB). The development version stores them in hourly blocks, which brings the peak down to 225 MiB; see [Optimizations in the development version](#optimizations-in-the-development-version).
 
 ## Web authentication
 
@@ -215,11 +215,12 @@ One Gately runs all of these at once: two reverse proxy sites (HTTP and HTTPS, b
 
 ## Optimizations in the development version
 
-Based on the results above, the development version (unreleased, after commit `3d579389`) made the following changes and was re-tested in the same environment. Reverse proxy and 1000 sites use the build at commit `3d579389`; intrusion prevention uses a build that includes the last two changes. The baseline column is v0.6.8.1 re-measured on the same day (only the HTTP and HTTPS rows were re-measured that day; the other baselines are taken from the data above).
+Based on the results above, the development version (unreleased, after commit `3d579389`) made the following changes and was re-tested in the same environment. Reverse proxy uses the build at commit `3d579389`; 1000 sites and intrusion prevention use a build that includes later changes. The baseline column is v0.6.8.1 re-measured on the same day (only the HTTP and HTTPS rows were re-measured that day; the other baselines are taken from the data above).
 
 - Sites in the same listener that reverse proxy to the same backend with identical connection settings share one connection pool.
 - When at least 1 GiB of memory is available, the default GC percent changes from 100 to 200 (adjustable in settings; small-memory devices keep 100).
 - The reverse proxy copies the request once less and creates three fewer context values per request.
+- The 24-hour per-minute statistics of a site are stored in hourly blocks allocated on first use, and the bucket fields shrink to 32-bit counts (a site with traffic in only one hour drops from about 108 KiB to about 5 KiB, and one with traffic all day takes about 50 KiB).
 - Intrusion prevention reads log files with inotify, so a write is read immediately (the one-second poll stays as a fallback); ban writes to the firewall are merged at most once every 250 milliseconds.
 
 | Metric | v0.6.8.1 | Development version | Change |
@@ -228,8 +229,9 @@ Based on the results above, the development version (unreleased, after commit `3
 | HTTPS requests/s (same-day baseline) | 34,072 | 36,079 | +5.9% |
 | TLS new connections/s | 4,636 | 4,942 | +6.6% |
 | HTTP/2 requests/s | 21,591 | 23,788 | +10% |
-| 1000 sites requests/s | 33,211 | 38,839 | +17% |
-| 1000 sites p99 latency | 29.8 ms | 11.7 ms | -61% |
+| 1000 sites requests/s | 33,211 | 37,423 | +13% |
+| 1000 sites p99 latency | 29.8 ms | 12.9 ms | -57% |
+| 1000 sites peak memory during load | 463 MiB | 225 MiB | -51% |
 | Peak memory during HTTP load | 64.5 MiB | 81.1 MiB | +26% |
 | Intrusion prevention: single attacker ban latency p50 / p99 | 478 / 996 ms | 9.8 / 129 ms | |
 | Intrusion prevention: ban latency under sustained attack p50 / p99 (20,000 lines/s) | 509 / 1006 ms | 143 / 269 ms | |
@@ -238,7 +240,7 @@ Based on the results above, the development version (unreleased, after commit `3
 | Intrusion prevention: banning all 10,000 attacker IPs | 12.3 s, 10.1 CPU s | 10.1 s, 2.5 CPU s | |
 
 - Most of the throughput gain comes from the GC setting, at the cost of a peak memory about ten-plus MiB higher during the load test. Profiling shows that almost all the remaining overhead on the proxy path is in Go's standard HTTP implementation and in GC; the gap to nginx and HAProxy comes from the language and runtime.
-- With 1000 sites, throughput rose and latency fell because the shared connection pool means far fewer connections to the origin; peak memory did not drop, for the reason given above.
+- With 1000 sites, throughput rose and latency fell because the shared connection pool means far fewer connections to the origin; the halved peak memory comes from the block storage of statistics.
 - The latency of a single ban is now lower than fail2ban's (280 / 864 ms). At low log rates CPU is higher than in the old version because the firewall is written at most 4 times per second, against once per second before; it is still about 40% of fail2ban's (20.4%).
 
 ## Reproduce
