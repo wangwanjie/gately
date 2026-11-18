@@ -1687,6 +1687,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | Champ | Type |
 | --- | --- |
 | `addr` | string |
+| `identity` | string |
 | `ports` | Tableau de string |
 | `rule` | string |
 | `ruleName` | string |
@@ -1695,6 +1696,17 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `source` | string |
 | `until` | Heure (RFC 3339) |
 | `user` | string |
+
+### knock.Identity
+
+| Champ | Type |
+| --- | --- |
+| `enable` | boolean |
+| `encKey` | string |
+| `hmacKey` | string |
+| `id` | string |
+| `name` | string |
+| `remark` | string |
 
 ### knock.Rule
 
@@ -1706,12 +1718,15 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `group` | string |
 | `hmacKey` | string |
 | `hmacType` | string |
+| `identities` | Tableau de `knock.Identity` |
 | `key` | string |
 | `maxTimeout` | integer |
 | `name` | string |
 | `ports` | Tableau de string |
 | `remark` | string |
 | `requireAddr` | boolean |
+| `sharedKeyOff` | boolean |
+| `singleAddr` | boolean |
 | `timeout` | integer |
 | `user` | string |
 

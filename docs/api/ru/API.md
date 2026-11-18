@@ -1687,6 +1687,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | Поле | Тип |
 | --- | --- |
 | `addr` | string |
+| `identity` | string |
 | `ports` | Массив из string |
 | `rule` | string |
 | `ruleName` | string |
@@ -1695,6 +1696,17 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `source` | string |
 | `until` | Время (RFC 3339) |
 | `user` | string |
+
+### knock.Identity
+
+| Поле | Тип |
+| --- | --- |
+| `enable` | boolean |
+| `encKey` | string |
+| `hmacKey` | string |
+| `id` | string |
+| `name` | string |
+| `remark` | string |
 
 ### knock.Rule
 
@@ -1706,12 +1718,15 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `group` | string |
 | `hmacKey` | string |
 | `hmacType` | string |
+| `identities` | Массив из `knock.Identity` |
 | `key` | string |
 | `maxTimeout` | integer |
 | `name` | string |
 | `ports` | Массив из string |
 | `remark` | string |
 | `requireAddr` | boolean |
+| `sharedKeyOff` | boolean |
+| `singleAddr` | boolean |
 | `timeout` | integer |
 | `user` | string |
 

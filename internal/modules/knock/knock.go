@@ -14,7 +14,9 @@ package knock
 import (
 	"context"
 	"crypto/rand"
+	"crypto/sha256"
 	"encoding/base64"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"net"
@@ -53,6 +55,10 @@ const (
 	maxRulePorts      = 16
 	maxNameLen        = 64
 	maxUserLen        = 64
+	// maxIdentities 为每条规则最多的身份数，maxTotalKeys 为全部启用规则接受敲门的密钥总数上限：
+	// 伪造报文要用每个密钥各做一次 HMAC 校验才能丢弃，密钥总数决定单个报文的最大处理成本（见 packetCost）
+	maxIdentities = 64
+	maxTotalKeys  = 1024
 	// replayCap 为防重放缓存最多保存的摘要数；摘要按报文时间戳加 maxMaxAge 保留，见 check
 	replayCap = 100000
 )
@@ -131,8 +137,33 @@ type Rule struct {
 	User string `json:"user"`
 	// RequireAddr 为 true 时拒绝不带地址的报文（fwknop -s），客户端必须用 -a 或 -R 写明要放行的地址，
 	// 防止中途截获报文的人抢先从自己的地址重放
-	RequireAddr bool   `json:"requireAddr"`
-	Remark      string `json:"remark"`
+	RequireAddr bool `json:"requireAddr"`
+	// Identities 为规则的身份：每个身份有自己的一组密钥，敲门时按密钥识别是谁，日志、事件与授权列表显示身份名称；
+	// 停用、删除身份或更换其密钥只撤销该身份的放行，其他人不受影响。身份使用规则的 HMAC 算法、端口与放行时长
+	Identities []Identity `json:"identities,omitempty"`
+	// SharedKeyOff 为 true 时规则自身的密钥（共享密钥）不再接受敲门，只接受各身份的密钥
+	SharedKeyOff bool `json:"sharedKeyOff,omitempty"`
+	// SingleAddr 为 true 时每个身份（共享密钥算一个）同时只放行一个地址：从新地址敲门成功后，该身份此前经敲门报文
+	// 放行的其他地址立即撤销，防止同一份密钥被多人同时使用。已建立的连接不受影响
+	SingleAddr bool   `json:"singleAddr,omitempty"`
+	Remark     string `json:"remark"`
+}
+
+// Identity 是规则中的一个身份（一个人或一台设备）及其密钥。
+type Identity struct {
+	// ID 为身份在规则内的标识，留空时自动分配
+	ID     string `json:"id"`
+	Name   string `json:"name"`
+	Enable bool   `json:"enable"`
+	// EncKey、HMACKey 含义与规则的同名字段相同，留空时自动生成
+	EncKey  string `json:"encKey"`
+	HMACKey string `json:"hmacKey"`
+	Remark  string `json:"remark,omitempty"`
+}
+
+// spaKey 解码身份的密钥，HMAC 算法使用规则的设置。
+func (id *Identity) spaKey(hmacType string) (spa.Key, error) {
+	return decodeSPAKey(id.EncKey, id.HMACKey, hmacType)
 }
 
 // Validate 校验并规范化规则；密钥留空时生成新密钥。
@@ -191,21 +222,102 @@ func (r *Rule) Validate() error {
 		return fmt.Errorf("用户名只能包含可见 ASCII 字符，且不超过 %d 个字符", maxUserLen)
 	}
 	r.Remark = strings.TrimSpace(r.Remark)
+	return r.validateIdentities()
+}
+
+// validateIdentities 校验并规范化规则的身份：名称必填且不重复，密钥留空时生成，各密钥（含共享密钥）互不相同。
+func (r *Rule) validateIdentities() error {
+	if r.Identities == nil {
+		r.Identities = []Identity{}
+	}
+	if len(r.Identities) > maxIdentities {
+		return fmt.Errorf("每条规则最多 %d 个身份", maxIdentities)
+	}
+	if len(r.Identities) > 0 && len(r.Ports) == 0 {
+		return errors.New("规则没有填写端口时不接受敲门报文，不能添加身份")
+	}
+	names := map[string]bool{}
+	// HMAC 密钥决定报文匹配到哪个身份：重复时只会匹配到前一个，身份识别失去意义。值为身份名称，共享密钥为空串
+	macs := map[string]string{r.HMACKey: ""}
+	enabled := 0
+	for i := range r.Identities {
+		id := &r.Identities[i]
+		id.Name = strings.TrimSpace(id.Name)
+		if id.Name == "" {
+			return fmt.Errorf("第 %d 个身份请填写名称", i+1)
+		}
+		if utf8.RuneCountInString(id.Name) > maxNameLen || strings.ContainsFunc(id.Name, func(c rune) bool { return c < 0x20 }) {
+			return fmt.Errorf("身份「%s」的名称不能超过 %d 个字符，且不能包含控制字符", id.Name, maxNameLen)
+		}
+		lower := strings.ToLower(id.Name)
+		if names[lower] {
+			return fmt.Errorf("身份名称「%s」重复", id.Name)
+		}
+		names[lower] = true
+		if id.EncKey = strings.TrimSpace(id.EncKey); id.EncKey == "" {
+			id.EncKey = genKey(32)
+		}
+		if id.HMACKey = strings.TrimSpace(id.HMACKey); id.HMACKey == "" {
+			id.HMACKey = genKey(64)
+		}
+		if _, err := id.spaKey(r.HMACType); err != nil {
+			return fmt.Errorf("身份「%s」: %w", id.Name, err)
+		}
+		id.EncKey, _ = normalizeKey(id.EncKey)
+		id.HMACKey, _ = normalizeKey(id.HMACKey)
+		if other, dup := macs[id.HMACKey]; dup {
+			if other == "" {
+				return fmt.Errorf("身份「%s」的 HMAC 密钥与共享密钥相同，请重新生成", id.Name)
+			}
+			return fmt.Errorf("身份「%s」的 HMAC 密钥与身份「%s」相同，请重新生成", id.Name, other)
+		}
+		macs[id.HMACKey] = id.Name
+		id.Remark = strings.TrimSpace(id.Remark)
+		if id.Enable {
+			enabled++
+		}
+	}
+	crud.AssignKeys(len(r.Identities), func(i int) *string { return &r.Identities[i].ID }, "i")
+	if r.SharedKeyOff && len(r.Ports) > 0 && enabled == 0 {
+		return errors.New("停用共享密钥时请至少添加一个启用的身份，否则规则不接受任何敲门")
+	}
 	return nil
 }
 
-// spaKey 解码规则中的密钥。
+// spaKey 解码规则中的密钥（共享密钥）。
 func (r *Rule) spaKey() (spa.Key, error) {
-	enc, err := decodeKey(r.EncKey)
+	return decodeSPAKey(r.EncKey, r.HMACKey, r.HMACType)
+}
+
+// decodeSPAKey 解码一组 base64 密钥并校验长度。
+func decodeSPAKey(encKey, hmacKey, hmacType string) (spa.Key, error) {
+	enc, err := decodeKey(encKey)
 	if err != nil {
 		return spa.Key{}, fmt.Errorf("加密密钥需为 base64 编码: %w", err)
 	}
-	mac, err := decodeKey(r.HMACKey)
+	mac, err := decodeKey(hmacKey)
 	if err != nil {
 		return spa.Key{}, fmt.Errorf("HMAC 密钥需为 base64 编码: %w", err)
 	}
-	k := spa.Key{Enc: enc, HMAC: mac, HMACType: r.HMACType}
+	k := spa.Key{Enc: enc, HMAC: mac, HMACType: hmacType}
 	return k, k.Validate()
+}
+
+// acceptKeys 返回规则接受敲门的密钥数：没有端口的规则不接受敲门报文，为 0。
+func (r *Rule) acceptKeys() int {
+	if !r.Enable || len(r.Ports) == 0 {
+		return 0
+	}
+	n := 0
+	if !r.SharedKeyOff {
+		n++
+	}
+	for _, id := range r.Identities {
+		if id.Enable {
+			n++
+		}
+	}
+	return n
 }
 
 // decodeKey 解码 base64 密钥，忽略其中的空白与换行（从终端或文档复制时常带进来），兼容省略了末尾 "=" 的写法。
@@ -371,12 +483,57 @@ type compiledRule struct {
 	rule  Rule
 	key   spa.Key
 	ports []spa.Access
+	// keys 为规则接受敲门的密钥：共享密钥（未停用时）在前，其后为启用的身份，按顺序尝试
+	keys []compiledKey
+	// shared 为共享密钥的凭据标识，停用共享密钥时也计算，用于识别编辑前后凭据是否变化
+	shared string
+}
+
+// compiledKey 是一个接受敲门的密钥。
+type compiledKey struct {
+	key spa.Key
+	// id、name 为身份的 ID 与名称，共享密钥为空
+	id, name string
+	// cred 为凭据标识：身份 ID（共享密钥为空）加密钥指纹，记录在授权上（knockgate.Owner.Cred）。
+	// 编辑规则后按它判断哪些授权的密钥已失效，单地址放行按它找出同一身份的其他授权
+	cred string
+}
+
+// credID 返回凭据标识：id 为身份 ID（共享密钥为空），指纹取密钥与 HMAC 算法的 SHA-256 前 8 字节。
+// 更换任一密钥或算法后指纹改变，旧授权随之失效。
+func credID(id string, k spa.Key) string {
+	h := sha256.New()
+	h.Write([]byte(k.HMACType))
+	h.Write([]byte{0})
+	h.Write(k.Enc)
+	h.Write([]byte{0})
+	h.Write(k.HMAC)
+	return id + ":" + hex.EncodeToString(h.Sum(nil)[:8])
+}
+
+// identityOf 返回凭据标识中的身份 ID（共享密钥为空串），ok 为 false 表示不是敲门报文的凭据标识。
+func identityOf(cred string) (id string, ok bool) {
+	i := strings.LastIndexByte(cred, ':')
+	if i < 0 {
+		return "", false
+	}
+	return cred[:i], true
 }
 
 // snapshot 是收包协程无锁读取的配置快照。
 type snapshot struct {
 	settings Settings
 	rules    []*compiledRule
+	// keys 为全部规则接受敲门的密钥（按规则、规则内顺序排列），refs 为对应的规则与密钥，收包时用 spa.DecodeAny 依次尝试；
+	// 密钥数决定伪造报文的校验成本（见 packetCost）
+	keys []spa.Key
+	refs []keyRef
+}
+
+// keyRef 指向快照中某条规则的某个密钥。
+type keyRef struct {
+	rule *compiledRule
+	key  *compiledKey
 }
 
 // ruleStats 是规则的运行统计（内存中，重启清零）。
@@ -421,8 +578,10 @@ type Module struct {
 	listenErr string
 
 	// stateMu 保护运行统计、防火墙放行记录与限速状态，收包协程与接口都会访问
-	stateMu  sync.Mutex
-	stats    map[string]*ruleStats
+	stateMu sync.Mutex
+	stats   map[string]*ruleStats
+	// idStats 为各规则中身份的运行统计：规则 key -> 身份 ID
+	idStats  map[string]map[string]*ruleStats
 	fwGrants map[fwGrantKey]time.Time
 	replay   map[string]time.Time
 	// startedAt 为模块本次启动的时间：防重放缓存只在内存中，早于此刻的报文无法确认是否已被使用过
@@ -435,6 +594,9 @@ type Module struct {
 	failSeen map[netip.Addr]time.Time
 	// invalid 汇总 HMAC 认证失败的报文，按时间窗记一条日志
 	invalid invalidStats
+
+	// singleMu 串行化开启了单地址放行的规则的授权登记（见 grant）
+	singleMu sync.Mutex
 
 	// webKick 在网页登录授权变化后通知 loop 同步防火墙放行（见 syncWebFirewall）
 	webKick chan struct{}
@@ -462,7 +624,7 @@ type Counters struct {
 
 // New 创建模块。
 func New() *Module {
-	return &Module{now: time.Now, stats: map[string]*ruleStats{}, fwGrants: map[fwGrantKey]time.Time{}, webKick: make(chan struct{}, 1),
+	return &Module{now: time.Now, stats: map[string]*ruleStats{}, idStats: map[string]map[string]*ruleStats{}, fwGrants: map[fwGrantKey]time.Time{}, webKick: make(chan struct{}, 1),
 		replay: map[string]time.Time{}, failSeen: map[netip.Addr]time.Time{}, bucket: tokenBucket{rate: globalRate, burst: globalBurst},
 		perSrc: newSrcLimiter()}
 }
@@ -493,6 +655,12 @@ func (m *Module) Init(env module.Env) error {
 	for i := range m.cfg.Rules {
 		r := &m.cfg.Rules[i]
 		noKey := strings.TrimSpace(r.EncKey) == "" || strings.TrimSpace(r.HMACKey) == ""
+		for _, id := range r.Identities {
+			// 身份的密钥留空同样会生成新密钥，ID 留空会分配新 ID，都要保存
+			if strings.TrimSpace(id.EncKey) == "" || strings.TrimSpace(id.HMACKey) == "" || id.ID == "" {
+				noKey = true
+			}
+		}
 		if err := r.Validate(); err != nil {
 			m.logs.Add(logbuf.LevelWarn, r.Name, "规则无效，已停用: "+err.Error())
 			r.Enable = false
@@ -575,7 +743,26 @@ func (m *Module) publishLocked() {
 			continue
 		}
 		ports, _ := parsePorts(r.Ports)
-		snap.rules = append(snap.rules, &compiledRule{rule: r, key: k, ports: ports})
+		cr := &compiledRule{rule: r, key: k, ports: ports, shared: credID("", k)}
+		if !r.SharedKeyOff {
+			cr.keys = append(cr.keys, compiledKey{key: k, cred: cr.shared})
+		}
+		for _, id := range r.Identities {
+			if !id.Enable {
+				continue
+			}
+			ik, err := id.spaKey(r.HMACType)
+			if err != nil {
+				continue
+			}
+			cr.keys = append(cr.keys, compiledKey{key: ik, id: id.ID, name: id.Name, cred: credID(id.ID, ik)})
+		}
+		snap.rules = append(snap.rules, cr)
+		// 没有端口的规则也参与尝试（只有共享密钥）：匹配后由 check 给出“只接受网页登录”的明确拒绝原因
+		for i := range cr.keys {
+			snap.keys = append(snap.keys, cr.keys[i].key)
+			snap.refs = append(snap.refs, keyRef{rule: cr, key: &cr.keys[i]})
+		}
 	}
 	m.snap.Store(snap)
 	knockgate.Default.SetRules(cat)
@@ -774,36 +961,25 @@ func (m *Module) handle(packet []byte, src netip.Addr, transport, via string) er
 	// 不会占满全局速率、挤掉其他来源的合法敲门
 	snap := m.snap.Load()
 	m.stateMu.Lock()
-	ok := m.perSrc.take(src, now) && m.bucket.takeN(now, packetCost(len(packet), len(snap.rules)))
+	ok := m.perSrc.take(src, now) && m.bucket.takeN(now, packetCost(len(packet), len(snap.keys)))
 	m.stateMu.Unlock()
 	if !ok {
 		m.count(func(c *Counters) { c.Ignored++ })
 		return errLimited
 	}
-	var (
-		rule *compiledRule
-		msg  *spa.Message
-		err  error
-	)
-	for _, r := range snap.rules {
-		msg, err = spa.Decode(packet, r.key)
-		if errors.Is(err, spa.ErrHMAC) || errors.Is(err, spa.ErrFormat) {
-			continue
-		}
-		rule = r
-		break
-	}
-	if rule == nil {
-		m.reject(nil, src, transport, via, "没有规则的密钥能通过 HMAC 认证")
+	i, msg, err := spa.DecodeAny(packet, snap.keys)
+	if i < 0 {
+		m.reject(nil, nil, src, transport, via, "没有规则的密钥能通过 HMAC 认证")
 		return errors.New("认证失败")
 	}
+	rule, key := snap.refs[i].rule, snap.refs[i].key
 	if err != nil {
 		// HMAC 正确而解密失败：HMAC 密钥一致，加密密钥不一致
-		m.reject(rule, src, transport, via, "HMAC 认证通过但解密失败，请检查加密密钥是否一致")
+		m.reject(rule, key, src, transport, via, "HMAC 认证通过但解密失败，请检查加密密钥是否一致")
 		return errors.New("解密失败")
 	}
 	if reason := m.check(rule, msg, snap.settings, now); reason != "" {
-		m.reject(rule, src, transport, via, reason)
+		m.reject(rule, key, src, transport, via, reason)
 		return errors.New(reason)
 	}
 	addr := msg.Addr
@@ -811,11 +987,11 @@ func (m *Module) handle(packet []byte, src netip.Addr, transport, via string) er
 		addr = src
 	}
 	if reason := checkAddr(addr); reason != "" {
-		m.reject(rule, src, transport, via, reason)
+		m.reject(rule, key, src, transport, via, reason)
 		return errors.New(reason)
 	}
 	ttl := effectiveTimeout(rule.rule, msg.ClientTimeout)
-	m.grant(rule, addr, src, msg, ttl, via)
+	m.grant(rule, key, addr, src, msg, ttl, via)
 	return nil
 }
 
@@ -898,12 +1074,22 @@ func effectiveTimeout(r Rule, client int) time.Duration {
 	return time.Duration(sec) * time.Second
 }
 
-// grant 登记授权、写防火墙并记录日志与事件。
-func (m *Module) grant(r *compiledRule, addr, src netip.Addr, msg *spa.Message, ttl time.Duration, via string) {
+// grant 登记授权、写防火墙并记录日志与事件。规则开启“单地址放行”时先撤销同一身份此前放行的其他地址。
+func (m *Module) grant(r *compiledRule, key *compiledKey, addr, src netip.Addr, msg *spa.Message, ttl time.Duration, via string) {
+	if r.rule.SingleAddr {
+		// 登记与撤销其他地址必须串行：同一身份从两个地址同时敲门（协议分流的 TCP 报文可并发处理）时，
+		// 交错执行会让两次敲门互相撤销，两个地址都没有放行
+		m.singleMu.Lock()
+		defer m.singleMu.Unlock()
+	}
 	now := m.now()
 	until := now.Add(ttl)
-	if err := knockgate.Default.Allow(addr, r.rule.Key, until); err != nil {
+	if err := knockgate.Default.AllowSPA(addr, r.rule.Key, until, knockgate.Owner{User: key.name, Cred: key.cred}); err != nil {
 		m.logs.Logger(r.rule.Name).Warnf("登记 %s 的授权失败: %v", addr, err)
+	}
+	var replaced []netip.Addr
+	if r.rule.SingleAddr {
+		replaced = m.revokeOtherAddrs(r.rule.Key, key.id, addr)
 	}
 	access := msg.Access
 	var fwList []fwGrant
@@ -924,6 +1110,11 @@ func (m *Module) grant(r *compiledRule, addr, src netip.Addr, msg *spa.Message, 
 	st := m.statsLocked(r.rule.Key)
 	st.Knocks++
 	st.LastAt, st.LastAddr = now, addr.String()
+	if key.id != "" {
+		ist := m.identityStatsLocked(r.rule.Key, key.id)
+		ist.Knocks++
+		ist.LastAt, ist.LastAddr = now, addr.String()
+	}
 	m.stateMu.Unlock()
 	ports := strings.Join(formatPorts(access), ", ")
 	extra := ""
@@ -934,15 +1125,63 @@ func (m *Module) grant(r *compiledRule, addr, src netip.Addr, msg *spa.Message, 
 	if user == "" {
 		user = "-"
 	}
-	m.logs.Logger(r.rule.Name).Infof("敲门成功：放行 %s 访问 %s %d 秒，用户 %s，经 %s%s", addr, ports, int(ttl/time.Second), user, via, extra)
+	log := m.logs.Logger(r.rule.Name)
+	// 日志按整句翻译，有无身份分成两个格式串
+	if key.name != "" {
+		log.Infof("敲门成功：放行 %s 访问 %s %d 秒，身份 %s，用户 %s，经 %s%s", addr, ports, int(ttl/time.Second), key.name, user, via, extra)
+	} else {
+		log.Infof("敲门成功：放行 %s 访问 %s %d 秒，用户 %s，经 %s%s", addr, ports, int(ttl/time.Second), user, via, extra)
+	}
+	if len(replaced) > 0 {
+		if key.name != "" {
+			log.Infof("单地址放行：已撤销身份 %s 此前放行的 %s", key.name, joinAddrs(replaced))
+		} else {
+			log.Infof("单地址放行：已撤销共享密钥此前放行的 %s", joinAddrs(replaced))
+		}
+	}
+	fields := map[string]string{"ip": addr.String(), "rule": r.rule.Name, "ports": ports}
+	msgText := fmt.Sprintf("%s：%s 敲门成功，放行 %s %d 秒", r.rule.Name, addr, ports, int(ttl/time.Second))
+	if key.name != "" {
+		fields["identity"] = key.name
+		msgText = fmt.Sprintf("%s：%s（%s）敲门成功，放行 %s %d 秒", r.rule.Name, addr, key.name, ports, int(ttl/time.Second))
+	}
 	events.Publish(events.Event{
 		Type:    events.KnockOpened,
 		Source:  r.rule.Name,
 		Level:   events.LevelInfo,
 		Title:   fmt.Sprintf("端口敲门放行了 %s", addr),
-		Message: fmt.Sprintf("%s：%s 敲门成功，放行 %s %d 秒", r.rule.Name, addr, ports, int(ttl/time.Second)),
-		Fields:  map[string]string{"ip": addr.String(), "rule": r.rule.Name, "ports": ports},
+		Message: msgText,
+		Fields:  fields,
 	})
+}
+
+func joinAddrs(list []netip.Addr) string {
+	out := make([]string, 0, len(list))
+	for _, a := range list {
+		out = append(out, a.String())
+	}
+	return strings.Join(out, "、")
+}
+
+// revokeOtherAddrs 撤销 rule 中身份 id（共享密钥为空）经敲门报文放行的、除 keep 之外的其他地址及其防火墙放行，
+// 返回撤销的地址。网页登录的授权不受影响。
+func (m *Module) revokeOtherAddrs(rule, id string, keep netip.Addr) []netip.Addr {
+	var addrs []netip.Addr
+	keepPrefix := netip.PrefixFrom(keep, keep.BitLen())
+	knockgate.Default.RevokeFunc(func(g knockgate.Grant) bool {
+		if g.Rule != rule || g.Source != knockgate.SourceSPA || g.Prefix == keepPrefix {
+			return false
+		}
+		if gid, ok := identityOf(g.Cred); !ok || gid != id {
+			return false
+		}
+		addrs = append(addrs, g.Addr())
+		return true
+	})
+	for _, a := range addrs {
+		m.dropFW(a, rule)
+	}
+	return addrs
 }
 
 // failInterval 为同一来源两次失败日志与失败事件之间的最短间隔：持续发送伪造报文的来源每个间隔只记一次，
@@ -955,14 +1194,20 @@ const failInterval = 5 * time.Second
 // 照常发布；UDP 报文的来源地址可以伪造，一律只写日志、不发布。HMAC 认证失败的 UDP 包任何人都能以任意来源地址发出；
 // 通过 HMAC 认证的 UDP 包也可能是抓到的合法报文被重放、再伪造来源发出的，发布事件同样会让攻击者借入侵防护封禁任意 IP。
 // HMAC 认证失败的报文不逐条记录日志，由 flushInvalid 每分钟汇总一条。
-func (m *Module) reject(r *compiledRule, src netip.Addr, transport, via, reason string) {
+//
+// key 为匹配到的密钥（r 为 nil 时为 nil），身份的密钥同时计入该身份的拒绝次数，日志中写明身份。
+func (m *Module) reject(r *compiledRule, key *compiledKey, src netip.Addr, transport, via, reason string) {
 	now := m.now()
 	m.stateMu.Lock()
 	m.counters.Rejected++
-	name := ""
+	name, ident := "", ""
 	if r != nil {
 		name = r.rule.Name
 		m.statsLocked(r.rule.Key).Rejected++
+		if key != nil && key.id != "" {
+			ident = key.name
+			m.identityStatsLocked(r.rule.Key, key.id).Rejected++
+		}
 	}
 	last, seen := m.failSeen[src]
 	report := !seen || now.Sub(last) >= failInterval
@@ -993,11 +1238,19 @@ func (m *Module) reject(r *compiledRule, src netip.Addr, transport, via, reason 
 		return
 	}
 	if r != nil {
-		m.logs.Logger(name).Warnf("拒绝来自 %s 的敲门（经 %s）：%s", src, via, reason)
+		if ident != "" {
+			m.logs.Logger(name).Warnf("拒绝来自 %s 的敲门（身份 %s，经 %s）：%s", src, ident, via, reason)
+		} else {
+			m.logs.Logger(name).Warnf("拒绝来自 %s 的敲门（经 %s）：%s", src, via, reason)
+		}
 	}
 	if transport != transportTCP {
 		// UDP 来源可以伪造（含重放的合法报文），只写日志，不发布供入侵防护计数的事件
 		return
+	}
+	fields := map[string]string{"ip": src.String(), "reason": reason, "via": transport}
+	if ident != "" {
+		fields["identity"] = ident
 	}
 	events.Publish(events.Event{
 		Type:    events.KnockFailed,
@@ -1005,7 +1258,7 @@ func (m *Module) reject(r *compiledRule, src netip.Addr, transport, via, reason 
 		Level:   events.LevelWarn,
 		Title:   fmt.Sprintf("端口敲门拒绝了 %s", src),
 		Message: reason,
-		Fields:  map[string]string{"ip": src.String(), "reason": reason, "via": transport},
+		Fields:  fields,
 	})
 }
 
@@ -1013,6 +1266,21 @@ func (m *Module) count(f func(*Counters)) {
 	m.stateMu.Lock()
 	f(&m.counters)
 	m.stateMu.Unlock()
+}
+
+// identityStatsLocked 返回规则中某个身份的运行统计。调用方持有 stateMu。
+func (m *Module) identityStatsLocked(rule, id string) *ruleStats {
+	byID := m.idStats[rule]
+	if byID == nil {
+		byID = map[string]*ruleStats{}
+		m.idStats[rule] = byID
+	}
+	st := byID[id]
+	if st == nil {
+		st = &ruleStats{}
+		byID[id] = st
+	}
+	return st
 }
 
 func (m *Module) statsLocked(key string) *ruleStats {
@@ -1097,6 +1365,12 @@ func (m *Module) refreshLocal() {
 // revoke 撤销 addr 持有的授权（rule 为空时撤销该地址的全部授权），并从防火墙中删除对应放行。返回撤销的数量。
 func (m *Module) revoke(addr netip.Addr, rule string) int {
 	n := knockgate.Default.Revoke(addr, rule)
+	m.dropFW(addr, rule)
+	return n
+}
+
+// dropFW 删除 addr 经敲门报文取得的 rule（为空时全部规则）防火墙放行；同一地址、端口仍被其他规则或网页登录放行时保留。
+func (m *Module) dropFW(addr netip.Addr, rule string) {
 	var del []fwGrant
 	m.stateMu.Lock()
 	for k := range m.fwGrants {
@@ -1126,7 +1400,6 @@ func (m *Module) revoke(addr netip.Addr, rule string) int {
 	}
 	m.stateMu.Unlock()
 	m.fw.revoke(keep)
-	return n
 }
 
 // kickWeb 通知 loop 同步网页登录授权的防火墙放行；已有待处理的通知时直接返回，不阻塞调用方（授权登记表的回调）。
@@ -1214,6 +1487,7 @@ func (m *Module) revokeRuleLocked(key string) {
 		}
 	}
 	delete(m.stats, key)
+	delete(m.idStats, key)
 	m.stateMu.Unlock()
 }
 

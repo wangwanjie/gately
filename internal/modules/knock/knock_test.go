@@ -10,6 +10,7 @@ import (
 	"net"
 	"net/netip"
 	"os"
+	"slices"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -253,6 +254,9 @@ func (e *testEnv) rule(key string) Rule {
 	defer e.m.mu.Unlock()
 	for _, r := range e.m.cfg.Rules {
 		if r.Key == key {
+			// 复制切片字段：调用方修改返回值不应改到模块配置
+			r.Ports = slices.Clone(r.Ports)
+			r.Identities = slices.Clone(r.Identities)
 			return r
 		}
 	}

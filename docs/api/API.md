@@ -1687,6 +1687,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 字段 | 类型 |
 | --- | --- |
 | `addr` | string |
+| `identity` | string |
 | `ports` | 数组 of string |
 | `rule` | string |
 | `ruleName` | string |
@@ -1695,6 +1696,17 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `source` | string |
 | `until` | 时间 (RFC 3339) |
 | `user` | string |
+
+### knock.Identity
+
+| 字段 | 类型 |
+| --- | --- |
+| `enable` | boolean |
+| `encKey` | string |
+| `hmacKey` | string |
+| `id` | string |
+| `name` | string |
+| `remark` | string |
 
 ### knock.Rule
 
@@ -1706,12 +1718,15 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `group` | string |
 | `hmacKey` | string |
 | `hmacType` | string |
+| `identities` | 数组 of `knock.Identity` |
 | `key` | string |
 | `maxTimeout` | integer |
 | `name` | string |
 | `ports` | 数组 of string |
 | `remark` | string |
 | `requireAddr` | boolean |
+| `sharedKeyOff` | boolean |
+| `singleAddr` | boolean |
 | `timeout` | integer |
 | `user` | string |
 
