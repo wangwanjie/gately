@@ -7,6 +7,10 @@ description: Anuncios y notas de cada versión de Gately.
 
 A continuación se listan los anuncios de las versiones principales. Consulta [GitHub Releases](https://github.com/wangwanjie/gately/releases) para ver todos los cambios y las descargas de cada versión.
 
+## [v0.6.8.2](/es/news/v0.6.8.2)
+
+ · El port knocking admite una clave por persona; el reenvío de puertos y el enrutamiento por protocolo pueden eximir orígenes del límite por origen; al hacer proxy a otro Gately ya no se eliminan las cookies de inicio de sesión y de entrada segura del propio backend, lo que también corrige el 421 de la v0.6.8.1 detrás de un proxy inverso; los paneles de navegación se ordenan arrastrando y admiten grupos; los proxies inversos comparten el pool de conexiones del backend y con mil sitios la memoria se reduce a la mitad.
+
 ## [v0.6.8.1](/es/news/v0.6.8.1)
 
 17 de noviembre de 2026 · Corrige el error de formato de siteCerts al añadir o editar un sitio en v0.6.8; cuando un certificado comodín cubre varios dominios que el enrutamiento por protocolo envía a distintos Gately, el «Sitio no encontrado» causado por la reutilización de conexión del navegador pasa a devolver 421 para que el navegador vuelva a conectarse; el panel de navegación incorpora los tamaños de enlace 1×1 / 1×2 / 2×2, la apertura directa de enlaces con varias direcciones, la obtención de iconos de enlace e interruptores de página.
