@@ -898,6 +898,21 @@ func (f *firewall) loop(ctx context.Context) {
 			openTimer.Stop()
 		}
 	}()
+	// 封禁变化的写入限流：距上次写入超过 minFlushGap 时立即写入（零散的封禁毫秒级生效），
+	// 否则推迟到间隔满后合并写入。每次写入都要对账整张封禁表并启动一次 nft，
+	// 持续攻击时日志一到就写会每秒启动几十次 nft，CPU 主要花在这里
+	var lastFlush time.Time
+	var flushWake <-chan time.Time
+	var flushTimer *time.Timer
+	defer func() {
+		if flushTimer != nil {
+			flushTimer.Stop()
+		}
+	}()
+	doFlush := func() {
+		lastFlush = time.Now()
+		f.flush(ctx)
+	}
 	for {
 		select {
 		case <-ctx.Done():
@@ -919,17 +934,33 @@ func (f *firewall) loop(ctx context.Context) {
 		case <-early.C:
 			f.poll(ctx)
 		case <-f.kick:
-			f.flush(ctx)
+			if wait := minFlushGap - time.Since(lastFlush); wait <= 0 {
+				doFlush()
+			} else if flushWake == nil {
+				// 间隔未满：等到间隔满再写，期间的变化合并到这一次
+				if flushTimer == nil {
+					flushTimer = time.NewTimer(wait)
+				} else {
+					flushTimer.Reset(wait)
+				}
+				flushWake = flushTimer.C
+			}
+		case <-flushWake:
+			flushWake = nil
+			doFlush()
 		case <-t.C:
 			tick++
 			if tick%retryEvery == 0 {
 				f.retry(ctx)
 			}
-			f.flush(ctx)
+			doFlush()
 			f.poll(ctx)
 		}
 	}
 }
+
+// minFlushGap 为两次写入封禁变化的最短间隔，见 loop
+const minFlushGap = 250 * time.Millisecond
 
 // openRefreshDelay 为收到端口登记变化后合并后续变化的时间
 const openRefreshDelay = 300 * time.Millisecond

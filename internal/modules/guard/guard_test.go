@@ -1283,3 +1283,57 @@ func TestFileAuthFailedJail(t *testing.T) {
 		t.Fatal("应提供文件服务登录失败的模板")
 	}
 }
+
+// 封禁变化的写入限流：空闲后的第一个封禁立即写入；紧接着的一串封禁合并到间隔满后的一次写入，全部都写进去。
+func TestFirewallFlushThrottle(t *testing.T) {
+	cleanDefault(t)
+	fake := &fakeNFT{output: `{"nftables": []}`}
+	fw := activeFirewall(t, fake)
+	unsub := banlist.Default.Subscribe(fw.change)
+	defer unsub()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go fw.loop(ctx)
+	// 只统计写入元素的调用（-f - 读标准输入的脚本），忽略列表、计数等查询
+	writes := func() (n int, all string) {
+		fake.mu.Lock()
+		defer fake.mu.Unlock()
+		for _, c := range fake.calls {
+			if strings.Contains(c, "add element") {
+				n++
+				all += c
+			}
+		}
+		return n, all
+	}
+	waitFor := func(what string, cond func() bool) {
+		t.Helper()
+		deadline := time.Now().Add(2 * time.Second)
+		for time.Now().Before(deadline) {
+			if cond() {
+				return
+			}
+			time.Sleep(5 * time.Millisecond)
+		}
+		t.Fatal(what)
+	}
+	start := time.Now()
+	banlist.Default.Ban("198.51.100.1", banlist.Options{Duration: time.Hour})
+	waitFor("第一个封禁应立即写入", func() bool {
+		n, _ := writes()
+		return n == 1
+	})
+	if d := time.Since(start); d > minFlushGap/2 {
+		t.Fatalf("第一个封禁写入耗时 %v，应远小于限流间隔", d)
+	}
+	for i := 2; i <= 30; i++ {
+		banlist.Default.Ban(fmt.Sprintf("198.51.100.%d", i), banlist.Options{Duration: time.Hour})
+	}
+	waitFor("随后的封禁应在限流间隔后全部写入", func() bool {
+		_, all := writes()
+		return strings.Contains(all, "198.51.100.30")
+	})
+	if n, all := writes(); n > 3 {
+		t.Fatalf("一串封禁应合并写入，实际写入 %d 次:\n%s", n, all)
+	}
+}
