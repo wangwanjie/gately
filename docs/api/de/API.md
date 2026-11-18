@@ -1687,6 +1687,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | Feld | Typ |
 | --- | --- |
 | `addr` | string |
+| `identity` | string |
 | `ports` | Array von string |
 | `rule` | string |
 | `ruleName` | string |
@@ -1695,6 +1696,17 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `source` | string |
 | `until` | Zeit (RFC 3339) |
 | `user` | string |
+
+### knock.Identity
+
+| Feld | Typ |
+| --- | --- |
+| `enable` | boolean |
+| `encKey` | string |
+| `hmacKey` | string |
+| `id` | string |
+| `name` | string |
+| `remark` | string |
 
 ### knock.Rule
 
@@ -1706,12 +1718,15 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `group` | string |
 | `hmacKey` | string |
 | `hmacType` | string |
+| `identities` | Array von `knock.Identity` |
 | `key` | string |
 | `maxTimeout` | integer |
 | `name` | string |
 | `ports` | Array von string |
 | `remark` | string |
 | `requireAddr` | boolean |
+| `sharedKeyOff` | boolean |
+| `singleAddr` | boolean |
 | `timeout` | integer |
 | `user` | string |
 

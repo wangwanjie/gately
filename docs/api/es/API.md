@@ -1687,6 +1687,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | Campo | Tipo |
 | --- | --- |
 | `addr` | string |
+| `identity` | string |
 | `ports` | Lista de string |
 | `rule` | string |
 | `ruleName` | string |
@@ -1695,6 +1696,17 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `source` | string |
 | `until` | Hora (RFC 3339) |
 | `user` | string |
+
+### knock.Identity
+
+| Campo | Tipo |
+| --- | --- |
+| `enable` | boolean |
+| `encKey` | string |
+| `hmacKey` | string |
+| `id` | string |
+| `name` | string |
+| `remark` | string |
 
 ### knock.Rule
 
@@ -1706,12 +1718,15 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `group` | string |
 | `hmacKey` | string |
 | `hmacType` | string |
+| `identities` | Lista de `knock.Identity` |
 | `key` | string |
 | `maxTimeout` | integer |
 | `name` | string |
 | `ports` | Lista de string |
 | `remark` | string |
 | `requireAddr` | boolean |
+| `sharedKeyOff` | boolean |
+| `singleAddr` | boolean |
 | `timeout` | integer |
 | `user` | string |
 

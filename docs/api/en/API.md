@@ -1687,6 +1687,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | Field | Type |
 | --- | --- |
 | `addr` | string |
+| `identity` | string |
 | `ports` | Array of string |
 | `rule` | string |
 | `ruleName` | string |
@@ -1695,6 +1696,17 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `source` | string |
 | `until` | Time (RFC 3339) |
 | `user` | string |
+
+### knock.Identity
+
+| Field | Type |
+| --- | --- |
+| `enable` | boolean |
+| `encKey` | string |
+| `hmacKey` | string |
+| `id` | string |
+| `name` | string |
+| `remark` | string |
 
 ### knock.Rule
 
@@ -1706,12 +1718,15 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `group` | string |
 | `hmacKey` | string |
 | `hmacType` | string |
+| `identities` | Array of `knock.Identity` |
 | `key` | string |
 | `maxTimeout` | integer |
 | `name` | string |
 | `ports` | Array of string |
 | `remark` | string |
 | `requireAddr` | boolean |
+| `sharedKeyOff` | boolean |
+| `singleAddr` | boolean |
 | `timeout` | integer |
 | `user` | string |
 

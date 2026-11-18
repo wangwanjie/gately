@@ -1687,6 +1687,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | Campo | Tipo |
 | --- | --- |
 | `addr` | string |
+| `identity` | string |
 | `ports` | Array de string |
 | `rule` | string |
 | `ruleName` | string |
@@ -1695,6 +1696,17 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `source` | string |
 | `until` | Hora (RFC 3339) |
 | `user` | string |
+
+### knock.Identity
+
+| Campo | Tipo |
+| --- | --- |
+| `enable` | boolean |
+| `encKey` | string |
+| `hmacKey` | string |
+| `id` | string |
+| `name` | string |
+| `remark` | string |
 
 ### knock.Rule
 
@@ -1706,12 +1718,15 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `group` | string |
 | `hmacKey` | string |
 | `hmacType` | string |
+| `identities` | Array de `knock.Identity` |
 | `key` | string |
 | `maxTimeout` | integer |
 | `name` | string |
 | `ports` | Array de string |
 | `remark` | string |
 | `requireAddr` | boolean |
+| `sharedKeyOff` | boolean |
+| `singleAddr` | boolean |
 | `timeout` | integer |
 | `user` | string |
 
