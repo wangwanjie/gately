@@ -1242,6 +1242,17 @@ type tokenBucket struct {
 	last        time.Time
 }
 
+// level 返回 now 时桶中的令牌数（按速率补充后），不修改桶。
+func (b *tokenBucket) level(now time.Time) float64 {
+	if b.last.IsZero() {
+		return b.burst
+	}
+	if d := now.Sub(b.last).Seconds(); d > 0 {
+		return min(b.burst, b.tokens+d*b.rate)
+	}
+	return b.tokens
+}
+
 func (b *tokenBucket) take(now time.Time) bool {
 	return b.takeN(now, 1)
 }
@@ -1263,27 +1274,29 @@ func (b *tokenBucket) takeN(now time.Time, n float64) bool {
 	return true
 }
 
-// 按来源网段限速的参数：同一网段每秒最多认证 srcRate 个报文；网段数超过 srcCap 时，新网段共用 overflow 桶
+// 按来源网段限速的参数：同一网段每秒最多认证 srcRate 个报文；网段数达到 srcCap 时，新网段挤掉一个最空闲的网段
 const (
-	srcRate      = 10
-	srcBurst     = 20
-	srcCap       = 4096
-	overflowRate = 50
+	srcRate  = 10
+	srcBurst = 20
+	srcCap   = 4096
+	// evictSample 为网段数满了以后挑选淘汰对象时抽查的桶数
+	evictSample = 8
 )
 
 // srcLimiter 按来源网段（IPv4 /24、IPv6 /64）分桶限速，网段数有上限，空闲的桶定期清理。调用方持有 stateMu。
+//
+// 网段数满了以后，新网段从随机抽查的几个桶中淘汰令牌最多（最空闲）的一个，自己占用新桶，而不是共用一个小桶：
+// 伪造来源的洪水每个网段通常只发一两个报文，表里几乎全是只用过一个令牌的桶，持续洪水的来源令牌接近耗尽，
+// 抽查时几乎不会被选中，所以按来源限速对它仍然有效；合法敲门的新网段也总能拿到自己的桶，
+// 只和洪水一起受全局令牌桶（HMAC 校验预算）约束，不会落进一个被洪水占满的共用桶。
 type srcLimiter struct {
-	buckets  map[netip.Prefix]*tokenBucket
-	overflow tokenBucket
-	// pruneAt 为最近一次清理的时间：网段数满了以后每个新网段都会触发清理，清理要遍历全部桶，
-	// 分散来源的洪水下每个报文都遍历一遍反而比认证本身更耗 CPU，所以每秒最多清理一次
-	pruneAt time.Time
-	// prunes 为清理次数，供测试检查
-	prunes int
+	buckets map[netip.Prefix]*tokenBucket
+	// evictions 为淘汰次数，供测试检查
+	evictions int
 }
 
 func newSrcLimiter() *srcLimiter {
-	return &srcLimiter{buckets: map[netip.Prefix]*tokenBucket{}, overflow: tokenBucket{rate: overflowRate, burst: overflowRate * 2}}
+	return &srcLimiter{buckets: map[netip.Prefix]*tokenBucket{}}
 }
 
 // srcPrefix 返回来源地址所属的限速网段。
@@ -1300,19 +1313,37 @@ func (l *srcLimiter) take(src netip.Addr, now time.Time) bool {
 	p := srcPrefix(src)
 	b := l.buckets[p]
 	if b == nil {
-		if len(l.buckets) >= srcCap && (l.pruneAt.IsZero() || now.Sub(l.pruneAt) >= time.Second) {
-			l.pruneAt = now
-			l.prunes++
-			l.prune(now)
-		}
 		if len(l.buckets) >= srcCap {
-			// 网段过多（大量伪造来源）：新网段共用一个桶，已有网段的桶不受影响
-			return l.overflow.take(now)
+			l.evict(now)
 		}
 		b = &tokenBucket{rate: srcRate, burst: srcBurst}
 		l.buckets[p] = b
 	}
 	return b.take(now)
+}
+
+// evict 从随机位置起抽查最多 evictSample 个桶，删除其中令牌最多的一个；遇到已经回满的桶直接删除。
+// map 的遍历起点是随机的，抽查不需要额外的数据结构，代价与网段总数无关。
+func (l *srcLimiter) evict(now time.Time) {
+	var (
+		victim netip.Prefix
+		best   = -1.0
+		n      = 0
+	)
+	for p, b := range l.buckets {
+		lv := b.level(now)
+		if lv > best {
+			victim, best = p, lv
+		}
+		n++
+		if n >= evictSample || lv >= b.burst {
+			break
+		}
+	}
+	if best >= 0 {
+		delete(l.buckets, victim)
+		l.evictions++
+	}
 }
 
 // prune 删除已经回满（空闲足够久）的桶：重新创建时同样是满的，删除不改变限速结果。

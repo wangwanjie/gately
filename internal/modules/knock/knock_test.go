@@ -876,26 +876,74 @@ func TestGlobalBucketByHMACCost(t *testing.T) {
 	}
 }
 
-// 网段数满了以后，新网段的报文不应每次都遍历全部桶：清理每秒最多一次。
-func TestSrcLimiterPruneThrottled(t *testing.T) {
+// 网段数满了以后，新网段淘汰一个最空闲的桶：合法敲门的新网段拿到自己的桶，持续洪水的网段仍受按来源限速。
+func TestSrcLimiterEvictsIdlest(t *testing.T) {
 	l := newSrcLimiter()
 	now := time.Unix(1000, 0)
-	for i := range srcCap {
-		l.take(netip.AddrFrom4([4]byte{10, byte(i >> 8), byte(i), 1}), now)
+	// 一个持续洪水的来源先耗尽自己的令牌
+	flooder := netip.MustParseAddr("203.0.113.9")
+	for l.take(flooder, now) {
 	}
-	for i := range 1000 {
-		l.take(netip.AddrFrom4([4]byte{11, byte(i >> 8), byte(i), 1}), now.Add(time.Duration(i)*time.Millisecond))
+	// 伪造来源占满网段表，并在之后持续以新网段轮换
+	for i := range srcCap * 3 {
+		at := now.Add(time.Duration(i) * 100 * time.Microsecond)
+		if !l.take(netip.AddrFrom4([4]byte{byte(10 + i>>16), byte(i >> 8), byte(i), 1}), at) {
+			t.Fatalf("新网段的第一个报文应拿到令牌: %d", i)
+		}
+		// 洪水来源每毫秒发一个报文，令牌一直接近耗尽
+		if i%10 == 0 {
+			l.take(flooder, at)
+		}
 	}
-	if l.prunes != 1 {
-		t.Fatalf("1 秒内应只清理 1 次，实际 %d 次", l.prunes)
+	if len(l.buckets) != srcCap {
+		t.Fatalf("桶数应封顶在 %d: %d", srcCap, len(l.buckets))
 	}
-	l.take(netip.MustParseAddr("12.0.0.1"), now.Add(1500*time.Millisecond))
-	if l.prunes != 2 {
-		t.Fatalf("过了 1 秒应可再次清理: %d", l.prunes)
+	if l.buckets[srcPrefix(flooder)] == nil {
+		t.Fatal("令牌耗尽的洪水来源不应被淘汰")
+	}
+	end := now.Add(time.Duration(srcCap*3) * 100 * time.Microsecond)
+	if l.take(flooder, end) {
+		t.Fatal("洪水来源仍应受按来源限速")
+	}
+	if !l.take(netip.MustParseAddr("198.51.100.7"), end) {
+		t.Fatal("表满时合法敲门的新网段应拿到自己的桶")
+	}
+	if l.evictions != srcCap*2+2 {
+		t.Fatalf("每个新网段应淘汰 1 个桶: %d", l.evictions)
 	}
 }
 
-// 网段数达到上限后新网段共用一个桶，不会无限增长。
+// 伪造来源的分散洪水（每个 /24 一个报文，网段数远超上限）中，合法敲门都能通过认证。
+func TestSpoofFloodLegitKnock(t *testing.T) {
+	env := newEnv(t, sshRule("ssh"))
+	other := sshRule("x")
+	_ = other.Validate()
+	junk := env.packet(t, other, spa.Message{})
+	start := env.clock.now()
+	ok := 0
+	for i := range 50000 {
+		// 模拟每秒 1 万个伪造来源报文
+		env.clock.set(start.Add(time.Duration(i) * 100 * time.Microsecond))
+		a := netip.AddrFrom4([4]byte{byte(100 + i>>16), byte(i >> 8), byte(i), 1})
+		if errors.Is(env.m.handle(junk, a, transportUDP, "UDP"), errLimited) {
+			t.Fatalf("1 万包/秒的伪造洪水不应超出 HMAC 预算: 第 %d 个", i)
+		}
+		if i%5000 == 4999 {
+			legit := netip.AddrFrom4([4]byte{198, 18, byte(i / 5000), 7})
+			pkt := env.packet(t, env.rule("r-ssh"), spa.Message{})
+			if err := env.m.handle(pkt, legit, transportUDP, "UDP"); err == nil {
+				ok++
+			} else {
+				t.Logf("合法敲门失败: %v", err)
+			}
+		}
+	}
+	if ok != 10 {
+		t.Fatalf("合法敲门应全部通过: %d/10", ok)
+	}
+}
+
+// 网段数达到上限后新网段淘汰旧桶，不会无限增长。
 func TestSrcLimiterBounded(t *testing.T) {
 	l := newSrcLimiter()
 	now := time.Unix(1000, 0)
