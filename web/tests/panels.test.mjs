@@ -2,7 +2,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
-  emptyLink, groupLinks, moveLink, moveGroup, insertLink, importableSites, linksFromSites, iconKind, safeIconSrc,
+  emptyLink, groupLinks, moveLink, moveLinks, moveGroup, insertLink, importableSites, linksFromSites, iconKind, safeIconSrc,
   initial, paletteColor, textIconOk, hasVars, toPanel, mergeLinks, freeName, MAX_LINKS,
   emptyPanel, layoutDefaults, normalizeLayoutValue, LAYOUT_LIMITS,
   sizeChoice, sizeValue, faviconUrls, SIZE_CHOICES,
@@ -33,6 +33,71 @@ test('moveGroup 整组移动', () => {
   assert.deepEqual(names(moveGroup(links, 'x', 1)), ['b', 'a', 'c', 'd'])
   assert.equal(moveGroup(links, 'x', -1), links)
   assert.equal(moveGroup(links, 'none', 1), links)
+})
+
+test('moveLinks 在分组内拖动到任意位置', () => {
+  const links = [L('a', 'x'), L('b', 'x'), L('c', 'x'), L('d', 'x'), L('e', 'x')]
+  // 最后一个拖到最前
+  assert.deepEqual(names(moveLinks(links, [4], { group: 'x', before: 0 })), ['e', 'a', 'b', 'c', 'd'])
+  // 第一个拖到第三个之后
+  assert.deepEqual(names(moveLinks([...links], [0], { group: 'x', after: 2 })), ['b', 'c', 'a', 'd', 'e'])
+  // 放在分组标题上：移到该组末尾
+  assert.deepEqual(names(moveLinks([...links], [1], { group: 'x' })), ['a', 'c', 'd', 'e', 'b'])
+  // 位置没有变化返回 null
+  assert.equal(moveLinks([...links], [4], { group: 'x' }), null)
+  assert.equal(moveLinks([...links], [0], { group: 'x', before: 1 }), null)
+})
+
+test('moveLinks 多选一起移动，保持原有显示顺序', () => {
+  const links = [L('a', 'x'), L('b', 'x'), L('c', 'x'), L('d', 'x'), L('e', 'x'), L('f', 'x')]
+  // 选中的顺序与传入顺序无关，按显示顺序排列
+  assert.deepEqual(names(moveLinks(links, [5, 3, 4], { group: 'x', before: 0 })), ['d', 'e', 'f', 'a', 'b', 'c'])
+  // 不相邻的多项放到中间
+  assert.deepEqual(names(moveLinks([...links], [0, 5], { group: 'x', after: 2 })), ['b', 'c', 'a', 'f', 'd', 'e'])
+  // 放到被移动的链接自身旁边没有意义
+  assert.equal(moveLinks([...links], [0, 1], { group: 'x', before: 1 }), null)
+  assert.equal(moveLinks([...links], [0, 1], { group: 'x', after: 0 }), null)
+})
+
+test('moveLinks 跨分组移动并改写分组，分组顺序不变', () => {
+  const mk = () => [L('a1', 'A'), L('a2', 'A'), L('a3', 'A'), L('u'), L('b1', 'B'), L('b2', 'B')]
+  // A 组的两项拖到 B 组 b1 之后
+  let links = mk()
+  let r = moveLinks(links, [0, 2], { group: 'B', after: 4 })
+  assert.deepEqual(names(r), ['a2', 'u', 'b1', 'a1', 'a3', 'b2'])
+  assert.deepEqual(r.map((l) => l.group), ['A', '', 'B', 'B', 'B', 'B'])
+  // 保持对象身份，编辑器靠它记住行 id 与选中状态
+  assert.equal(r[3], links[0])
+  // 跨多个分组选中后放到分组标题上：移到该组末尾
+  links = mk()
+  r = moveLinks(links, [1, 3, 5], { group: 'A' })
+  assert.deepEqual(names(r), ['a1', 'a3', 'a2', 'u', 'b2', 'b1'])
+  assert.deepEqual(groupLinks(r).map((g) => g.name), ['A', 'B'])
+  // 整组移走后该分组消失，未分组放在原来的位置
+  links = mk()
+  r = moveLinks(links, [4, 5], { group: '', before: 3 })
+  assert.deepEqual(names(r), ['a1', 'a2', 'a3', 'b1', 'b2', 'u'])
+  assert.deepEqual(groupLinks(r).map((g) => g.name), ['A', ''])
+  // 移到新分组：放在最后，分组名去掉首尾空白
+  links = mk()
+  r = moveLinks(links, [0], { group: '  New ' })
+  assert.deepEqual(names(r), ['a2', 'a3', 'u', 'b1', 'b2', 'a1'])
+  assert.equal(r[5].group, 'New')
+  // 分组名首尾空白与已有分组视为同一组
+  links = [L('a', ' x '), L('b', 'y')]
+  r = moveLinks(links, [1], { group: 'x', before: 0 })
+  assert.deepEqual(names(r), ['b', 'a'])
+  assert.deepEqual(groupLinks(r).map((g) => g.name), ['x'])
+})
+
+test('moveLinks 忽略无效下标与不一致的位置', () => {
+  const links = [L('a', 'A'), L('b', 'B')]
+  assert.equal(moveLinks(links, [], { group: 'A' }), null)
+  assert.equal(moveLinks(links, [-1, 9, 1.5], { group: 'A' }), null)
+  // 目标链接不在目标分组中
+  assert.equal(moveLinks(links, [0], { group: 'A', before: 1 }), null)
+  // 无效的项被忽略，其余照常移动
+  assert.deepEqual(names(moveLinks(links, [1, 7], { group: 'A', before: 0 })), ['b', 'a'])
 })
 
 test('insertLink 放到同组最后，没有同组时放到最后', () => {

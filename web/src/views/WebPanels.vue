@@ -83,44 +83,109 @@
             <el-button v-if="!isReadonly" type="primary" :icon="Plus" data-test="link-add" @click="openLink(-1)">{{ t('panels.addLink') }}</el-button>
             <el-button v-if="!isReadonly" :icon="Import" data-test="link-import" @click="openImport">{{ t('panels.importSites') }}</el-button>
             <el-button v-if="!isReadonly" :icon="FileInput" data-test="link-sp" @click="openSunPanel('append')">{{ t('sunpanelImport.button') }}</el-button>
+            <el-button v-if="!isReadonly && editing.links.length > 1" :type="selecting ? 'primary' : 'default'" :icon="ListChecks" data-test="link-select" @click="toggleSelecting">
+              {{ selecting ? t('panels.selectDone') : t('panels.multiSelect') }}
+            </el-button>
             <span class="muted count">{{ editing.links.length }} / {{ MAX_LINKS }}</span>
           </div>
-          <div v-if="!editing.links.length" class="links-empty">{{ t('panels.noLinks') }}</div>
-          <div v-for="(g, gi) in linkGroups" :key="g.name" class="link-group" data-test="link-group">
-            <div class="group-head">
-              <FolderClosed :size="14" />
-              <span class="group-name">{{ g.name || t('panels.ungrouped') }}</span>
-              <span class="group-count">{{ g.items.length }}</span>
-              <span class="flex1" />
-              <template v-if="!isReadonly && linkGroups.length > 1">
-                <el-button text size="small" :icon="ArrowUp" :disabled="gi === 0" :aria-label="t('panels.moveUp')" :title="t('panels.groupUp')" @click="shiftGroup(g.name, -1)" />
-                <el-button text size="small" :icon="ArrowDown" :disabled="gi === linkGroups.length - 1" :aria-label="t('panels.moveDown')" :title="t('panels.groupDown')" @click="shiftGroup(g.name, 1)" />
-              </template>
-            </div>
-            <div v-for="(i, pos) in g.items" :key="rowKey(i)" class="link-row" :class="{ hidden: editing.links[i].hide }" data-test="link-row">
-              <PanelIcon :icon="editing.links[i].icon" :name="editing.links[i].name" :color="editing.links[i].color" :size="32" />
-              <div class="link-main" @click="!isReadonly && openLink(i)">
-                <div class="link-name">
-                  <span class="ellipsis">{{ editing.links[i].name }}</span>
-                  <el-tag v-if="editing.links[i].hide" size="small" type="info">{{ t('panels.hiddenTag') }}</el-tag>
-                  <el-tag v-if="editing.links[i].authOnly" size="small" type="warning" data-test="auth-tag"><Lock :size="11" /> {{ t('panels.authOnlyTag') }}</el-tag>
-                  <el-tag v-if="editing.links[i].size" size="small" type="info" data-test="size-tag">{{ sizeLabel(sizeChoice(editing.links[i].size, editing.cardStyle)) }}</el-tag>
-                  <el-tag v-if="editing.links[i].sameTab" size="small" type="info">{{ t('panels.sameTabTag') }}</el-tag>
-                  <el-tag v-if="editing.links[i].alts?.length" size="small" :title="editing.links[i].alts.map((a) => a.name).join(' / ')">{{ t('panels.altCount', { n: editing.links[i].alts.length }) }}</el-tag>
-                </div>
-                <div class="link-url mono ellipsis" :title="editing.links[i].url">{{ editing.links[i].url }}</div>
-                <div v-if="editing.links[i].lanUrl" class="link-url mono ellipsis lan" :title="editing.links[i].lanUrl">
-                  <span class="lan-tag">{{ t('panels.lanShort') }}</span>{{ editing.links[i].lanUrl }}
-                </div>
-              </div>
-              <div v-if="!isReadonly" class="link-actions">
-                <el-button text size="small" :icon="ArrowUp" :disabled="pos === 0" :aria-label="t('panels.moveUp')" :title="t('panels.moveUp')" @click="shiftLink(i, -1)" />
-                <el-button text size="small" :icon="ArrowDown" :disabled="pos === g.items.length - 1" :aria-label="t('panels.moveDown')" :title="t('panels.moveDown')" @click="shiftLink(i, 1)" />
-                <el-button text size="small" :icon="Pencil" :aria-label="t('common.edit')" :title="t('common.edit')" data-test="link-edit" @click="openLink(i)" />
-                <el-button text size="small" type="danger" :icon="Trash2" :aria-label="t('common.delete')" :title="t('common.delete')" data-test="link-delete" @click="removeLink(i)" />
+          <!-- 多选：勾选的链接（可跨分组）可一起拖动、移到分组或删除 -->
+          <div v-if="selecting" class="select-bar" data-test="link-select-bar">
+            <div class="select-hint">{{ t('panels.selectHint') }}</div>
+            <div class="select-ops">
+              <span class="select-count" data-test="link-selected-count">{{ t('groupSort.selectedCount', { count: selectedIds.size }) }}</span>
+              <el-button link type="primary" :disabled="selectedIds.size === editing.links.length" data-test="link-select-all" @click="selectAllLinks">{{ t('groupSort.selectAll') }}</el-button>
+              <el-button link :disabled="!selectedIds.size" @click="selectedIds = new Set()">{{ t('groupSort.clearSelection') }}</el-button>
+              <div class="select-group">
+                <el-autocomplete
+                  v-model="moveTarget"
+                  size="small"
+                  clearable
+                  class="select-group-input"
+                  :maxlength="MAX_GROUP_LEN"
+                  :fetch-suggestions="(q: string, cb: (v: { value: string }[]) => void) => cb(groupSuggestions(groupNames, q))"
+                  :placeholder="t('groupSort.targetPlaceholder')"
+                  data-test="link-move-target"
+                  @keyup.enter="moveSelectedToGroup"
+                />
+                <el-button size="small" type="primary" :icon="FolderInput" :disabled="!selectedIds.size" data-test="link-move-group" @click="moveSelectedToGroup">
+                  {{ moveTarget.trim() ? t('groupSort.moveToGroup') : t('groupSort.removeFromGroup') }}
+                </el-button>
+                <el-button size="small" type="danger" plain :icon="Trash2" :disabled="!selectedIds.size" data-test="link-delete-selected" @click="removeSelected">{{ t('panels.deleteSelected') }}</el-button>
               </div>
             </div>
           </div>
+          <div v-if="!editing.links.length" class="links-empty">{{ t('panels.noLinks') }}</div>
+          <div ref="linksRoot" class="links-list" :class="{ 'is-dragging': linkDrag.dragIds.value.length }">
+            <div v-for="(g, gi) in linkGroups" :key="g.name" class="link-group" data-test="link-group">
+              <div class="group-head" :class="linkDrag.dropClass(groupDropId(g.name))" :data-drop-id="groupDropId(g.name)" data-drop-kind="group">
+                <el-checkbox
+                  v-if="selecting"
+                  :model-value="groupChecked(g.items) === 'all'"
+                  :indeterminate="groupChecked(g.items) === 'some'"
+                  :aria-label="t('panels.selectGroup', { name: g.name || t('panels.ungrouped') })"
+                  data-test="group-check"
+                  @change="(v: string | number | boolean) => setLinksSelected(g.items, !!v)"
+                />
+                <FolderClosed :size="14" />
+                <span class="group-name">{{ g.name || t('panels.ungrouped') }}</span>
+                <span class="group-count">{{ g.items.length }}</span>
+                <span class="flex1" />
+                <template v-if="!isReadonly && linkGroups.length > 1">
+                  <el-button text size="small" :icon="ArrowUp" :disabled="gi === 0" :aria-label="t('panels.moveUp')" :title="t('panels.groupUp')" @click="shiftGroup(g.name, -1)" />
+                  <el-button text size="small" :icon="ArrowDown" :disabled="gi === linkGroups.length - 1" :aria-label="t('panels.moveDown')" :title="t('panels.groupDown')" @click="shiftGroup(g.name, 1)" />
+                </template>
+              </div>
+              <div
+                v-for="(i, pos) in g.items"
+                :key="rowKey(i)"
+                class="link-row"
+                :class="[{ hidden: editing.links[i].hide, selected: selecting && selectedIds.has(rowKey(i)) }, linkDrag.dropClass(rowDropId(i))]"
+                :data-drop-id="rowDropId(i)"
+                data-test="link-row"
+              >
+                <el-checkbox
+                  v-if="selecting"
+                  :model-value="selectedIds.has(rowKey(i))"
+                  :aria-label="t('groupSort.selectItem')"
+                  data-test="link-check"
+                  @change="(v: string | number | boolean) => setLinksSelected([i], !!v)"
+                />
+                <span
+                  v-if="!isReadonly && editing.links.length > 1"
+                  class="link-grip"
+                  :title="t('panels.dragHandle')"
+                  :aria-label="t('panels.dragHandle')"
+                  data-test="link-grip"
+                  @pointerdown="startLinkDrag($event, i)"
+                ><GripVertical :size="16" /></span>
+                <PanelIcon :icon="editing.links[i].icon" :name="editing.links[i].name" :color="editing.links[i].color" :size="32" />
+                <div class="link-main" @click="!isReadonly && openLink(i)">
+                  <div class="link-name">
+                    <span class="ellipsis">{{ editing.links[i].name }}</span>
+                    <el-tag v-if="editing.links[i].hide" size="small" type="info">{{ t('panels.hiddenTag') }}</el-tag>
+                    <el-tag v-if="editing.links[i].authOnly" size="small" type="warning" data-test="auth-tag"><Lock :size="11" /> {{ t('panels.authOnlyTag') }}</el-tag>
+                    <el-tag v-if="editing.links[i].size" size="small" type="info" data-test="size-tag">{{ sizeLabel(sizeChoice(editing.links[i].size, editing.cardStyle)) }}</el-tag>
+                    <el-tag v-if="editing.links[i].sameTab" size="small" type="info">{{ t('panels.sameTabTag') }}</el-tag>
+                    <el-tag v-if="editing.links[i].alts?.length" size="small" :title="editing.links[i].alts.map((a) => a.name).join(' / ')">{{ t('panels.altCount', { n: editing.links[i].alts.length }) }}</el-tag>
+                  </div>
+                  <div class="link-url mono ellipsis" :title="editing.links[i].url">{{ editing.links[i].url }}</div>
+                  <div v-if="editing.links[i].lanUrl" class="link-url mono ellipsis lan" :title="editing.links[i].lanUrl">
+                    <span class="lan-tag">{{ t('panels.lanShort') }}</span>{{ editing.links[i].lanUrl }}
+                  </div>
+                </div>
+                <div v-if="!isReadonly" class="link-actions">
+                  <el-button text size="small" :icon="ArrowUp" :disabled="pos === 0" :aria-label="t('panels.moveUp')" :title="t('panels.moveUp')" @click="shiftLink(i, -1)" />
+                  <el-button text size="small" :icon="ArrowDown" :disabled="pos === g.items.length - 1" :aria-label="t('panels.moveDown')" :title="t('panels.moveDown')" @click="shiftLink(i, 1)" />
+                  <el-button text size="small" :icon="Pencil" :aria-label="t('common.edit')" :title="t('common.edit')" data-test="link-edit" @click="openLink(i)" />
+                  <el-button text size="small" type="danger" :icon="Trash2" :aria-label="t('common.delete')" :title="t('common.delete')" data-test="link-delete" @click="removeLink(i)" />
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- 拖动时跟随指针的标签：显示链接名称或一起移动的数量 -->
+          <Teleport to="body">
+            <div v-if="linkDrag.ghost.show" class="link-drag-ghost" :style="{ left: linkDrag.ghost.x + 'px', top: linkDrag.ghost.y + 'px' }" data-test="link-drag-ghost">{{ linkDrag.ghost.label }}</div>
+          </Teleport>
         </el-tab-pane>
 
         <!-- 搜索：页面搜索框旁的下拉框可选“本站”（过滤本页链接）或这里配置的搜索引擎 -->
@@ -443,7 +508,7 @@
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
-import { ArrowDown, ArrowUp, CopyPlus, RotateCcw, Eye, FileInput, FolderClosed, Import, LayoutGrid, Lock, Pencil, Plus, RefreshCw, Search, Trash2 } from 'lucide-vue-next'
+import { ArrowDown, ArrowUp, CopyPlus, RotateCcw, Eye, FileInput, FolderClosed, FolderInput, GripVertical, Import, LayoutGrid, ListChecks, Lock, Pencil, Plus, RefreshCw, Search, Trash2 } from 'lucide-vue-next'
 import PageHeader from '../components/PageHeader.vue'
 import LoadError from '../components/LoadError.vue'
 import EntityCard from '../components/EntityCard.vue'
@@ -460,6 +525,8 @@ import SunPanelImport from '../components/SunPanelImport.vue'
 import { api, ApiError, errorText } from '../api'
 import { isReadonly, moduleEnabled } from '../nav'
 import { useFormLayout } from '../composables/useIsMobile'
+import { usePointerSort } from '../composables/usePointerSort'
+import { MAX_GROUP_LEN, groupSuggestions, type DropOver } from '../groupSort'
 import { splitLinesOrCommas, useListText } from '../composables/useListText'
 import { createItem, uniqueName, type CopySource } from '../copyDraft'
 import { forwardedEntry, siteLink, type ForwardSource } from '../siteUrl'
@@ -496,6 +563,7 @@ import {
   moveEngine,
   moveGroup,
   moveLink,
+  moveLinks,
   removeEngine,
   toPanel,
   type ImportListener,
@@ -664,6 +732,9 @@ function openEditor(p?: PanelView, copy = false) {
   }
   // 新建时先填写名称，已有面板直接编辑链接
   tab.value = p ? 'links' : 'page'
+  selecting.value = false
+  selectedIds.value = new Set()
+  moveTarget.value = ''
   previewHtml.value = ''
   previewError.value = ''
   editorVisible.value = true
@@ -777,6 +848,116 @@ function checkEngines(): boolean {
   return true
 }
 
+// ---- 拖动排序与多选 ----
+// 行的放置 id：链接为 l<行 id>，分组标题为 g:<分组名>（分组名可为任意文字，前缀不同不会与链接冲突）
+function rowDropId(i: number) {
+  return `l${rowKey(i)}`
+}
+function groupDropId(name: string) {
+  return `g:${name}`
+}
+// indexOfRow 由行 id 找回链接当前的下标，找不到（已删除）时为 -1
+function indexOfRow(id: number) {
+  return editing.value.links.findIndex((l) => rowIds.get(l) === id)
+}
+
+const linksRoot = ref<HTMLElement | null>(null)
+const selecting = ref(false)
+// selectedIds 为选中链接的行 id；行 id 跟随链接对象，移动与改分组后仍保持选中
+const selectedIds = ref(new Set<number>())
+const moveTarget = ref('')
+
+function toggleSelecting() {
+  selecting.value = !selecting.value
+  selectedIds.value = new Set()
+  moveTarget.value = ''
+}
+function setLinksSelected(indices: number[], v: boolean) {
+  const next = new Set(selectedIds.value)
+  for (const i of indices) {
+    if (v) {
+      next.add(rowKey(i))
+    } else {
+      next.delete(rowKey(i))
+    }
+  }
+  selectedIds.value = next
+}
+function selectAllLinks() {
+  setLinksSelected(editing.value.links.map((_, i) => i), true)
+}
+// groupChecked 返回分组的勾选状态：全部、部分或没有选中
+function groupChecked(indices: number[]): 'all' | 'some' | 'none' {
+  const n = indices.filter((i) => selectedIds.value.has(rowKey(i))).length
+  return n === 0 ? 'none' : n === indices.length ? 'all' : 'some'
+}
+// selectedIndices 为选中链接的下标，按显示顺序（分组顺序）排列
+function selectedIndices() {
+  return linkGroups.value.flatMap((g) => g.items).filter((i) => selectedIds.value.has(rowKey(i)))
+}
+
+function moveSelectedToGroup() {
+  const picked = selectedIndices()
+  const name = moveTarget.value.trim()
+  if (!picked.length) {
+    return
+  }
+  if ([...name].length > MAX_GROUP_LEN) {
+    ElMessage.error(t('groupSort.nameTooLong', { max: MAX_GROUP_LEN }))
+    return
+  }
+  const next = moveLinks(editing.value.links, picked, { group: name })
+  if (next) {
+    editing.value.links = next
+  }
+}
+
+async function removeSelected() {
+  const picked = new Set(selectedIndices())
+  if (!picked.size) {
+    return
+  }
+  try {
+    await ElMessageBox.confirm(t('panels.confirmDeleteSelected', { n: picked.size }), { type: 'warning', confirmButtonText: t('common.delete'), cancelButtonText: t('common.cancel') })
+  } catch {
+    return
+  }
+  editing.value.links = editing.value.links.filter((_, j) => !picked.has(j))
+  selectedIds.value = new Set()
+}
+
+// onLinkDrop 把拖动的链接放到目标位置：放在分组标题上移到该分组末尾，放在链接上插到它之前或之后（并改为它的分组）
+function onLinkDrop(ids: string[], over: DropOver) {
+  const picked = ids.map((id) => indexOfRow(Number(id.slice(1)))).filter((i) => i >= 0)
+  let next: PanelLink[] | null = null
+  if (over.id.startsWith('g:')) {
+    next = moveLinks(editing.value.links, picked, { group: over.id.slice(2) })
+  } else {
+    const j = indexOfRow(Number(over.id.slice(1)))
+    if (j < 0) {
+      return
+    }
+    const group = editing.value.links[j].group
+    next = moveLinks(editing.value.links, picked, over.after ? { group, after: j } : { group, before: j })
+  }
+  if (next) {
+    editing.value.links = next
+  }
+}
+const linkDrag = usePointerSort({ root: linksRoot, onDrop: onLinkDrop })
+
+// startLinkDrag 从把手开始拖动：多选模式下拖动选中的链接时，所有选中的链接一起移动
+function startLinkDrag(e: PointerEvent, i: number) {
+  const id = rowKey(i)
+  const group = selecting.value && selectedIds.value.has(id) ? selectedIndices() : [i]
+  const label = group.length > 1 ? t('panels.dragCount', { n: group.length }) : editing.value.links[i].name
+  linkDrag.start(
+    e,
+    group.map((k) => rowDropId(k)),
+    label,
+  )
+}
+
 function shiftLink(i: number, delta: -1 | 1) {
   editing.value.links = moveLink(editing.value.links, i, delta)
 }
@@ -790,6 +971,11 @@ async function removeLink(i: number) {
     await ElMessageBox.confirm(t('panels.confirmDeleteLink', { name: l.name }), { type: 'warning', confirmButtonText: t('common.delete'), cancelButtonText: t('common.cancel') })
   } catch {
     return
+  }
+  if (selectedIds.value.has(rowKey(i))) {
+    const next = new Set(selectedIds.value)
+    next.delete(rowKey(i))
+    selectedIds.value = next
   }
   editing.value.links = editing.value.links.filter((_, j) => j !== i)
 }
@@ -1130,6 +1316,81 @@ onMounted(async () => {
 .link-row.hidden {
   opacity: 0.55;
 }
+.link-row.selected {
+  background: var(--el-color-primary-light-9);
+}
+/* 拖动把手：触屏上按住把手拖动时不滚动页面 */
+.link-grip {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 32px;
+  margin: 0 -6px 0 -4px;
+  color: var(--el-text-color-secondary);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+.link-grip:hover {
+  color: var(--el-color-primary);
+}
+.links-list.is-dragging,
+.links-list.is-dragging .link-grip,
+.links-list.is-dragging .link-main {
+  cursor: grabbing;
+}
+.link-row.dragging {
+  opacity: 0.4;
+}
+.link-row.drop-before {
+  box-shadow: inset 0 3px 0 var(--el-color-primary);
+}
+.link-row.drop-after {
+  box-shadow: inset 0 -3px 0 var(--el-color-primary);
+}
+.group-head.drop-before,
+.group-head.drop-after {
+  background: var(--el-color-primary-light-8);
+  box-shadow: inset 0 0 0 2px var(--el-color-primary);
+}
+.select-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  border: 1px dashed var(--el-color-primary-light-5);
+  border-radius: var(--g-radius);
+  background: var(--el-color-primary-light-9);
+  font-size: 13px;
+}
+.select-hint {
+  color: var(--el-text-color-regular);
+}
+.select-ops,
+.select-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.select-ops .el-button + .el-button,
+.select-group .el-button + .el-button {
+  margin-left: 0;
+}
+.select-count {
+  font-weight: 600;
+}
+/* el-autocomplete 的根元素不带 scoped 属性，要从父元素用 :deep 选中 */
+.select-group :deep(.select-group-input) {
+  width: 200px;
+}
 .link-main {
   flex: 1;
   min-width: 0;
@@ -1422,6 +1683,19 @@ onMounted(async () => {
   font-size: 12px;
 }
 @media (max-width: 768px) {
+  /* 移动端多选工具栏：分组输入框占满一行，按钮在下一行 */
+  .select-group {
+    width: 100%;
+  }
+  .select-group :deep(.select-group-input) {
+    width: 100%;
+  }
+  /* 把手在手机上加宽，便于手指按住 */
+  .link-grip {
+    width: 28px;
+    height: 40px;
+    margin: -4px -6px -4px -6px;
+  }
   .panel-grid {
     grid-template-columns: 1fr;
   }
@@ -1475,5 +1749,31 @@ onMounted(async () => {
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+}
+</style>
+
+<style>
+/* 拖动链接时跟随指针的标签（传送到 body，不能用 scoped 样式） */
+.link-drag-ghost {
+  position: fixed;
+  z-index: 10000;
+  max-width: 240px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  background: var(--el-color-primary);
+  color: #fff;
+  font: 600 13px/1.4 var(--el-font-family, sans-serif);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+  transform: translate(12px, -50%);
+  box-shadow: 0 4px 12px rgb(0 0 0 / 18%);
+}
+/* 拖动中不选中文字 */
+html.g-pointer-sorting,
+html.g-pointer-sorting * {
+  user-select: none !important;
+  -webkit-user-select: none !important;
 }
 </style>

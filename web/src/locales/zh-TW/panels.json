@@ -174,5 +174,13 @@
   "sizeHelp1x2": "1×2：圖示加標題與描述。",
   "sizeHelp1x2App": "1×2：橫向寬塊，圖示在左，名稱與描述在右。",
   "sizeHelp2x2": "2×2：兩列兩欄的大塊，圖示放大，標題與描述在下方。",
-  "sizeHelp2x2App": "2×2：兩列兩欄的大圖示，名稱在下方。"
+  "sizeHelp2x2App": "2×2：兩列兩欄的大圖示，名稱在下方。",
+  "multiSelect": "多選",
+  "selectDone": "完成多選",
+  "selectHint": "按住左側把手拖曳調整順序，放到分組標題上即移到該分組末尾；勾選多個後拖曳其中任一個，選取的連結會一起移動",
+  "selectGroup": "選取分組「{name}」的全部連結",
+  "deleteSelected": "刪除所選",
+  "confirmDeleteSelected": "確定刪除所選的 {n} 個連結？",
+  "dragHandle": "按住拖曳排序",
+  "dragCount": "{n} 個連結"
 }

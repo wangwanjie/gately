@@ -174,5 +174,13 @@
   "sizeHelp1x2": "1×2: icon with title and description.",
   "sizeHelp1x2App": "1×2: a wide tile with the icon on the left and the name and description on the right.",
   "sizeHelp2x2": "2×2: a large block two rows high and two columns wide, with a bigger icon and the title and description below.",
-  "sizeHelp2x2App": "2×2: a big icon two rows high and two columns wide, with the name below."
+  "sizeHelp2x2App": "2×2: a big icon two rows high and two columns wide, with the name below.",
+  "multiSelect": "Select",
+  "selectDone": "Done selecting",
+  "selectHint": "Drag the handle on the left to reorder. Drop on a group title to move to the end of that group. Check several links and drag any one of them to move them together",
+  "selectGroup": "Select all links in “{name}”",
+  "deleteSelected": "Delete selected",
+  "confirmDeleteSelected": "Delete the {n} selected links?",
+  "dragHandle": "Drag to reorder",
+  "dragCount": "{n} links"
 }
