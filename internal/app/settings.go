@@ -424,6 +424,25 @@ func (a *App) entryValue(path string) string {
 	return hex.EncodeToString(m.Sum(nil))[:32]
 }
 
+// ownAdminCookie 判断后台 Cookie 是否为本实例签发且仍有效，Web 服务反代到其他后端时只剥离这些（见 httpx.SetOwnAdminCookieCheck）。
+// 未知名称按本实例的处理（宁可多剥）。
+func (a *App) ownAdminCookie(name, value string) bool {
+	switch name {
+	case auth.CookieName:
+		// 会话：本实例签发的有效会话（含只读账号）
+		_, ok := a.auth.Identify(value)
+		return ok
+	case entryCookie:
+		// 安全入口标记：与本实例当前入口路径的标记相同；未设置入口时本实例不认任何入口标记
+		safePath := a.settingsSnapshot().SafePath
+		return safePath != "" && hmac.Equal([]byte(value), []byte(a.entryValue(safePath)))
+	case loginNonceCookie:
+		// 第三方登录随机数：带本实例的签名
+		return a.ownLoginNonce(value)
+	}
+	return true
+}
+
 // isPrivate 判断地址是否属于内网（含回环、链路本地、CGNAT 与 IPv6 ULA）。
 func isPrivate(ip string) bool {
 	a, err := netip.ParseAddr(ip)

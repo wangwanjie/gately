@@ -36,18 +36,15 @@ func hasAdminCookie(h http.Header) bool {
 }
 
 // stripAdminCookies 在请求发往后端 up 前去掉后台 Cookie，除非后端就是本实例的管理后台。
-// 会话 Cookie 只剥离本实例签发的有效会话：后端是另一台 Gately（如反代到在线演示实例）时，
-// 浏览器为该域名带的同名 Cookie 是后端自己签发的会话，剥掉会让后端的登录永远 401；它对本实例不是凭据，转发不泄露任何东西。
-// 安全入口标记与第三方登录随机数无法判断归属，仍一律剥离。
+// 只剥离本实例签发且仍有效的后台 Cookie（会话、安全入口标记、第三方登录随机数）：后端是另一台 Gately 时
+// （反代到在线演示实例，或外层 Gately 经 frp 回到内网 Gately 的双层部署），浏览器为该域名带的同名 Cookie 是后端签发的，
+// 剥掉会让后端登录后永远 401、开了安全入口时一直被拒、第三方登录回调提示浏览器不匹配；它们对本实例不是凭据，转发不泄露任何东西。
 func stripAdminCookies(r *http.Request, up *url.URL) {
 	if !hasAdminCookie(r.Header) || upstreamIsAdmin(r.Context(), up) {
 		return
 	}
 	stripCookieFunc(r, func(c *http.Cookie) bool {
-		if c.Name == auth.CookieName {
-			return httpx.OwnSession(c.Value)
-		}
-		return slices.Contains(adminCookies, c.Name)
+		return slices.Contains(adminCookies, c.Name) && httpx.OwnAdminCookie(c.Name, c.Value)
 	})
 }
 
