@@ -80,7 +80,7 @@ Chaque programme est configuré avec 1000 sites en reverse proxy aux domaines di
 | Traefik | 24,229 | -38% | 18.8 ms | 0.74 s | 115 MiB | 157 MiB |
 
 - HAProxy compare les règles une par une avec `use_backend ... if { hdr(host) -i domaine }`, ce qui le ralentit à mesure que les sites se multiplient ; un fichier map permet de l'éviter, mais le test conserve ici l'écriture courante « une règle par site ».
-- Le pic de mémoire de Gately vient surtout des statistiques d'accès de chaque site : chaque site qui reçoit du trafic conserve 24 heures de statistiques à la minute, l'historique des connexions et la distribution des latences, donc avec 1000 sites recevant tous du trafic, la mémoire résidente dépasse un peu 200 MiB.
+- Le pic de mémoire de Gately vient surtout des statistiques d'accès de chaque site : dans v0.6.8.1, chaque site qui reçoit du trafic conserve d'un seul bloc 24 heures de statistiques à la minute et les quantiles de latence (environ 108 KiB). La version de développement les stocke par blocs d'une heure, ce qui ramène le pic à 225 MiB ; voir [Optimisations de la version de développement](#optimisations-de-la-version-de-developpement).
 
 ## Authentification web
 
@@ -215,11 +215,12 @@ Un même Gately active simultanément : deux sites en reverse proxy (HTTP et HTT
 
 ## Optimisations de la version de développement
 
-D'après les résultats ci-dessus, la version de développement (non publiée, postérieure au commit `3d579389`) a reçu les modifications suivantes et a été retestée dans le même environnement. Le reverse proxy et les 1000 sites utilisent la build du commit `3d579389` ; la prévention d'intrusion utilise une build qui inclut les deux dernières modifications. La colonne de référence est v0.6.8.1 remesurée le même jour (seules les lignes HTTP et HTTPS ont été remesurées ce jour-là ; les autres références viennent des données ci-dessus).
+D'après les résultats ci-dessus, la version de développement (non publiée, postérieure au commit `3d579389`) a reçu les modifications suivantes et a été retestée dans le même environnement. Le reverse proxy utilise la build du commit `3d579389` ; les 1000 sites et la prévention d'intrusion utilisent une build qui inclut les modifications suivantes. La colonne de référence est v0.6.8.1 remesurée le même jour (seules les lignes HTTP et HTTPS ont été remesurées ce jour-là ; les autres références viennent des données ci-dessus).
 
 - Les sites d'un même écouteur qui font du reverse proxy vers le même backend avec les mêmes réglages de connexion partagent un pool de connexions.
 - Quand au moins 1 GiB de mémoire est disponible, la valeur par défaut du pourcentage de GC passe de 100 à 200 (modifiable dans les paramètres ; les appareils à faible mémoire gardent 100).
 - Le reverse proxy copie la requête une fois de moins et crée trois valeurs de contexte de moins par requête.
+- Les statistiques à la minute sur 24 heures de chaque site sont stockées par blocs d'une heure alloués à la première utilisation, et les champs des compartiments passent à des compteurs 32 bits (un site qui n'a du trafic que pendant une heure passe d'environ 108 KiB à environ 5 KiB, et un site actif toute la journée occupe environ 50 KiB).
 - La prévention d'intrusion lit les fichiers de journal avec inotify, donc une écriture est lue aussitôt (l'interrogation chaque seconde est conservée en secours) ; les écritures de bannissements dans le pare-feu sont regroupées au plus une fois toutes les 250 millisecondes.
 
 | Indicateur | v0.6.8.1 | Version de développement | Évolution |
@@ -228,8 +229,9 @@ D'après les résultats ci-dessus, la version de développement (non publiée, p
 | Requêtes HTTPS/s (référence du même jour) | 34,072 | 36,079 | +5.9% |
 | Nouvelles connexions TLS/s | 4,636 | 4,942 | +6.6% |
 | Requêtes HTTP/2/s | 21,591 | 23,788 | +10% |
-| 1000 sites : requêtes/s | 33,211 | 38,839 | +17% |
-| 1000 sites : latence p99 | 29.8 ms | 11.7 ms | -61% |
+| 1000 sites : requêtes/s | 33,211 | 37,423 | +13% |
+| 1000 sites : latence p99 | 29.8 ms | 12.9 ms | -57% |
+| 1000 sites : pic de mémoire pendant le test | 463 MiB | 225 MiB | -51% |
 | Pic de mémoire pendant le test HTTP | 64.5 MiB | 81.1 MiB | +26% |
 | Prévention d'intrusion : latence de bannissement d'un seul attaquant p50 / p99 | 478 / 996 ms | 9.8 / 129 ms | |
 | Prévention d'intrusion : latence de bannissement sous attaque soutenue p50 / p99 (20,000 lignes/s) | 509 / 1006 ms | 143 / 269 ms | |
@@ -238,7 +240,7 @@ D'après les résultats ci-dessus, la version de développement (non publiée, p
 | Prévention d'intrusion : bannissement des 10,000 IP d'attaque | 12.3 s, 10.1 s de CPU | 10.1 s, 2.5 s de CPU | |
 
 - Le gain de débit vient surtout du réglage du GC, au prix d'un pic de mémoire supérieur d'une dizaine de MiB pendant le test. Le profilage montre que presque toute la charge restante sur le chemin du proxy se trouve dans l'implémentation HTTP de la bibliothèque standard de Go et dans le GC ; l'écart avec nginx et HAProxy tient au langage et à son runtime.
-- Avec 1000 sites, le débit augmente et la latence baisse parce que le pool de connexions partagé réduit fortement le nombre de connexions vers l'origine ; le pic de mémoire ne baisse pas, pour la raison indiquée plus haut.
+- Avec 1000 sites, le débit augmente et la latence baisse parce que le pool de connexions partagé réduit fortement le nombre de connexions vers l'origine ; le pic de mémoire est divisé par deux grâce au stockage des statistiques par blocs.
 - La latence d'un bannissement isolé est désormais inférieure à celle de fail2ban (280 / 864 ms). Avec un faible débit de journal, le CPU est plus élevé que dans l'ancienne version, car le pare-feu est écrit au plus 4 fois par seconde contre 1 fois auparavant ; il reste à quatre dixièmes de celui de fail2ban (20.4%).
 
 ## Reproduire

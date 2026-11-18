@@ -80,7 +80,7 @@ Jedes Programm wird mit 1000 Reverse-Proxy-Sites mit unterschiedlichen Domains k
 | Traefik | 24,229 | -38% | 18.8 ms | 0.74 s | 115 MiB | 157 MiB |
 
 - HAProxy vergleicht Regel für Regel mit `use_backend ... if { hdr(host) -i Domain }` und wird daher mit mehr Sites langsamer; eine map-Datei vermeidet das, der Test behält hier aber die übliche Schreibweise „eine Regel pro Site“ bei.
-- Die Speicherspitze von Gately stammt hauptsächlich aus den Zugriffsstatistiken je Site: Jede Site mit Datenverkehr hält 24 Stunden Minutenstatistik, Verbindungsverlauf und Latenzverteilung vor, sodass bei 1000 Sites mit gleichzeitigem Datenverkehr gut 200 MiB dauerhaft belegt sind.
+- Die Speicherspitze von Gately stammt hauptsächlich aus den Zugriffsstatistiken je Site: In v0.6.8.1 hält jede Site mit Datenverkehr einen ganzen Block mit 24 Stunden Minutenstatistik und Latenzquantilen vor (etwa 108 KiB). Die Entwicklungsversion speichert sie in Stundenblöcken, wodurch die Spitze auf 225 MiB sinkt; siehe [Optimierungen in der Entwicklungsversion](#optimierungen-in-der-entwicklungsversion).
 
 ## Web-Authentifizierung
 
@@ -215,11 +215,12 @@ Ein einziges Gately hat gleichzeitig aktiv: zwei Reverse-Proxy-Sites (HTTP und H
 
 ## Optimierungen in der Entwicklungsversion
 
-Auf Grundlage der obigen Ergebnisse wurden in der Entwicklungsversion (unveröffentlicht, nach Commit `3d579389`) die folgenden Änderungen vorgenommen und in derselben Umgebung erneut gemessen. Reverse-Proxy und 1000 Sites verwenden den Build von Commit `3d579389`; der Einbruchschutz verwendet einen Build mit den letzten beiden Änderungen. Die Vergleichsspalte ist v0.6.8.1, am selben Tag neu gemessen (nur die Zeilen HTTP und HTTPS wurden an dem Tag neu gemessen; die übrigen Vergleichswerte stammen aus den obigen Daten).
+Auf Grundlage der obigen Ergebnisse wurden in der Entwicklungsversion (unveröffentlicht, nach Commit `3d579389`) die folgenden Änderungen vorgenommen und in derselben Umgebung erneut gemessen. Der Reverse-Proxy verwendet den Build von Commit `3d579389`; 1000 Sites und der Einbruchschutz verwenden einen Build mit den späteren Änderungen. Die Vergleichsspalte ist v0.6.8.1, am selben Tag neu gemessen (nur die Zeilen HTTP und HTTPS wurden an dem Tag neu gemessen; die übrigen Vergleichswerte stammen aus den obigen Daten).
 
 - Sites im selben Listener, die per Reverse-Proxy an dasselbe Backend weiterleiten und gleiche Verbindungseinstellungen haben, teilen sich einen Verbindungspool.
 - Sind mindestens 1 GiB Speicher verfügbar, ändert sich der Standardwert des GC-Prozentsatzes von 100 auf 200 (in den Einstellungen änderbar; Geräte mit wenig Speicher behalten 100).
 - Der Reverse-Proxy kopiert pro Anfrage die Anfrage einmal weniger und legt drei Kontextwerte weniger an.
+- Die 24-Stunden-Minutenstatistik jeder Site wird in Stundenblöcken gespeichert, die erst bei der ersten Nutzung angelegt werden, und die Bucket-Felder schrumpfen auf 32-Bit-Zähler (eine Site mit Datenverkehr in nur einer Stunde sinkt von etwa 108 KiB auf etwa 5 KiB, eine ganztägig aktive belegt etwa 50 KiB).
 - Der Einbruchschutz liest Logdateien mit inotify und damit sofort nach dem Schreiben (die Abfrage im Sekundentakt bleibt als Rückfall erhalten); das Schreiben von Sperren in die Firewall wird höchstens alle 250 Millisekunden zusammengefasst.
 
 | Kennzahl | v0.6.8.1 | Entwicklungsversion | Änderung |
@@ -228,8 +229,9 @@ Auf Grundlage der obigen Ergebnisse wurden in der Entwicklungsversion (unveröff
 | HTTPS-Anfragen/s (Vergleich vom selben Tag) | 34,072 | 36,079 | +5.9% |
 | Neue TLS-Verbindungen/s | 4,636 | 4,942 | +6.6% |
 | HTTP/2-Anfragen/s | 21,591 | 23,788 | +10% |
-| 1000 Sites: Anfragen/s | 33,211 | 38,839 | +17% |
-| 1000 Sites: p99-Latenz | 29.8 ms | 11.7 ms | -61% |
+| 1000 Sites: Anfragen/s | 33,211 | 37,423 | +13% |
+| 1000 Sites: p99-Latenz | 29.8 ms | 12.9 ms | -57% |
+| 1000 Sites: Speicherspitze während des Tests | 463 MiB | 225 MiB | -51% |
 | Speicherspitze beim HTTP-Lasttest | 64.5 MiB | 81.1 MiB | +26% |
 | Einbruchschutz: Sperrlatenz bei einem einzelnen Angreifer p50 / p99 | 478 / 996 ms | 9.8 / 129 ms | |
 | Einbruchschutz: Sperrlatenz bei anhaltendem Angriff p50 / p99 (20,000 Zeilen/s) | 509 / 1006 ms | 143 / 269 ms | |
@@ -238,7 +240,7 @@ Auf Grundlage der obigen Ergebnisse wurden in der Entwicklungsversion (unveröff
 | Einbruchschutz: Sperren aller 10,000 Angreifer-IPs | 12.3 s, 10.1 CPU-s | 10.1 s, 2.5 CPU-s | |
 
 - Der Durchsatzgewinn stammt hauptsächlich aus der GC-Einstellung, mit einer um gut zehn MiB höheren Speicherspitze im Lasttest als Preis. Die Profilerstellung zeigt, dass fast der gesamte verbleibende Aufwand auf dem Proxy-Pfad in der HTTP-Implementierung der Go-Standardbibliothek und im GC liegt; der Abstand zu nginx und HAProxy liegt auf der Ebene von Sprache und Laufzeit.
-- Bei 1000 Sites steigt der Durchsatz und sinkt die Latenz, weil der gemeinsame Verbindungspool die Zahl der Verbindungen zum Ursprungsserver stark verringert; die Speicherspitze sinkt nicht, der Grund steht oben.
+- Bei 1000 Sites steigt der Durchsatz und sinkt die Latenz, weil der gemeinsame Verbindungspool die Zahl der Verbindungen zum Ursprungsserver stark verringert; die halbierte Speicherspitze geht auf die blockweise Speicherung der Statistiken zurück.
 - Die Latenz einer einzelnen Sperre liegt jetzt unter der von fail2ban (280 / 864 ms). Bei niedriger Lograte ist die CPU-Last höher als in der alten Version, weil die Firewall höchstens 4-mal pro Sekunde geschrieben wird statt vorher 1-mal; sie beträgt weiterhin nur vier Zehntel der von fail2ban (20.4%).
 
 ## Nachstellen
