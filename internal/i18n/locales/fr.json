@@ -874,6 +874,8 @@
   "任务正在执行": "La tâche est en cours d'exécution",
   "任务至少保留一条记录，如需全部删除请删除任务": "Une tâche doit garder au moins un enregistrement. Pour tous les retirer, supprimez la tâche",
   "任务详情与输出": "Détails et sortie de la tâche",
+  "任务配置无效，已跳过（在界面中修改并保存后恢复）: ": "Configuration de tâche invalide, ignorée (modifiez-la et enregistrez-la pour la rétablir) : ",
+  "任务配置无效，请编辑修正后保存: %s": "Configuration de tâche invalide, modifiez-la puis enregistrez-la : %s",
   "任意": "Tous",
   "任意有效令牌": "Tout jeton valide",
   "会话不存在或已结束": "La session n'existe pas ou est terminée",

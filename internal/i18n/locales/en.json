@@ -874,6 +874,8 @@
   "任务正在执行": "Task is running",
   "任务至少保留一条记录，如需全部删除请删除任务": "A task needs at least one record. To remove all of them, delete the task",
   "任务详情与输出": "Task details and output",
+  "任务配置无效，已跳过（在界面中修改并保存后恢复）: ": "Invalid task configuration, skipped (edit and save it to restore): ",
+  "任务配置无效，请编辑修正后保存: %s": "Invalid task configuration, edit and save it first: %s",
   "任意": "Any",
   "任意有效令牌": "Any valid token",
   "会话不存在或已结束": "Session does not exist or has ended",

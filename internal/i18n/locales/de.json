@@ -874,6 +874,8 @@
   "任务正在执行": "Aufgabe wird ausgeführt",
   "任务至少保留一条记录，如需全部删除请删除任务": "Eine Aufgabe braucht mindestens einen Eintrag. Um alle zu entfernen, löschen Sie die Aufgabe",
   "任务详情与输出": "Aufgabendetails und Ausgabe",
+  "任务配置无效，已跳过（在界面中修改并保存后恢复）: ": "Ungültige Aufgabenkonfiguration, übersprungen (bearbeiten und speichern, um sie wiederherzustellen): ",
+  "任务配置无效，请编辑修正后保存: %s": "Ungültige Aufgabenkonfiguration, bitte bearbeiten und speichern: %s",
   "任意": "Beliebig",
   "任意有效令牌": "Beliebiges gültiges Token",
   "会话不存在或已结束": "Sitzung existiert nicht oder ist beendet",
