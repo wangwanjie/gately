@@ -149,8 +149,33 @@ func cleanDirs(dirs []string) []string {
 	return out
 }
 
+// fillDefaults 为留空（零值）的参数补默认值，不做校验、不会失败。保存时由 Validate 开头调用；
+// 从配置文件加载时也调用，手工编辑或外部生成的连接缺这些字段时不会以零值连接
+// （端口为 0 时拨号失败，类型为空时连接池与 SFTP 不当作 SSH 连接，代理端口为 0 时连不上代理）。
+func (c *Connection) fillDefaults() {
+	if c.Type == "" {
+		c.Type = TypeSSH
+	}
+	switch c.Type {
+	case TypeSSH:
+		if c.SSH.Port == 0 {
+			c.SSH.Port = 22
+		}
+		if c.SSH.AuthType == "" {
+			c.SSH.AuthType = "password"
+		}
+		c.SSH.Proxy.fillDefaults()
+	case TypeTelnet:
+		if c.Telnet.Port == 0 {
+			c.Telnet.Port = 23
+		}
+		c.Telnet.Proxy.fillDefaults()
+	}
+}
+
 // Validate 校验连接配置并补全默认值。
 func (c *Connection) Validate() error {
+	c.fillDefaults()
 	if err := crud.NormalizeGroup(&c.Group); err != nil {
 		return err
 	}
@@ -160,8 +185,7 @@ func (c *Connection) Validate() error {
 	}
 	c.QuickAccessDirs = cleanDirs(c.QuickAccessDirs)
 	switch c.Type {
-	case "", TypeSSH:
-		c.Type = TypeSSH
+	case TypeSSH:
 		if err := c.validateSSH(); err != nil {
 			return err
 		}
@@ -170,9 +194,6 @@ func (c *Connection) Validate() error {
 		t.Host = strings.TrimSpace(t.Host)
 		if t.Host == "" {
 			return errors.New("请填写主机")
-		}
-		if t.Port == 0 {
-			t.Port = 23
 		}
 		if t.Port < 1 || t.Port > 65535 {
 			return errors.New("端口无效")
@@ -217,9 +238,6 @@ func (c *Connection) validateSSH() error {
 	if s.Username == "" && s.AuthType != AuthCredential {
 		return errors.New("请填写主机与用户名")
 	}
-	if s.Port == 0 {
-		s.Port = 22
-	}
 	if s.Port < 1 || s.Port > 65535 {
 		return errors.New("端口无效")
 	}
@@ -229,8 +247,7 @@ func (c *Connection) validateSSH() error {
 		s.CredentialKey = ""
 	}
 	switch s.AuthType {
-	case "", "password":
-		s.AuthType = "password"
+	case "password":
 	case AuthCredential:
 		if s.CredentialKey == "" {
 			return errors.New("请选择认证预设")
@@ -314,6 +331,10 @@ func (m *Module) Init(env module.Env) error {
 	m.cfg.Settings = Settings{MaxSessions: defaultMaxSessions, BufferSize: defaultBufferKB, HeartbeatInterval: defaultHeartbeat}
 	_, err := m.store.Load(ID, &m.cfg)
 	m.cfg.Settings.normalize()
+	// 加载后补全连接中留空参数的默认值；只改内存，不回写文件，下次保存时随其他改动一并写入
+	for i := range m.cfg.Connections {
+		m.cfg.Connections[i].fillDefaults()
+	}
 	if m.cfg.Shortcuts == nil {
 		m.cfg.Shortcuts = []Shortcut{}
 	}
