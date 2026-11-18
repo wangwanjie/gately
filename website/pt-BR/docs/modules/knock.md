@@ -38,7 +38,7 @@ Por padrão, o pacote de knock é enviado à porta UDP 62201. Se o Gately estive
 | --- | --- |
 | Portas | Portas que o cliente pode pedir para liberar, como `tcp/22`, `udp/51820`, no máximo 16. Todas as portas do parâmetro `-A` do cliente precisam estar nesta lista; caso contrário o knock inteiro é recusado. Pode ficar vazio quando o bloqueio no firewall está desligado: a regra então só recebe autorizações pelo «Liberar após login» de um site web, não aceita pacotes de knock e não abre a porta UDP de knock por causa dela, e o cartão mostra «Nenhuma (liberado apenas por login web)» |
 | Bloqueio no firewall | Quando ativado, bloqueia essas portas no firewall do sistema e libera só os endereços que fizeram o knock; desativado, o firewall não é alterado e a regra serve apenas às entradas que usam «Exigir knock» |
-| Chave de criptografia / chave HMAC | Codificadas em base64; vazias, são geradas automaticamente (32 / 64 bytes, como em `fwknop -k`), e também é possível informar as chaves de um servidor fwknop existente. Copiar a regra gera chaves novas. Editar uma regra que continua ativada (nome, portas, chaves etc.) revoga as autorizações obtidas por pacotes de knock e mantém as obtidas por login web; desativar ou excluir a regra revoga todas as autorizações |
+| Chave de criptografia / chave HMAC | Codificadas em base64; vazias, são geradas automaticamente (32 / 64 bytes, como em `fwknop -k`), e também é possível informar as chaves de um servidor fwknop existente. Copiar a regra gera chaves novas. Ao editar uma regra que continua ativada, mudar as portas, o bloqueio no firewall, a duração, o usuário exigido ou a exigência de endereço revoga todas as autorizações obtidas por pacotes de knock; mudar só o nome, o grupo, a observação, as [identidades](#identities) ou «um endereço por vez» revoga apenas as autorizações cujas chaves deixaram de valer (identidade desativada, excluída ou com chaves novas, chaves compartilhadas trocadas ou desativadas). As autorizações obtidas por login web são mantidas; desativar ou excluir a regra revoga todas as autorizações |
 | Algoritmo HMAC | SHA-256 (padrão do fwknop), SHA-384, SHA-512; deve coincidir com `--hmac-digest-type` do cliente |
 | Duração do acesso | Tempo em que novas conexões podem ser estabelecidas após o knock; padrão 30 segundos |
 | Duração máxima do cliente | Limite quando o cliente pede uma duração maior com `-f` (padrão 300 segundos); 0 ignora a duração pedida pelo cliente; se o pedido for menor que a duração do acesso, ele sempre vale |
@@ -46,6 +46,20 @@ Por padrão, o pacote de knock é enviado à porta UDP 62201. Se o Gately estive
 | Exigir endereço | Recusa pacotes sem endereço (`fwknop -s`); o cliente precisa informar o endereço a liberar com `-R` ou `-a` |
 
 Uma regra usada por redirecionamento de portas, roteamento por protocolo ou STUN não pode ser excluída; o cartão lista quem a utiliza.
+
+### Identidades: chaves próprias para cada pessoa {#identities}
+
+Por padrão, uma regra tem um conjunto de chaves compartilhadas e todos fazem knock com as mesmas chaves. Adicione identidades à regra e cada pessoa (ou dispositivo) faz knock com as próprias chaves:
+
+- os logs, os eventos «Port knocking: knock bem-sucedido / recusado» (campo `identity`) e a lista de autorizações atuais mostram qual identidade foi, e o card mostra o número de knocks de cada identidade;
+- desativar ou excluir uma identidade, ou dar chaves novas a ela, revoga só as autorizações dessa identidade; os demais continuam usando normalmente;
+- a janela «Cliente» gera o comando do fwknop e a seção do `~/.fwknoprc` da identidade escolhida, então cada pessoa recebe só as próprias chaves;
+- as identidades usam as portas, o algoritmo HMAC, a duração, o usuário exigido e a exigência de endereço da regra. O encaminhamento de portas, o roteamento por protocolo, o STUN e os sites web continuam referenciando a regra, e um knock bem-sucedido de qualquer identidade libera o acesso conforme a regra.
+
+Uma regra pode ter até 64 identidades, e todas as regras ativadas juntas aceitam no máximo 1.024 chaves de knock (chaves compartilhadas e identidades). Todas as chaves HMAC precisam ser diferentes (inclusive entre regras); caso contrário, o pacote só corresponde à primeira. Uma regra sem portas não aceita pacotes de knock e não pode ter identidades.
+
+- **Desativar chaves compartilhadas**: só as chaves das identidades são aceitas, e clientes com as chaves compartilhadas não conseguem mais fazer knock; é preciso ter pelo menos uma identidade ativada.
+- **Um endereço por vez**: cada identidade (as chaves compartilhadas contam como uma) mantém autorização para só um endereço por vez. Após um knock bem-sucedido de um endereço novo, os outros endereços que essa identidade liberou por knock são revogados na hora (inclusive as entradas no firewall), impedindo que várias pessoas usem as mesmas chaves ao mesmo tempo. Conexões estabelecidas e autorizações por login web não são afetadas. Se duas identidades fizerem knock do mesmo endereço, a autorização fica com a mais recente.
 
 ### Qual endereço é liberado
 
@@ -114,7 +128,7 @@ ssh -p 443 user@example.com
 
 Knocks recusados publicam o evento «Knock recusado» (o campo `via` é `tcp`), no máximo uma vez a cada 5 segundos por origem. O endereço de origem de um pacote UDP pode ser forjado, e um pacote válido pode ser capturado e reenviado de uma origem forjada; para que ninguém use a Prevenção de intrusão para bloquear IPs arbitrários, knocks recusados que chegam por UDP só são contados e registrados no log (um a um quando passaram no HMAC), sem evento. Pacotes que chegam por uma porta TCP do Roteamento por protocolo vêm de um handshake completo e não podem ser forjados, então ali um HMAC diferente ou uma recusa da regra publicam o evento. Na Prevenção de intrusão, crie uma regra com o modelo «Falha de port knocking» (por padrão, 5 ocorrências em 10 minutos bloqueiam por 1 dia) e as origens que continuarem enviando pacotes inválidos por TCP serão bloqueadas; knocks de endereços bloqueados são descartados. Dados fora do formato de knock (varreduras de portas, outros protocolos) só são contados, sem evento.
 
-Antes da autenticação, a taxa é limitada por faixa de origem (no máximo 10 pacotes por segundo para cada /24 IPv4 e cada /64 IPv6) e depois por um orçamento global medido em trabalho de HMAC (cada pacote custa o número de regras ativas vezes uma unidade a cada 512 bytes; 20.000 unidades por segundo, cerca de 20.000 pacotes comuns por segundo com uma regra); o excedente é descartado. Assim, uma enxurrada de pacotes forjados não ocupa toda a CPU e a enxurrada de uma origem não expulsa os knocks normais de outras. Pacotes que falham no HMAC não são registrados um a um: a cada minuto viram uma linha «M pacotes de knock inválidos de N origens».
+Antes da autenticação, a taxa é limitada por faixa de origem (no máximo 10 pacotes por segundo para cada /24 IPv4 e cada /64 IPv6) e depois por um orçamento global medido em trabalho de HMAC (cada pacote custa o número de chaves que aceitam knock (chaves compartilhadas e identidades) vezes uma unidade a cada 512 bytes; 20.000 unidades por segundo, cerca de 20.000 pacotes comuns por segundo com uma única chave); o excedente é descartado. Assim, uma enxurrada de pacotes forjados não ocupa toda a CPU e a enxurrada de uma origem não expulsa os knocks normais de outras. Pacotes que falham no HMAC não são registrados um a um: a cada minuto viram uma linha «M pacotes de knock inválidos de N origens».
 
 ## Limitações
 
