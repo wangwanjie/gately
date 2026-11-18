@@ -78,8 +78,32 @@ func MagicPacket(mac string) ([]byte, error) {
 	return pkt, nil
 }
 
+// fillDefaults 为留空（零值）的参数补默认值，不做校验、不会失败。保存时由 Validate 开头调用；
+// 从配置文件加载时也调用，手工编辑或外部生成的配置缺这些字段时不会以零值运行
+// （重复次数 0 时一个唤醒包都不发却显示成功，端口 0 时发送失败）。
+func (d *Device) fillDefaults() {
+	d.normalizeMode()
+	if d.Port == 0 {
+		d.Port = 9
+	}
+	if d.Repeat <= 0 {
+		d.Repeat = 3
+	}
+	if d.Repeat > 20 {
+		d.Repeat = 20
+	}
+	// 与 HTTPAction.Validate 一致：未指定请求方法时有请求体用 POST，否则 GET
+	if d.ShutdownMode == ModeHTTP && strings.TrimSpace(d.ShutdownHTTP.Method) == "" {
+		d.ShutdownHTTP.Method = "GET"
+		if d.ShutdownHTTP.Body != "" {
+			d.ShutdownHTTP.Method = "POST"
+		}
+	}
+}
+
 // Validate 校验设备配置。
 func (d *Device) Validate() error {
+	d.fillDefaults()
 	if err := crud.NormalizeGroup(&d.Group); err != nil {
 		return err
 	}
@@ -113,17 +137,8 @@ func (d *Device) Validate() error {
 		bcs = append(bcs, b)
 	}
 	d.BroadcastIPs = bcs
-	if d.Port == 0 {
-		d.Port = 9
-	}
 	if d.Port < 1 || d.Port > 65535 {
 		return errors.New("端口无效")
-	}
-	if d.Repeat <= 0 {
-		d.Repeat = 3
-	}
-	if d.Repeat > 20 {
-		d.Repeat = 20
 	}
 	d.CheckAddr = strings.TrimSpace(d.CheckAddr)
 	if d.CheckAddr != "" {
@@ -327,8 +342,9 @@ func (m *Module) Init(env module.Env) error {
 	if _, err := m.store.Load(ID, &m.cfg); err != nil {
 		return err
 	}
+	// 加载后补全旧配置的关机方式与留空参数的默认值；只改内存，不回写文件
 	for i := range m.cfg.Devices {
-		m.cfg.Devices[i].normalizeMode()
+		m.cfg.Devices[i].fillDefaults()
 	}
 	return nil
 }
