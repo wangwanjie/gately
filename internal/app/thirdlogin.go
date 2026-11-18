@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/hmac"
 	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -68,6 +69,29 @@ func (a *App) loginSecret() []byte {
 	return m.Sum(nil)
 }
 
+// newLoginNonce 生成第三方登录随机数：随机部分加本实例的签名。签名只用于判断归属——站点反代到另一台 Gately 时，
+// 浏览器为该域名带的同名随机数若不是本实例签发的，就原样转发给后端（见 ownAdminCookie）；回调校验仍是与 state 中的值逐字比较。
+func (a *App) newLoginNonce() string {
+	r := thirdauth.RandomNonce()
+	return r + "." + a.loginNonceMAC(r)
+}
+
+// loginNonceMAC 返回随机部分 r 的签名（十六进制前 32 位）。
+func (a *App) loginNonceMAC(r string) string {
+	m := hmac.New(sha256.New, a.loginSecret())
+	m.Write([]byte("nonce|" + r))
+	return hex.EncodeToString(m.Sum(nil))[:32]
+}
+
+// ownLoginNonce 判断随机数是否为本实例签发。
+func (a *App) ownLoginNonce(v string) bool {
+	r, mac, ok := strings.Cut(v, ".")
+	if !ok || r == "" {
+		return false
+	}
+	return hmac.Equal([]byte(mac), []byte(a.loginNonceMAC(r)))
+}
+
 // handleThirdProviders 返回登录页可用的第三方登录方式。
 func (a *App) handleThirdProviders(w http.ResponseWriter, r *http.Request) {
 	type item struct {
@@ -112,7 +136,7 @@ func (a *App) handleThirdStart(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "请通过 "+cfg.CallbackBase+" 访问管理界面后再使用第三方登录", http.StatusBadRequest)
 		return
 	}
-	nonce := thirdauth.RandomNonce()
+	nonce := a.newLoginNonce()
 	state := thirdauth.Sign(a.loginSecret(), loginStateKind, loginState{Provider: p.Key, Nonce: nonce}, loginStateTTL)
 	target, err := p.AuthorizeURL(r.Context(), cfg.CallbackURL(), state)
 	if err != nil {

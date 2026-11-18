@@ -339,7 +339,7 @@ func TestDemoListensOnlyAdminPort(t *testing.T) {
 	}
 }
 
-// 本机 Web 服务据会话归属判定决定剥离哪些后台 Cookie：本实例签发的会话（含只读账号）算本实例的，
+// 本机 Web 服务据归属判定决定剥离哪些后台 Cookie：本实例签发的会话（含只读账号）算本实例的，
 // 其他实例签发的同名会话不算（否则站点反代到另一台 Gately 时后端登录永远 401）。
 func TestOwnSessionCheck(t *testing.T) {
 	_, srv := newDemoApp(t, 0)
@@ -354,11 +354,11 @@ func TestOwnSessionCheck(t *testing.T) {
 			token = ck.Value
 		}
 	}
-	if token == "" || !httpx.OwnSession(token) {
+	if token == "" || !httpx.OwnAdminCookie(auth.CookieName, token) {
 		t.Fatalf("本实例签发的只读会话应判定为本实例的: %q", token)
 	}
 	p, _, _ := strings.Cut(token, ".")
-	if httpx.OwnSession(p + ".AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA") {
+	if httpx.OwnAdminCookie(auth.CookieName, p+".AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA") {
 		t.Fatal("签名不符的会话不应判定为本实例的")
 	}
 }
@@ -392,5 +392,38 @@ func TestDemoLoginSecureBehindProxy(t *testing.T) {
 		if got == nil || got.Secure != tc.secure {
 			t.Fatalf("可信代理 %v：会话 Cookie 的 Secure 应为 %v，实际 %+v", tc.trusted, tc.secure, got)
 		}
+	}
+}
+
+// 双层部署（外层 Gately 经 frp 反代到开了安全入口的内层 Gately 后台）回归用例：安全入口标记与第三方登录随机数
+// 只有本实例签发的才算本实例的，外层据此原样转发内层签发的同名 Cookie。
+func TestOwnEntryAndNonceCheck(t *testing.T) {
+	a, _, _ := loginApp(t)
+	// 未设置安全入口时本实例不认任何入口标记
+	if a.ownAdminCookie(entryCookie, a.entryValue("/x")) {
+		t.Fatal("未设置安全入口时入口标记不应算本实例的")
+	}
+	a.settingsMu.Lock()
+	a.settings.SafePath = "/entry-own"
+	a.settingsMu.Unlock()
+	if !a.ownAdminCookie(entryCookie, a.entryValue("/entry-own")) {
+		t.Fatal("本实例当前入口的标记应算本实例的")
+	}
+	if a.ownAdminCookie(entryCookie, a.entryValue("/other")) || a.ownAdminCookie(entryCookie, "0123456789abcdef0123456789abcdef") {
+		t.Fatal("其他入口或其他实例的入口标记不应算本实例的")
+	}
+	n := a.newLoginNonce()
+	if !a.ownAdminCookie(loginNonceCookie, n) {
+		t.Fatalf("本实例签发的登录随机数应算本实例的: %q", n)
+	}
+	r, _, _ := strings.Cut(n, ".")
+	for _, v := range []string{r, r + ".0123456789abcdef0123456789abcdef", "", "." + r} {
+		if a.ownAdminCookie(loginNonceCookie, v) {
+			t.Fatalf("签名不符的登录随机数不应算本实例的: %q", v)
+		}
+	}
+	// 未知名称按本实例的处理（宁可多剥）
+	if !a.ownAdminCookie("gately_unknown", "x") {
+		t.Fatal("未知名称应按本实例的处理")
 	}
 }

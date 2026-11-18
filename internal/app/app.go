@@ -281,11 +281,9 @@ func New(opts Options) (_ *App, err error) {
 		}
 		return id.User
 	})
-	// 站点反代到其他后端时只剥离本实例签发的后台会话，后端是另一台 Gately 时它自己的会话照常转发（见 webservice/admincookie.go）
-	httpx.SetOwnSessionCheck(func(value string) bool {
-		_, ok := a.auth.Identify(value)
-		return ok
-	})
+	// 站点反代到其他后端时只剥离本实例签发的后台 Cookie，后端是另一台 Gately 时它自己的会话、安全入口标记与
+	// 第三方登录随机数照常转发（见 webservice/admincookie.go）
+	httpx.SetOwnAdminCookieCheck(a.ownAdminCookie)
 	// 后台登录桥接：只有管理员会话（不含只读账号）才能签发，凭据绑定签发它的会话，登出或改密码后随之失效
 	httpx.SetAdminBridge(func(r *http.Request) (string, time.Time) {
 		c, err := r.Cookie(auth.CookieName)

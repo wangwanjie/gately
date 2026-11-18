@@ -181,13 +181,15 @@ func TestForwardAuthStripsAdminCookie(t *testing.T) {
 	}
 }
 
-// 后端是另一台 Gately（如在线演示实例）时，浏览器为该域名带的同名会话 Cookie 是后端签发的，应原样转发，
-// 否则后端登录后的每个请求都是 401；本实例签发的会话、安全入口标记与第三方登录随机数仍然剥离。
-func TestAdminCookieForeignSessionPassed(t *testing.T) {
+// 后端是另一台 Gately（如在线演示实例，或外层 Gately 经 frp 回到内网 Gately 的双层部署）时，浏览器为该域名带的
+// 同名后台 Cookie（会话、安全入口标记、第三方登录随机数）是后端签发的，应原样转发：否则后端登录后的每个请求都是 401、
+// 开了安全入口的内层后台一直被拒、第三方登录回调提示浏览器不匹配。本实例签发的仍然剥离。
+func TestAdminCookieForeignPassed(t *testing.T) {
 	other, otherGot := cookieEcho(t, "tcp4", "127.0.0.1:0")
 	withAdminListen(t, "127.0.0.1:1")
-	httpx.SetOwnSessionCheck(func(v string) bool { return v == "admin-token" })
-	t.Cleanup(func() { httpx.SetOwnSessionCheck(nil) })
+	own := map[string]string{auth.CookieName: "admin-token", "gately_entry": "own-entry", "gately_login_nonce": "own-nonce"}
+	httpx.SetOwnAdminCookieCheck(func(name, v string) bool { return own[name] == v })
+	t.Cleanup(func() { httpx.SetOwnAdminCookieCheck(nil) })
 	l := Listener{Sites: []Site{
 		{Enable: true, Key: "other", Domains: []string{"other.test"}, Targets: []string{other.URL}},
 	}}
@@ -195,21 +197,20 @@ func TestAdminCookieForeignSessionPassed(t *testing.T) {
 
 	get(t, noRedirect(), addr, "other.test", "/", hdr("Cookie", auth.CookieName+"=backend-token; gately_entry=e; gately_login_nonce=n; other=1"))
 	v := <-otherGot
-	if !strings.Contains(v, auth.CookieName+"=backend-token") || !strings.Contains(v, "other=1") {
-		t.Fatalf("其他实例签发的会话与普通 Cookie 应转发给后端: %q", v)
-	}
-	if strings.Contains(v, "gately_entry=") || strings.Contains(v, "gately_login_nonce=") {
-		t.Fatalf("安全入口标记与登录随机数仍应剥离: %q", v)
-	}
-
-	get(t, noRedirect(), addr, "other.test", "/", hdr("Cookie", auth.CookieName+"=admin-token; other=1"))
-	if v := <-otherGot; strings.Contains(v, auth.CookieName+"=") || !strings.Contains(v, "other=1") {
-		t.Fatalf("本实例签发的会话不应转发给其他后端: %q", v)
+	for _, want := range []string{auth.CookieName + "=backend-token", "gately_entry=e", "gately_login_nonce=n", "other=1"} {
+		if !strings.Contains(v, want) {
+			t.Fatalf("其他实例签发的后台 Cookie 与普通 Cookie 应转发给后端，缺 %s: %q", want, v)
+		}
 	}
 
-	// 同名 Cookie 混有本实例会话时只剥离本实例的那个
-	get(t, noRedirect(), addr, "other.test", "/", hdr("Cookie", auth.CookieName+"=admin-token; "+auth.CookieName+"=backend-token"))
-	if v := <-otherGot; strings.Contains(v, "admin-token") || !strings.Contains(v, "backend-token") {
-		t.Fatalf("只应剥离本实例签发的会话: %q", v)
+	get(t, noRedirect(), addr, "other.test", "/", hdr("Cookie", auth.CookieName+"=admin-token; gately_entry=own-entry; gately_login_nonce=own-nonce; other=1"))
+	if v := <-otherGot; v != "other=1" {
+		t.Fatalf("本实例签发的后台 Cookie 不应转发给其他后端: %q", v)
+	}
+
+	// 同名 Cookie 混有本实例签发的时只剥离本实例的那个
+	get(t, noRedirect(), addr, "other.test", "/", hdr("Cookie", auth.CookieName+"=admin-token; "+auth.CookieName+"=backend-token; gately_entry=own-entry; gately_entry=e"))
+	if v := <-otherGot; strings.Contains(v, "admin-token") || strings.Contains(v, "own-entry") || !strings.Contains(v, "backend-token") || !strings.Contains(v, "gately_entry=e") {
+		t.Fatalf("只应剥离本实例签发的后台 Cookie: %q", v)
 	}
 }
