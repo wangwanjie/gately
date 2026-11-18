@@ -176,16 +176,23 @@ func (j *Jail) Validate() error {
 	return j.validateCount()
 }
 
-// validateCount 校验次数、窗口与封禁时长并补全默认值。
-func (j *Jail) validateCount() error {
+// fillDefaults 为留空（零值）的失败次数与统计窗口补默认值，不做校验、不会失败。保存时由 validateCount 调用；
+// 从配置文件加载时也调用，手工编辑或外部生成的配置缺这些字段时不会以零值运行
+// （失败次数 0 时命中一次就封禁，统计窗口 0 时历史每次清空、规则永不触发）。
+func (j *Jail) fillDefaults() {
 	if j.MaxRetry == 0 {
 		j.MaxRetry = defaultMaxRetry
 	}
-	if j.MaxRetry < 1 || j.MaxRetry > 1000 {
-		return errors.New("失败次数应为 1~1000")
-	}
 	if j.FindTime == 0 {
 		j.FindTime = defaultFindTime
+	}
+}
+
+// validateCount 校验次数、窗口与封禁时长并补全默认值。
+func (j *Jail) validateCount() error {
+	j.fillDefaults()
+	if j.MaxRetry < 1 || j.MaxRetry > 1000 {
+		return errors.New("失败次数应为 1~1000")
 	}
 	if j.FindTime < 10 || j.FindTime > 7*24*3600 {
 		return errors.New("统计窗口应为 10 秒到 7 天")
