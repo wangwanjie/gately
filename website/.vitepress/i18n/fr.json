@@ -98,8 +98,8 @@
   "home": {
     "pill": "Gratuit et open source · Apache-2.0",
     "announce": {
-      "text": "v0.6.8.1 : correction de l’erreur à l’ajout d’un site et du « Site introuvable » avec un certificat générique, plus tailles de lien et récupération d’icônes du panneau de navigation →",
-      "link": "/fr/news/v0.6.8.1"
+      "text": "v0.6.8.2 : une clé de port knocking par personne, correction des cookies lors d’un proxy vers un autre Gately, tri par glisser-déposer des panneaux de navigation →",
+      "link": "/fr/news/v0.6.8.2"
     },
     "titleLine1": "Une seule entrée pour vos services auto-hébergés",
     "titleLine2": "Reverse proxy, HTTPS, DDNS, traversée de NAT, WAF et bannissements, en un seul binaire",

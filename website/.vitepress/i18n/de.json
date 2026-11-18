@@ -98,8 +98,8 @@
   "home": {
     "pill": "Kostenlos und Open Source · Apache-2.0",
     "announce": {
-      "text": "v0.6.8.1: behebt den Fehler beim Hinzufügen einer Site und „Website nicht gefunden“ bei Wildcard-Zertifikaten, dazu Linkgrößen und Symbolabruf im Navigationspanel →",
-      "link": "/de/news/v0.6.8.1"
+      "text": "v0.6.8.2: ein Port-Knocking-Schlüssel pro Person, Cookie-Korrektur beim Proxy zu einem anderen Gately, Sortieren per Drag-and-drop im Navigationspanel →",
+      "link": "/de/news/v0.6.8.2"
     },
     "titleLine1": "Ein Eingang für Ihre selbst gehosteten Dienste",
     "titleLine2": "Reverse Proxy, HTTPS, DDNS, NAT-Traversal, WAF und Sperren in einer Binärdatei",

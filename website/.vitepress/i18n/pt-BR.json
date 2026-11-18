@@ -98,8 +98,8 @@
   "home": {
     "pill": "Gratuito e de código aberto · Apache-2.0",
     "announce": {
-      "text": "v0.6.8.1: corrige o erro ao adicionar um site e o «Site não encontrado» com certificado curinga, além de tamanhos de link e obtenção de ícones no painel de navegação →",
-      "link": "/pt-BR/news/v0.6.8.1"
+      "text": "v0.6.8.2: uma chave de port knocking por pessoa, correção de cookies ao fazer proxy para outro Gately e ordenação por arrastar nos painéis de navegação →",
+      "link": "/pt-BR/news/v0.6.8.2"
     },
     "titleLine1": "Uma única entrada para os seus serviços auto-hospedados",
     "titleLine2": "Proxy reverso, HTTPS, DDNS, travessia de NAT, WAF e bloqueios em um único binário",
