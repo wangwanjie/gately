@@ -182,5 +182,6 @@
   "deleteSelected": "Delete selected",
   "confirmDeleteSelected": "Delete the {n} selected links?",
   "dragHandle": "Drag to reorder",
-  "dragCount": "{n} links"
+  "dragCount": "{n} links",
+  "searchPlaceholder": "Search name, title, group or note"
 }

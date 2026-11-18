@@ -35,6 +35,14 @@ test('moveGroup 整组移动', () => {
   assert.equal(moveGroup(links, 'none', 1), links)
 })
 
+test('面板分组：新面板为未分组，toPanel 保留分组、旧数据缺省为空', () => {
+  assert.equal(emptyPanel().group, '')
+  assert.equal(toPanel({ ...emptyPanel(), name: 'a', group: '家庭' }).group, '家庭')
+  const old = { ...emptyPanel(), name: 'b' }
+  delete old.group
+  assert.equal(toPanel(old).group, '')
+})
+
 test('moveLinks 在分组内拖动到任意位置', () => {
   const links = [L('a', 'x'), L('b', 'x'), L('c', 'x'), L('d', 'x'), L('e', 'x')]
   // 最后一个拖到最前

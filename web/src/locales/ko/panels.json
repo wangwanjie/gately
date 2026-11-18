@@ -182,5 +182,6 @@
   "deleteSelected": "선택 항목 삭제",
   "confirmDeleteSelected": "선택한 링크 {n}개를 삭제할까요?",
   "dragHandle": "끌어서 순서 변경",
-  "dragCount": "링크 {n}개"
+  "dragCount": "링크 {n}개",
+  "searchPlaceholder": "이름, 제목, 그룹, 메모 검색"
 }

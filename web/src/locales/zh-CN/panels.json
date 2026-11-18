@@ -182,5 +182,6 @@
   "deleteSelected": "删除所选",
   "confirmDeleteSelected": "确定删除所选的 {n} 个链接？",
   "dragHandle": "按住拖动排序",
-  "dragCount": "{n} 个链接"
+  "dragCount": "{n} 个链接",
+  "searchPlaceholder": "搜索名称、标题、分组或备注"
 }

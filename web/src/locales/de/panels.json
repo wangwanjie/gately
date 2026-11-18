@@ -182,5 +182,6 @@
   "deleteSelected": "Auswahl löschen",
   "confirmDeleteSelected": "Die {n} ausgewählten Links löschen?",
   "dragHandle": "Zum Sortieren ziehen",
-  "dragCount": "{n} Links"
+  "dragCount": "{n} Links",
+  "searchPlaceholder": "Nach Name, Titel, Gruppe oder Notiz suchen"
 }
