@@ -38,7 +38,7 @@ Knock packets are sent to UDP port 62201 by default. When Gately sits behind a r
 | --- | --- |
 | Ports | Ports the client may ask to open, such as `tcp/22` and `udp/51820`, up to 16. Every port in the client's `-A` argument must be in this list, otherwise the whole knock is rejected. Can be left empty when firewall blocking is off: the rule then gets grants only through "Release after login" on Web sites, accepts no knock packets and needs no UDP knock port, and the rule card shows "None (released by web login only)" |
 | Firewall blocking | When on, these ports are blocked in the system firewall and only addresses that knocked successfully are let through; when off the firewall is untouched and the rule is only referenced by "Require knock" entries |
-| Encryption key / HMAC key | base64-encoded; leave empty to generate (32 / 64 bytes, same as `fwknop -k`), or enter the keys of an existing fwknop server. Copying a rule generates new keys. Editing a rule that stays enabled (name, ports, keys and so on) revokes the grants obtained by knock packets and keeps those obtained by web login; disabling or deleting a rule revokes all of its grants |
+| Encryption key / HMAC key | base64-encoded; leave empty to generate (32 / 64 bytes, same as `fwknop -k`), or enter the keys of an existing fwknop server. Copying a rule generates new keys. When you edit a rule that stays enabled, changing the ports, firewall blocking, grant duration, required user name or address requirement revokes all grants obtained by knock packets; changing only the name, group, note, [identities](#identities) or "one address at a time" revokes only the knock grants whose keys are no longer valid (an identity disabled, deleted or given new keys, or the shared keys replaced or disabled). Grants obtained by web login are kept; disabling or deleting a rule revokes all of its grants |
 | HMAC algorithm | SHA-256 (fwknop default), SHA-384, SHA-512; must match the client's `--hmac-digest-type` |
 | Access duration | How long new connections may be opened after a successful knock, 30 seconds by default |
 | Client max duration | Upper limit when the client asks for a longer duration with `-f` (300 seconds by default); 0 ignores the duration requested by the client. A request shorter than the access duration is always honored |
@@ -46,6 +46,20 @@ Knock packets are sent to UDP port 62201 by default. When Gately sits behind a r
 | Require address | Reject packets without an address (`fwknop -s`); the client must state the address to open with `-R` or `-a` |
 
 A rule referenced by Port Forwarding, Protocol Routing or STUN cannot be deleted; the card lists the referencing entries.
+
+### Identities: one set of keys per person {#identities}
+
+By default a rule has one set of shared keys and everyone knocks with the same keys. Add identities to a rule and each person (or device) knocks with their own keys:
+
+- Logs, the "Port Knocking: knock succeeded / rejected" events (field `identity`) and the list of current grants show which identity it was, and the card shows each identity's knock count;
+- Disabling or deleting an identity, or giving it new keys, revokes only that identity's grants; everyone else keeps working;
+- The "Client" dialog generates the fwknop command and `~/.fwknoprc` stanza for the selected identity, so each person gets only their own keys;
+- Identities use the rule's ports, HMAC algorithm, grant duration, required user name and address requirement. Port Forwarding, Protocol Routing, STUN and Web sites still reference the rule, and a successful knock by any identity opens access as the rule defines.
+
+A rule can have up to 64 identities, and all enabled rules together accept at most 1,024 knock keys (shared keys and identities). HMAC keys must all be different (also across rules), otherwise a packet only matches the first one. A rule without ports accepts no knock packets and cannot have identities.
+
+- **Disable shared keys**: only the identities' keys are accepted, and clients holding the shared keys can no longer knock; at least one identity must be enabled.
+- **One address at a time**: each identity (the shared keys count as one) holds a grant for only one address at a time. After a successful knock from a new address, the other addresses that identity opened by knocking are revoked at once (including the firewall entries), so one set of keys cannot be used by several people at the same time. Established connections and grants obtained by web login are not affected. When two identities knock from the same address, the grant is recorded for the most recent one.
 
 ### Which address is opened
 
@@ -114,7 +128,7 @@ ssh -p 443 user@example.com
 
 Rejected knocks publish a "Port knock rejected" event (its `via` field is `tcp`), at most once every 5 seconds per source. The source address of a UDP packet can be forged, and a valid packet can be captured and replayed from a forged source, so to keep attackers from using Intrusion Prevention to ban arbitrary IPs, knocks refused over UDP are only counted and logged (one by one when they passed HMAC authentication) and publish no event; packets sent over a Protocol Routing TCP port come from a completed handshake and cannot be spoofed, so an HMAC mismatch or a refusal by the rule there publishes the event. Create a jail in Intrusion Prevention from the "Port knock failures" template (by default 5 events within 10 minutes ban for 1 day), and sources that keep sending invalid packets over TCP are banned; knocks from banned addresses are dropped. Data that is not in knock format (port scans, other protocols) is only counted and publishes no event.
 
-Before authentication, packets are rate-limited per source range (at most 10 per second for each IPv4 /24 and each IPv6 /64) and then by a global budget counted in HMAC work (each packet costs the number of enabled rules times one unit per 512 bytes; 20,000 units per second, about 20,000 typical packets per second with one rule); the rest are dropped, so a flood of forged packets cannot use up the CPU and a flood from one source does not crowd out normal knocks from others. Packets that fail HMAC authentication are not logged one by one; they are summarized once a minute as "M invalid knock packets from N sources".
+Before authentication, packets are rate-limited per source range (at most 10 per second for each IPv4 /24 and each IPv6 /64) and then by a global budget counted in HMAC work (each packet costs the number of keys that accept knocks (shared keys and identities) times one unit per 512 bytes; 20,000 units per second, about 20,000 typical packets per second with a single key); the rest are dropped, so a flood of forged packets cannot use up the CPU and a flood from one source does not crowd out normal knocks from others. Packets that fail HMAC authentication are not logged one by one; they are summarized once a minute as "M invalid knock packets from N sources".
 
 ## Limitations
 
