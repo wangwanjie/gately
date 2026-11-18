@@ -211,28 +211,81 @@ func isB64Char(c byte) bool {
 
 // Decode 用一组密钥认证并解密报文。先校验 HMAC（常数时间比较）再解密，密钥不对的报文不会进入解密流程。
 func Decode(packet []byte, k Key) (*Message, error) {
+	_, msg, err := DecodeAny(packet, []Key{k})
+	return msg, err
+}
+
+// macInput 是报文按某种 HMAC 算法拆出的 HMAC 输入与报文中的 HMAC 值，同一算法的各密钥共用。
+type macInput struct {
+	// full 为加上 Salted__ 前缀的 base64 密文（HMAC 的输入），tag 为报文末尾 HMAC 值解码后的字节
+	full, tag []byte
+	// err 非空时该算法下报文格式不符（ErrFormat）或 HMAC 值不是合法 base64（ErrHMAC）
+	err error
+}
+
+// DecodeAny 依次用 keys 中的密钥校验报文的 HMAC，返回第一个通过校验的密钥下标及用它解密的结果
+// （HMAC 正确而解密失败时为 ErrDecrypt）。没有密钥通过时返回 -1：报文长度不足以容纳任一密钥算法的 HMAC 时为 ErrFormat，
+// 否则为 ErrHMAC。结果与逐个调用 Decode 相同，但报文的预检查、拼接与 HMAC 值的解码每种算法只做一次，
+// 密钥较多（每人一份密钥）时伪造报文的处理成本基本只剩 HMAC 计算本身。
+func DecodeAny(packet []byte, keys []Key) (int, *Message, error) {
 	if err := Prefilter(packet); err != nil {
-		return nil, err
+		return -1, nil, err
 	}
-	algo, ok := hmacAlgos[k.hmacType()]
-	if !ok || len(k.Enc) == 0 || len(k.Enc) > MaxEncKeyLen || len(k.HMAC) == 0 {
-		return nil, ErrHMAC
+	var inputs map[string]*macInput
+	lastErr := ErrFormat
+	for i, k := range keys {
+		typ := k.hmacType()
+		algo, ok := hmacAlgos[typ]
+		if !ok || len(k.Enc) == 0 || len(k.Enc) > MaxEncKeyLen || len(k.HMAC) == 0 {
+			lastErr = ErrHMAC
+			continue
+		}
+		in := inputs[typ]
+		if in == nil {
+			in = splitPacket(packet, algo.b64ln)
+			if inputs == nil {
+				inputs = map[string]*macInput{}
+			}
+			inputs[typ] = in
+		}
+		if in.err != nil {
+			if in.err == ErrHMAC {
+				lastErr = ErrHMAC
+			}
+			continue
+		}
+		lastErr = ErrHMAC
+		mac := hmac.New(algo.fn, k.HMAC)
+		mac.Write(in.full)
+		if subtle.ConstantTimeCompare(mac.Sum(nil), in.tag) != 1 {
+			continue
+		}
+		msg, err := decrypt(in.full, k)
+		return i, msg, err
 	}
-	if len(packet) <= algo.b64ln+MinPacketLen/2 {
-		return nil, ErrFormat
+	return -1, nil, lastErr
+}
+
+// splitPacket 按 HMAC 值的 base64 长度 b64ln 拆分报文。
+func splitPacket(packet []byte, b64ln int) *macInput {
+	if len(packet) <= b64ln+MinPacketLen/2 {
+		return &macInput{err: ErrFormat}
 	}
-	body := packet[:len(packet)-algo.b64ln]
-	tag := packet[len(packet)-algo.b64ln:]
+	body := packet[:len(packet)-b64ln]
+	// 严格解码：末尾多余比特非零的写法与 HMAC 值的标准编码不同，按不匹配处理，与按字符串比较的结果一致
+	tag, err := base64.RawStdEncoding.Strict().DecodeString(string(packet[len(packet)-b64ln:]))
+	if err != nil {
+		return &macInput{err: ErrHMAC}
+	}
 	// HMAC 按加上 Salted__ 前缀的 base64 密文计算
 	full := make([]byte, 0, len(saltedB64)+len(body))
 	full = append(full, saltedB64...)
 	full = append(full, body...)
-	mac := hmac.New(algo.fn, k.HMAC)
-	mac.Write(full)
-	want := base64.RawStdEncoding.EncodeToString(mac.Sum(nil))
-	if subtle.ConstantTimeCompare([]byte(want), tag) != 1 {
-		return nil, ErrHMAC
-	}
+	return &macInput{full: full, tag: tag}
+}
+
+// decrypt 解密已通过 HMAC 校验的密文 full（带 Salted__ 前缀的 base64）并解析明文。
+func decrypt(full []byte, k Key) (*Message, error) {
 	raw, err := base64.RawStdEncoding.DecodeString(string(full))
 	if err != nil || len(raw) < len(saltedMagic)+saltLen+blockLen || !bytes.HasPrefix(raw, []byte(saltedMagic)) {
 		return nil, ErrDecrypt
@@ -246,7 +299,7 @@ func Decode(packet []byte, k Key) (*Message, error) {
 	block, _ := aes.NewCipher(key)
 	pt := make([]byte, len(ct))
 	cipher.NewCBCDecrypter(block, iv).CryptBlocks(pt, ct)
-	pt, ok = unpad(pt)
+	pt, ok := unpad(pt)
 	if !ok {
 		return nil, ErrDecrypt
 	}

@@ -2,7 +2,9 @@ package spa
 
 import (
 	"bytes"
+	"crypto/hmac"
 	"crypto/rand"
+	"crypto/subtle"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -213,6 +215,101 @@ func FuzzDecode(f *testing.F) {
 		m, err := Decode(b, k)
 		if err == nil && m == nil {
 			t.Fatal("成功时消息不能为空")
+		}
+	})
+}
+
+// DecodeAny 返回第一个 HMAC 通过的密钥下标；算法不同的密钥混在一起时按各自的 HMAC 长度拆分报文。
+func TestDecodeAny(t *testing.T) {
+	k256, k512, other := testKey(t, HMACSHA256), testKey(t, HMACSHA512), testKey(t, HMACSHA256)
+	in := Message{User: "alice", Timestamp: 1700000000, Type: AccessMsg, Addr: netip.MustParseAddr("203.0.113.5"), Access: []Access{{"tcp", 22}}}
+	pkt, err := Encode(in, k512, rand.Reader)
+	if err != nil {
+		t.Fatal(err)
+	}
+	i, m, err := DecodeAny(pkt, []Key{other, k256, k512})
+	if err != nil || i != 2 || m == nil || m.User != "alice" {
+		t.Fatalf("应匹配第 3 个密钥: i=%d m=%v err=%v", i, m, err)
+	}
+	// 没有密钥匹配
+	if i, _, err := DecodeAny(pkt, []Key{other, k256}); i != -1 || !errors.Is(err, ErrHMAC) {
+		t.Fatalf("不应匹配: i=%d err=%v", i, err)
+	}
+	// 空列表与预检失败
+	if i, _, err := DecodeAny(pkt, nil); i != -1 || !errors.Is(err, ErrFormat) {
+		t.Fatalf("空密钥列表: i=%d err=%v", i, err)
+	}
+	if i, _, err := DecodeAny([]byte("not spa"), []Key{k512}); i != -1 || !errors.Is(err, ErrFormat) {
+		t.Fatalf("非 SPA 报文: i=%d err=%v", i, err)
+	}
+	// HMAC 密钥相同、加密密钥不同：返回该下标与 ErrDecrypt
+	bad := k512
+	bad.Enc = other.Enc
+	if i, _, err := DecodeAny(pkt, []Key{bad}); i != 0 || !errors.Is(err, ErrDecrypt) {
+		t.Fatalf("加密密钥不一致: i=%d err=%v", i, err)
+	}
+	// 末尾 HMAC 值改动一个字符（含只改动多余比特的写法）不能通过
+	for _, c := range []byte{'A', 'B', 'z'} {
+		mut := append([]byte{}, pkt...)
+		if mut[len(mut)-1] == c {
+			continue
+		}
+		mut[len(mut)-1] = c
+		if i, _, _ := DecodeAny(mut, []Key{k512}); i != -1 {
+			t.Fatalf("篡改的 HMAC 值被接受: %q", mut[len(mut)-4:])
+		}
+	}
+}
+
+// refDecode 是改为 DecodeAny 之前的单密钥解码实现（HMAC 值按 base64 字符串比较），作为模糊测试的参照。
+func refDecode(packet []byte, k Key) (*Message, error) {
+	if err := Prefilter(packet); err != nil {
+		return nil, err
+	}
+	algo, ok := hmacAlgos[k.hmacType()]
+	if !ok || len(k.Enc) == 0 || len(k.Enc) > MaxEncKeyLen || len(k.HMAC) == 0 {
+		return nil, ErrHMAC
+	}
+	if len(packet) <= algo.b64ln+MinPacketLen/2 {
+		return nil, ErrFormat
+	}
+	body, tag := packet[:len(packet)-algo.b64ln], packet[len(packet)-algo.b64ln:]
+	full := append([]byte(saltedB64), body...)
+	mac := hmac.New(algo.fn, k.HMAC)
+	mac.Write(full)
+	if subtle.ConstantTimeCompare([]byte(base64.RawStdEncoding.EncodeToString(mac.Sum(nil))), tag) != 1 {
+		return nil, ErrHMAC
+	}
+	return decrypt(full, k)
+}
+
+// DecodeAny 与逐个调用原实现的结果一致（模糊测试）。
+func FuzzDecodeAny(f *testing.F) {
+	k1 := Key{Enc: []byte("0123456789abcdef0123456789abcdef"), HMAC: bytes.Repeat([]byte{7}, 64), HMACType: HMACSHA256}
+	k2 := Key{Enc: []byte("fedcba9876543210fedcba9876543210"), HMAC: bytes.Repeat([]byte{9}, 64), HMACType: HMACSHA512}
+	for _, k := range []Key{k1, k2} {
+		pkt, _ := Encode(Message{User: "u", Timestamp: 1700000000, Type: AccessMsg, Access: []Access{{"tcp", 22}}}, k, rand.Reader)
+		f.Add(pkt)
+	}
+	f.Add([]byte(strings.Repeat("A", 200)))
+	f.Fuzz(func(t *testing.T, b []byte) {
+		keys := []Key{k1, k2}
+		i, _, err := DecodeAny(b, keys)
+		want := -1
+		var wantErr error
+		for j, k := range keys {
+			_, e := refDecode(b, k)
+			if errors.Is(e, ErrHMAC) || errors.Is(e, ErrFormat) {
+				continue
+			}
+			want, wantErr = j, e
+			break
+		}
+		if i != want {
+			t.Fatalf("下标 %d，逐个解码为 %d", i, want)
+		}
+		if want >= 0 && (err == nil) != (wantErr == nil) {
+			t.Fatalf("错误不一致: %v / %v", err, wantErr)
 		}
 	})
 }
