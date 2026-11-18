@@ -210,7 +210,7 @@
     "accessLogMB": "访问日志总大小 (MB)",
     "accessLogMBHelp": "访问日志当前文件与全部压缩归档的总大小上限，超出时从最旧的归档开始删除；0 为默认 32 MB（不超过日志所在分区容量的 5%）",
     "gcPercent": "GC 百分比",
-    "gcPercentHelp": "0 为默认（100）；调小可降低内存占用，但增加 CPU 开销",
+    "gcPercentHelp": "0 为默认：可用内存不少于 1 GiB 时为 200，否则为 100；调小可降低内存占用，但增加 CPU 开销",
     "maxProcs": "最大 CPU 核数",
     "maxProcsHelp": "0 为自动（本机 {count} 核）"
   },

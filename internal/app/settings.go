@@ -23,6 +23,7 @@ import (
 	"github.com/wangwanjie/gately/internal/logbuf"
 	"github.com/wangwanjie/gately/internal/outbound"
 	"github.com/wangwanjie/gately/internal/resolver"
+	"github.com/wangwanjie/gately/internal/sysstat"
 	"github.com/wangwanjie/gately/internal/thirdauth"
 )
 
@@ -289,11 +290,22 @@ func (a *App) applyRuntime() {
 	if s.GCPercent > 0 {
 		debug.SetGCPercent(s.GCPercent)
 	} else {
-		debug.SetGCPercent(100)
+		debug.SetGCPercent(defaultGCPercent(sysstat.MemoryLimit()))
 	}
 	if s.MaxProcs > 0 {
 		runtime.GOMAXPROCS(s.MaxProcs)
 	}
+}
+
+// defaultGCPercent 返回未设置 GC 百分比时使用的值。
+// Gately 常驻堆只有几十 MB，按 Go 默认的 100 会频繁触发 GC：反向代理压测中 GC 约占 10% 的 CPU，
+// 调到 200 后同样负载下吞吐提高约 10%，代价是堆峰值多出约一份常驻堆（几十 MB）。
+// 可用内存不足 1 GiB 的设备（小内存路由器、限制了内存的容器）保持 100，内存未知时（非 Linux）用 200。
+func defaultGCPercent(memLimit uint64) int {
+	if memLimit > 0 && memLimit < 1<<30 {
+		return 100
+	}
+	return 200
 }
 
 func (a *App) settingsSnapshot() Settings {

@@ -210,7 +210,7 @@
     "accessLogMB": "Tamanho total dos logs de acesso (MB)",
     "accessLogMBHelp": "Limite do arquivo de log de acesso atual mais todos os arquivos compactados; ao exceder, os mais antigos são excluídos primeiro. 0 significa o padrão de 32 MB (no máximo 5% da partição onde ficam os logs)",
     "gcPercent": "Percentual de GC",
-    "gcPercentHelp": "0 significa o padrão (100); reduzi-lo diminui o uso de memória, mas aumenta o consumo de CPU",
+    "gcPercentHelp": "0 significa o padrão: 200 com pelo menos 1 GiB de memória disponível, caso contrário 100; reduzi-lo diminui o uso de memória, mas aumenta o consumo de CPU",
     "maxProcs": "Máximo de núcleos de CPU",
     "maxProcsHelp": "0 significa automático ({count} núcleos nesta máquina)"
   },
