@@ -3,6 +3,7 @@ package protoroute
 import (
 	"fmt"
 	"net"
+	"slices"
 	"strings"
 
 	"github.com/wangwanjie/gately/internal/crud"
@@ -84,6 +85,9 @@ type Settings struct {
 	// DefaultMaxConnsPerSource 是单个来源（IPv4 地址、IPv6 /64）的默认最大并发连接数，0 表示取所在端口最大连接数的一半；
 	// 回环与内网来源不受此限制。只连接不发送数据的连接由识别超时处理，不另设超时
 	DefaultMaxConnsPerSource int `json:"defaultMaxConnsPerSource"`
+	// PerSourceExempt 为不受单来源上限约束的来源（IP 或 CIDR），例如把所有访客汇聚成同一个来源的公网中转或前置代理；
+	// 回环与内网来源本来就不受限制，不必填写
+	PerSourceExempt []string `json:"perSourceExempt"`
 	// DialTimeout 是连接目标的超时（秒）
 	DialTimeout int `json:"dialTimeout"`
 }
@@ -110,6 +114,30 @@ func (s *Settings) normalize() {
 	if s.DefaultMaxConnsPerSource < 0 {
 		s.DefaultMaxConnsPerSource = 0
 	}
+	s.PerSourceExempt = cleanExempt(s.PerSourceExempt)
+}
+
+// cleanExempt 去掉单来源豁免列表中的空白与重复项，保持原有顺序。
+func cleanExempt(list []string) []string {
+	var out []string
+	for _, v := range list {
+		v = strings.TrimSpace(v)
+		if v != "" && !slices.Contains(out, v) {
+			out = append(out, v)
+		}
+	}
+	return out
+}
+
+// validate 校验全局设置中用户填写的内容。
+func (s *Settings) validate() error {
+	// 逐项校验，报错时指出是哪一项
+	for _, v := range s.PerSourceExempt {
+		if _, err := l4proxy.ParseExempt([]string{v}); err != nil {
+			return fmt.Errorf("不受单来源限制的来源 %q 不是 IP 或 CIDR", v)
+		}
+	}
+	return nil
 }
 
 // Validate 校验规则，并规范化协议、域名、ALPN 与地址。

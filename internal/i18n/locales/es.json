@@ -677,6 +677,7 @@
   "下载配置备份": "Descargar la copia de seguridad de la configuración",
   "不使用内置转发时通道本地端口不能为 0": "Si no se usa el reenvío integrado, el puerto local del canal no puede ser 0",
   "不包含的关键词：空格分隔，双引号包住短语，包含其中任意一个即排除；与 q 同时生效": "Palabras clave excluidas: separadas por espacios, las comillas dobles agrupan una frase; se excluye la entrada que contenga cualquiera; se aplica junto con q",
+  "不受单来源限制的来源 %q 不是 IP 或 CIDR": "el origen sin límite por origen %q no es una IP ni un CIDR",
   "不提供 `group` 时保持原分组。": "Si se omite `group`, se mantiene el grupo actual.",
   "不支持 %s: 协议的地址": "No se admiten direcciones con el esquema %s:",
   "不支持 NAT 访问请求（fwknop -N）": "No se admiten solicitudes de acceso NAT (fwknop -N)",

@@ -677,6 +677,7 @@
   "下载配置备份": "Download a configuration backup",
   "不使用内置转发时通道本地端口不能为 0": "Tunnel local port cannot be 0 when built-in forwarding is not used",
   "不包含的关键词：空格分隔，双引号包住短语，包含其中任意一个即排除；与 q 同时生效": "Excluded keywords: space-separated, double quotes group a phrase, an entry containing any of them is excluded; applies together with q",
+  "不受单来源限制的来源 %q 不是 IP 或 CIDR": "source without per-source limit %q is not an IP or CIDR",
   "不提供 `group` 时保持原分组。": "Omitting `group` keeps the current group.",
   "不支持 %s: 协议的地址": "Addresses with the %s: scheme are not supported",
   "不支持 NAT 访问请求（fwknop -N）": "NAT access requests (fwknop -N) are not supported",

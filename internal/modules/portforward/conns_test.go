@@ -5,6 +5,8 @@ import (
 	"errors"
 	"io"
 	"net"
+	"net/netip"
+	"slices"
 	"strconv"
 	"testing"
 	"time"
@@ -143,7 +145,7 @@ func TestEffectiveConnLimits(t *testing.T) {
 	for _, c := range cases {
 		st := s
 		st.DefaultMaxConnsPerSource = c.def
-		if got, _ := effectiveLimits(c.rule, st); got != c.want {
+		if got, _ := effectiveLimits(c.rule, st); !got.Equal(c.want) {
 			t.Fatalf("%+v / 默认 %d: %+v，应为 %+v", c.rule, c.def, got, c.want)
 		}
 	}
@@ -160,5 +162,37 @@ func TestEffectiveConnLimits(t *testing.T) {
 	bad := Rule{Protocols: []string{"tcp"}, ListenPorts: "1", TargetPorts: "1", TargetAddresses: []string{"127.0.0.1"}, MaxConnsPerSource: -1}
 	if err := bad.Validate(); err == nil {
 		t.Fatal("单来源上限为负数应校验失败")
+	}
+}
+
+// 不受单来源限制的来源：保存时去空白去重并校验格式，生效到端口上限，列表变化时重新监听。
+func TestPerSourceExemptSettings(t *testing.T) {
+	s := defaultSettings()
+	s.PerSourceExempt = []string{" 198.51.100.7 ", "", "2001:db8:9::/48", "198.51.100.7"}
+	s.normalize()
+	if !slices.Equal(s.PerSourceExempt, []string{"198.51.100.7", "2001:db8:9::/48"}) {
+		t.Fatalf("规范化结果不对: %q", s.PerSourceExempt)
+	}
+	if err := s.validate(); err != nil {
+		t.Fatal(err)
+	}
+	got, _ := effectiveLimits(Rule{}, s)
+	want := l4proxy.Limits{Max: 256, PerSource: 128, Exempt: []netip.Prefix{netip.MustParsePrefix("198.51.100.7/32"), netip.MustParsePrefix("2001:db8:9::/48")}}
+	if !got.Equal(want) {
+		t.Fatalf("豁免列表应生效到端口上限: %+v", got)
+	}
+	r := &runner{rule: Rule{}, settings: defaultSettings()}
+	if r.canUpdate(Rule{}, s) {
+		t.Fatal("豁免列表变化时应重新监听")
+	}
+	bad := defaultSettings()
+	bad.PerSourceExempt = []string{"relay.example.com"}
+	if err := bad.validate(); err == nil {
+		t.Fatal("非 IP/CIDR 应校验失败")
+	}
+	// 配置文件中手工写错时整体忽略，不影响规则启动
+	ign, _ := effectiveLimits(Rule{}, bad)
+	if len(ign.Exempt) != 0 {
+		t.Fatalf("格式错误的豁免列表应忽略: %+v", ign.Exempt)
 	}
 }

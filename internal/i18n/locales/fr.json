@@ -677,6 +677,7 @@
   "下载配置备份": "Télécharger la sauvegarde de configuration",
   "不使用内置转发时通道本地端口不能为 0": "Le port local du canal ne peut pas être 0 sans la redirection intégrée",
   "不包含的关键词：空格分隔，双引号包住短语，包含其中任意一个即排除；与 q 同时生效": "Mots-clés exclus : séparés par des espaces, les guillemets doubles regroupent une expression ; une entrée contenant l’un d’eux est exclue ; s’applique avec q",
+  "不受单来源限制的来源 %q 不是 IP 或 CIDR": "la source sans limite par source %q n'est ni une IP ni un CIDR",
   "不提供 `group` 时保持原分组。": "Sans `group`, le groupe actuel est conservé.",
   "不支持 %s: 协议的地址": "Les adresses avec le schéma %s: ne sont pas prises en charge",
   "不支持 NAT 访问请求（fwknop -N）": "Les requêtes d'accès NAT (fwknop -N) ne sont pas prises en charge",

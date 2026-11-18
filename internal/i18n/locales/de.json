@@ -677,6 +677,7 @@
   "下载配置备份": "Konfigurations-Backup herunterladen",
   "不使用内置转发时通道本地端口不能为 0": "Ohne integrierte Weiterleitung darf der lokale Tunnelport nicht 0 sein",
   "不包含的关键词：空格分隔，双引号包住短语，包含其中任意一个即排除；与 q 同时生效": "Ausgeschlossene Stichwörter: durch Leerzeichen getrennt, doppelte Anführungszeichen bilden eine Phrase; ein Eintrag mit einem davon wird ausgeschlossen; gilt zusammen mit q",
+  "不受单来源限制的来源 %q 不是 IP 或 CIDR": "Quelle ohne Limit pro Quelle %q ist keine IP und kein CIDR",
   "不提供 `group` 时保持原分组。": "Ohne `group` bleibt die bisherige Gruppe erhalten.",
   "不支持 %s: 协议的地址": "Adressen mit dem Schema %s: werden nicht unterstützt",
   "不支持 NAT 访问请求（fwknop -N）": "NAT-Zugriffsanfragen (fwknop -N) werden nicht unterstützt",

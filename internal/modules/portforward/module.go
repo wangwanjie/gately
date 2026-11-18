@@ -263,6 +263,10 @@ func (m *Module) handlePutSettings(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	s.normalize()
+	if err := s.validate(); err != nil {
+		httpx.Error(w, http.StatusBadRequest, "%v", err)
+		return
+	}
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	old := m.cfg.Settings

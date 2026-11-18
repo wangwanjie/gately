@@ -6,11 +6,13 @@ import (
 	"io"
 	"net"
 	"net/netip"
+	"slices"
 	"sync"
 	"sync/atomic"
 	"time"
 
 	"github.com/wangwanjie/gately/internal/banlist"
+	"github.com/wangwanjie/gately/internal/httpx"
 )
 
 // Stats 是一条规则的运行统计，所有字段使用原子操作。
@@ -74,6 +76,13 @@ type Limits struct {
 	// 回环、内网与链路本地地址不受此限制：它们是本机进程或局域网设备，不是这个上限要防的互联网来源，
 	// Docker 网桥等场景下大量正常连接也会共用同一个内网地址
 	PerSource int
+	// Exempt 为不受单来源上限约束的来源地址段，例如把所有访客汇聚成同一个来源的公网中转或前置代理
+	Exempt []netip.Prefix
+}
+
+// Equal 判断两组上限是否相同（规则热更新时据此决定是否需要重新监听）。
+func (l Limits) Equal(o Limits) bool {
+	return l.Max == o.Max && l.PerSource == o.PerSource && slices.Equal(l.Exempt, o.Exempt)
 }
 
 // PerSourceLimit 计算单来源上限：rule 为规则设置，def 为全局默认值（均为 0 表示未设置），total 为总上限。
@@ -87,6 +96,11 @@ func PerSourceLimit(rule, def, total int) int {
 		n = total / 2
 	}
 	return min(max(n, 1), total)
+}
+
+// ParseExempt 解析不受单来源上限约束的来源列表（IP 或 CIDR，单个 IP 视为 /32 或 /128）。
+func ParseExempt(list []string) ([]netip.Prefix, error) {
+	return httpx.ParsePrefixes(list)
 }
 
 // remoteAddrOf 返回连接的来源地址，可在测试中替换。
@@ -127,8 +141,10 @@ func (t *WarnThrottle) Allow(now time.Time) (bool, int) {
 // sourceLimiter 按来源（IPv4 地址、IPv6 /64）统计并发连接数。
 type sourceLimiter struct {
 	limit int
-	mu    sync.Mutex
-	count map[netip.Prefix]int
+	// exempt 为额外不受限制的来源地址段（见 Limits.Exempt）
+	exempt []netip.Prefix
+	mu     sync.Mutex
+	count  map[netip.Prefix]int
 	// warn 为超限警告的节流
 	warn WarnThrottle
 }
@@ -152,7 +168,7 @@ func sourceKey(a netip.Addr) netip.Prefix {
 // acquire 为来源占用一个名额，超过上限返回 false。ok 为 false（无法解析地址）或来源豁免时总是成功，release 为空操作。
 func (l *sourceLimiter) acquire(a netip.Addr, ok bool) (release func(), allowed bool) {
 	a = a.Unmap()
-	if l == nil || !ok || exemptSource(a) {
+	if l == nil || !ok || exemptSource(a) || l.exempted(a) {
 		return func() {}, true
 	}
 	key := sourceKey(a)
@@ -169,6 +185,16 @@ func (l *sourceLimiter) acquire(a netip.Addr, ok bool) (release func(), allowed 
 		}
 		l.mu.Unlock()
 	}, true
+}
+
+// exempted 判断来源是否在额外豁免的地址段内。
+func (l *sourceLimiter) exempted(a netip.Addr) bool {
+	for _, p := range l.exempt {
+		if p.Contains(a) {
+			return true
+		}
+	}
+	return false
 }
 
 // shouldWarn 判断这次超限是否记录警告，返回自上次警告以来未记录的次数。
@@ -192,7 +218,7 @@ func (s *Server) ServeTCP(ctx context.Context, network, addr string, limits Limi
 	var full WarnThrottle
 	var perSrc *sourceLimiter
 	if limits.PerSource > 0 {
-		perSrc = &sourceLimiter{limit: limits.PerSource, count: map[netip.Prefix]int{}}
+		perSrc = &sourceLimiter{limit: limits.PerSource, exempt: limits.Exempt, count: map[netip.Prefix]int{}}
 	}
 	s.Go(func() {
 		for {
