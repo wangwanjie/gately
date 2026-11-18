@@ -685,8 +685,11 @@ func (h *siteHandler) newProxy(s Site, p *pool, strip string) http.Handler {
 			if !s.PassAuthCookies {
 				stripCookie(pr.Out, cookieName(s), oauthNonceCookie, ssoCookie, adminBridgeCookie)
 			} else {
-				// 后台登录免认证的凭据只有本实例能校验，等同于管理员身份，任何情况下都不交给后端
-				stripCookie(pr.Out, adminBridgeCookie)
+				// 本实例签发的后台登录免认证凭据等同于管理员身份，任何情况下都不交给后端；
+				// 本实例校验不过的同名凭据由后端（负责认证的另一台 Gately）签发，原样转发，否则双层部署时内层的后台登录免认证失效
+				stripCookieFunc(pr.Out, func(c *http.Cookie) bool {
+					return c.Name == adminBridgeCookie && httpx.OwnAdminBridge(c.Value)
+				})
 			}
 			applyHeaders(pr.Out.Header, s.RequestHeaders)
 		},
@@ -778,7 +781,8 @@ func localPort(r *http.Request) string {
 }
 
 // gatelyCookieMatcher 返回判断 Cookie 是否只用于 Gately 自身认证的函数，缓存据此不把它们当作后端凭据。
-// 与反向代理转发前剥离的 Cookie 保持一致：后台登录免认证的凭据始终不会转发给后端；
+// 与反向代理转发前剥离的 Cookie 保持一致：本实例签发的后台登录免认证凭据始终不会转发给后端，
+// 开启转发登录 Cookie 时本实例校验不过的同名凭据会交给后端（内层 Gately 签发），按凭据处理；
 // 站点会话、单点登录与 OIDC nonce 在站点开启转发登录 Cookie 时会交给后端（后端可能是另一台 Gately），此时仍按凭据处理。
 // 其他 gately_site_ 前缀的 Cookie 不会被剥离、会原样到达后端：后端是另一台 Gately 时它就是后端的登录会话，
 // 忽略它会把后端按登录状态返回的内容缓存下来交给未登录的访客。只有值为本实例签发的站点会话时（同主机其他端口、
@@ -787,7 +791,7 @@ func gatelyCookieMatcher(s Site, a *authenticator) func(*http.Cookie) bool {
 	own := cookieName(s)
 	return func(c *http.Cookie) bool {
 		if c.Name == adminBridgeCookie {
-			return true
+			return !s.PassAuthCookies || httpx.OwnAdminBridge(c.Value)
 		}
 		if s.PassAuthCookies {
 			return false

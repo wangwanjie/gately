@@ -116,3 +116,13 @@ func OwnAdminCookie(name, value string) bool {
 	}
 	return (*f)(name, value)
 }
+
+// OwnAdminBridge 判断后台登录桥接凭据是否为本实例签发且有效。未注册桥接函数时视为本实例的（宁可多剥）。
+// 外层 Gately 反代到内层 Gately 时，内层签发的同名凭据本实例校验不过，应原样转发，内层的后台登录免认证才能生效。
+func OwnAdminBridge(value string) bool {
+	h := bridge.Load()
+	if h == nil {
+		return true
+	}
+	return h.verify(value) != ""
+}
