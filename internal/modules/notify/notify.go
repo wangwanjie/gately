@@ -161,8 +161,24 @@ type channelView struct {
 	HasSecret bool   `json:"hasSecret"`
 }
 
+// fillDefaults 为留空（零值）的参数补默认值，不做校验、不会失败。保存时由 Validate 开头调用；
+// 从配置文件加载时也调用，手工编辑或外部生成的邮件渠道缺这些字段时不会以零值发送
+// （加密方式为空时按明文连接、密码认证被拒绝，端口为 0 时连接失败）。
+func (c *Channel) fillDefaults() {
+	if c.Kind != KindSMTP {
+		return
+	}
+	if c.Security == "" {
+		c.Security = SecurityStartTLS
+	}
+	if c.Port == 0 {
+		c.Port = map[string]int{SecurityTLS: 465, SecurityStartTLS: 587, SecurityNone: 25}[c.Security]
+	}
+}
+
 // Validate 校验并规范化渠道配置。
 func (c *Channel) Validate() error {
+	c.fillDefaults()
 	if err := crud.NormalizeGroup(&c.Group); err != nil {
 		return err
 	}
@@ -226,13 +242,8 @@ func (c *Channel) Validate() error {
 		}
 		switch c.Security {
 		case SecurityNone, SecurityStartTLS, SecurityTLS:
-		case "":
-			c.Security = SecurityStartTLS
 		default:
 			return fmt.Errorf("不支持的加密方式 %q", c.Security)
-		}
-		if c.Port == 0 {
-			c.Port = map[string]int{SecurityTLS: 465, SecurityStartTLS: 587, SecurityNone: 25}[c.Security]
 		}
 		if c.Port < 1 || c.Port > 65535 {
 			return errors.New("SMTP 端口无效")
@@ -260,8 +271,16 @@ func validateOptionalURL(s string) error {
 	return validateRequiredURL(s)
 }
 
+// fillDefaults 为留空的最低级别补默认值（info），不做校验、不会失败。保存时由 Validate 开头调用，加载时也调用。
+func (r *Rule) fillDefaults() {
+	if r.MinLevel == "" {
+		r.MinLevel = events.LevelInfo
+	}
+}
+
 // Validate 校验并规范化规则。
 func (r *Rule) Validate() error {
+	r.fillDefaults()
 	if err := crud.NormalizeGroup(&r.Group); err != nil {
 		return err
 	}
@@ -284,8 +303,6 @@ func (r *Rule) Validate() error {
 	}
 	r.Events = evs
 	switch r.MinLevel {
-	case "":
-		r.MinLevel = events.LevelInfo
 	case events.LevelInfo, events.LevelWarn, events.LevelError:
 	default:
 		return fmt.Errorf("不支持的级别 %q", r.MinLevel)
@@ -346,8 +363,17 @@ func (m *Module) Title() string { return "通知中心" }
 func (m *Module) Init(env module.Env) error {
 	m.store, m.logs = env.Store, env.Logs
 	m.log = m.logs.Logger("通知")
-	_, err := m.store.Load(ID, &m.cfg)
-	return err
+	if _, err := m.store.Load(ID, &m.cfg); err != nil {
+		return err
+	}
+	// 加载后补全留空参数的默认值；只改内存，不回写文件，下次保存时随其他改动一并写入
+	for i := range m.cfg.Channels {
+		m.cfg.Channels[i].fillDefaults()
+	}
+	for i := range m.cfg.Rules {
+		m.cfg.Rules[i].fillDefaults()
+	}
+	return nil
 }
 
 // Start 实现 module.Module：订阅默认事件总线。
