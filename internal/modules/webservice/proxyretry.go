@@ -21,6 +21,10 @@ const maxProxyAttempts = 3
 type proxyAttempt struct {
 	pool   *pool
 	client netip.Addr
+	// clientAP 为访客地址与端口，向后端发送 PROXY 协议头时使用
+	clientAP netip.AddrPort
+	// visitor 为访客的原始请求（仅在站点拦截后端错误码时设置），错误页据此判断与生成页面，见 visitorRequest
+	visitor *http.Request
 	// active 为实时连接列表中的登记项，换后端时同步更新，拓扑视图据此高亮到实际使用的后端
 	active *activeReq
 	// in 为交给反向代理的访客请求，重试时据此重新拼接后端地址
@@ -30,9 +34,16 @@ type proxyAttempt struct {
 }
 
 // attemptFrom 取出请求的后端选择，可为 nil。
+// 经站点处理器进入的请求把后端选择挂在实时连接登记项上（activeReq.att），不另建上下文；
+// 其余情况（没有登记项，或同一请求再次进入反向代理）放在上下文的 ctxKeyUpstream 中。
 func attemptFrom(ctx context.Context) *proxyAttempt {
-	a, _ := ctx.Value(ctxKeyUpstream{}).(*proxyAttempt)
-	return a
+	if a, ok := ctx.Value(ctxKeyUpstream{}).(*proxyAttempt); ok {
+		return a
+	}
+	if ar, ok := ctx.Value(ctxKeyActiveReq{}).(*activeReq); ok {
+		return ar.att
+	}
+	return nil
 }
 
 // current 返回当前使用的后端。

@@ -69,6 +69,8 @@ type activeReq struct {
 	authed atomic.Bool
 	// markCred 为本次请求受信任的 Gately 认证凭据（见 trustedCred），响应时据此给外层 Gately 签发认证标记；nil 表示没有
 	markCred atomic.Pointer[string]
+	// att 为请求交给反向代理时的后端选择，只由处理该请求的协程读写（见 attemptFrom）
+	att *proxyAttempt
 	// cancel 取消请求上下文；断开时以 errConnClosed 为原因，反向代理据此区分管理员断开与后端错误
 	cancel context.CancelCauseFunc
 	// w 为服务器交给处理器的原始 ResponseWriter（各层包装之前），断开时用于让阻塞中的读写立即失败
