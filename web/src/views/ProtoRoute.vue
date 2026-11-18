@@ -222,6 +222,10 @@
           <el-input-number v-model="settingsForm.defaultMaxConnsPerSource" :min="0" />
           <div class="form-help">{{ t('protoRoute.defaultMaxConnsPerSourceHelp') }}</div>
         </el-form-item>
+        <el-form-item :label="t('protoRoute.perSourceExempt')">
+          <el-select v-model="settingsForm.perSourceExempt" multiple filterable allow-create default-first-option :reserve-keyword="false" :placeholder="t('protoRoute.perSourceExemptPlaceholder')" style="width: 100%" />
+          <div class="form-help">{{ t('protoRoute.perSourceExemptHelp') }}</div>
+        </el-form-item>
         <el-form-item :label="t('protoRoute.dialTimeout')"><el-input-number v-model="settingsForm.dialTimeout" :min="1" :max="60" /></el-form-item>
       </el-form>
       <template #footer>
@@ -356,6 +360,8 @@ interface Settings {
   defaultMaxConnections: number
   // 单个来源的默认最大并发连接数，0 为最大连接数的一半
   defaultMaxConnsPerSource: number
+  // 不受单来源上限约束的来源（IP 或 CIDR），例如公网中转或前置代理
+  perSourceExempt: string[] | null
   dialTimeout: number
 }
 
@@ -702,6 +708,10 @@ async function remove(row: RuleView) {
 async function openSettings() {
   await loadSettings()
   settingsForm.value = JSON.parse(JSON.stringify(settings.value))
+  // 后端未设置时为 null，多选框需要数组
+  if (settingsForm.value) {
+    settingsForm.value.perSourceExempt ??= []
+  }
   settingsVisible.value = true
 }
 
