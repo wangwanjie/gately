@@ -44,5 +44,7 @@ func forgedPacket(n int) []byte {
 	for i := range raw {
 		raw[i] = alphabet[int(raw[i])%len(alphabet)]
 	}
+	// 末尾字符的多余比特为 0：HMAC 值是标准 base64 编码，校验时不能提前排除，每个密钥都要算一次 HMAC（最坏情况）
+	raw[n-1] = 'A'
 	return raw
 }
