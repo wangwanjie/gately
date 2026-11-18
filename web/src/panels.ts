@@ -325,6 +325,61 @@ export function moveGroup(links: PanelLink[], name: string, delta: -1 | 1): Pane
   return flatten(links, groups)
 }
 
+// LinkDropTarget 为拖动链接的放置位置：group 为目标分组；before / after 为目标分组内某个链接在 links 中的下标，
+// 表示插到它之前或之后，都不提供时放到该分组末尾（放在分组标题上）
+export interface LinkDropTarget {
+  group: string
+  before?: number
+  after?: number
+}
+
+// moveLinks 把 picked 中的链接（links 下标，可跨分组）按当前显示顺序整体移到目标位置，返回新数组；没有变化或位置无效时返回 null。
+// 分组顺序保持不变：移空的分组随之消失，目标分组不存在时（新分组）放到最后。
+// 移入其他分组的链接直接改写 group 字段而不复制对象，编辑器靠对象身份记住行 id 与选中状态
+export function moveLinks(links: PanelLink[], picked: readonly number[], target: LinkDropTarget): PanelLink[] | null {
+  const set = new Set(picked.filter((i) => Number.isInteger(i) && i >= 0 && i < links.length))
+  if (!set.size) {
+    return null
+  }
+  // 放到被移动的链接自身旁边没有意义
+  if ((target.before !== undefined && set.has(target.before)) || (target.after !== undefined && set.has(target.after))) {
+    return null
+  }
+  const name = target.group.trim()
+  const groups = groupLinks(links)
+  const moving = groups.flatMap((g) => g.items).filter((i) => set.has(i))
+  const rest = groups.map((g) => ({ name: g.name, items: g.items.filter((i) => !set.has(i)) }))
+  let dest = rest.find((g) => g.name === name)
+  if (!dest) {
+    dest = { name, items: [] }
+    rest.push(dest)
+  }
+  let at = dest.items.length
+  if (target.before !== undefined) {
+    const k = dest.items.indexOf(target.before)
+    if (k < 0) {
+      return null
+    }
+    at = k
+  } else if (target.after !== undefined) {
+    const k = dest.items.indexOf(target.after)
+    if (k < 0) {
+      return null
+    }
+    at = k + 1
+  }
+  dest.items.splice(at, 0, ...moving)
+  const order = rest.flatMap((g) => g.items)
+  const regroup = moving.filter((i) => links[i].group.trim() !== name)
+  if (!regroup.length && order.every((v, k) => v === k)) {
+    return null
+  }
+  for (const i of regroup) {
+    links[i].group = name
+  }
+  return order.map((i) => links[i])
+}
+
 // insertLink 把新链接放到同组最后一个链接之后（没有同组链接时放在最后），返回新数组与新链接的下标
 export function insertLink(links: PanelLink[], link: PanelLink): { links: PanelLink[]; index: number } {
   const g = link.group.trim()

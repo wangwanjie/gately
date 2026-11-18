@@ -174,5 +174,13 @@
   "sizeHelp1x2": "1×2: Symbol mit Titel und Beschreibung.",
   "sizeHelp1x2App": "1×2: eine breite Kachel mit Symbol links, Name und Beschreibung rechts.",
   "sizeHelp2x2": "2×2: ein großer Block über zwei Zeilen und zwei Spalten mit vergrößertem Symbol, Titel und Beschreibung darunter.",
-  "sizeHelp2x2App": "2×2: ein großes Symbol über zwei Zeilen und zwei Spalten mit Namen darunter."
+  "sizeHelp2x2App": "2×2: ein großes Symbol über zwei Zeilen und zwei Spalten mit Namen darunter.",
+  "multiSelect": "Auswählen",
+  "selectDone": "Auswahl beenden",
+  "selectHint": "Zum Sortieren den Griff links ziehen. Auf einem Gruppentitel ablegen, um ans Ende dieser Gruppe zu verschieben. Mehrere Links ankreuzen und einen davon ziehen, um alle gemeinsam zu verschieben",
+  "selectGroup": "Alle Links in „{name}“ auswählen",
+  "deleteSelected": "Auswahl löschen",
+  "confirmDeleteSelected": "Die {n} ausgewählten Links löschen?",
+  "dragHandle": "Zum Sortieren ziehen",
+  "dragCount": "{n} Links"
 }

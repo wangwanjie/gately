@@ -174,5 +174,13 @@
   "sizeHelp1x2": "1×2: 아이콘과 제목, 설명.",
   "sizeHelp1x2App": "1×2: 왼쪽에 아이콘, 오른쪽에 이름과 설명이 있는 넓은 타일.",
   "sizeHelp2x2": "2×2: 2행 2열의 큰 블록으로 아이콘이 커지고 아래에 제목과 설명이 있습니다.",
-  "sizeHelp2x2App": "2×2: 2행 2열의 큰 아이콘과 아래 이름."
+  "sizeHelp2x2App": "2×2: 2행 2열의 큰 아이콘과 아래 이름.",
+  "multiSelect": "다중 선택",
+  "selectDone": "선택 완료",
+  "selectHint": "왼쪽 핸들을 끌어 순서를 바꿉니다. 그룹 제목 위에 놓으면 해당 그룹의 끝으로 이동합니다. 여러 개를 체크한 뒤 그중 하나를 끌면 선택한 링크가 함께 이동합니다",
+  "selectGroup": "그룹 “{name}”의 링크 모두 선택",
+  "deleteSelected": "선택 항목 삭제",
+  "confirmDeleteSelected": "선택한 링크 {n}개를 삭제할까요?",
+  "dragHandle": "끌어서 순서 변경",
+  "dragCount": "링크 {n}개"
 }

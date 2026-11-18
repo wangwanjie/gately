@@ -174,5 +174,13 @@
   "sizeHelp1x2": "1×2 : icône avec titre et description.",
   "sizeHelp1x2App": "1×2 : une tuile large avec l'icône à gauche, le nom et la description à droite.",
   "sizeHelp2x2": "2×2 : un grand bloc de deux lignes et deux colonnes, avec une icône agrandie et le titre et la description en dessous.",
-  "sizeHelp2x2App": "2×2 : une grande icône sur deux lignes et deux colonnes, avec le nom en dessous."
+  "sizeHelp2x2App": "2×2 : une grande icône sur deux lignes et deux colonnes, avec le nom en dessous.",
+  "multiSelect": "Sélectionner",
+  "selectDone": "Terminer la sélection",
+  "selectHint": "Faites glisser la poignée de gauche pour réordonner. Déposez sur le titre d’un groupe pour placer à la fin de ce groupe. Cochez plusieurs liens et faites glisser l’un d’eux pour les déplacer ensemble",
+  "selectGroup": "Sélectionner tous les liens de « {name} »",
+  "deleteSelected": "Supprimer la sélection",
+  "confirmDeleteSelected": "Supprimer les {n} liens sélectionnés ?",
+  "dragHandle": "Faire glisser pour réordonner",
+  "dragCount": "{n} liens"
 }

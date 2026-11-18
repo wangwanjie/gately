@@ -174,5 +174,13 @@
   "sizeHelp1x2": "1×2：图标加标题与描述。",
   "sizeHelp1x2App": "1×2：横向宽块，图标在左，名称与描述在右。",
   "sizeHelp2x2": "2×2：两行两列的大块，图标放大，标题与描述在下方。",
-  "sizeHelp2x2App": "2×2：两行两列的大图标，名称在下方。"
+  "sizeHelp2x2App": "2×2：两行两列的大图标，名称在下方。",
+  "multiSelect": "多选",
+  "selectDone": "完成多选",
+  "selectHint": "按住左侧把手拖动调整顺序，放到分组标题上即移到该分组末尾；勾选多个后拖动其中任一个，选中的链接会一起移动",
+  "selectGroup": "选择分组「{name}」的全部链接",
+  "deleteSelected": "删除所选",
+  "confirmDeleteSelected": "确定删除所选的 {n} 个链接？",
+  "dragHandle": "按住拖动排序",
+  "dragCount": "{n} 个链接"
 }

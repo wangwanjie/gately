@@ -174,5 +174,13 @@
   "sizeHelp1x2": "1×2: ícone com título e descrição.",
   "sizeHelp1x2App": "1×2: um bloco largo com o ícone à esquerda e o nome e a descrição à direita.",
   "sizeHelp2x2": "2×2: um bloco grande de duas linhas e duas colunas, com o ícone ampliado e o título e a descrição embaixo.",
-  "sizeHelp2x2App": "2×2: um ícone grande de duas linhas e duas colunas, com o nome embaixo."
+  "sizeHelp2x2App": "2×2: um ícone grande de duas linhas e duas colunas, com o nome embaixo.",
+  "multiSelect": "Selecionar",
+  "selectDone": "Concluir seleção",
+  "selectHint": "Arraste a alça à esquerda para reordenar. Solte sobre o título de um grupo para mover para o fim desse grupo. Marque vários links e arraste qualquer um deles para movê-los juntos",
+  "selectGroup": "Selecionar todos os links de “{name}”",
+  "deleteSelected": "Excluir selecionados",
+  "confirmDeleteSelected": "Excluir os {n} links selecionados?",
+  "dragHandle": "Arraste para reordenar",
+  "dragCount": "{n} links"
 }
