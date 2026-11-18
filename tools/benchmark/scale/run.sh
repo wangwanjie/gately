@@ -20,10 +20,13 @@ for t in $TOOLS; do
   docker rm -f sut >/dev/null 2>&1
   D=/tmp/scale-$t; rm -rf $D; mkdir -p $D
   case $t in
-    gately)
-      docker run --rm --entrypoint sh -v $D:/etc/gately ghcr.io/wangwanjie/gately:v0.6.8.1 -c 'timeout 3 gately >/dev/null 2>&1; true'
+    gately|gately-head)
+      # gately-head 为本地构建的新版镜像（见 suts/gately-head），与正式版对照
+      GIMG=ghcr.io/wangwanjie/gately:v0.6.8.1
+      [ $t = gately-head ] && GIMG=${GATELY_HEAD_IMAGE:-gately:bench-head}
+      docker run --rm --entrypoint sh -v $D:/etc/gately $GIMG -c 'timeout 3 gately >/dev/null 2>&1; true'
       python3 $B/scale/gen.py gately $N $D
-      RUN="docker run -d --name sut --network host --cpuset-cpus 0,1 --ulimit nofile=200000:200000 -v $D:/etc/gately ghcr.io/wangwanjie/gately:v0.6.8.1" ;;
+      RUN="docker run -d --name sut --network host --cpuset-cpus 0,1 --ulimit nofile=200000:200000 -v $D:/etc/gately $GIMG" ;;
     nginx)
       python3 $B/scale/gen.py nginx $N $D
       RUN="docker run -d --name sut --network host --cpuset-cpus 0,1 --ulimit nofile=200000:200000 -v $D/nginx.conf:/etc/nginx/nginx.conf:ro -v /etc/bench/certs:/certs:ro nginx:1.29-alpine" ;;
