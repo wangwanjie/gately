@@ -314,7 +314,7 @@ func (h *siteHandler) tryShare(w http.ResponseWriter, r *http.Request) (handled,
 	now := time.Now()
 	if token := r.URL.Query().Get(shareParam); token != "" {
 		key := limitKey(clientAddr(r).Addr().String())
-		if !h.auth.reserve(key) {
+		if h.auth.reserve(r.Context(), key) != reserveOK {
 			http.Error(w, "429 Too Many Requests", http.StatusTooManyRequests)
 			return true, false
 		}

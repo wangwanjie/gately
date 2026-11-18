@@ -3265,6 +3265,7 @@
   "请求超时": "Délai de la requête dépassé",
   "请求过于频繁": "Trop de requêtes",
   "请求过于频繁，请稍后再试": "Trop de requêtes, veuillez réessayer plus tard",
+  "请求过多，请稍后重试": "Trop de requêtes, réessayez plus tard",
   "请求返回 %s": "La requête a renvoyé %s",
   "请稍后重试；如果问题持续出现，请联系网站管理员。": "Veuillez réessayer plus tard. Si le problème persiste, contactez l'administrateur du site.",
   "请粘贴 nginx 配置": "Collez la configuration nginx",

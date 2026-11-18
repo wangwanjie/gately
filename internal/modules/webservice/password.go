@@ -188,8 +188,8 @@ func (a *authenticator) changePassword(w http.ResponseWriter, r *http.Request, s
 		return "密码刚修改过，请 1 分钟后再试", http.StatusTooManyRequests
 	}
 	key := limitKey(ip)
-	if !a.reserve(key) {
-		return "失败次数过多，请稍后再试", http.StatusTooManyRequests
+	if res := a.reserve(r.Context(), key); res != reserveOK {
+		return reserveDenyText(res), http.StatusTooManyRequests
 	}
 	if kind == kindFile {
 		err := a.files.ChangePassword(name, current, next)

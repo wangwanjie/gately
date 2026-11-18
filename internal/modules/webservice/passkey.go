@@ -354,8 +354,8 @@ func (a *authenticator) passkeyLoginFinish(w http.ResponseWriter, r *http.Reques
 		return
 	}
 	key := limitKey(ip)
-	if !a.reserve(key) {
-		pkError(w, r, http.StatusTooManyRequests, "失败次数过多，请稍后再试")
+	if res := a.reserve(r.Context(), key); res != reserveOK {
+		pkError(w, r, http.StatusTooManyRequests, reserveDenyText(res))
 		return
 	}
 	u, cred, err := a.passkeyVerifyLogin(r, req, rp, origin)
@@ -460,8 +460,8 @@ func (a *authenticator) passkeyManageAuth(w http.ResponseWriter, r *http.Request
 		return
 	}
 	key := limitKey(ip)
-	if !a.reserve(key) {
-		pkError(w, r, http.StatusTooManyRequests, "失败次数过多，请稍后再试")
+	if res := a.reserve(r.Context(), key); res != reserveOK {
+		pkError(w, r, http.StatusTooManyRequests, reserveDenyText(res))
 		return
 	}
 	u, ok := a.shared.get().checkPassword(name, req.Password)

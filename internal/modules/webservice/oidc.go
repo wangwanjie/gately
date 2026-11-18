@@ -802,8 +802,12 @@ func (a *authenticator) oidcToken(w http.ResponseWriter, r *http.Request, e *oid
 		return
 	}
 	key := limitKey(clientAddr(r).Addr().String())
-	if !a.reserve(key) {
-		oauthError(w, http.StatusTooManyRequests, "slow_down", "too many failed attempts")
+	if res := a.reserve(r.Context(), key); res != reserveOK {
+		desc := "too many failed attempts"
+		if res == reserveBusy {
+			desc = "too many concurrent requests"
+		}
+		oauthError(w, http.StatusTooManyRequests, "slow_down", desc)
 		return
 	}
 	c, id, ok := a.clientAuth(r, e)

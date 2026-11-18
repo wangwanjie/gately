@@ -660,7 +660,7 @@ func TestSiteLimiterConcurrent(t *testing.T) {
 		go func(i int) {
 			defer wg.Done()
 			key := limitKey(fmt.Sprintf("2001:db8::%x", i+1))
-			if a.reserve(key) {
+			if a.reserve(context.Background(), key) == reserveOK {
 				granted.Add(1)
 				time.Sleep(10 * time.Millisecond)
 				a.release(key, false)
