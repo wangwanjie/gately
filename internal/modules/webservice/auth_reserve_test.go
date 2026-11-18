@@ -207,7 +207,10 @@ func TestReserveBusyNotCountedAsFailure(t *testing.T) {
 	}
 	// 排队请求达到上限后，新请求立即返回 reserveBusy
 	a.mu.Lock()
-	a.fails["k"].waiting = maxAuthWaiting
+	saved := a.fails["k"].queue
+	for len(a.fails["k"].queue) < maxAuthWaiting {
+		a.fails["k"].queue = append(a.fails["k"].queue, make(chan reserveResult, 1))
+	}
 	a.mu.Unlock()
 	start := time.Now()
 	if r := a.reserve(context.Background(), "k"); r != reserveBusy {
@@ -217,12 +220,103 @@ func TestReserveBusyNotCountedAsFailure(t *testing.T) {
 		t.Fatal("排队已满时应立即返回")
 	}
 	a.mu.Lock()
-	a.fails["k"].waiting = 0
+	a.fails["k"].queue = saved
 	a.mu.Unlock()
 	if n := failures(a, "k"); n != 0 {
 		t.Fatalf("请求过多不应计入失败次数: %d", n)
 	}
 	if reserveDenyText(reserveBusy) == reserveDenyText(reserveLocked) {
 		t.Fatal("请求过多与失败次数过多的提示应不同")
+	}
+}
+
+// queueLen 返回某来源排队中的请求数
+func queueLen(a *authenticator, key string) int {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	if f := a.fails[key]; f != nil {
+		return len(f.queue)
+	}
+	return 0
+}
+
+// waitQueue 等到某来源排队数达到 n
+func waitQueue(t *testing.T, a *authenticator, key string, n int) {
+	t.Helper()
+	deadline := time.Now().Add(time.Second)
+	for queueLen(a, key) != n {
+		if time.Now().After(deadline) {
+			t.Fatalf("排队数应为 %d, 实际 %d", n, queueLen(a, key))
+		}
+		time.Sleep(time.Millisecond)
+	}
+}
+
+// TestReserveFIFO 验证排队按先来先到放行：空位释放一个只放行最早到的请求，新到的请求不插队。
+func TestReserveFIFO(t *testing.T) {
+	a := newAuthenticator("s")
+	ctx := context.Background()
+	for i := 0; i < maxInflight; i++ {
+		a.reserve(ctx, "k")
+	}
+	order := make(chan int, 3)
+	for i := 0; i < 3; i++ {
+		go func(i int) {
+			if a.reserve(ctx, "k") == reserveOK {
+				order <- i
+			}
+		}(i)
+		// 等前一个入队后再发下一个，保证到达顺序
+		waitQueue(t, a, "k", i+1)
+	}
+	for want := 0; want < 3; want++ {
+		a.release("k", true)
+		select {
+		case got := <-order:
+			if got != want {
+				t.Fatalf("应按到达顺序放行: 期望 %d 实际 %d", want, got)
+			}
+		case <-time.After(time.Second):
+			t.Fatal("释放空位后应放行排队的请求")
+		}
+		waitQueue(t, a, "k", 2-want)
+	}
+}
+
+// TestReserveQueueLockedWhenFailuresReachLimit 验证排队期间失败次数达到上限时，排队的请求全部返回 reserveLocked。
+func TestReserveQueueLockedWhenFailuresReachLimit(t *testing.T) {
+	a := newAuthenticator("s")
+	ctx := context.Background()
+	for i := 0; i < maxFailures-maxInflight; i++ {
+		a.reserve(ctx, "k")
+		a.release("k", false)
+	}
+	for i := 0; i < maxInflight; i++ {
+		if a.reserve(ctx, "k") != reserveOK {
+			t.Fatal("占位应成功")
+		}
+	}
+	got := make(chan reserveResult, 3)
+	for i := 0; i < 3; i++ {
+		go func() {
+			got <- a.reserve(ctx, "k")
+		}()
+	}
+	waitQueue(t, a, "k", 3)
+	for i := 0; i < maxInflight; i++ {
+		a.release("k", false)
+	}
+	for i := 0; i < 3; i++ {
+		select {
+		case r := <-got:
+			if r != reserveLocked {
+				t.Fatalf("达到失败上限后排队的请求应返回 reserveLocked: %v", r)
+			}
+		case <-time.After(time.Second):
+			t.Fatal("锁定后排队的请求应立即返回")
+		}
+	}
+	if n := failures(a, "k"); n != maxFailures {
+		t.Fatalf("失败次数应为 %d: %d", maxFailures, n)
 	}
 }

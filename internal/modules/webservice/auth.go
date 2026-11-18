@@ -109,15 +109,14 @@ func (a *authenticator) oauthEnv() oauthEnv {
 type failCount struct {
 	n        int
 	inflight int
-	// waiting 为排队等待校验空位的请求数，wake 在有校验结束时关闭以唤醒它们
-	waiting int
-	wake    chan struct{}
-	first   time.Time
+	// queue 为按到达顺序排队等待校验空位的请求，每个通道接收放行（reserveOK）或锁定（reserveLocked）结果
+	queue []chan reserveResult
+	first time.Time
 }
 
 // idle 表示没有进行中或排队的校验，可以安全删除
 func (f *failCount) idle() bool {
-	return f.inflight == 0 && f.waiting == 0
+	return f.inflight == 0 && len(f.queue) == 0
 }
 
 func newAuthenticator(secret string) *authenticator {
@@ -188,11 +187,10 @@ func reserveDenyText(res reserveResult) string {
 }
 
 // reserve 为一次密码校验占位。失败次数达到上限时返回 reserveLocked；
-// 失败次数加上进行中的校验达到上限（防止并发绕过失败上限），或进行中的校验达到并发上限时排队等待，
-// 进行中的校验结束（可能是正确登录，不计失败）后再判断，等待超时、请求取消或排队过多时返回 reserveBusy。
+// 失败次数加上进行中的校验达到上限（防止并发绕过失败上限），或进行中的校验达到并发上限时按先来先到排队，
+// 进行中的校验结束（可能是正确登录，不计失败）时由 release 按顺序放行；等待超时、请求取消或排队过多时返回 reserveBusy。
 func (a *authenticator) reserve(ctx context.Context, key string) reserveResult {
 	a.mu.Lock()
-	defer a.mu.Unlock()
 	now := time.Now()
 	// 表过大时清理过期项，防止大量来源地址撑大内存；最多每秒清理一次，
 	// 否则来源很多时每次密码校验都要遍历整张表（上万项时单次约 0.2 毫秒，且持有认证器的锁）
@@ -209,45 +207,77 @@ func (a *authenticator) reserve(ctx context.Context, key string) reserveResult {
 		f = &failCount{first: now}
 		a.fails[key] = f
 	}
-	var timer *time.Timer
-	for {
-		// 计数过期后原地重置，排队中的请求仍持有同一条记录
-		if f.inflight == 0 && time.Since(f.first) > failureReset {
-			f.n, f.first = 0, time.Now()
-		}
-		if f.n >= maxFailures {
-			return reserveLocked
-		}
-		if f.n+f.inflight < maxFailures && f.inflight < maxInflight {
-			f.inflight++
-			return reserveOK
-		}
-		if f.waiting >= maxAuthWaiting {
-			return reserveBusy
-		}
-		if timer == nil {
-			timer = time.NewTimer(authWaitMax)
-			defer timer.Stop()
-		}
-		if f.wake == nil {
-			f.wake = make(chan struct{})
-		}
-		wake := f.wake
-		f.waiting++
+	f.resetIfExpired(now)
+	if f.n >= maxFailures {
 		a.mu.Unlock()
-		timedOut := false
-		select {
-		case <-wake:
-		case <-timer.C:
-			timedOut = true
-		case <-ctx.Done():
-			timedOut = true
-		}
-		a.mu.Lock()
-		f.waiting--
-		if timedOut {
+		return reserveLocked
+	}
+	// 已有请求在排队时新请求排到队尾，不插队
+	if len(f.queue) == 0 && f.admissible() {
+		f.inflight++
+		a.mu.Unlock()
+		return reserveOK
+	}
+	if len(f.queue) >= maxAuthWaiting {
+		a.mu.Unlock()
+		return reserveBusy
+	}
+	// 结果由 release 放行或锁定时写入，缓冲 1 个，写入方不阻塞
+	w := make(chan reserveResult, 1)
+	f.queue = append(f.queue, w)
+	a.mu.Unlock()
+
+	timer := time.NewTimer(authWaitMax)
+	defer timer.Stop()
+	select {
+	case res := <-w:
+		return res
+	case <-timer.C:
+	case <-ctx.Done():
+	}
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	for i, q := range f.queue {
+		if q == w {
+			// 仍在队列中：移出并返回请求过多
+			f.queue = append(f.queue[:i], f.queue[i+1:]...)
 			return reserveBusy
 		}
+	}
+	// 超时的同时已被放行或锁定：结果已写入，照常返回（放行时调用方会 release）
+	return <-w
+}
+
+// resetIfExpired 在没有进行中的校验且计数已过期时原地清零，排队中的请求仍持有同一条记录
+func (f *failCount) resetIfExpired(now time.Time) {
+	if f.inflight == 0 && now.Sub(f.first) > failureReset {
+		f.n, f.first = 0, now
+	}
+}
+
+// admissible 表示可以再开始一次校验：失败数加进行中的校验低于失败上限，且进行中的校验低于并发上限
+func (f *failCount) admissible() bool {
+	return f.n+f.inflight < maxFailures && f.inflight < maxInflight
+}
+
+// dispatch 按先来先到处理排队的请求：已锁定时全部返回 reserveLocked，否则在有空位时依次放行。调用方持有 a.mu。
+func (f *failCount) dispatch(now time.Time) {
+	f.resetIfExpired(now)
+	if f.n >= maxFailures {
+		for _, w := range f.queue {
+			w <- reserveLocked
+		}
+		f.queue = nil
+		return
+	}
+	for len(f.queue) > 0 && f.admissible() {
+		f.inflight++
+		f.queue[0] <- reserveOK
+		f.queue = f.queue[1:]
+	}
+	if len(f.queue) == 0 {
+		// 释放底层数组，避免长期持有已放行的通道
+		f.queue = nil
 	}
 }
 
@@ -269,11 +299,8 @@ func (a *authenticator) release(key string, ok bool) {
 			a.autoBanFor(key)
 		}
 	}
-	// 唤醒排队的请求重新判断
-	if f.wake != nil {
-		close(f.wake)
-		f.wake = nil
-	}
+	// 腾出空位后按顺序放行排队的请求
+	f.dispatch(time.Now())
 }
 
 // consumeOnce 标记一次性令牌已使用，重复使用返回 false。
