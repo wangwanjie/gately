@@ -10,6 +10,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/wangwanjie/gately/internal/crud"
 	"github.com/wangwanjie/gately/internal/stunaddr"
 	"github.com/wangwanjie/gately/internal/webpage"
 )
@@ -499,6 +500,64 @@ func TestPanelsAPI(t *testing.T) {
 	p.Name = "over"
 	if code, _ = do("POST", "/api/webservice/panels", p); code != 400 {
 		t.Fatalf("超过上限应拒绝: %d", code)
+	}
+}
+
+// 面板列表的分组、排序与批量操作：分组去掉首尾空白并限制长度，批量删除时任一面板被站点引用则整体拒绝，
+// 改分组、排序与批量启停后运行时面板库同步
+func TestPanelsGroupAndBatch(t *testing.T) {
+	m, do := newCopyModule(t)
+	keys := make([]string, 3)
+	for i, name := range []string{"甲", "乙", "丙"} {
+		p := validPanel()
+		p.Name = name
+		p.Group = "  家庭 "
+		code, out := do("POST", "/api/webservice/panels", p)
+		if code != 200 {
+			t.Fatalf("新增 %s: %d %v", name, code, out)
+		}
+		keys[i] = out["key"].(string)
+	}
+	if m.cfg.Panels[0].Group != "家庭" {
+		t.Fatalf("分组应去掉首尾空白: %q", m.cfg.Panels[0].Group)
+	}
+	long := validPanel()
+	long.Name = "长分组"
+	long.Group = strings.Repeat("组", crud.MaxGroupLen+1)
+	if code, _ := do("POST", "/api/webservice/panels", long); code != 400 {
+		t.Fatalf("分组过长应拒绝: %d", code)
+	}
+	if code, out := do("PUT", "/api/webservice/panels-group", map[string]any{"keys": []string{keys[1], keys[2]}, "group": "工作"}); code != 200 {
+		t.Fatalf("批量设置分组: %d %v", code, out)
+	}
+	if m.cfg.Panels[1].Group != "工作" || m.cfg.Panels[2].Group != "工作" || m.cfg.Panels[0].Group != "家庭" {
+		t.Fatalf("分组: %+v", []string{m.cfg.Panels[0].Group, m.cfg.Panels[1].Group, m.cfg.Panels[2].Group})
+	}
+	if code, out := do("PUT", "/api/webservice/panels-order", map[string]any{"keys": []string{keys[2], keys[0], keys[1]}}); code != 200 {
+		t.Fatalf("排序: %d %v", code, out)
+	}
+	if m.cfg.Panels[0].Key != keys[2] || m.cfg.Panels[1].Key != keys[0] {
+		t.Fatal("排序未生效")
+	}
+	if code, out := do("PUT", "/api/webservice/panels-enable", map[string]any{"keys": []string{keys[0], keys[1]}, "enable": false}); code != 200 {
+		t.Fatalf("批量停用: %d %v", code, out)
+	}
+	if cp, _ := m.auth.panels.get(keys[0]); cp == nil || cp.Enable {
+		t.Fatal("批量停用后运行时面板库应同步")
+	}
+	// 被站点引用的面板在批量删除中整体拒绝，其他面板也不删
+	l := Listener{Name: "主", Port: 18092, Sites: []Site{{Enable: true, Domains: []string{"nav.test"}, Type: TypePanel, Panel: keys[1]}}}
+	if code, out := do("POST", "/api/webservice/listeners", l); code != 200 {
+		t.Fatalf("监听: %d %v", code, out)
+	}
+	if code, _ := do("POST", "/api/webservice/panels-delete", map[string]any{"keys": []string{keys[0], keys[1]}}); code == 200 || len(m.cfg.Panels) != 3 {
+		t.Fatalf("引用中的面板应整体拒绝删除: %d %d", code, len(m.cfg.Panels))
+	}
+	if code, out := do("POST", "/api/webservice/panels-delete", map[string]any{"keys": []string{keys[0], keys[2]}}); code != 200 || len(m.cfg.Panels) != 1 {
+		t.Fatalf("批量删除: %d %v", code, out)
+	}
+	if _, ok := m.auth.panels.get(keys[0]); ok {
+		t.Fatal("批量删除后运行时面板库应同步")
 	}
 }
 

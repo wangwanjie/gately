@@ -119,6 +119,8 @@ type Panel struct {
 	Key    string `json:"key"`
 	Name   string `json:"name"`
 	Enable bool   `json:"enable"`
+	// Group 为面板在管理界面中的分组，只影响面板列表的显示，与面板内链接的分组无关
+	Group string `json:"group"`
 	// Title 与 Subtitle 显示在页面顶部，Title 为空时使用 Name
 	Title    string `json:"title"`
 	Subtitle string `json:"subtitle"`
@@ -479,6 +481,9 @@ func (p *Panel) validate() error {
 	p.Footer = strings.TrimSpace(p.Footer)
 	p.FooterURL = strings.TrimSpace(p.FooterURL)
 	p.Remark = strings.TrimSpace(p.Remark)
+	if err := crud.NormalizeGroup(&p.Group); err != nil {
+		return err
+	}
 	if p.Name == "" {
 		return errors.New("请填写面板名称")
 	}

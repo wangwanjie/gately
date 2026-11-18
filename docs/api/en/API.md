@@ -438,6 +438,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | PUT | `/api/webservice/panels-order` | `webservice:write` | Reorder Navigation panels |
 | PUT | `/api/webservice/panels-enable` | `webservice:write` | Enable or disable in bulk: Navigation panels |
 | POST | `/api/webservice/panels-delete` | `webservice:write` | Delete in bulk: Navigation panels |
+| PUT | `/api/webservice/panels-group` | `webservice:write` | Set group in bulk: Navigation panels |
 | POST | `/api/webservice/panels/preview` | `webservice:write` | Navigation panel preview |
 | GET | `/api/webservice/panels/icons` | `webservice:read` | Built-in icons for navigation panels |
 | POST | `/api/webservice/panels/sunpanel` | `webservice:write` | Convert Sun-Panel config |
@@ -2749,6 +2750,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `footer` | string |
 | `footerUrl` | string |
 | `gap` | integer |
+| `group` | string |
 | `groupCount` | boolean |
 | `hideAppName` | boolean |
 | `hideFooter` | boolean |

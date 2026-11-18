@@ -438,6 +438,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/webservice/panels-order` | `webservice:write` | Изменить порядок: Панели навигации |
 | PUT | `/api/webservice/panels-enable` | `webservice:write` | Пакетно включить или отключить: Панели навигации |
 | POST | `/api/webservice/panels-delete` | `webservice:write` | Пакетно удалить: Панели навигации |
+| PUT | `/api/webservice/panels-group` | `webservice:write` | Задать группу сразу для нескольких: Панели навигации |
 | POST | `/api/webservice/panels/preview` | `webservice:write` | Предпросмотр панели навигации |
 | GET | `/api/webservice/panels/icons` | `webservice:read` | Встроенные значки панелей навигации |
 | POST | `/api/webservice/panels/sunpanel` | `webservice:write` | Преобразовать конфигурацию Sun-Panel |
@@ -2749,6 +2750,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `footer` | string |
 | `footerUrl` | string |
 | `gap` | integer |
+| `group` | string |
 | `groupCount` | boolean |
 | `hideAppName` | boolean |
 | `hideFooter` | boolean |

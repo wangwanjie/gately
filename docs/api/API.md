@@ -438,6 +438,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | PUT | `/api/webservice/panels-order` | `webservice:write` | 调整导航面板排序 |
 | PUT | `/api/webservice/panels-enable` | `webservice:write` | 批量启用或停用导航面板 |
 | POST | `/api/webservice/panels-delete` | `webservice:write` | 批量删除导航面板 |
+| PUT | `/api/webservice/panels-group` | `webservice:write` | 批量设置导航面板分组 |
 | POST | `/api/webservice/panels/preview` | `webservice:write` | 导航面板预览 |
 | GET | `/api/webservice/panels/icons` | `webservice:read` | 导航面板的内置图标列表 |
 | POST | `/api/webservice/panels/sunpanel` | `webservice:write` | 转换 Sun-Panel 配置 |
@@ -2749,6 +2750,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `footer` | string |
 | `footerUrl` | string |
 | `gap` | integer |
+| `group` | string |
 | `groupCount` | boolean |
 | `hideAppName` | boolean |
 | `hideFooter` | boolean |

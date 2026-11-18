@@ -438,6 +438,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | PUT | `/api/webservice/panels-order` | `webservice:write` | Navigationspanels neu anordnen |
 | PUT | `/api/webservice/panels-enable` | `webservice:write` | Im Stapel aktivieren oder deaktivieren: Navigationspanels |
 | POST | `/api/webservice/panels-delete` | `webservice:write` | Im Stapel löschen: Navigationspanels |
+| PUT | `/api/webservice/panels-group` | `webservice:write` | Gruppe mehrerer Einträge festlegen: Navigationspanels |
 | POST | `/api/webservice/panels/preview` | `webservice:write` | Vorschau des Navigationspanels |
 | GET | `/api/webservice/panels/icons` | `webservice:read` | Eingebaute Symbole für Navigationspanels |
 | POST | `/api/webservice/panels/sunpanel` | `webservice:write` | Sun-Panel-Konfiguration umwandeln |
@@ -2749,6 +2750,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `footer` | string |
 | `footerUrl` | string |
 | `gap` | integer |
+| `group` | string |
 | `groupCount` | boolean |
 | `hideAppName` | boolean |
 | `hideFooter` | boolean |
