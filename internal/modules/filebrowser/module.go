@@ -91,8 +91,14 @@ func (m *Module) SetHTTPClient(fn func() *http.Client) {
 func (m *Module) Init(env module.Env) error {
 	m.store, m.logs = env.Store, env.Logs
 	m.install = m.newInstaller()
-	_, err := m.store.Load(ID, &m.cfg)
-	return err
+	if _, err := m.store.Load(ID, &m.cfg); err != nil {
+		return err
+	}
+	// 加载后补全留空参数的默认值；只改内存，不回写文件，下次保存时随其他改动一并写入
+	for i := range m.cfg.Instances {
+		m.cfg.Instances[i].fillDefaults()
+	}
+	return nil
 }
 
 // Start 实现 module.Module。

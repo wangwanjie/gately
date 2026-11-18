@@ -93,8 +93,47 @@ type Instance struct {
 	Remark     string   `json:"remark"`
 }
 
+// fillDefaults 为留空（零值）的参数补默认值，不做校验、不会失败。保存时由 Validate 开头调用；
+// 从配置文件加载时也调用，手工编辑或外部生成的实例缺这些字段时不会以零值生成 File Browser 配置
+// （登录方式为空时密码登录与免登录都不开启、没有任何登录方式，管理员用户名为空等）。
+func (i *Instance) fillDefaults() {
+	i.BaseURL = strings.TrimSpace(i.BaseURL)
+	if i.BaseURL == "" {
+		i.BaseURL = "/"
+	}
+	if i.AuthMethod == "" {
+		i.AuthMethod = AuthPassword
+	}
+	i.ProxyHeader = strings.TrimSpace(i.ProxyHeader)
+	if i.AuthMethod == AuthProxy && i.ProxyHeader == "" {
+		i.ProxyHeader = defaultProxyHeader
+	}
+	i.AdminUser = strings.TrimSpace(i.AdminUser)
+	if i.AdminUser == "" {
+		i.AdminUser = defaultAdminUser
+	}
+	for k := range i.Sources {
+		s := &i.Sources[k]
+		s.Name = strings.TrimSpace(s.Name)
+		if s.Name == "" {
+			s.Name = defaultSourceName(s.Path)
+		}
+	}
+}
+
+// defaultSourceName 返回共享目录未填写名称时使用的名称：目录名，根目录为 root。
+func defaultSourceName(path string) string {
+	name := filepath.Base(filepath.Clean(strings.TrimSpace(path)))
+	// 根目录的 Base 是分隔符本身，空路径的 Base 是 "."
+	if name == string(filepath.Separator) || name == "." {
+		return "root"
+	}
+	return name
+}
+
 // Validate 校验并规范化实例配置。
 func (i *Instance) Validate() error {
+	i.fillDefaults()
 	if err := crud.NormalizeGroup(&i.Group); err != nil {
 		return err
 	}
@@ -109,10 +148,6 @@ func (i *Instance) Validate() error {
 	if i.Port < 1 || i.Port > 65535 {
 		return errors.New("端口应在 1-65535 之间")
 	}
-	i.BaseURL = strings.TrimSpace(i.BaseURL)
-	if i.BaseURL == "" {
-		i.BaseURL = "/"
-	}
 	if !strings.HasPrefix(i.BaseURL, "/") {
 		i.BaseURL = "/" + i.BaseURL
 	}
@@ -123,24 +158,14 @@ func (i *Instance) Validate() error {
 		return err
 	}
 	switch i.AuthMethod {
-	case "":
-		i.AuthMethod = AuthPassword
 	case AuthPassword, AuthProxy, AuthNone:
 	default:
 		return fmt.Errorf("不支持的登录方式 %q", i.AuthMethod)
 	}
-	i.ProxyHeader = strings.TrimSpace(i.ProxyHeader)
 	if i.AuthMethod == AuthProxy {
-		if i.ProxyHeader == "" {
-			i.ProxyHeader = defaultProxyHeader
-		}
 		if !headerNameRe.MatchString(i.ProxyHeader) {
 			return fmt.Errorf("用户名请求头 %q 无效", i.ProxyHeader)
 		}
-	}
-	i.AdminUser = strings.TrimSpace(i.AdminUser)
-	if i.AdminUser == "" {
-		i.AdminUser = defaultAdminUser
 	}
 	if strings.ContainsAny(i.AdminUser, " \t\r\n:/\\") {
 		return errors.New("管理员用户名不能包含空格、冒号或斜杠")
@@ -224,14 +249,7 @@ func (i *Instance) validateSources() error {
 		if err := fsperm.CheckWholeDir(s.Path); err != nil {
 			return err
 		}
-		s.Name = strings.TrimSpace(s.Name)
-		if s.Name == "" {
-			s.Name = filepath.Base(s.Path)
-			// 根目录的 Base 是分隔符本身
-			if s.Name == string(filepath.Separator) || s.Name == "." {
-				s.Name = "root"
-			}
-		}
+		// 名称已由 fillDefaults 补全（按规范化前的路径取目录名，与规范化后的结果相同）
 		if strings.ContainsAny(s.Name, `/\`) {
 			return fmt.Errorf("目录名称 %q 不能包含斜杠", s.Name)
 		}
