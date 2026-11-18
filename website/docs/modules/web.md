@@ -114,7 +114,7 @@
 | 向后端发送 PROXY v2 | 在 TCP 连接开头附加 PROXY 协议 v2 头，传递真实客户端 IP。开启后每个请求都新建连接，也不再用 HTTP/2 连接后端。后端是 Gately 时，需在其监听上开启接收 PROXY 协议，并把本机加入可信 PROXY 来源。 | 后端不读 HTTP 头但支持 PROXY 协议，如另一层 Gately、haproxy、开启 `proxy_protocol` 的 nginx。后端未配置接收时所有请求都会失败，不确定时保持关闭 |
 | 使用访问域名作为 SNI | 仅 HTTPS 后端：握手时发送访客使用的域名并按它校验证书，相当于 nginx 的 `proxy_ssl_server_name on; proxy_ssl_name $host` | 后端在同一端口按域名选择证书或分流，如 frp 的 `vhost_https`、托管多个 HTTPS 站点的 nginx。每个后端使用独立的连接池，不同域名的连接不会互相复用 |
 | http:// 后端使用明文 HTTP/2（h2c） | 仅 http:// 后端：以不加密的 HTTP/2（h2c）连接后端，gRPC 流式传输与尾部元数据原样透传；多个访客的请求共用一条后端连接。对站点全部 http:// 后端生效，包括按路径分流与按用户分流的后端；WebSocket 等协议升级请求自动改用 HTTP/1.1 连接。HTTPS 后端会自动协商 HTTP/2，无需此选项；健康检查同样使用 h2c | 后端是只讲 h2c 的 gRPC 服务，如 NetBird 管理/信令（同一端口上的 WebSocket 中继也可用）、只开 gRPC 的 xray。后端不支持 h2c 时请求返回 502 |
-| 转发 Gately 登录 Cookie | 把 Gately 自己的登录 Cookie（单点登录 `gately_sso`、站点会话、第三方登录随机数）原样转发给后端；关闭时（默认）这些 Cookie 不发给后端，避免泄露登录凭据。管理后台自己的登录 Cookie（`gately_token` 等）不受此选项影响：只转发给反向代理到本实例管理后台监听端口的站点，其他后端与转发认证服务一律收不到。 | 后端是另一台负责认证的 Gately，本站点不开认证。例如公网 Gately 只做 WAF 与访问控制、反代到内网 Gately，由内网 Gately 负责网页认证与单点登录。本站点启用认证时不能开启；只在后端是自己的 Gately 时使用 |
+| 转发 Gately 登录 Cookie | 把 Gately 自己的登录 Cookie（单点登录 `gately_sso`、站点会话、第三方登录随机数）原样转发给后端；关闭时（默认）这些 Cookie 不发给后端，避免泄露登录凭据。管理后台自己的登录 Cookie（`gately_token` 等）不受此选项影响：只转发给反向代理到本实例管理后台监听端口的站点，其他后端与转发认证服务一律收不到。只剥离本实例签发且仍有效的后台 Cookie：后端是另一台 Gately 时，浏览器为该域名带的同名 Cookie 由后端签发，照常转发。开启本选项时，本实例校验不过的 `gately_admin`（后端 Gately「后台登录免认证」的凭据）也原样转发，双层部署时内层的「后台登录免认证」才能生效；本实例签发的 `gately_admin` 始终不转发。 | 后端是另一台负责认证的 Gately，本站点不开认证。例如公网 Gately 只做 WAF 与访问控制、反代到内网 Gately，由内网 Gately 负责网页认证与单点登录。本站点启用认证时不能开启；只在后端是自己的 Gately 时使用 |
 
 常见组合：
 
@@ -554,7 +554,7 @@ http://10.0.0.3:8080 backup
 
 - 仅缓存 GET 请求，且请求不含 `Range` 头与 `Cache-Control: no-cache`；
 - 带凭据的请求不缓存：请求头含 `Authorization`、`Proxy-Authorization`、`Cookie`、`X-Api-Key`、`X-Auth-Token`、`X-Access-Token`、`X-CSRF-Token`、`X-Emby-Token`、`X-Emby-Authorization`、`X-MediaBrowser-Token`、`X-Plex-Token`、`X-Jellyfin-Token` 之一，或查询串含 `api_key`、`X-Plex-Token`、`token`、`access_token` 参数（参数名不区分大小写）；
-- `Cookie` 中只有 Gately 自己的登录 Cookie 时不算凭据，照常缓存：后台登录免认证的 `gately_admin`、`gately_admin_hs` 始终如此，单点登录的 `gately_sso`、本实例签发的站点会话 `gately_site_*`（同名但不是本实例签发的 Cookie 会原样到达后端，仍算凭据） 与第三方登录的 `gately_oauth_nonce` 在站点未开启「转发 Gately 登录 Cookie」时如此（缓存位于认证之后，未登录的访客到不了缓存）；含其他 Cookie 或无法解析时仍不缓存；
+- `Cookie` 中只有 Gately 自己的登录 Cookie 时不算凭据，照常缓存：本实例签发的后台登录免认证凭据 `gately_admin` 始终如此（开启「转发 Gately 登录 Cookie」时本实例校验不过的同名凭据会转发给后端，按凭据处理），单点登录的 `gately_sso`、本实例签发的站点会话 `gately_site_*`（同名但不是本实例签发的 Cookie 会原样到达后端，仍算凭据） 与第三方登录的 `gately_oauth_nonce` 在站点未开启「转发 Gately 登录 Cookie」时如此（缓存位于认证之后，未登录的访客到不了缓存）；含其他 Cookie 或无法解析时仍不缓存；
 - 原始请求路径含 `;`、`\`、`%2F` 或 `%5C`（不区分大小写）的请求不缓存，这类路径经规范化后与后端的理解可能不同；
 - 仅缓存状态码 200 的响应；响应含 `Set-Cookie`、`Vary: *`，或 `Cache-Control` 为 `no-store` / `private` / `no-cache` 时跳过；
 - 响应的 `Vary` 只能包含 `Accept-Encoding`，站点开启跨域时还可以包含 `Origin`，含其他请求头时不缓存；后端自己返回的 `Access-Control-Allow-Origin` 不是 `*` 时不缓存；
