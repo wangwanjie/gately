@@ -471,8 +471,53 @@ func splitDomains(in []string) (ok, bad []string) {
 	return ok, bad
 }
 
+// fillDefaults 为站点中留空（零值）的参数补默认值，不做校验、不会失败。保存时由 validate 开头调用；
+// 从配置文件加载时也调用，手工编辑或外部生成的配置缺这些字段时不会以零值运行
+// （类型留空没有处理器、重定向或固定文本状态码 0 时 WriteHeader(0) panic 等）。
+func (s *Site) fillDefaults() {
+	if s.Type == "" {
+		s.Type = TypeProxy
+	}
+	switch s.Type {
+	case TypeRedirect:
+		if s.RedirectCode == 0 {
+			s.RedirectCode = 302
+		}
+	case TypeText:
+		if s.StatusCode == 0 {
+			s.StatusCode = 200
+		}
+		if s.ContentType == "" {
+			s.ContentType = "text/plain; charset=utf-8"
+		}
+	}
+	s.fillProxyDefaults()
+}
+
+// fillDefaults 为监听器及其全部站点中留空（零值）的参数补默认值，不做校验、不会失败，
+// 从配置文件加载时调用。完整的 Validate 会检查静态目录是否存在、转换明文密码等，开机时挂载未就绪
+// 就可能失败，不能为此停掉整个监听，所以加载时只补默认值，校验仍留给保存。
+func (l *Listener) fillDefaults() {
+	if l.Network == "" {
+		l.Network = "tcp"
+	}
+	// 与 normalizeHTTPPort 一致：HTTPS 监听的额外 HTTP 端口默认跳转，HTTP 监听只能直接提供服务
+	if l.HTTPPort > 0 && l.HTTPPortMode == "" {
+		if l.TLS {
+			l.HTTPPortMode = PlainHTTPRedirect
+		} else {
+			l.HTTPPortMode = PlainHTTPServe
+		}
+	}
+	for i := range l.Sites {
+		l.Sites[i].fillDefaults()
+	}
+	l.Default.fillDefaults()
+}
+
 func (s *Site) validate(isDefault bool) error {
 	s.Name = strings.TrimSpace(s.Name)
+	s.fillDefaults()
 	if isDefault {
 		s.Group = ""
 	}
@@ -502,8 +547,7 @@ func (s *Site) validate(isDefault bool) error {
 		return errors.New("至少填写一个域名")
 	}
 	switch s.Type {
-	case "", TypeProxy:
-		s.Type = TypeProxy
+	case TypeProxy:
 		s.Targets = cleanList(s.Targets)
 		if len(s.Targets) == 0 {
 			return errors.New("请填写后端地址")
@@ -525,8 +569,6 @@ func (s *Site) validate(isDefault bool) error {
 			return errors.New("重定向地址需为完整 URL")
 		}
 		switch s.RedirectCode {
-		case 0:
-			s.RedirectCode = 302
 		case 301, 302, 307, 308:
 		default:
 			return errors.New("重定向状态码只能是 301/302/307/308")
@@ -549,14 +591,8 @@ func (s *Site) validate(isDefault bool) error {
 			return errors.New("请选择导航面板")
 		}
 	case TypeText:
-		if s.StatusCode == 0 {
-			s.StatusCode = 200
-		}
 		if s.StatusCode < 100 || s.StatusCode > 599 {
 			return errors.New("状态码无效")
-		}
-		if s.ContentType == "" {
-			s.ContentType = "text/plain; charset=utf-8"
 		}
 	case TypeClose:
 		// 断开连接的站点不经过认证、访问控制、重写与请求头等处理，其余设置都不生效，不再校验，
