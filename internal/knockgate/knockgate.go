@@ -51,7 +51,7 @@ type Grant struct {
 	Until  time.Time    `json:"until"`
 	// Source 为授权来源：SourceSPA 或 SourceWeb
 	Source string `json:"source"`
-	// Owner 为网页登录放行的用户与入口站点；敲门报文的授权为零值
+	// Owner 为网页登录放行的用户与入口站点；敲门报文的授权只有 User（身份名称，共享密钥为空）与 Cred（凭据标识）
 	Owner
 	// Addrs 为网页登录放行时实际登录（或探测）的单个地址：放行网段时进程内按网段判断，
 	// 系统防火墙（敲门规则开启防火墙拦截时）只写入这些地址，见 MaxWebAddrs
@@ -208,9 +208,25 @@ func normPrefix(p netip.Prefix) netip.Prefix {
 
 // Allow 登记 addr 在 until 之前持有 rule 的授权（敲门报文取得）；已有更晚到期的授权时保留较晚的时间。
 func (r *Registry) Allow(addr netip.Addr, rule string, until time.Time) error {
+	return r.AllowSPA(addr, rule, until, Owner{})
+}
+
+// AllowSPA 与 Allow 相同，并记录敲门的身份：o.User 为身份名称（共享密钥为空），o.Cred 为凭据标识。
+// 同一地址已有敲门报文的授权时改记为本次敲门的身份（到期时间仍取较晚的），即授权归最近一次敲门的人；
+// 已有网页登录的授权时保持网页登录的记录不变，只延长到期时间。
+func (r *Registry) AllowSPA(addr netip.Addr, rule string, until time.Time, o Owner) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
-	return r.putLocked(grantKey{singlePrefix(addr), rule}, grantInfo{until: until, source: SourceSPA})
+	k := grantKey{singlePrefix(addr), rule}
+	if old, ok := r.grants[k]; ok && old.source == SourceSPA {
+		old.owner = o
+		if until.After(old.until) {
+			old.until = until
+		}
+		r.grants[k] = old
+		return nil
+	}
+	return r.putLocked(k, grantInfo{until: until, source: SourceSPA, owner: o})
 }
 
 // ErrRuleDisabled 表示规则不存在或已停用，不能登记网页登录的授权。
