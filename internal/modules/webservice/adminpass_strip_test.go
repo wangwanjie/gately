@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-// 后台登录免认证的凭据与握手标记等同于管理员身份，只有本实例能校验：开启转发登录 Cookie 的站点
+// 后台登录免认证的凭据等同于管理员身份，只有本实例能校验：开启转发登录 Cookie 的站点
 // 与转发认证服务都不应收到它们，其他 Cookie 照常转发。
 func TestAdminBridgeCookieNeverForwarded(t *testing.T) {
 	got := make(chan string, 4)
@@ -21,7 +21,7 @@ func TestAdminBridgeCookieNeverForwarded(t *testing.T) {
 		{Enable: true, Key: "fa", Domains: []string{"fa.test"}, Type: TypeText, Text: "ok", ForwardAuth: ForwardAuth{URL: backend.URL}},
 	}}
 	addr, _ := startRunner(t, l, nil, nil)
-	ck := adminBridgeCookie + "=secret1; " + adminHSCookie + "=secret2; other=1"
+	ck := adminBridgeCookie + "=secret1; other=1"
 	for _, host := range []string{"pass.test", "fa.test"} {
 		if resp, _ := get(t, noRedirect(), addr, host, "/", hdr("Cookie", ck)); resp.StatusCode != http.StatusOK {
 			t.Fatalf("%s 应放行: %d", host, resp.StatusCode)

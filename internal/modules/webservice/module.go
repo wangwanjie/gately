@@ -144,7 +144,6 @@ func (m *Module) Init(env module.Env) error {
 		m.realIP.set(from, headers, port)
 	}
 	m.auth.shared.set(m.cfg.Settings.AuthUsers, m.cfg.Settings.SSODomain)
-	m.auth.setAdminEntry(m.cfg.Settings.AdminPassEntry)
 	m.refreshAdminPass()
 	// 手工编辑配置填入过短的认证标记密钥时不启用，避免弱密钥被猜出后伪造标记
 	if k := m.cfg.Settings.AuthMarkerKey; k != "" && len(k) < minAuthMarkerKey {
@@ -396,7 +395,6 @@ func (m *Module) saveLocked() error {
 func (m *Module) refreshAdminPass() {
 	if m.auth != nil {
 		m.auth.adminPass.Store(anyAdminPass(m.cfg.Listeners))
-		m.auth.setAdminHosts(adminPassDomains(m.cfg.Listeners))
 		m.auth.setSiteHosts(siteDomains(m.cfg.Listeners))
 	}
 }
@@ -589,6 +587,8 @@ type settingsPut struct {
 	SelfServicePassword *bool         `json:"selfServicePassword"`
 	PasskeyLogin        *bool         `json:"passkeyLogin"`
 	OIDC                *OIDCSettings `json:"oidc"`
+	// AdminPassEntry 是已移除的跨父域后台入口地址：升级前打开的页面或脚本仍可能带上它，接受后忽略，避免因未知字段拒绝保存
+	AdminPassEntry *string `json:"adminPassEntry,omitempty"`
 }
 
 func (m *Module) handlePutSettings(w http.ResponseWriter, r *http.Request) {
@@ -650,15 +650,6 @@ func (m *Module) handlePutSettings(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	// 后台入口规范化为 scheme://域名[:端口]
-	if e, on, err := parseAdminEntry(s.AdminPassEntry); err != nil {
-		httpx.Error(w, http.StatusBadRequest, "%v", err)
-		return
-	} else if on {
-		s.AdminPassEntry = e.origin
-	} else {
-		s.AdminPassEntry = ""
-	}
 	s.TrustedProxies = cleanList(s.TrustedProxies)
 	// 省略的认证用户相关字段沿用原值（原值已规范化），提供的字段照常校验
 	s.AuthUsers, s.SSODomain, s.SelfServicePassword, s.OIDC = old.AuthUsers, old.SSODomain, old.SelfServicePassword, old.OIDC
@@ -706,7 +697,6 @@ func (m *Module) handlePutSettings(w http.ResponseWriter, r *http.Request) {
 	}
 	m.applyOAuthLocked()
 	m.applyUsersLocked(s)
-	m.auth.setAdminEntry(s.AdminPassEntry)
 	m.auth.marker.set(s.AuthMarkerKey)
 	if s.AuthMarkerKey != old.AuthMarkerKey {
 		m.auth.backends.reset()

@@ -87,8 +87,6 @@ type authenticator struct {
 	adminPass atomic.Bool
 	// oauthHosts 为默认站点发起第三方登录时可接受的访问域名来源，见 oauthOrigin
 	oauthHosts oauthHosts
-	// hs 为后台登录免认证的跳转握手数据（后台入口、站点域名、一次性票据），见 adminhandshake.go
-	hs adminHandshake
 	// marker 为认证标记密钥，backends 记录得到后端 Gately 认证标记的凭据，见 authmarker.go
 	marker   markerKey
 	backends backendTrust

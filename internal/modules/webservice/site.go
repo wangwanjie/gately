@@ -683,10 +683,10 @@ func (h *siteHandler) newProxy(s Site, p *pool, strip string) http.Handler {
 			}
 			// 站点会话 Cookie 只用于 Gately 自身认证，不转发给后端；后端是负责认证的另一台 Gately 时按站点设置原样转发
 			if !s.PassAuthCookies {
-				stripCookie(pr.Out, cookieName(s), oauthNonceCookie, ssoCookie, adminBridgeCookie, adminHSCookie)
+				stripCookie(pr.Out, cookieName(s), oauthNonceCookie, ssoCookie, adminBridgeCookie)
 			} else {
 				// 后台登录免认证的凭据只有本实例能校验，等同于管理员身份，任何情况下都不交给后端
-				stripCookie(pr.Out, adminBridgeCookie, adminHSCookie)
+				stripCookie(pr.Out, adminBridgeCookie)
 			}
 			applyHeaders(pr.Out.Header, s.RequestHeaders)
 		},
@@ -786,7 +786,7 @@ func localPort(r *http.Request) string {
 func gatelyCookieMatcher(s Site, a *authenticator) func(*http.Cookie) bool {
 	own := cookieName(s)
 	return func(c *http.Cookie) bool {
-		if c.Name == adminBridgeCookie || c.Name == adminHSCookie {
+		if c.Name == adminBridgeCookie {
 			return true
 		}
 		if s.PassAuthCookies {
@@ -1206,10 +1206,6 @@ func adminTag(admin, deny string) string {
 func (h *siteHandler) serveInner(rec http.ResponseWriter, r *http.Request) {
 	// 管理员经本站点访问后台时，向单点登录域签发后台登录免认证的桥接凭据（见 adminpass.go）
 	h.auth.issueAdminBridge(rec, r)
-	// 后台登录免认证的跳转握手：后台入口域名签发票据，站点兑换票据（见 adminhandshake.go）
-	if h.auth.serveAdminTicket(rec, r) || h.auth.serveAdminLogin(rec, r, h.site) || h.auth.serveAdminStart(rec, r, h.site) {
-		return
-	}
 	if h.site.CORS {
 		if origin := r.Header.Get("Origin"); origin != "" && h.corsAllowed(origin) {
 			rec.Header().Set("Access-Control-Allow-Origin", origin)
