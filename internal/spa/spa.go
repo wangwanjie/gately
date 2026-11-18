@@ -28,6 +28,7 @@ import (
 	"net/netip"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 // 消息类型（fwknop 的 FKO_*_MSG）。只有 AccessMsg 与 ClientTimeoutAccessMsg 被接受，其余类型解析后由调用方拒绝。
@@ -226,12 +227,42 @@ type macInput struct {
 // DecodeAny 依次用 keys 中的密钥校验报文的 HMAC，返回第一个通过校验的密钥下标及用它解密的结果
 // （HMAC 正确而解密失败时为 ErrDecrypt）。没有密钥通过时返回 -1：报文长度不足以容纳任一密钥算法的 HMAC 时为 ErrFormat，
 // 否则为 ErrHMAC。结果与逐个调用 Decode 相同，但报文的预检查、拼接与 HMAC 值的解码每种算法只做一次，
-// 密钥较多（每人一份密钥）时伪造报文的处理成本基本只剩 HMAC 计算本身。
+// 密钥较多（每人一份密钥）时伪造报文的处理成本基本只剩 HMAC 计算本身。同一组密钥反复使用时改用 KeySet 与 DecodeSet。
 func DecodeAny(packet []byte, keys []Key) (int, *Message, error) {
+	return decodeAny(packet, keys, nil)
+}
+
+// KeySet 是一组反复用来校验报文的密钥，可被多个协程同时使用。
+// 每个密钥的 HMAC 对象用过后放回各自的缓存，下次直接重置复用：重置只恢复密钥与内外填充混合后的中间状态，
+// 既不再为每个报文、每个密钥分配 HMAC 对象，也不再重算这两个填充块。密钥很多（每人一份密钥）时，
+// 伪造报文要逐个密钥算一次 HMAC，这部分开销与分配随密钥数成倍增长。
+type KeySet struct {
+	keys []Key
+	// macs[i] 缓存 keys[i] 的 HMAC 对象（hash.Hash）
+	macs []sync.Pool
+}
+
+// NewKeySet 返回 keys 的 KeySet。之后不能再修改 keys 中的密钥。
+func NewKeySet(keys []Key) *KeySet {
+	return &KeySet{keys: keys, macs: make([]sync.Pool, len(keys))}
+}
+
+// DecodeSet 与 DecodeAny 相同（结果中的下标对应 NewKeySet 时的顺序），复用 s 中缓存的 HMAC 对象。s 为 nil 时没有可用的密钥。
+func DecodeSet(packet []byte, s *KeySet) (int, *Message, error) {
+	if s == nil {
+		return decodeAny(packet, nil, nil)
+	}
+	return decodeAny(packet, s.keys, s.macs)
+}
+
+// decodeAny 实现 DecodeAny 与 DecodeSet；macs 非 nil 时与 keys 一一对应，从中取用并放回 HMAC 对象。
+func decodeAny(packet []byte, keys []Key, macs []sync.Pool) (int, *Message, error) {
 	if err := Prefilter(packet); err != nil {
 		return -1, nil, err
 	}
 	var inputs map[string]*macInput
+	// sum 为各密钥共用的 HMAC 结果缓冲，容量够放最长的 SHA-512 摘要
+	var sum []byte
 	lastErr := ErrFormat
 	for i, k := range keys {
 		typ := k.hmacType()
@@ -255,9 +286,27 @@ func DecodeAny(packet []byte, keys []Key) (int, *Message, error) {
 			continue
 		}
 		lastErr = ErrHMAC
-		mac := hmac.New(algo.fn, k.HMAC)
+		if sum == nil {
+			sum = make([]byte, 0, sha512.Size)
+		}
+		var mac hash.Hash
+		if macs != nil {
+			if m, ok := macs[i].Get().(hash.Hash); ok {
+				// 上次用过的对象：重置回只混入了密钥的初始状态
+				m.Reset()
+				mac = m
+			}
+		}
+		if mac == nil {
+			mac = hmac.New(algo.fn, k.HMAC)
+		}
 		mac.Write(in.full)
-		if subtle.ConstantTimeCompare(mac.Sum(nil), in.tag) != 1 {
+		sum = mac.Sum(sum[:0])
+		match := subtle.ConstantTimeCompare(sum, in.tag) == 1
+		if macs != nil {
+			macs[i].Put(mac)
+		}
+		if !match {
 			continue
 		}
 		msg, err := decrypt(in.full, k)
