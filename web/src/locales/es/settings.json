@@ -210,7 +210,7 @@
     "accessLogMB": "Tamaño total de registros de acceso (MB)",
     "accessLogMBHelp": "Límite del archivo de registro de acceso actual más todos los archivos comprimidos; al superarlo se eliminan primero los más antiguos. 0 equivale al valor por defecto de 32 MB (como máximo el 5 % de la partición donde están los registros)",
     "gcPercent": "Porcentaje de GC",
-    "gcPercentHelp": "0 significa el valor por defecto (100); reducirlo disminuye el uso de memoria pero aumenta la carga de CPU",
+    "gcPercentHelp": "0 significa el valor por defecto: 200 con al menos 1 GiB de memoria disponible, si no 100; reducirlo disminuye el uso de memoria pero aumenta la carga de CPU",
     "maxProcs": "Máx. de núcleos de CPU",
     "maxProcsHelp": "0 significa automático ({count} núcleos en este equipo)"
   },

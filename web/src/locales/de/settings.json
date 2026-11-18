@@ -210,7 +210,7 @@
     "accessLogMB": "Gesamtgröße Zugriffsprotokolle (MB)",
     "accessLogMBHelp": "Limit für die aktuelle Zugriffsprotokolldatei samt aller komprimierten Archive; bei Überschreitung werden die ältesten Archive zuerst gelöscht. 0 bedeutet den Standard von 32 MB (höchstens 5 % der Partition mit den Protokollen)",
     "gcPercent": "GC-Prozentsatz",
-    "gcPercentHelp": "0 bedeutet Standard (100); ein niedrigerer Wert senkt den Speicherverbrauch, erhöht aber den CPU-Aufwand",
+    "gcPercentHelp": "0 bedeutet Standard: 200 bei mindestens 1 GiB verfügbarem Speicher, sonst 100; ein niedrigerer Wert senkt den Speicherverbrauch, erhöht aber den CPU-Aufwand",
     "maxProcs": "Max. CPU-Kerne",
     "maxProcsHelp": "0 bedeutet automatisch ({count} Kerne auf diesem Rechner)"
   },

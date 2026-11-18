@@ -210,7 +210,7 @@
     "accessLogMB": "Taille totale des journaux d'accès (Mo)",
     "accessLogMBHelp": "Limite pour le fichier journal d'accès actuel et toutes les archives compressées ; au-delà, les archives les plus anciennes sont supprimées en premier. 0 correspond à la valeur par défaut de 32 Mo (au plus 5 % de la partition contenant les journaux)",
     "gcPercent": "Pourcentage GC",
-    "gcPercentHelp": "0 correspond à la valeur par défaut (100) ; le réduire diminue l'usage mémoire mais augmente la charge CPU",
+    "gcPercentHelp": "0 correspond à la valeur par défaut : 200 avec au moins 1 Gio de mémoire disponible, sinon 100 ; le réduire diminue l’usage mémoire mais augmente la charge CPU",
     "maxProcs": "Nombre max. de cœurs CPU",
     "maxProcsHelp": "0 signifie automatique ({count} cœurs sur cette machine)"
   },

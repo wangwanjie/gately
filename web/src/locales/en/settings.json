@@ -210,7 +210,7 @@
     "accessLogMB": "Access log total size (MB)",
     "accessLogMBHelp": "Limit for the current access log file plus all compressed archives; when exceeded, the oldest archives are deleted first. 0 means the default of 32 MB (at most 5% of the partition holding the logs)",
     "gcPercent": "GC percent",
-    "gcPercentHelp": "0 means default (100); lowering it reduces memory use but increases CPU overhead",
+    "gcPercentHelp": "0 means default: 200 with at least 1 GiB of available memory, otherwise 100; lowering it reduces memory use but increases CPU overhead",
     "maxProcs": "Max CPU cores",
     "maxProcsHelp": "0 means automatic ({count} cores on this machine)"
   },
