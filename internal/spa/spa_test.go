@@ -11,6 +11,7 @@ import (
 	"net/netip"
 	"os"
 	"strings"
+	"sync"
 	"testing"
 )
 
@@ -261,6 +262,75 @@ func TestDecodeAny(t *testing.T) {
 	}
 }
 
+// DecodeSet 复用各密钥的 HMAC 对象：多个协程交替校验匹配与不匹配的报文，结果始终与 DecodeAny 相同。
+func TestDecodeSetReuse(t *testing.T) {
+	k256, k512, other := testKey(t, HMACSHA256), testKey(t, HMACSHA512), testKey(t, HMACSHA256)
+	keys := []Key{other, k256, k512}
+	set := NewKeySet(keys)
+	in := Message{User: "alice", Timestamp: 1700000000, Type: AccessMsg, Access: []Access{{"tcp", 22}}}
+	var pkts [][]byte
+	for _, k := range []Key{k256, k512, other} {
+		pkt, err := Encode(in, k, rand.Reader)
+		if err != nil {
+			t.Fatal(err)
+		}
+		pkts = append(pkts, pkt)
+	}
+	pkts = append(pkts, []byte(strings.Repeat("A", 200)))
+	wants := make([]int, len(pkts))
+	for j, p := range pkts {
+		wants[j], _, _ = DecodeAny(p, keys)
+	}
+	if wants[0] != 1 || wants[1] != 2 || wants[2] != 0 || wants[3] != -1 {
+		t.Fatalf("参照结果不符: %v", wants)
+	}
+	var wg sync.WaitGroup
+	for g := range 8 {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for n := range 200 {
+				j := (g + n) % len(pkts)
+				i, m, err := DecodeSet(pkts[j], set)
+				if i != wants[j] {
+					t.Errorf("报文 %d 匹配到 %d，应为 %d", j, i, wants[j])
+					return
+				}
+				if i >= 0 && (err != nil || m.User != "alice") {
+					t.Errorf("报文 %d 解码失败: %v", j, err)
+					return
+				}
+			}
+		}()
+	}
+	wg.Wait()
+	if i, _, err := DecodeSet(pkts[0], nil); i != -1 || !errors.Is(err, ErrFormat) {
+		t.Fatalf("nil KeySet: i=%d err=%v", i, err)
+	}
+}
+
+// BenchmarkDecodeSetForged 对比伪造报文（HMAC 全部不匹配）逐个密钥校验时，每次新建与复用 HMAC 对象的开销。
+func BenchmarkDecodeSetForged(b *testing.B) {
+	keys := make([]Key, 64)
+	for i := range keys {
+		keys[i] = Key{Enc: bytes.Repeat([]byte{byte(i + 1)}, 32), HMAC: bytes.Repeat([]byte{byte(i + 2)}, 64), HMACType: HMACSHA256}
+	}
+	pkt := []byte(strings.Repeat("A", 200))
+	b.Run("DecodeAny", func(b *testing.B) {
+		b.ReportAllocs()
+		for range b.N {
+			_, _, _ = DecodeAny(pkt, keys)
+		}
+	})
+	b.Run("DecodeSet", func(b *testing.B) {
+		set := NewKeySet(keys)
+		b.ReportAllocs()
+		for range b.N {
+			_, _, _ = DecodeSet(pkt, set)
+		}
+	})
+}
+
 // refDecode 是改为 DecodeAny 之前的单密钥解码实现（HMAC 值按 base64 字符串比较），作为模糊测试的参照。
 func refDecode(packet []byte, k Key) (*Message, error) {
 	if err := Prefilter(packet); err != nil {
@@ -295,6 +365,13 @@ func FuzzDecodeAny(f *testing.F) {
 	f.Fuzz(func(t *testing.T, b []byte) {
 		keys := []Key{k1, k2}
 		i, _, err := DecodeAny(b, keys)
+		// 复用 HMAC 对象的 DecodeSet 结果相同（同一 KeySet 连用两次，确认重置后的对象与新建的一致）
+		set := NewKeySet(keys)
+		for range 2 {
+			if si, _, serr := DecodeSet(b, set); si != i || (serr == nil) != (err == nil) {
+				t.Fatalf("DecodeSet 与 DecodeAny 不一致: %d/%v，%d/%v", si, serr, i, err)
+			}
+		}
 		want := -1
 		var wantErr error
 		for j, k := range keys {

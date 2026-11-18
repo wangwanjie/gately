@@ -524,10 +524,12 @@ func identityOf(cred string) (id string, ok bool) {
 type snapshot struct {
 	settings Settings
 	rules    []*compiledRule
-	// keys 为全部规则接受敲门的密钥（按规则、规则内顺序排列），refs 为对应的规则与密钥，收包时用 spa.DecodeAny 依次尝试；
+	// keys 为全部规则接受敲门的密钥（按规则、规则内顺序排列），refs 为对应的规则与密钥，收包时用 spa.DecodeSet 依次尝试；
 	// 密钥数决定伪造报文的校验成本（见 packetCost）
 	keys []spa.Key
 	refs []keyRef
+	// set 为 keys 的 spa.KeySet，跨报文复用各密钥的 HMAC 对象（伪造报文要逐个密钥算一次 HMAC）
+	set *spa.KeySet
 }
 
 // keyRef 指向快照中某条规则的某个密钥。
@@ -764,6 +766,7 @@ func (m *Module) publishLocked() {
 			snap.refs = append(snap.refs, keyRef{rule: cr, key: &cr.keys[i]})
 		}
 	}
+	snap.set = spa.NewKeySet(snap.keys)
 	m.snap.Store(snap)
 	knockgate.Default.SetRules(cat)
 }
@@ -967,7 +970,7 @@ func (m *Module) handle(packet []byte, src netip.Addr, transport, via string) er
 		m.count(func(c *Counters) { c.Ignored++ })
 		return errLimited
 	}
-	i, msg, err := spa.DecodeAny(packet, snap.keys)
+	i, msg, err := spa.DecodeSet(packet, snap.set)
 	if i < 0 {
 		m.reject(nil, nil, src, transport, via, "没有规则的密钥能通过 HMAC 认证")
 		return errors.New("认证失败")
