@@ -117,8 +117,6 @@ type siteHandler struct {
 	errPage *errorPager
 }
 
-type ctxKeyClientAddr struct{}
-
 // clientAddr 返回请求的客户端地址（PROXY 协议处理后的真实地址）。
 func clientAddr(r *http.Request) netip.AddrPort {
 	ap, _ := netip.ParseAddrPort(r.RemoteAddr)
@@ -541,7 +539,10 @@ func newTransport(s Site, up *upstream) *http.Transport {
 			if err != nil || !s.SendProxyProtocol {
 				return c, err
 			}
-			src, _ := ctx.Value(ctxKeyClientAddr{}).(netip.AddrPort)
+			var src netip.AddrPort
+			if att := attemptFrom(ctx); att != nil {
+				src = att.clientAP
+			}
 			if !src.IsValid() {
 				return c, nil
 			}
@@ -740,15 +741,20 @@ func (h *siteHandler) newProxy(s Site, p *pool, strip string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		client := clientAddr(r)
 		active, _ := r.Context().Value(ctxKeyActiveReq{}).(*activeReq)
-		att := &proxyAttempt{pool: p, client: client.Addr(), active: active}
+		att := &proxyAttempt{pool: p, client: client.Addr(), clientAP: client, active: active}
+		if h.errPage != nil && h.errPage.codes != nil {
+			att.visitor = r
+		}
 		att.use(p.pick(client.Addr()))
 		defer att.release()
-		ctx := context.WithValue(r.Context(), ctxKeyClientAddr{}, client)
-		ctx = context.WithValue(ctx, ctxKeyUpstream{}, att)
-		if h.errPage != nil && h.errPage.codes != nil {
-			ctx = context.WithValue(ctx, ctxKeyVisitorReq{}, r)
+		in := r
+		if active != nil && active.att == nil && attemptFrom(r.Context()) == nil {
+			// 常见路径：后端选择挂在实时连接登记项上，不再新建上下文、不再复制一次请求（每个请求省下约 400 字节的分配）。
+			// 登记项只属于这一个请求，处理结束后也不清空：后端拨号在其他协程进行，可能在请求结束后仍读取它（见 newTransport）
+			active.att = att
+		} else {
+			in = r.WithContext(context.WithValue(r.Context(), ctxKeyUpstream{}, att))
 		}
-		in := r.WithContext(ctx)
 		att.in = in
 		rp.ServeHTTP(w, in)
 	})

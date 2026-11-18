@@ -432,17 +432,16 @@ const drainLimit = 64 << 10
 
 var drainTimeout = 2 * time.Second
 
-// ctxKeyVisitorReq 在请求上下文中保存访客的原始请求。拦截后端错误时 resp.Request 是发往后端的请求：
-// Host、路径与请求头都可能已按后端地址与站点设置改写，判断是否拦截与生成页面都要用访客的原始请求。
-type ctxKeyVisitorReq struct{}
+// 拦截后端错误时 resp.Request 是发往后端的请求：Host、路径与请求头都可能已按后端地址与站点设置改写，
+// 判断是否拦截与生成页面都要用访客的原始请求，它保存在后端选择 proxyAttempt.visitor 中。
 
 // visitorRequest 返回后端响应对应的访客请求，取不到时退回发往后端的请求。
 func visitorRequest(resp *http.Response) *http.Request {
 	if resp.Request == nil {
 		return nil
 	}
-	if r, ok := resp.Request.Context().Value(ctxKeyVisitorReq{}).(*http.Request); ok {
-		return r
+	if att := attemptFrom(resp.Request.Context()); att != nil && att.visitor != nil {
+		return att.visitor
 	}
 	return resp.Request
 }
