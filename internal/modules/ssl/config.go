@@ -235,7 +235,30 @@ func (c *Cert) Validate(settings Settings) error {
 	return nil
 }
 
+// fillDefaults 为留空（零值）的 ACME 参数补默认值，不做校验、不会失败。保存时由 validate 开头调用；
+// 从配置文件加载时也调用，手工编辑或外部生成的配置缺这些字段时不会以零值签发
+// （等待生效时间 0 时 TXT 记录只检查一次就判超时，密钥类型为空时签发报错）。
+func (a *ACMEConfig) fillDefaults(settings Settings) {
+	a.Email = strings.TrimSpace(a.Email)
+	if a.Email == "" {
+		a.Email = settings.DefaultEmail
+	}
+	if a.CA == "" {
+		a.CA = "letsencrypt"
+	}
+	if a.KeyType == "" {
+		a.KeyType = "P256"
+	}
+	if a.Challenge == "" {
+		a.Challenge = ChallengeDNS
+	}
+	if a.PropagationTimeout <= 0 {
+		a.PropagationTimeout = 300
+	}
+}
+
 func (a *ACMEConfig) validate(settings Settings) error {
+	a.fillDefaults(settings)
 	var domains []string
 	seen := map[string]bool{}
 	var ips []netip.Addr
@@ -267,15 +290,8 @@ func (a *ACMEConfig) validate(settings Settings) error {
 		return errors.New("至少填写一个域名")
 	}
 	a.Domains = domains
-	a.Email = strings.TrimSpace(a.Email)
-	if a.Email == "" {
-		a.Email = settings.DefaultEmail
-	}
 	if a.Email == "" || !strings.Contains(a.Email, "@") {
 		return errors.New("请填写有效的 ACME 账户邮箱")
-	}
-	if a.CA == "" {
-		a.CA = "letsencrypt"
 	}
 	if a.CA == "custom" && !strings.HasPrefix(a.DirectoryURL, "https://") {
 		return errors.New("自定义 CA 需填写 https 开头的目录地址")
@@ -288,9 +304,6 @@ func (a *ACMEConfig) validate(settings Settings) error {
 	if (a.CA == "zerossl" || a.CA == "google") && (a.EABKid == "" || a.EABHMAC == "") {
 		return errors.New("该 CA 需要填写 EAB Key ID 与 HMAC Key")
 	}
-	if a.KeyType == "" {
-		a.KeyType = "P256"
-	}
 	if !validKeyTypes[a.KeyType] {
 		return fmt.Errorf("不支持的密钥类型 %q", a.KeyType)
 	}
@@ -302,8 +315,7 @@ func (a *ACMEConfig) validate(settings Settings) error {
 		return err
 	}
 	switch a.Challenge {
-	case "", ChallengeDNS:
-		a.Challenge = ChallengeDNS
+	case ChallengeDNS:
 		if !dnsprovider.SupportsTXT(a.Provider) {
 			return fmt.Errorf("DNS 服务商 %q 不支持 ACME DNS 验证", a.Provider)
 		}
@@ -318,9 +330,6 @@ func (a *ACMEConfig) validate(settings Settings) error {
 		}
 	default:
 		return fmt.Errorf("未知的验证方式 %q", a.Challenge)
-	}
-	if a.PropagationTimeout <= 0 {
-		a.PropagationTimeout = 300
 	}
 	switch a.Network {
 	case "", NetworkIPv4, NetworkIPv6:

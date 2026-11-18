@@ -105,6 +105,12 @@ func (m *Module) Init(env module.Env) error {
 		m.cfg.Accounts = map[string]Account{}
 	}
 	m.cfg.Settings.normalize()
+	// 加载后补全 ACME 证书留空参数的默认值；只改内存，不回写文件，下次保存时随其他改动一并写入
+	for i := range m.cfg.Certs {
+		if m.cfg.Certs[i].Source == SourceACME {
+			m.cfg.Certs[i].ACME.fillDefaults(m.cfg.Settings)
+		}
+	}
 	m.rebuildTLSLocked()
 	// lego 的过程日志写入本模块日志（调试级别），方便排查签发问题
 	legolog.Logger = stdlog.New(logWriter{m.logs}, "", 0)
