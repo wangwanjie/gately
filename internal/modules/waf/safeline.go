@@ -43,17 +43,22 @@ const (
 	maxSafeLineBodyKB        = 64 * 1024
 )
 
-// validate 校验雷池设置并补全默认值；未启用时只做范围检查，便于先保存地址再启用。
-func (s *SafeLine) validate() error {
-	s.Addr = strings.TrimSpace(s.Addr)
+// fillDefaults 为留空（零值）的检测超时与送检上限补默认值，不做校验、不会失败。
+func (s *SafeLine) fillDefaults() {
 	if s.TimeoutMs == 0 {
 		s.TimeoutMs = defaultSafeLineTimeoutMs
 	}
-	if s.TimeoutMs < 10 || s.TimeoutMs > maxSafeLineTimeoutMs {
-		return fmt.Errorf("雷池检测超时应为 10~%d 毫秒", maxSafeLineTimeoutMs)
-	}
 	if s.BodyLimitKB == 0 {
 		s.BodyLimitKB = defaultSafeLineBodyKB
+	}
+}
+
+// validate 校验雷池设置并补全默认值；未启用时只做范围检查，便于先保存地址再启用。
+func (s *SafeLine) validate() error {
+	s.Addr = strings.TrimSpace(s.Addr)
+	s.fillDefaults()
+	if s.TimeoutMs < 10 || s.TimeoutMs > maxSafeLineTimeoutMs {
+		return fmt.Errorf("雷池检测超时应为 10~%d 毫秒", maxSafeLineTimeoutMs)
 	}
 	if s.BodyLimitKB < 0 || s.BodyLimitKB > maxSafeLineBodyKB {
 		return fmt.Errorf("雷池送检请求体上限应为 0~%d KB", maxSafeLineBodyKB)

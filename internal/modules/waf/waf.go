@@ -129,8 +129,41 @@ func CRSFiles() []string {
 	return out
 }
 
+// fillDefaults 为留空（零值）的参数补默认值，不做校验、不会失败。保存时由 Validate 开头调用；
+// 从配置文件加载时也调用，手工编辑或外部生成的配置缺这些字段时不会以零值运行
+// （异常分阈值 0 时拦截模式下所有请求都被拦，规则组类型为空时不按 CRS 加载初始化设置，
+// 雷池检测超时 0 时每次检测立即超时）。
+func (in *Instance) fillDefaults() {
+	if in.Mode == "" {
+		in.Mode = ModeBlock
+	}
+	if in.Paranoia == 0 {
+		in.Paranoia = 1
+	}
+	if in.InboundThreshold <= 0 {
+		in.InboundThreshold = 5
+	}
+	if in.OutboundThreshold <= 0 {
+		in.OutboundThreshold = 4
+	}
+	if in.RegexPrefilter == nil {
+		on := true
+		in.RegexPrefilter = &on
+	}
+	if in.BodyLimitAction == "" {
+		in.BodyLimitAction = BodyLimitReject
+	}
+	for i := range in.RuleSets {
+		if in.RuleSets[i].Type == "" {
+			in.RuleSets[i].Type = RuleCRS
+		}
+	}
+	in.SafeLine.fillDefaults()
+}
+
 // Validate 校验实例并补全默认值。
 func (in *Instance) Validate() error {
+	in.fillDefaults()
 	if err := crud.NormalizeGroup(&in.Group); err != nil {
 		return err
 	}
@@ -139,34 +172,17 @@ func (in *Instance) Validate() error {
 		return errors.New("名称不能为空")
 	}
 	switch in.Mode {
-	case "":
-		in.Mode = ModeBlock
 	case ModeBlock, ModeDetect:
 	default:
 		return fmt.Errorf("未知模式 %q", in.Mode)
 	}
-	if in.Paranoia == 0 {
-		in.Paranoia = 1
-	}
 	if in.Paranoia < 1 || in.Paranoia > 4 {
 		return errors.New("偏执等级应为 1~4")
-	}
-	if in.InboundThreshold <= 0 {
-		in.InboundThreshold = 5
-	}
-	if in.OutboundThreshold <= 0 {
-		in.OutboundThreshold = 4
 	}
 	if in.BodyLimitMB < 0 || in.BodyLimitMB > maxBodyLimitMB {
 		return fmt.Errorf("请求体检查上限应为 0~%d MB", maxBodyLimitMB)
 	}
-	if in.RegexPrefilter == nil {
-		on := true
-		in.RegexPrefilter = &on
-	}
 	switch in.BodyLimitAction {
-	case "":
-		in.BodyLimitAction = BodyLimitReject
 	case BodyLimitReject, BodyLimitPartial:
 	default:
 		return fmt.Errorf("未知的请求体超限处理方式 %q", in.BodyLimitAction)
@@ -186,8 +202,7 @@ func (in *Instance) Validate() error {
 	for i := range in.RuleSets {
 		rs := &in.RuleSets[i]
 		switch rs.Type {
-		case "", RuleCRS:
-			rs.Type = RuleCRS
+		case RuleCRS:
 			for _, f := range splitLines(rs.Param) {
 				if !known[f] {
 					return fmt.Errorf("未知的 CRS 规则文件 %q", f)
@@ -399,6 +414,10 @@ func (m *Module) Init(env module.Env) error {
 	m.store, m.logs = env.Store, env.Logs
 	if _, err := m.store.Load(ID, &m.cfg); err != nil {
 		return err
+	}
+	// 加载后补全留空参数的默认值再编译规则；只改内存，不回写文件，下次保存时随其他改动一并写入
+	for i := range m.cfg.Instances {
+		m.cfg.Instances[i].fillDefaults()
 	}
 	for _, in := range m.cfg.Instances {
 		m.buildLocked(in.Key)
