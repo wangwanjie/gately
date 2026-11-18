@@ -135,8 +135,22 @@ type Rule struct {
 	Remark string `json:"remark"`
 }
 
+// fillDefaults 为留空（零值）的告警级别与最小请求数补默认值，不做校验、不会失败。保存时由 Validate 开头调用；
+// 从配置文件加载时也调用，手工编辑或外部生成的规则缺这些字段时不会以零值判定
+// （级别为空时告警事件没有级别、只接收警告以上的通知规则收不到，最小请求数为 0 时低流量下也会误报）。
+func (r *Rule) fillDefaults() {
+	if r.Level == "" {
+		r.Level = levelWarn
+	}
+	// 只有按窗口统计的指标（每秒请求数除外）使用最小请求数；未知指标留给 Validate 报错
+	if def, ok := metricByID(r.Metric); ok && def.Window && r.Metric != MetricSiteQPS && r.MinRequests == 0 {
+		r.MinRequests = DefaultMinRequests
+	}
+}
+
 // Validate 校验并规范化规则。
 func (r *Rule) Validate() error {
+	r.fillDefaults()
 	if err := crud.NormalizeGroup(&r.Group); err != nil {
 		return err
 	}
@@ -167,8 +181,6 @@ func (r *Rule) Validate() error {
 		return fmt.Errorf("持续时长必须在 1 到 %d 分钟之间", MaxDurationMinutes)
 	}
 	switch r.Level {
-	case "":
-		r.Level = levelWarn
 	case levelWarn, levelError:
 	default:
 		return fmt.Errorf("不支持的告警级别 %q", r.Level)
@@ -195,9 +207,6 @@ func (r *Rule) Validate() error {
 		r.Sites = nil
 	}
 	if def.Window && r.Metric != MetricSiteQPS {
-		if r.MinRequests == 0 {
-			r.MinRequests = DefaultMinRequests
-		}
 		if r.MinRequests < 1 || r.MinRequests > MaxMinRequests {
 			return fmt.Errorf("最小请求数必须在 1 到 %d 之间", MaxMinRequests)
 		}
