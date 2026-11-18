@@ -222,32 +222,17 @@ func parseUpstream(s string) (upstreamSpec, error) {
 	return spec, nil
 }
 
-// validateProxyExtras 校验并规范化负载均衡、健康检查、限流、缓存与重写设置。
-func (s *Site) validateProxyExtras() error {
-	switch s.LBPolicy {
-	case LBRoundRobin, LBRandom, LBIPHash, LBLeastConn:
-	default:
-		return fmt.Errorf("未知的负载均衡策略 %q", s.LBPolicy)
-	}
-	if err := s.Timeouts.validate(); err != nil {
-		return err
-	}
+// fillProxyDefaults 为健康检查、限流与缓存中留空（零值）的参数补默认值，不做校验、不会失败。
+// 保存时由 validateProxyExtras 开头调用；从配置文件加载时也调用，手工编辑或外部生成的配置缺这些字段时
+// 不会以零值运行（健康检查间隔 0 忙循环、限流突发 0 全部 429、缓存容量 0 不缓存）。
+func (s *Site) fillProxyDefaults() {
 	h := &s.Health
 	if h.Enable {
-		switch h.Mode {
-		case "":
+		if h.Mode == "" {
 			h.Mode = "http"
-		case "http", "tcp":
-		default:
-			return fmt.Errorf("未知的健康检查方式 %q", h.Mode)
 		}
-		if h.Mode == "http" {
-			if h.Path == "" {
-				h.Path = "/"
-			}
-			if !strings.HasPrefix(h.Path, "/") {
-				return errors.New("健康检查路径需以 / 开头")
-			}
+		if h.Mode == "http" && h.Path == "" {
+			h.Path = "/"
 		}
 		if h.Interval == 0 {
 			h.Interval = 10
@@ -261,6 +246,38 @@ func (s *Site) validateProxyExtras() error {
 		if h.Passes == 0 {
 			h.Passes = 2
 		}
+	}
+	rl := &s.RateLimit
+	if rl.Enable && rl.Rate > 0 && rl.Burst == 0 {
+		rl.Burst = int(rl.Rate) + 1
+	}
+	if s.Cache.Enable && s.Cache.MaxMB == 0 {
+		s.Cache.MaxMB = 64
+	}
+}
+
+// validateProxyExtras 校验并规范化负载均衡、健康检查、限流、缓存与重写设置。
+func (s *Site) validateProxyExtras() error {
+	// 补默认值是幂等的，validate 已调用过时重复执行无影响；单独调用本函数时也保持原有行为
+	s.fillProxyDefaults()
+	switch s.LBPolicy {
+	case LBRoundRobin, LBRandom, LBIPHash, LBLeastConn:
+	default:
+		return fmt.Errorf("未知的负载均衡策略 %q", s.LBPolicy)
+	}
+	if err := s.Timeouts.validate(); err != nil {
+		return err
+	}
+	h := &s.Health
+	if h.Enable {
+		switch h.Mode {
+		case "http", "tcp":
+		default:
+			return fmt.Errorf("未知的健康检查方式 %q", h.Mode)
+		}
+		if h.Mode == "http" && !strings.HasPrefix(h.Path, "/") {
+			return errors.New("健康检查路径需以 / 开头")
+		}
 		if h.Interval < 1 || h.Interval > 3600 || h.Timeout < 1 || h.Timeout > 60 || h.Fails < 1 || h.Fails > 20 || h.Passes < 1 || h.Passes > 20 {
 			return errors.New("健康检查参数超出范围（间隔 1-3600 秒、超时 1-60 秒、次数 1-20）")
 		}
@@ -273,17 +290,11 @@ func (s *Site) validateProxyExtras() error {
 		if rl.Rate < 0 || rl.MaxConns < 0 || rl.Burst < 0 {
 			return errors.New("限流参数不能为负数")
 		}
-		if rl.Rate > 0 && rl.Burst == 0 {
-			rl.Burst = int(rl.Rate) + 1
-		}
 	}
 	c := &s.Cache
 	if c.Enable {
 		if c.TTL < 0 || c.TTL > maxCacheTTL {
 			return errors.New("缓存时间需在 0 到 30 天之间")
-		}
-		if c.MaxMB == 0 {
-			c.MaxMB = 64
 		}
 		if c.MaxMB < 1 || c.MaxMB > 4096 {
 			return errors.New("缓存容量需在 1 到 4096 MB 之间")

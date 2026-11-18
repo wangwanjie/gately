@@ -92,6 +92,10 @@ func (m *Module) Init(env module.Env) error {
 	if _, err := m.store.Load(ID, &m.cfg); err != nil {
 		return err
 	}
+	// 加载后补全留空参数的默认值；只改内存，不回写文件，下次保存时随其他改动一并写入
+	for i := range m.cfg.Listeners {
+		m.cfg.Listeners[i].fillDefaults()
+	}
 	if m.cfg.Settings.AuthSecret == "" {
 		b := make([]byte, 32)
 		_, _ = rand.Read(b)
