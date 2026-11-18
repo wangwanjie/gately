@@ -3010,6 +3010,8 @@
   "规则没有密钥，已生成新密钥并保存": "The rule had no keys; new keys were generated and saved",
   "规则编译失败: %w": "Rule compilation failed: %w",
   "规则要求报文写明放行地址（fwknop -a 或 -R），拒绝 -s 报文": "The rule requires the packet to state the address to allow (fwknop -a or -R), -s packets are rejected",
+  "规则配置无效，已跳过（在界面中修改并保存后恢复）: ": "Invalid rule configuration, skipped (edit and save it to restore): ",
+  "规则配置无效，请编辑修正后保存: %s": "Invalid rule configuration, edit and save it first: %s",
   "解压升级包失败: %v": "Failed to extract the upgrade package: %v",
   "解压失败: %v": "Extraction failed: %v",
   "解密失败": "Decryption failed",

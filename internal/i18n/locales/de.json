@@ -3010,6 +3010,8 @@
   "规则没有密钥，已生成新密钥并保存": "Die Regel hatte keine Schlüssel; neue Schlüssel wurden erzeugt und gespeichert",
   "规则编译失败: %w": "Regelkompilierung fehlgeschlagen: %w",
   "规则要求报文写明放行地址（fwknop -a 或 -R），拒绝 -s 报文": "Die Regel verlangt, dass das Paket die freizugebende Adresse angibt (fwknop -a oder -R), -s-Pakete werden abgelehnt",
+  "规则配置无效，已跳过（在界面中修改并保存后恢复）: ": "Ungültige Regelkonfiguration, übersprungen (bearbeiten und speichern, um sie wiederherzustellen): ",
+  "规则配置无效，请编辑修正后保存: %s": "Ungültige Regelkonfiguration, bitte bearbeiten und speichern: %s",
   "解压升级包失败: %v": "Entpacken des Upgrade-Pakets fehlgeschlagen: %v",
   "解压失败: %v": "Entpacken fehlgeschlagen: %v",
   "解密失败": "Entschlüsselung fehlgeschlagen",

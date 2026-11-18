@@ -3010,6 +3010,8 @@
   "规则没有密钥，已生成新密钥并保存": "A regra não tinha chaves; novas chaves foram geradas e salvas",
   "规则编译失败: %w": "Falha na compilação da regra: %w",
   "规则要求报文写明放行地址（fwknop -a 或 -R），拒绝 -s 报文": "A regra exige que o pacote informe o endereço a liberar (fwknop -a ou -R); pacotes com -s são recusados",
+  "规则配置无效，已跳过（在界面中修改并保存后恢复）: ": "Configuração de regra inválida, ignorada (edite e salve para restaurar): ",
+  "规则配置无效，请编辑修正后保存: %s": "Configuração de regra inválida, edite e salve: %s",
   "解压升级包失败: %v": "Falha ao extrair o pacote de atualização: %v",
   "解压失败: %v": "Falha ao descompactar: %v",
   "解密失败": "Falha na descriptografia",
