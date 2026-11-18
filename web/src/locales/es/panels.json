@@ -182,5 +182,6 @@
   "deleteSelected": "Eliminar seleccionados",
   "confirmDeleteSelected": "¿Eliminar los {n} enlaces seleccionados?",
   "dragHandle": "Arrastra para reordenar",
-  "dragCount": "{n} enlaces"
+  "dragCount": "{n} enlaces",
+  "searchPlaceholder": "Buscar por nombre, título, grupo o nota"
 }

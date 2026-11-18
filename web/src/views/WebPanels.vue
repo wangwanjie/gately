@@ -2,6 +2,10 @@
   <!-- 导航面板：面板库的管理页面。Web 服务中类型为“导航面板”的站点引用这里的面板，在站点根路径输出汇总页面 -->
   <div class="panels-page">
     <PageHeader :title="t('panels.title')" doc="modules/web#nav-panel" :desc="t('panels.desc')" :icon="LayoutGrid">
+      <template v-if="!notFound && panels.length">
+        <CompactToggle v-model="compact" />
+        <ListTools v-if="!isReadonly" :gl="gl" :placeholder="t('panels.searchPlaceholder')" />
+      </template>
       <el-button :icon="RefreshCw" :loading="loading" @click="load">{{ t('common.refresh') }}</el-button>
       <el-button v-if="!isReadonly && !notFound" :icon="Import" data-test="sp-open" @click="openSunPanel('new')">{{ t('sunpanelImport.button') }}</el-button>
       <el-button v-if="!isReadonly && !notFound" type="primary" :icon="Plus" data-test="panel-add" @click="openEditor()">{{ t('panels.add') }}</el-button>
@@ -24,46 +28,53 @@
       </el-empty>
     </div>
 
-    <div v-else class="panel-grid">
-      <EntityCard v-for="p in panels" :key="p.key" :off="!p.enable" data-test="panel-card">
-        <template #lead>
-          <PanelIcon v-if="p.icon" :icon="p.icon" :name="p.title || p.name" :size="36" />
-          <span v-else class="grid-icon"><LayoutGrid :size="18" /></span>
-        </template>
-        <template #title>{{ p.name }}</template>
-        <template v-if="p.title || p.subtitle" #sub>{{ [p.title, p.subtitle].filter(Boolean).join(' · ') }}</template>
-        <template #status>
-          <el-switch v-if="!isReadonly" :model-value="p.enable" :aria-label="t('common.toggleItem', { name: p.name || '-' })" size="small" :loading="toggling[p.key ?? '']" @change="(v: string | number | boolean) => toggle(p, !!v)" />
-          <StatusBadge v-else :type="p.enable ? 'running' : 'off'" :text="p.enable ? t('common.enabled') : t('common.disabled')" />
-        </template>
-        <Field :label="t('panels.links')">
-          {{ t('panels.linkCount', { n: visibleCount(p), groups: groupLinks(p.links ?? []).length }) }}
-          <span v-if="hiddenCount(p)" class="muted">{{ t('panels.hiddenCount', { n: hiddenCount(p) }) }}</span>
-        </Field>
-        <Field :label="t('panels.usedBy')">
-          <template v-if="usage(p).length">
-            <div v-for="u in usage(p)" :key="u.label" class="usage">
-              <UrlLink v-if="u.url" :href="u.url" />
-              <span v-else>{{ u.label }}</span>
-              <span v-if="u.url" class="muted usage-label">{{ u.label }}</span>
-            </div>
+    <!-- 面板列表：可分组、搜索；「排序与批量」中可拖动排序、批量移到分组、批量启停与删除（被站点引用的面板不能删除） -->
+    <GroupedList v-else :gl="gl" :error="loadError" @retry="load" :compact="compact" grid :empty-text="t('panels.empty')">
+      <template #item="{ it, item: p, sorting, bind }">
+        <EntityCard v-bind="bind" :off="!p.enable" :compact="compact || sorting" data-test="panel-card">
+          <template #lead>
+            <SortCheck v-if="sorting" :gl="gl" :id="it.id" />
+            <PanelIcon v-else-if="p.icon" :icon="p.icon" :name="p.title || p.name" :size="36" />
+            <span v-else class="grid-icon"><LayoutGrid :size="18" /></span>
           </template>
-          <span v-else class="muted">{{ t('panels.unused') }}</span>
-        </Field>
-        <template #actions>
-          <template v-if="!isReadonly">
-            <el-button text size="small" :icon="Pencil" @click="openEditor(p)">{{ t('common.edit') }}</el-button>
-            <el-button text size="small" :icon="CopyPlus" @click="openEditor(p, true)">{{ t('common.duplicate') }}</el-button>
-            <el-popconfirm :title="t('panels.confirmDelete')" @confirm="remove(p)">
-              <template #reference>
-                <el-button text size="small" type="danger" :icon="Trash2" :disabled="!!p.usedBy?.length" :title="p.usedBy?.length ? t('panels.deleteUsed') : ''">{{ t('common.delete') }}</el-button>
-              </template>
-            </el-popconfirm>
+          <template #title>{{ p.name }}</template>
+          <template v-if="p.title || p.subtitle" #sub>{{ [p.title, p.subtitle].filter(Boolean).join(' · ') }}</template>
+          <template #status>
+            <el-switch v-if="!isReadonly" :model-value="p.enable" :aria-label="t('common.toggleItem', { name: p.name || '-' })" size="small" :loading="toggling[p.key ?? '']" @change="(v: string | number | boolean) => toggle(p, !!v)" />
+            <StatusBadge v-else :type="p.enable ? 'running' : 'off'" :text="p.enable ? t('common.enabled') : t('common.disabled')" />
           </template>
-          <el-button v-else text size="small" :icon="Eye" @click="openEditor(p)">{{ t('panels.view') }}</el-button>
-        </template>
-      </EntityCard>
-    </div>
+          <Field :label="t('panels.links')">
+            {{ t('panels.linkCount', { n: visibleCount(p), groups: groupLinks(p.links ?? []).length }) }}
+            <span v-if="hiddenCount(p)" class="muted">{{ t('panels.hiddenCount', { n: hiddenCount(p) }) }}</span>
+          </Field>
+          <Field :label="t('panels.usedBy')">
+            <template v-if="usage(p).length">
+              <div v-for="u in usage(p)" :key="u.label" class="usage">
+                <UrlLink v-if="u.url" :href="u.url" />
+                <span v-else>{{ u.label }}</span>
+                <span v-if="u.url" class="muted usage-label">{{ u.label }}</span>
+              </div>
+            </template>
+            <span v-else class="muted">{{ t('panels.unused') }}</span>
+          </Field>
+          <template v-if="sorting" #actions>
+            <SortMoves :gl="gl" :it="it" />
+          </template>
+          <template v-else #actions>
+            <template v-if="!isReadonly">
+              <el-button text size="small" :icon="Pencil" @click="openEditor(p)">{{ t('common.edit') }}</el-button>
+              <el-button text size="small" :icon="CopyPlus" @click="openEditor(p, true)">{{ t('common.duplicate') }}</el-button>
+              <el-popconfirm :title="t('panels.confirmDelete')" @confirm="remove(p)">
+                <template #reference>
+                  <el-button text size="small" type="danger" :icon="Trash2" :disabled="!!p.usedBy?.length" :title="p.usedBy?.length ? t('panels.deleteUsed') : ''">{{ t('common.delete') }}</el-button>
+                </template>
+              </el-popconfirm>
+            </template>
+            <el-button v-else text size="small" :icon="Eye" @click="openEditor(p)">{{ t('panels.view') }}</el-button>
+          </template>
+        </EntityCard>
+      </template>
+    </GroupedList>
 
     <!-- 编辑面板 -->
     <el-dialog
@@ -301,6 +312,7 @@
               <el-input v-model="editing.name" maxlength="64" data-test="panel-name" />
               <div class="form-help">{{ t('panels.nameHelp') }}</div>
             </el-form-item>
+            <GroupInput v-model="editing.group" :groups="gl.groupNames.value" />
             <el-form-item :label="t('panels.pageTitle')">
               <el-input v-model="editing.title" maxlength="100" :placeholder="editing.name" />
             </el-form-item>
@@ -517,6 +529,13 @@ import StatusBadge from '../components/StatusBadge.vue'
 import UrlLink from '../components/UrlLink.vue'
 import CopyHint from '../components/CopyHint.vue'
 import GroupInput from '../components/GroupInput.vue'
+import GroupedList from '../components/GroupedList.vue'
+import ListTools from '../components/ListTools.vue'
+import SortCheck from '../components/SortCheck.vue'
+import SortMoves from '../components/SortMoves.vue'
+import CompactToggle from '../components/CompactToggle.vue'
+import { useGroupedList } from '../composables/useGroupSort'
+import { useCompactView } from '../composables/useCompactView'
 import PanelIcon from '../components/PanelIcon.vue'
 import PanelIconInput from '../components/PanelIconInput.vue'
 import PanelBackgroundInput from '../components/PanelBackgroundInput.vue'
@@ -616,6 +635,15 @@ const notFound = ref(false)
 const moduleOff = computed(() => notFound.value && !moduleEnabled('webservice'))
 const unsupported = computed(() => notFound.value && moduleEnabled('webservice'))
 const toggling = reactive<Record<string, boolean>>({})
+// 面板列表的视图、搜索、分组与排序；修改分组与顺序只影响管理界面，不影响访客页面
+const compact = useCompactView('webpanels.list')
+const gl = useGroupedList<PanelView>({
+  storageKey: 'webpanels.groups',
+  items: () => panels.value,
+  base: '/api/webservice/panels',
+  reload: load,
+  matches: (p, q) => [p.name, p.title, p.subtitle, p.group ?? '', p.remark].join('\n').toLowerCase().includes(q),
+})
 
 async function load() {
   loading.value = true

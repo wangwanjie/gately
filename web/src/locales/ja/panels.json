@@ -182,5 +182,6 @@
   "deleteSelected": "選択項目を削除",
   "confirmDeleteSelected": "選択した {n} 件のリンクを削除しますか？",
   "dragHandle": "ドラッグして並べ替え",
-  "dragCount": "{n} 件のリンク"
+  "dragCount": "{n} 件のリンク",
+  "searchPlaceholder": "名前・タイトル・グループ・メモで検索"
 }

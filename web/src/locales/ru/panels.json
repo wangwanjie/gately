@@ -182,5 +182,6 @@
   "deleteSelected": "Удалить выбранные",
   "confirmDeleteSelected": "Удалить выбранные ссылки ({n})?",
   "dragHandle": "Перетащите для сортировки",
-  "dragCount": "Ссылок: {n}"
+  "dragCount": "Ссылок: {n}",
+  "searchPlaceholder": "Поиск по названию, заголовку, группе или заметке"
 }
