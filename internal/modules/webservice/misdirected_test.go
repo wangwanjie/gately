@@ -7,8 +7,8 @@ import (
 	"testing"
 )
 
-// 浏览器连接合并：Host 与 SNI 不同且本监听没有该域名的站点时应答 421，让浏览器新建连接重试；
-// Host 与 SNI 相同、Host 有站点、HTTP/1.1 或 SNI 为空时照常路由（含交给默认站点）。
+// 浏览器连接合并：Host 与 SNI 不同、本监听没有 Host 的站点而 SNI 是本监听的站点域名时应答 421，让浏览器新建连接重试；
+// Host 与 SNI 相同、Host 有站点、HTTP/1.1、SNI 为空或 SNI 不是本机站点域名（反向代理把 SNI 设成后端地址）时照常路由（含交给默认站点）。
 func TestMisdirectedRequest(t *testing.T) {
 	l := Listener{TLS: true, MinTLS: "1.2",
 		Sites: []Site{
@@ -50,6 +50,9 @@ func TestMisdirectedRequest(t *testing.T) {
 		{"Host 带端口与尾点", "a.test", "other.test.:443", true, http.StatusMisdirectedRequest, ""},
 		{"SNI 未知但与 Host 相同走默认站点", "other.test", "other.test", true, 200, "default"},
 		{"HTTP/1.1 不判断", "a.test", "other.test", false, 200, "default"},
+		// 另一台 Gately（或 Caddy 等）以 HTTP/2 反代过来：SNI 为后端主机名，Host 为访客域名，交给默认站点
+		{"HTTP/2 反向代理 SNI 为后端地址", "home.lan", "public.example", true, 200, "default"},
+		{"HTTP/2 反向代理 Host 有站点", "home.lan", "b.test", true, 200, "site-b"},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
