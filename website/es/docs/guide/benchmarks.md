@@ -80,7 +80,7 @@ Cada programa se configura con 1000 sitios de proxy inverso con dominios distint
 | Traefik | 24,229 | -38% | 18.8 ms | 0.74 s | 115 MiB | 157 MiB |
 
 - HAProxy compara regla por regla con `use_backend ... if { hdr(host) -i dominio }`, por lo que se vuelve más lento cuantos más sitios hay; usar un archivo map lo evita, pero aquí se mantiene la forma habitual de «una regla por sitio».
-- Gately y Caddy mantienen cada uno su propio grupo de conexiones hacia el origen por sitio; al repartirse las peticiones entre 1000 sitios se mantienen a la vez muchas conexiones inactivas, y por eso el pico de memoria es más alto.
+- El pico de memoria de Gately procede sobre todo de las estadísticas de acceso de cada sitio: cada sitio con tráfico guarda 24 horas de estadísticas por minuto, historial de conexiones y distribución de latencias, así que con los 1000 sitios recibiendo tráfico a la vez ocupa algo más de 200 MiB residentes.
 
 ## Autenticación web
 
@@ -212,6 +212,34 @@ Un único Gately con todo esto activado a la vez: dos sitios de proxy inverso (H
 
 - La instancia todo en uno de Gately, con 1000 peticiones/s de tráfico HTTPS a través del WAF, alcanza un pico de memoria de 114 MiB y una CPU del 71 %; las 20 tareas DDNS se sincronizaron correctamente.
 - La emisión de certificados (certbot, acme.sh) solo se ejecuta en las renovaciones y no se incluye en la memoria residente.
+
+## Optimizaciones de la versión de desarrollo
+
+A partir de los resultados anteriores, la versión de desarrollo (sin publicar, posterior al commit `3d579389`) introdujo los cambios siguientes y se volvió a medir en el mismo entorno. El proxy inverso y los 1000 sitios usan la compilación del commit `3d579389`; la prevención de intrusiones usa una compilación que incluye los dos últimos cambios. La columna de referencia es v0.6.8.1 medida de nuevo el mismo día (ese día solo se repitieron las filas de HTTP y HTTPS; las demás referencias proceden de los datos anteriores).
+
+- Los sitios de un mismo oyente que hacen proxy inverso al mismo backend con la misma configuración de conexión comparten un grupo de conexiones.
+- Con al menos 1 GiB de memoria disponible, el valor por defecto del porcentaje de GC pasa de 100 a 200 (se puede cambiar en los ajustes; los dispositivos con poca memoria mantienen 100).
+- El proxy inverso copia la petición una vez menos y crea tres valores de contexto menos por petición.
+- La prevención de intrusiones lee los archivos de registro con inotify, de modo que lee en cuanto se escribe (se mantiene el sondeo cada segundo como respaldo); las escrituras de bloqueos en el firewall se combinan como máximo una vez cada 250 milisegundos.
+
+| Métrica | v0.6.8.1 | Versión de desarrollo | Cambio |
+| --- | --- | --- | --- |
+| Peticiones HTTP/s (referencia del mismo día) | 35,968 | 38,358 | +6.6% |
+| Peticiones HTTPS/s (referencia del mismo día) | 34,072 | 36,079 | +5.9% |
+| Conexiones TLS nuevas/s | 4,636 | 4,942 | +6.6% |
+| Peticiones HTTP/2/s | 21,591 | 23,788 | +10% |
+| 1000 sitios: peticiones/s | 33,211 | 38,839 | +17% |
+| 1000 sitios: latencia p99 | 29.8 ms | 11.7 ms | -61% |
+| Pico de memoria en la prueba HTTP | 64.5 MiB | 81.1 MiB | +26% |
+| Prevención de intrusiones: latencia de bloqueo de un solo atacante p50 / p99 | 478 / 996 ms | 9.8 / 129 ms | |
+| Prevención de intrusiones: latencia de bloqueo con ataque sostenido p50 / p99 (20,000 líneas/s) | 509 / 1006 ms | 143 / 269 ms | |
+| Prevención de intrusiones: CPU a 1000 líneas/s | 2.9% | 8.0% | mayor |
+| Prevención de intrusiones: CPU a 20,000 líneas/s | 35.7% | 26.5% | -26% |
+| Prevención de intrusiones: bloquear las 10,000 IP atacantes | 12.3 s, 10.1 s de CPU | 10.1 s, 2.5 s de CPU | |
+
+- La mejora del rendimiento procede sobre todo del ajuste de GC, a cambio de un pico de memoria unos diez MiB mayor durante la prueba. El análisis de perfil muestra que casi toda la sobrecarga restante en la ruta del proxy está en la implementación HTTP de la biblioteca estándar de Go y en el GC; la diferencia con nginx y HAProxy corresponde al lenguaje y al entorno de ejecución.
+- Con 1000 sitios, el rendimiento sube y la latencia baja porque, al compartir el grupo de conexiones, hay muchas menos conexiones hacia el origen; el pico de memoria no baja, por el motivo indicado arriba.
+- La latencia de un bloqueo individual ya es menor que la de fail2ban (280 / 864 ms). Con pocas líneas de registro por segundo, la CPU es mayor que en la versión anterior porque el firewall se escribe como máximo 4 veces por segundo, frente a 1 vez antes; sigue siendo cuatro décimas partes de la de fail2ban (20.4%).
 
 ## Reproducir
 
