@@ -177,7 +177,7 @@ func TestServeTCPPerSourceLimit(t *testing.T) {
 	probe, _ := net.Listen("tcp", "127.0.0.1:0")
 	addr := probe.Addr().String()
 	probe.Close()
-	if err := s.ServeTCP(ctx, "tcp", addr, Limits{Max: 20, PerSource: 2}, func(string, ...any) { warned.Add(1) }, func(c net.Conn) {
+	if err := s.ServeTCP(ctx, "tcp", addr, Limits{Max: 20, PerSource: 2, Exempt: mustExempt(t, "198.51.100.0/24", "2001:db8:9::/48")}, func(string, ...any) { warned.Add(1) }, func(c net.Conn) {
 		buf := make([]byte, 16)
 		n, _ := c.Read(buf)
 		handled <- string(buf[:n])
@@ -234,6 +234,18 @@ func TestServeTCPPerSourceLimit(t *testing.T) {
 		{"192.168.1.20", "p2", true},
 		{"192.168.1.20", "p3", true},
 		{"::ffff:203.0.113.7", "a4", false},
+		// 豁免列表中的来源（公网中转）不受单来源上限约束，IPv4 映射地址同样识别
+		{"198.51.100.9", "x1", true},
+		{"198.51.100.9", "x2", true},
+		{"198.51.100.9", "x3", true},
+		{"::ffff:198.51.100.9", "x4", true},
+		{"2001:db8:9:1::1", "y1", true},
+		{"2001:db8:9:1::1", "y2", true},
+		{"2001:db8:9:1::1", "y3", true},
+		// 豁免列表之外的相邻地址照常受限
+		{"198.51.101.9", "z1", true},
+		{"198.51.101.9", "z2", true},
+		{"198.51.101.9", "z3", false},
 	}
 	for _, st := range steps {
 		if got := connect(st.from, st.tag); got != st.want {
@@ -263,5 +275,29 @@ func TestPerSourceLimit(t *testing.T) {
 		if got := PerSourceLimit(c.rule, c.def, c.total); got != c.want {
 			t.Fatalf("PerSourceLimit(%d, %d, %d) = %d，应为 %d", c.rule, c.def, c.total, got, c.want)
 		}
+	}
+}
+
+// mustExempt 解析豁免列表，失败时终止测试。
+func mustExempt(t *testing.T, list ...string) []netip.Prefix {
+	t.Helper()
+	p, err := ParseExempt(list)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return p
+}
+
+// Limits.Equal 比较豁免列表的内容，热更新据此判断是否要重新监听。
+func TestLimitsEqual(t *testing.T) {
+	a := Limits{Max: 10, PerSource: 5, Exempt: mustExempt(t, "198.51.100.1")}
+	if !a.Equal(Limits{Max: 10, PerSource: 5, Exempt: mustExempt(t, "198.51.100.1/32")}) {
+		t.Fatal("内容相同的豁免列表应相等")
+	}
+	if a.Equal(Limits{Max: 10, PerSource: 5}) || a.Equal(Limits{Max: 10, PerSource: 5, Exempt: mustExempt(t, "198.51.100.2")}) {
+		t.Fatal("豁免列表不同应不相等")
+	}
+	if _, err := ParseExempt([]string{"not-an-ip"}); err == nil {
+		t.Fatal("非法地址应报错")
 	}
 }

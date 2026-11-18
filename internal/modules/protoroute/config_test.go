@@ -1,6 +1,8 @@
 package protoroute
 
 import (
+	"net/netip"
+	"slices"
 	"strings"
 	"testing"
 
@@ -136,14 +138,14 @@ func TestRouteDomainsNormalize(t *testing.T) {
 // 单来源上限：未设置时取最大连接数的一半，规则设置优先于全局默认值；变化时需要重新监听。
 func TestEffectiveLimitsPerSource(t *testing.T) {
 	s := defaultSettings()
-	if got := effectiveLimits(Rule{}, s); got != (l4proxy.Limits{Max: 256, PerSource: 128}) {
+	if got := effectiveLimits(Rule{}, s); !got.Equal(l4proxy.Limits{Max: 256, PerSource: 128}) {
 		t.Fatalf("默认上限: %+v", got)
 	}
 	s.DefaultMaxConnsPerSource = 16
-	if got := effectiveLimits(Rule{MaxConnections: 64}, s); got != (l4proxy.Limits{Max: 64, PerSource: 16}) {
+	if got := effectiveLimits(Rule{MaxConnections: 64}, s); !got.Equal(l4proxy.Limits{Max: 64, PerSource: 16}) {
 		t.Fatalf("全局默认值: %+v", got)
 	}
-	if got := effectiveLimits(Rule{MaxConnsPerSource: 4}, s); got != (l4proxy.Limits{Max: 256, PerSource: 4}) {
+	if got := effectiveLimits(Rule{MaxConnsPerSource: 4}, s); !got.Equal(l4proxy.Limits{Max: 256, PerSource: 4}) {
 		t.Fatalf("规则设置: %+v", got)
 	}
 	r := &runner{rule: Rule{}, settings: defaultSettings()}
@@ -154,5 +156,37 @@ func TestEffectiveLimitsPerSource(t *testing.T) {
 	n.normalize()
 	if n.DefaultMaxConnsPerSource != 0 {
 		t.Fatalf("负数应规范化为 0: %d", n.DefaultMaxConnsPerSource)
+	}
+}
+
+// 不受单来源限制的来源：保存时去空白去重并校验格式，生效到端口上限，列表变化时重新监听。
+func TestPerSourceExemptSettings(t *testing.T) {
+	s := defaultSettings()
+	s.PerSourceExempt = []string{" 198.51.100.7 ", "", "2001:db8:9::/48", "198.51.100.7"}
+	s.normalize()
+	if !slices.Equal(s.PerSourceExempt, []string{"198.51.100.7", "2001:db8:9::/48"}) {
+		t.Fatalf("规范化结果不对: %q", s.PerSourceExempt)
+	}
+	if err := s.validate(); err != nil {
+		t.Fatal(err)
+	}
+	got := effectiveLimits(Rule{}, s)
+	want := l4proxy.Limits{Max: 256, PerSource: 128, Exempt: []netip.Prefix{netip.MustParsePrefix("198.51.100.7/32"), netip.MustParsePrefix("2001:db8:9::/48")}}
+	if !got.Equal(want) {
+		t.Fatalf("豁免列表应生效到端口上限: %+v", got)
+	}
+	r := &runner{rule: Rule{}, settings: defaultSettings()}
+	if r.canUpdate(Rule{}, s) {
+		t.Fatal("豁免列表变化时应重新监听")
+	}
+	bad := defaultSettings()
+	bad.PerSourceExempt = []string{"relay.example.com"}
+	if err := bad.validate(); err == nil {
+		t.Fatal("非 IP/CIDR 应校验失败")
+	}
+	// 配置文件中手工写错时整体忽略，不影响规则启动
+	ign := effectiveLimits(Rule{}, bad)
+	if len(ign.Exempt) != 0 {
+		t.Fatalf("格式错误的豁免列表应忽略: %+v", ign.Exempt)
 	}
 }

@@ -98,6 +98,8 @@ func effectiveLimits(rule Rule, settings Settings) (limits l4proxy.Limits, udpTi
 		limits.Max = settings.DefaultMaxConnections
 	}
 	limits.PerSource = l4proxy.PerSourceLimit(rule.MaxConnsPerSource, settings.DefaultMaxConnsPerSource, limits.Max)
+	// 保存时已校验，配置文件中手工写错的项在这里整体忽略
+	limits.Exempt, _ = l4proxy.ParseExempt(settings.PerSourceExempt)
 	udpTimeout = time.Duration(rule.UDPSessionTimeout) * time.Second
 	if udpTimeout <= 0 {
 		udpTimeout = time.Duration(settings.DefaultUDPSessionTimeout) * time.Second
@@ -118,7 +120,7 @@ func (r *runner) canUpdate(rule Rule, settings Settings) bool {
 	}
 	oldMax, oldUDP := effectiveLimits(old, r.settings)
 	newMax, newUDP := effectiveLimits(rule, settings)
-	return oldMax == newMax && oldUDP == newUDP
+	return oldMax.Equal(newMax) && oldUDP == newUDP
 }
 
 // update 热替换目标地址等配置，监听器与已建立的连接保持不断。调用前需用 canUpdate 确认。

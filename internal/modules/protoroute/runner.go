@@ -123,6 +123,8 @@ func effectiveLimits(rule Rule, settings Settings) l4proxy.Limits {
 		limits.Max = rule.MaxConnections
 	}
 	limits.PerSource = l4proxy.PerSourceLimit(rule.MaxConnsPerSource, settings.DefaultMaxConnsPerSource, limits.Max)
+	// 保存时已校验，配置文件中手工写错的项在这里整体忽略
+	limits.Exempt, _ = l4proxy.ParseExempt(settings.PerSourceExempt)
 	return limits
 }
 
@@ -137,7 +139,7 @@ func (r *runner) canUpdate(rule Rule, settings Settings) bool {
 		old.ListenPorts != rule.ListenPorts || old.TargetPorts != rule.TargetPorts {
 		return false
 	}
-	return effectiveLimits(old, r.settings) == effectiveLimits(rule, settings)
+	return effectiveLimits(old, r.settings).Equal(effectiveLimits(rule, settings))
 }
 
 // update 热替换路由表、默认目标与识别超时，监听器与已建立的连接保持不断，各路由与默认目标的命中计数沿用旧值。
