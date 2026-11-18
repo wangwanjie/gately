@@ -2950,7 +2950,6 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 
 | Feld | Typ |
 | --- | --- |
-| `adminPassEntry` | string |
 | `authMarkerKey` | string |
 | `authSecret` | string |
 | `authUsers` | Array von `webservice.AuthUser` |

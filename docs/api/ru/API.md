@@ -2950,7 +2950,6 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 
 | Поле | Тип |
 | --- | --- |
-| `adminPassEntry` | string |
 | `authMarkerKey` | string |
 | `authSecret` | string |
 | `authUsers` | Массив из `webservice.AuthUser` |

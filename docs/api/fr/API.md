@@ -2950,7 +2950,6 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 
 | Champ | Type |
 | --- | --- |
-| `adminPassEntry` | string |
 | `authMarkerKey` | string |
 | `authSecret` | string |
 | `authUsers` | Tableau de `webservice.AuthUser` |

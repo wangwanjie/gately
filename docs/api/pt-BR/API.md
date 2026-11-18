@@ -2950,7 +2950,6 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 
 | Campo | Tipo |
 | --- | --- |
-| `adminPassEntry` | string |
 | `authMarkerKey` | string |
 | `authSecret` | string |
 | `authUsers` | Array de `webservice.AuthUser` |
