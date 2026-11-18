@@ -68,6 +68,10 @@ type Task struct {
 	HTTPTimeout   int            `json:"httpTimeout"`
 	Webhook       webhook.Config `json:"webhook"`
 	Remark        string         `json:"remark"`
+	// loadErr 记录从配置文件加载时的校验错误（不落盘）。非空的任务不会启动，
+	// 避免手工编辑的配置缺字段时以零值运行（如超时为 0 时每次取 IP 立即超时）；
+	// 通过界面或 API 保存任务时重新校验并清空。
+	loadErr string
 }
 
 // Settings 是模块级配置。
@@ -90,6 +94,30 @@ const (
 	// maxRemarkLen 为写到服务商的备注最大字符数，与 Cloudflare 免费套餐记录备注的上限一致
 	maxRemarkLen = 100
 )
+
+// normalizeLoaded 对从配置文件加载的任务逐个执行 Validate，补全默认值并规范化字段，
+// 返回校验失败的任务说明。保存过的配置已经过校验，重复执行不改变合法值；
+// 手工编辑或外部工具生成的配置可能缺字段（例如没有 httpTimeout），在这里补上。
+// 校验失败的任务保持原样并记下 loadErr，不让一个坏任务拖累整个模块。
+func normalizeLoaded(tasks []Task) []string {
+	var bad []string
+	for i := range tasks {
+		cand := tasks[i]
+		// Validate 会就地改写记录，先复制一份，失败时原任务不被改成半成品
+		cand.Records = append([]Record(nil), tasks[i].Records...)
+		if err := cand.Validate(); err != nil {
+			tasks[i].loadErr = err.Error()
+			name := tasks[i].Name
+			if name == "" {
+				name = tasks[i].Key
+			}
+			bad = append(bad, fmt.Sprintf("%s: %v", name, err))
+			continue
+		}
+		tasks[i] = cand
+	}
+	return bad
+}
 
 // remarkOf 返回同步到服务商的备注：记录备注优先，留空时用任务备注；
 // 过长时截断，避免因备注超出服务商限制导致解析更新失败。
@@ -149,6 +177,7 @@ func (t *Task) stunRefs(rules ...string) (inRecords, inWebhook bool) {
 
 // Validate 校验并补全默认值。
 func (t *Task) Validate() error {
+	t.loadErr = ""
 	t.Name = strings.TrimSpace(t.Name)
 	if err := crud.NormalizeGroup(&t.Group); err != nil {
 		return err

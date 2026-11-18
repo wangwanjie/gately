@@ -3,6 +3,7 @@ package ddns
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"sync"
 	"time"
@@ -60,6 +61,10 @@ func (m *Module) Init(env module.Env) error {
 		}
 		m.logs.Add(logbuf.LevelInfo, "", "已将停止服务的 IP 查询地址（ipw.cn）替换为 ddnspod.com")
 	}
+	// 加载后补全默认值；只改内存，不回写文件，下次保存时随其他改动一并写入
+	for _, msg := range normalizeLoaded(m.cfg.Tasks) {
+		m.logs.Add(logbuf.LevelError, "", "任务配置无效，已跳过（在界面中修改并保存后恢复）: "+msg)
+	}
 	return nil
 }
 
@@ -91,7 +96,7 @@ func (m *Module) Start(ctx context.Context) error {
 		return nil
 	}
 	for _, t := range m.cfg.Tasks {
-		if t.Enable {
+		if t.Enable && t.loadErr == "" {
 			m.startLocked(t, startupDelay)
 		}
 	}
@@ -165,7 +170,7 @@ func (m *Module) stopLocked(key string) {
 // restartLocked 按最新配置重启任务；修改后立即执行一次同步。
 func (m *Module) restartLocked(key string) {
 	t := m.findLocked(key)
-	if t == nil || !t.Enable || !m.cfg.Settings.Enable {
+	if t == nil || !t.Enable || t.loadErr != "" || !m.cfg.Settings.Enable {
 		m.stopLocked(key)
 		return
 	}
@@ -212,6 +217,13 @@ func (m *Module) Routes(r module.Router) {
 		Enabled:  func(t *Task) *bool { return &t.Enable },
 		Group:    func(t *Task) *string { return &t.Group },
 		Validate: func(t *Task) error { return t.Validate() },
+		// 加载时校验失败的任务需先修改保存，直接启用会以缺省零值运行
+		CheckEnable: func(t *Task) error {
+			if t.loadErr != "" {
+				return fmt.Errorf("任务配置无效，请编辑修正后保存: %s", t.loadErr)
+			}
+			return nil
+		},
 		Merge: func(old, updated *Task) {
 			crud.KeepSecret(old.Credentials.Secret, &updated.Credentials.Secret)
 		},
@@ -369,7 +381,7 @@ func (m *Module) handlePutSettings(w http.ResponseWriter, r *http.Request) {
 	}
 	if s.Enable {
 		for _, t := range m.cfg.Tasks {
-			if t.Enable {
+			if t.Enable && t.loadErr == "" {
 				m.startLocked(t, 0)
 			}
 		}
