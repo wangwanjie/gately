@@ -148,9 +148,15 @@ func (w *inotifyWatcher) readLoop() {
 			case w.wake <- struct{}{}:
 			default:
 			}
+			// 唤醒后先攒一小段时间再读下一批事件：日志持续写入时这期间未读的相同事件由内核合并，
+			// 读取方每 inotifyBatch 最多被唤醒一次、一次读完这段时间写入的全部行；空闲后的第一行仍立即唤醒
+			time.Sleep(inotifyBatch)
 		}
 	}
 }
+
+// inotifyBatch 为两次唤醒之间的最短间隔，见 readLoop。
+const inotifyBatch = 10 * time.Millisecond
 
 // relevant 解析一批事件，判断其中是否有与被跟踪文件相关的事件。
 func (w *inotifyWatcher) relevant(b []byte) bool {
