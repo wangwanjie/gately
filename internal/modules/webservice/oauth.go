@@ -348,3 +348,9 @@ func (a *authenticator) handleOAuthFinish(w http.ResponseWriter, r *http.Request
 	a.issueSession(w, r, s, t.Identity, t.Aliases...)
 	http.Redirect(w, r, safeNext(t.Next), http.StatusFound)
 }
+
+// validPort 判断端口字符串是否为 1 到 65535 的纯数字。
+func validPort(p string) bool {
+	n, err := strconv.Atoi(p)
+	return err == nil && n >= 1 && n <= 65535 && strconv.Itoa(n) == p
+}

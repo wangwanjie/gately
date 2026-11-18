@@ -1320,7 +1320,6 @@
   "名称只能包含字母、数字以及 . _ - * @（用作文件名）": "Der Name darf nur Buchstaben, Ziffern und . _ - * @ enthalten (er dient als Dateiname)",
   "名称过长": "Name ist zu lang",
   "名称过长或包含控制字符": "Name ist zu lang oder enthält Steuerzeichen",
-  "后台入口地址需为 http(s)://域名[:端口] 的形式，不带路径": "Die Einstiegs-URL der Verwaltung muss die Form http(s)://Domain[:Port] haben, ohne Pfad",
   "后端 %s 不可用：%s": "Backend %s nicht verfügbar: %s",
   "后端 %s 已恢复": "Backend %s wiederhergestellt",
   "后端 TLS 握手超时需在 1 到 %d 秒之间（0 为默认 10 秒）": "Der TLS-Handshake-Timeout zum Backend muss 1 bis %d Sekunden betragen (0 für den Standard von 10 Sekunden)",
