@@ -2,6 +2,7 @@ package l4proxy
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"net"
 	"net/netip"
@@ -173,11 +174,15 @@ func TestServeTCPPerSourceLimit(t *testing.T) {
 	var s Server
 	ctx := s.Context(context.Background())
 	var warned atomic.Int32
+	var warnMsg atomic.Value
 	handled := make(chan string, 32)
 	probe, _ := net.Listen("tcp", "127.0.0.1:0")
 	addr := probe.Addr().String()
 	probe.Close()
-	if err := s.ServeTCP(ctx, "tcp", addr, Limits{Max: 20, PerSource: 2, Exempt: mustExempt(t, "198.51.100.0/24", "2001:db8:9::/48")}, func(string, ...any) { warned.Add(1) }, func(c net.Conn) {
+	if err := s.ServeTCP(ctx, "tcp", addr, Limits{Max: 20, PerSource: 2, Exempt: mustExempt(t, "198.51.100.0/24", "2001:db8:9::/48")}, func(format string, args ...any) {
+		warned.Add(1)
+		warnMsg.Store(fmt.Sprintf(format, args...))
+	}, func(c net.Conn) {
 		buf := make([]byte, 16)
 		n, _ := c.Read(buf)
 		handled <- string(buf[:n])
@@ -254,6 +259,10 @@ func TestServeTCPPerSourceLimit(t *testing.T) {
 	}
 	if n := warned.Load(); n != 1 {
 		t.Fatalf("10 秒内的单来源超限应只记录 1 条警告，实际 %d", n)
+	}
+	// 警告写明被拒绝的来源、上限与处理办法
+	if msg, _ := warnMsg.Load().(string); !strings.Contains(msg, "来源 203.0.113.7/32") || !strings.Contains(msg, "单来源上限 2") || !strings.Contains(msg, "不受单来源限制的来源") {
+		t.Fatalf("单来源超限警告内容不对: %q", msg)
 	}
 	// 释放 203.0.113.7 的一个连接后可以再连
 	clients[0].Close()
