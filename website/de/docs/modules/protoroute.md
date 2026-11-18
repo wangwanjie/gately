@@ -11,7 +11,7 @@ Jede Regel hat:
 - Ein Standardziel: die eigenen Zieladressen, Zielports und die PROXY-Protokoll-Einstellung der Regel; es wird genutzt, wenn keine Route passt oder das Protokoll nicht erkannt wird;
 - Ein Erkennungs-Timeout: wie viele Sekunden auf erkennbare Daten vom Client gewartet wird; 0 bedeutet den Standard von 5 Sekunden.
 
-Jeder Port begrenzt außerdem die gleichzeitigen Verbindungen einer einzelnen Quelle (eine IPv4-Adresse oder ein IPv6-/64), standardmäßig auf die Hälfte der max. Verbindungen; in einer Regel über „Max. Verbindungen pro Quelle“ oder als Standard in den globalen Einstellungen änderbar. Loopback- und private Adressen werden nicht begrenzt; Verbindungen ohne Daten behandelt das Erkennungs-Timeout.
+Jeder Port begrenzt außerdem die gleichzeitigen Verbindungen einer einzelnen Quelle (eine IPv4-Adresse oder ein IPv6-/64), standardmäßig auf die Hälfte der max. Verbindungen; in einer Regel über „Max. Verbindungen pro Quelle“ oder als Standard in den globalen Einstellungen änderbar. Loopback- und private Adressen werden nicht begrenzt; Verbindungen ohne Daten behandelt das Erkennungs-Timeout. Lässt ein öffentliches Relay oder ein vorgeschalteter Proxy alle Besucher als dieselbe Quelle erscheinen, tragen Sie dessen Adresse (IP oder CIDR) in den globalen Einstellungen unter „Quellen ohne Limit pro Quelle“ ein.
 
 ## Erkannte Protokolle
 
