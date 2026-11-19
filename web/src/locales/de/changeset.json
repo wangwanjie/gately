@@ -1,0 +1,14 @@
+{
+  "begin": "Sammeländerung starten",
+  "started": "Sammeländerung gestartet: weitere Änderungen werden zurückgehalten",
+  "help": "Für Änderungen, die nur zusammen funktionieren (etwa der Port, an den das Protokoll-Routing zum Webdienst weiterleitet, und der Listen-Port des Webdiensts), starten Sie zuerst eine Sammeländerung: Speichern bei Portweiterleitung, Protokoll-Routing und Webdienst schreibt nur die Konfiguration, der aktuelle Zugriffsweg bleibt nutzbar, und am Ende klicken Sie oben auf der Seite auf „Alle anwenden“.",
+  "bannerTitle": "Sammeländerung: gespeichert, noch nicht angewendet",
+  "bannerDesc": "Diese {n} Einträge werden gemeinsam wirksam, wenn Sie auf „Alle anwenden“ klicken; bis dahin bleibt der aktuelle Zugriffsweg nutzbar. Änderungen an globalen Einstellungen wirken weiterhin sofort.",
+  "bannerEmpty": "Änderungen an Portweiterleitung, Protokoll-Routing und Webdienst werden gespeichert, aber zurückgehalten; klicken Sie am Ende auf „Alle anwenden“.",
+  "item": "{module}: {name}",
+  "deleted": "gelöscht ({key})",
+  "apply": "Alle anwenden",
+  "discard": "Änderungen verwerfen",
+  "discardConfirm": "Gately stellt die Konfiguration von vor der Sammeländerung wieder her und startet neu; die Änderungen seither werden verworfen (sie bleiben im Konfigurationsverlauf).",
+  "applied": "Alles angewendet ({n} Einträge), Zugriff wird geprüft"
+}

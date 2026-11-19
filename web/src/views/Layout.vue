@@ -69,6 +69,8 @@
         <div ref="bannersEl" class="top-banners">
           <!-- 管理端安全评分不理想时提醒加固：高风险一直显示，建议加固级别可暂缓 7 天。默认密码与弱密码由强制修改对话框处理，不再重复提示 -->
           <SecurityBanner v-if="role === 'admin' && !passwordIssue" :status="secStatus" :level="bannerKind" @fix="goFix" @snooze="snoozeBanner" />
+          <!-- 批量修改中：修改已保存但暂缓生效，改好后一起生效 -->
+          <HoldBanner v-if="role === 'admin'" />
           <!-- 自动检查发现新版本或当前版本受安全问题影响时提示 -->
           <UpdateBanner :is-admin="role === 'admin'" />
         </div>
@@ -99,6 +101,7 @@ import SecurityBanner from '../components/SecurityBanner.vue'
 import ForcePasswordDialog from '../components/ForcePasswordDialog.vue'
 import ConfigConfirmDialog from '../components/ConfigConfirmDialog.vue'
 import AccessRiskDialog from '../components/AccessRiskDialog.vue'
+import HoldBanner from '../components/HoldBanner.vue'
 import { loadConfirmStatus } from '../configConfirm'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'

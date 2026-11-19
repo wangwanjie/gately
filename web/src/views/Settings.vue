@@ -204,11 +204,16 @@
         <div v-if="accessPath" class="g-card" data-test="access-path-card">
           <div class="g-card-head">
             <div class="g-card-title"><Route :size="16" />{{ t('accessPath.cardTitle') }}</div>
-            <el-button text size="small" :icon="RefreshCw" @click="loadAccessPath">{{ t('common.refresh') }}</el-button>
+            <div>
+              <!-- 几处要一起改的修改：先开始批量修改，改完再一起生效 -->
+              <el-button v-if="!confirmState.hold" size="small" :icon="Layers" data-test="hold-begin" @click="startHold">{{ t('changeset.begin') }}</el-button>
+              <el-button text size="small" :icon="RefreshCw" @click="loadAccessPath">{{ t('common.refresh') }}</el-button>
+            </div>
           </div>
           <div class="g-card-body">
             <AccessPathChain :path="accessPath" />
             <div class="form-help">{{ t('accessPath.cardHelp') }}</div>
+            <div class="form-help">{{ t('changeset.help') }}</div>
           </div>
         </div>
         <div v-if="form" class="g-card">
@@ -605,6 +610,7 @@ import {
   Globe,
   Import,
   KeyRound,
+  Layers,
   LockKeyhole,
   LogOut,
   Network,
@@ -638,7 +644,7 @@ import RestartOverlay from '../components/RestartOverlay.vue'
 import { useFormLayout } from '../composables/useIsMobile'
 import { locales } from '../i18n/locales'
 import { moduleEnabled, navByModule, navGroups } from '../nav'
-import { confirmState } from '../configConfirm'
+import { beginHold, confirmState } from '../configConfirm'
 import AccessPathChain from '../components/AccessPathChain.vue'
 import type { AccessPath } from '../accessPath'
 
@@ -1413,6 +1419,16 @@ async function confirmRestart() {
     await api.post('/api/system/restart')
     // 需要重启才生效的设置待确认时，新配置下连不上要等服务端超时回滚并再次重启
     overlay.value?.start(t('settings.restart.progress'), confirmState.enabled ? Math.max(120, confirmState.timeout + 90) * 1000 : 120000)
+  } catch (e) {
+    ElMessage.error((e as Error).message)
+  }
+}
+
+// startHold 开始批量修改：此后端口转发、协议分流与 Web 服务的保存暂缓生效，页面顶部显示横幅
+async function startHold() {
+  try {
+    await beginHold()
+    ElMessage.success(t('changeset.started'))
   } catch (e) {
     ElMessage.error((e as Error).message)
   }

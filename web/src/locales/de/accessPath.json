@@ -30,5 +30,7 @@
   "continue": "Trotzdem speichern",
   "cancelled": "Speichern abgebrochen",
   "cardTitle": "Aktueller Zugriffsweg",
-  "cardHelp": "Die Gately-Weiterleitungen, über die Ihre Verbindung zu dieser Oberfläche läuft. Vor dem Speichern von Änderungen an diesen Regeln, Listenern oder Sites werden Sie gewarnt; äußere Programme auf diesem Rechner wie frp oder Cloudflare Tunnel erscheinen als „Dieser Rechner“."
+  "cardHelp": "Die Gately-Weiterleitungen, über die Ihre Verbindung zu dieser Oberfläche läuft. Vor dem Speichern von Änderungen an diesen Regeln, Listenern oder Sites werden Sie gewarnt; äußere Programme auf diesem Rechner wie frp oder Cloudflare Tunnel erscheinen als „Dieser Rechner“.",
+  "hold": "Zurückhalten, später gemeinsam anwenden",
+  "holdNote": "Ist das eine gewollte mehrstufige Änderung (gleich ändern Sie passend etwas anderes), wählen Sie „Zurückhalten, später gemeinsam anwenden“: Diese Änderung wird gespeichert, aber nicht angewendet, Ihr aktueller Zugriff bleibt unberührt, und am Ende klicken Sie oben auf der Seite auf „Alle anwenden“."
 }

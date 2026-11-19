@@ -30,5 +30,7 @@
   "continue": "Save anyway",
   "cancelled": "Save canceled",
   "cardTitle": "Current access path",
-  "cardHelp": "The Gately forwarding your connection to this admin UI passes through. You are warned before saving changes to these rules, listeners or sites; outer programs on this machine such as frp or Cloudflare Tunnel show as \"This machine\"."
+  "cardHelp": "The Gately forwarding your connection to this admin UI passes through. You are warned before saving changes to these rules, listeners or sites; outer programs on this machine such as frp or Cloudflare Tunnel show as \"This machine\".",
+  "hold": "Stage, apply together later",
+  "holdNote": "If this is a deliberate multi-step change (you will change something else next to match), choose \"Stage, apply together later\": this change is saved but not applied, your current access is unaffected, and you click \"Apply all\" at the top of the page when everything is done."
 }

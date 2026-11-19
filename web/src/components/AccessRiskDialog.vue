@@ -8,7 +8,7 @@
     :close-on-click-modal="false"
     class="access-risk-dialog"
     data-test="access-risk-dialog"
-    @close="answerRisk(false)"
+    @close="answerRisk('cancel')"
   >
     <template v-if="check">
       <ul class="risks">
@@ -19,10 +19,13 @@
       <p class="note">
         {{ confirmState.enabled ? t('accessPath.noteConfirm', { seconds: confirmState.timeout }) : t('accessPath.noteNoConfirm') }}
       </p>
+      <!-- 有意的多步修改：先暂存，改完其他地方后一起生效 -->
+      <p class="note hold-note">{{ t('accessPath.holdNote') }}</p>
     </template>
     <template #footer>
-      <el-button data-test="access-risk-cancel" @click="answerRisk(false)">{{ t('common.cancel') }}</el-button>
-      <el-button type="warning" data-test="access-risk-continue" @click="answerRisk(true)">{{ t('accessPath.continue') }}</el-button>
+      <el-button data-test="access-risk-cancel" @click="answerRisk('cancel')">{{ t('common.cancel') }}</el-button>
+      <el-button type="primary" plain data-test="access-risk-hold" @click="answerRisk('hold')">{{ t('accessPath.hold') }}</el-button>
+      <el-button type="warning" data-test="access-risk-continue" @click="answerRisk('save')">{{ t('accessPath.continue') }}</el-button>
     </template>
   </el-dialog>
 </template>
@@ -50,6 +53,12 @@ const check = computed(() => riskPrompt.check)
   margin-bottom: 8px;
   font-size: 13px;
   color: var(--el-text-color-secondary);
+}
+.hold-note {
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: var(--el-color-primary-light-9);
+  color: var(--el-text-color-regular);
 }
 .note {
   margin: 14px 0 0;

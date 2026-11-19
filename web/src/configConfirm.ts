@@ -12,6 +12,19 @@ export interface ConfirmPending {
   remaining: number
   waitRestart: boolean
   rollback: boolean
+  hold: boolean
+}
+
+// HoldItem 是批量修改中暂缓生效的规则或监听
+export interface HoldItem {
+  module: string
+  key: string
+  name?: string
+}
+
+export interface HoldState {
+  items: HoldItem[]
+  configs: string[]
 }
 
 export interface ConfirmStatus {
@@ -19,6 +32,7 @@ export interface ConfirmStatus {
   timeout: number
   pending: ConfirmPending | null
   rolledBack: { configs: string[]; reason: string } | null
+  hold: HoldState | null
 }
 
 // phase：idle 无需处理；checking 正在后台确认（不打扰用户）；failed 保存后确认不了；
@@ -39,6 +53,8 @@ export const confirmState = reactive({
   confirmedAfterPrompt: 0,
   // rolledBack 为刚刚回滚掉的配置，界面据此提示一次
   rolledBack: null as { configs: string[]; reason: string } | null,
+  // hold 为进行中的批量修改（修改已保存、暂缓生效），没有时为 null
+  hold: null as HoldState | null,
   // reachable 为确认失败期间普通请求能否到达服务端：到不了时“立即回滚”同样发不出去，只能等自动回滚
   reachable: true,
 })
@@ -62,9 +78,10 @@ export function isProtectedWrite(method: string, url: string): boolean {
   return CONFIRM_MODULES.test(p) || (method === 'PUT' && p === '/api/system/settings') || (method === 'POST' && p === '/api/system/restart')
 }
 
-// confirmHeaderFor 判断请求是否需要带确认请求头：受保护的写请求，且确认未关闭
+// confirmHeaderFor 判断请求是否需要带确认请求头：受保护的写请求，且确认未关闭；
+// 批量修改期间总是带上，服务端据此记录改动前的内容，放弃修改时恢复
 export function confirmHeaderFor(method: string, url: string): boolean {
-  return confirmState.enabled && isProtectedWrite(method, url)
+  return (confirmState.enabled || !!confirmState.hold) && isProtectedWrite(method, url)
 }
 
 // afterConfirmWrite 在带确认请求头的请求结束后调用：ok 为收到响应（含校验失败），network 为连接中断或代理返回 502~504。
@@ -74,6 +91,11 @@ export function afterConfirmWrite(method: string, url: string) {
     // 重启后才开始计时，由重启后的页面自动确认
     sessionStorage.setItem(RESTART_KEY, '1')
     sessionStorage.setItem(WATCH_KEY, '1')
+    return
+  }
+  // 批量修改期间修改暂缓生效，不需要确认；刷新横幅上暂存的项目
+  if (confirmState.hold) {
+    void refreshStatus()
     return
   }
   // 先按请求路径记下涉及的配置：连不上服务端时弹窗也能说明改了哪里，连得上时以服务端返回的为准
@@ -151,6 +173,7 @@ function handleResult(status: string): boolean {
     case 'confirmed':
     case 'none':
     case 'waitRestart':
+    case 'hold':
       if (confirmState.phase === 'failed' || confirmState.phase === 'found') {
         confirmState.confirmedAfterPrompt++
       }
@@ -211,7 +234,7 @@ async function refreshRemaining() {
     }
     const s = (await resp.json()) as ConfirmStatus
     confirmState.reachable = true
-    if (s.pending && !s.pending.waitRestart) {
+    if (s.pending && !s.pending.waitRestart && !s.pending.hold) {
       confirmState.configs = s.pending.configs
       confirmState.deadline = Date.now() + s.pending.remaining * 1000
     }
@@ -279,6 +302,56 @@ export async function rollbackNow() {
   }
 }
 
+// refreshStatus 刷新确认开关、时限与批量修改状态
+export async function refreshStatus(): Promise<ConfirmStatus | null> {
+  try {
+    const s = await api.get<ConfirmStatus>('/api/system/confirm')
+    confirmState.enabled = s.enabled
+    confirmState.timeout = s.timeout || 90
+    confirmState.hold = s.hold
+    return s
+  } catch {
+    return null
+  }
+}
+
+// beginHold 开始批量修改：此后端口转发、协议分流与 Web 服务的保存暂缓生效
+export async function beginHold() {
+  confirmState.hold = await api.post<HoldState>('/api/system/changeset/begin')
+}
+
+// applyHold 批量修改全部生效；需要确认时与单次保存一样经新连接确认，确认不了时整批回滚
+export async function applyHold(): Promise<number> {
+  let r: { applied: number; confirm: boolean; timeout: number }
+  try {
+    r = await api.post<{ applied: number; confirm: boolean; timeout: number }>('/api/system/changeset/apply')
+  } catch (e) {
+    if (!(e instanceof TypeError)) {
+      throw e
+    }
+    // 响应丢失（生效重启了这次请求经过的监听）：修改可能已经生效，照常经新连接确认，确认不了时服务端到时回滚
+    const n = confirmState.hold?.items.length ?? 0
+    confirmState.hold = null
+    scheduleCheck(Date.now() + confirmState.timeout * 1000)
+    return n
+  }
+  confirmState.hold = null
+  if (r.confirm) {
+    confirmState.configs = []
+    scheduleCheck(Date.now() + r.timeout * 1000)
+  }
+  return r.applied
+}
+
+// discardHold 放弃批量修改：有改动时服务端恢复开始前的配置并重启，页面等它恢复后刷新
+export async function discardHold() {
+  const r = await api.post<{ restart: boolean }>('/api/system/changeset/discard')
+  confirmState.hold = null
+  if (r.restart) {
+    startRollingBack()
+  }
+}
+
 // loadConfirmStatus 在进入管理界面时读取状态：本标签页经确认重启的自动确认，别处留下的待确认变更弹窗询问，
 // 刚刚回滚过且本标签页在等待时提示回滚结果
 export async function loadConfirmStatus() {
@@ -290,6 +363,7 @@ export async function loadConfirmStatus() {
   }
   confirmState.enabled = s.enabled
   confirmState.timeout = s.timeout || 90
+  confirmState.hold = s.hold
   const watching = sessionStorage.getItem(WATCH_KEY) === '1'
   const afterRestart = sessionStorage.getItem(RESTART_KEY) === '1'
   sessionStorage.removeItem(RESTART_KEY)
@@ -306,7 +380,7 @@ export async function loadConfirmStatus() {
     startRollingBack()
     return
   }
-  if (p.waitRestart) {
+  if (p.waitRestart || p.hold) {
     return
   }
   if (afterRestart) {

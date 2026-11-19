@@ -1,0 +1,14 @@
+{
+  "begin": "Iniciar cambios por lotes",
+  "started": "Cambios por lotes iniciados: los siguientes cambios quedan en espera",
+  "help": "Para cambios que solo funcionan juntos (por ejemplo, el puerto al que el enrutamiento por protocolo envía al servicio web y el puerto en el que escucha el servicio web), inicia primero los cambios por lotes: lo que guardes en reenvío de puertos, enrutamiento por protocolo y servicio web solo se escribe en la configuración, el camino de acceso actual sigue funcionando y, al terminar, pulsas «Aplicar todo» arriba en la página.",
+  "bannerTitle": "Cambios por lotes: guardados, sin aplicar",
+  "bannerDesc": "Estos {n} elementos se aplicarán juntos al pulsar «Aplicar todo»; hasta entonces el camino de acceso actual sigue funcionando. Los cambios en los ajustes globales se siguen aplicando al momento.",
+  "bannerEmpty": "Los cambios en reenvío de puertos, enrutamiento por protocolo y servicio web se guardan pero quedan en espera; pulsa «Aplicar todo» al terminar.",
+  "item": "{module}: {name}",
+  "deleted": "eliminado ({key})",
+  "apply": "Aplicar todo",
+  "discard": "Descartar cambios",
+  "discardConfirm": "Gately restaurará la configuración de antes del lote y se reiniciará; los cambios hechos desde entonces se descartan (quedan en el historial de configuración).",
+  "applied": "Todo aplicado ({n} elementos), comprobando el acceso"
+}

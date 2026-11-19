@@ -30,5 +30,7 @@
   "continue": "Enregistrer quand même",
   "cancelled": "Enregistrement annulé",
   "cardTitle": "Chemin d’accès actuel",
-  "cardHelp": "Les redirections Gately par lesquelles passe votre connexion à cette interface. Vous êtes averti avant d’enregistrer une modification de ces règles, écouteurs ou sites ; les programmes externes de cette machine, comme frp ou Cloudflare Tunnel, apparaissent comme « Cette machine »."
+  "cardHelp": "Les redirections Gately par lesquelles passe votre connexion à cette interface. Vous êtes averti avant d’enregistrer une modification de ces règles, écouteurs ou sites ; les programmes externes de cette machine, comme frp ou Cloudflare Tunnel, apparaissent comme « Cette machine ».",
+  "hold": "Mettre en attente, appliquer ensemble",
+  "holdNote": "S’il s’agit d’une modification volontaire en plusieurs étapes (vous allez ensuite modifier autre chose en conséquence), choisissez « Mettre en attente, appliquer ensemble » : cette modification est enregistrée sans être appliquée, votre accès actuel n’est pas touché, et vous cliquez sur « Tout appliquer » en haut de la page une fois terminé."
 }

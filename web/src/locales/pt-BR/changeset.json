@@ -1,0 +1,14 @@
+{
+  "begin": "Iniciar alterações em lote",
+  "started": "Alterações em lote iniciadas: as próximas alterações ficam em espera",
+  "help": "Para alterações que só funcionam juntas (por exemplo, a porta para a qual o roteamento por protocolo envia ao serviço web e a porta em que o serviço web escuta), inicie primeiro as alterações em lote: o que você salvar em encaminhamento de portas, roteamento por protocolo e serviço web só atualiza a configuração, o caminho de acesso atual continua funcionando e, ao terminar, você clica em \"Aplicar tudo\" no topo da página.",
+  "bannerTitle": "Alterações em lote: salvas, ainda não aplicadas",
+  "bannerDesc": "Estes {n} itens serão aplicados juntos quando você clicar em \"Aplicar tudo\"; até lá o caminho de acesso atual continua funcionando. Alterações nas configurações globais continuam valendo na hora.",
+  "bannerEmpty": "As alterações em encaminhamento de portas, roteamento por protocolo e serviço web são salvas, mas ficam em espera; clique em \"Aplicar tudo\" ao terminar.",
+  "item": "{module}: {name}",
+  "deleted": "excluído ({key})",
+  "apply": "Aplicar tudo",
+  "discard": "Descartar alterações",
+  "discardConfirm": "O Gately vai restaurar a configuração de antes do lote e reiniciar; as alterações feitas desde então são descartadas (ficam no histórico de configuração).",
+  "applied": "Tudo aplicado ({n} itens), verificando o acesso"
+}

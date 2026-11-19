@@ -1,0 +1,14 @@
+{
+  "begin": "Start batch changes",
+  "started": "Batch changes started: further changes are held until you apply them",
+  "help": "For changes that only work together (for example the port protocol routing sends to and the port the web service listens on), start batch changes first: saves to port forwarding, protocol routing and the web service only update the configuration, the current access path keeps working, and when everything is done you click \"Apply all\" at the top of the page.",
+  "bannerTitle": "Batch changes: saved, not applied yet",
+  "bannerDesc": "These {n} items take effect together when you click \"Apply all\"; until then the current access path keeps working. Global settings changes still apply immediately.",
+  "bannerEmpty": "Changes to port forwarding, protocol routing and the web service are saved but held; click \"Apply all\" when you are done.",
+  "item": "{module}: {name}",
+  "deleted": "deleted ({key})",
+  "apply": "Apply all",
+  "discard": "Discard changes",
+  "discardConfirm": "Gately will restore the configuration from before the batch started and restart; the changes made since then are dropped (they stay in Config History).",
+  "applied": "All applied ({n} items), checking access"
+}
