@@ -861,6 +861,8 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | GET | `/api/notify/event-types` | `notify:read` | Abonnierbare Ereignistypen |
 | GET | `/api/notify/history` | `notify:read` | Letzte Zustellungsprotokolle |
 | POST | `/api/notify/channels/{key}/test` | `notify:write` | Testbenachrichtigung an einen Kanal senden |
+| GET | `/api/notify/pending` | `notify:read` | Ausstehende Benachrichtigungen |
+| DELETE | `/api/notify/pending` | `notify:write` | Ausstehende Benachrichtigungen löschen |
 
 ## Leistung
 
@@ -1929,9 +1931,12 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 
 | Feld | Typ |
 | --- | --- |
+| `attempts` | integer |
+| `backfill` | boolean |
 | `channel` | string |
 | `error` | string |
 | `ok` | boolean |
+| `queued` | boolean |
 | `rule` | string |
 | `time` | Zeit (RFC 3339) |
 | `title` | string |
@@ -1954,15 +1959,33 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 
 | Feld | Typ |
 | --- | --- |
+| `backfillHours` | integer |
 | `proxy` | string |
+| `retries` | integer |
 | `serverName` | string |
+
+### notify.pendingView
+
+| Feld | Typ |
+| --- | --- |
+| `attempts` | integer |
+| `channel` | string |
+| `error` | string |
+| `id` | string |
+| `nextTry` | Zeit (RFC 3339) |
+| `queued` | Zeit (RFC 3339) |
+| `rule` | string |
+| `title` | string |
+| `type` | string |
 
 ### notify.settingsView
 
 | Feld | Typ |
 | --- | --- |
+| `backfillHours` | integer |
 | `hostname` | string |
 | `proxy` | string |
+| `retries` | integer |
 | `serverName` | string |
 
 ### perf.AlertState

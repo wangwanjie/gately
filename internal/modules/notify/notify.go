@@ -74,6 +74,10 @@ type Settings struct {
 	Proxy string `json:"proxy"`
 	// ServerName 为通知中显示的服务器名称，用于区分多台服务器发出的通知；留空使用主机名
 	ServerName string `json:"serverName"`
+	// Retries 为推送失败后的重试次数，0 为不重试，未设置时为 defaultRetries
+	Retries *int `json:"retries,omitempty"`
+	// BackfillHours 为重试用尽后等待补推的最长时间（小时）：期间渠道恢复即补发，0 为不补推，未设置时为 defaultBackfillHours
+	BackfillHours *int `json:"backfillHours,omitempty"`
 }
 
 // maxServerNameLen 为服务器名称的最大字符数
@@ -88,6 +92,12 @@ func (s *Settings) Validate() error {
 	// 名称会写进邮件标题等头部，拒绝换行等控制字符，防止头部注入
 	if strings.IndexFunc(s.ServerName, unicode.IsControl) >= 0 {
 		return errors.New("服务器名称不能包含控制字符")
+	}
+	if s.Retries != nil && (*s.Retries < 0 || *s.Retries > maxRetries) {
+		return fmt.Errorf("重试次数应在 0~%d 之间", maxRetries)
+	}
+	if s.BackfillHours != nil && (*s.BackfillHours < 0 || *s.BackfillHours > maxBackfillHours) {
+		return fmt.Errorf("补推保留时长应在 0~%d 小时之间", maxBackfillHours)
 	}
 	s.Proxy = proxyx.Normalize(s.Proxy)
 	// 全局设置没有上一级可以跟随，direct 与留空含义相同，统一保存为留空
@@ -146,6 +156,12 @@ type Record struct {
 	Channel string    `json:"channel"`
 	OK      bool      `json:"ok"`
 	Error   string    `json:"error,omitempty"`
+	// Attempts 为本次投递共尝试的次数，大于 1 表示经过了重试
+	Attempts int `json:"attempts,omitempty"`
+	// Queued 表示重试用尽仍失败，已排队等待渠道恢复后补推
+	Queued bool `json:"queued,omitempty"`
+	// Backfill 表示这是一次补推（之前推送失败、渠道恢复后重新发送）
+	Backfill bool `json:"backfill,omitempty"`
 }
 
 type fileConfig struct {
@@ -346,11 +362,25 @@ type Module struct {
 	// sender 允许测试替换实际投递
 	sender func(ctx context.Context, ch Channel, msg Message) error
 	now    func() time.Time
+
+	// pend 为重试用尽后等待补推的消息，见 pending.go
+	pend pendingQueue
+	// ctx 在 Stop 时取消：重试等待中的投递随之转入补推队列
+	ctx    context.Context
+	cancel context.CancelFunc
+	// wake 通知补推协程立即检查（某渠道刚推送成功）
+	wake chan struct{}
+	// sleep 等待 d 或 ctx 取消，返回是否等满；测试可替换
+	sleep func(ctx context.Context, d time.Duration) bool
 }
 
 // New 创建模块。
 func New() *Module {
-	return &Module{lastSent: map[string]time.Time{}, sender: send, now: time.Now}
+	ctx, cancel := context.WithCancel(context.Background())
+	return &Module{
+		lastSent: map[string]time.Time{}, sender: send, now: time.Now,
+		pend: newPendingQueue(), ctx: ctx, cancel: cancel, wake: make(chan struct{}, 1), sleep: sleepCtx,
+	}
 }
 
 // ID 实现 module.Module。
@@ -373,15 +403,27 @@ func (m *Module) Init(env module.Env) error {
 	for i := range m.cfg.Rules {
 		m.cfg.Rules[i].fillDefaults()
 	}
+	m.pend.path = pendingPath(m.store.Dir())
+	if err := m.pend.load(); err != nil {
+		// 补推队列只是尽力而为，文件损坏时丢弃，不影响模块启动
+		m.log.Warnf("读取待补推的通知失败，已忽略: %v", err)
+	}
 	return nil
 }
 
-// Start 实现 module.Module：订阅默认事件总线。
+// Start 实现 module.Module：订阅默认事件总线，启动补推协程。
 func (m *Module) Start(context.Context) error {
 	if m.unsub != nil {
 		return nil
 	}
+	m.mu.Lock()
+	if m.ctx.Err() != nil {
+		m.ctx, m.cancel = context.WithCancel(context.Background())
+	}
+	ctx := m.ctx
+	m.mu.Unlock()
 	m.unsub = events.Subscribe(m.handle)
+	go m.backfillLoop(ctx)
 	return nil
 }
 
@@ -391,6 +433,10 @@ func (m *Module) Stop() error {
 		m.unsub()
 		m.unsub = nil
 	}
+	// 正在等待重试的投递收到取消后转入补推队列，下次启动继续
+	m.mu.Lock()
+	m.cancel()
+	m.mu.Unlock()
 	return nil
 }
 
@@ -465,22 +511,61 @@ func (m *Module) process(e events.Event, async bool) {
 	}
 }
 
-func (m *Module) deliver(rule string, ch Channel, msg Message) error {
+// sendOnce 投递一次。
+func (m *Module) sendOnce(ch Channel, msg Message) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 45*time.Second)
 	defer cancel()
-	err := m.sender(ctx, ch, msg)
-	rec := Record{Time: m.now(), Type: msg.Event.Type, Title: msg.Title, Rule: rule, Channel: ch.Name, OK: err == nil}
+	return m.sender(ctx, ch, msg)
+}
+
+// deliver 投递一条消息：失败时按设置重试，重试用尽仍失败则排队等渠道恢复后补推。
+func (m *Module) deliver(rule string, ch Channel, msg Message) error {
+	m.mu.Lock()
+	retries, backfill := m.cfg.Settings.retries(), m.cfg.Settings.backfill()
+	stop := m.ctx
+	m.mu.Unlock()
+	attempts := 0
+	var err error
+	for {
+		attempts++
+		if err = m.sendOnce(ch, msg); err == nil {
+			break
+		}
+		if attempts > retries {
+			break
+		}
+		d := retryDelay(attempts)
+		m.log.Warnf("经渠道 %s 推送「%s」失败（第 %d 次），%s 后重试: %v", ch.Name, msg.Title, attempts, d, err)
+		if !m.sleep(stop, d) {
+			// 程序正在停止，不再等待，直接转入补推队列
+			break
+		}
+	}
+	rec := Record{Time: m.now(), Type: msg.Event.Type, Title: msg.Title, Rule: rule, Channel: ch.Name, OK: err == nil, Attempts: attempts}
 	if err != nil {
 		rec.Error = err.Error()
-		m.log.Warnf("经渠道 %s 推送「%s」失败: %v", ch.Name, msg.Title, err)
+		if backfill > 0 && m.enqueue(rule, ch, msg) {
+			rec.Queued = true
+			m.log.Warnf("经渠道 %s 推送「%s」失败（共 %d 次），已排队，渠道恢复后补推: %v", ch.Name, msg.Title, attempts, err)
+		} else {
+			m.log.Warnf("经渠道 %s 推送「%s」失败: %v", ch.Name, msg.Title, err)
+		}
+	} else if m.pend.has(ch.Key) {
+		// 该渠道已恢复，立即补推之前积压的消息
+		m.kick(ch.Key)
 	}
+	m.record(rec)
+	return err
+}
+
+// record 追加一条投递记录。
+func (m *Module) record(rec Record) {
 	m.mu.Lock()
 	m.history = append(m.history, rec)
 	if len(m.history) > historySize {
 		m.history = m.history[len(m.history)-historySize:]
 	}
 	m.mu.Unlock()
-	return err
 }
 
 // Routes 实现 module.Module。
@@ -527,6 +612,10 @@ func (m *Module) Routes(r module.Router) {
 	module.DocOf(r, "GET /event-types", module.Doc{Summary: "可订阅的事件类型", Resp: []events.TypeInfo{}})
 	module.DocOf(r, "GET /history", module.Doc{Summary: "最近的投递记录", Resp: []Record{}})
 	module.DocOf(r, "POST /channels/{key}/test", module.Doc{Summary: "向渠道发送测试通知"})
+	r.HandleFunc("GET /pending", m.handlePending)
+	r.HandleFunc("DELETE /pending", m.handleClearPending)
+	module.DocOf(r, "GET /pending", module.Doc{Summary: "等待补推的通知", Resp: []pendingView{}})
+	module.DocOf(r, "DELETE /pending", module.Doc{Summary: "清空等待补推的通知"})
 }
 
 // settingsView 是读取通知设置的响应：附带本机主机名，供界面提示服务器名称留空时的取值。
@@ -606,9 +695,20 @@ func (m *Module) handleTest(w http.ResponseWriter, r *http.Request) {
 		Message: "这是一条来自 Gately 的测试通知。",
 		Time:    m.now(),
 	}, server)
-	if err := m.deliver("测试", *ch, msg); err != nil {
+	// 测试通知只发一次、不排队补推，立即把结果告诉用户
+	err := m.sendOnce(*ch, msg)
+	rec := Record{Time: m.now(), Type: msg.Event.Type, Title: msg.Title, Rule: "测试", Channel: ch.Name, OK: err == nil, Attempts: 1}
+	if err != nil {
+		rec.Error = err.Error()
+		m.log.Warnf("经渠道 %s 推送「%s」失败: %v", ch.Name, msg.Title, err)
+	}
+	m.record(rec)
+	if err != nil {
 		httpx.Error(w, http.StatusBadGateway, "发送失败: %v", err)
 		return
+	}
+	if m.pend.has(ch.Key) {
+		m.kick(ch.Key)
 	}
 	httpx.OK(w, map[string]bool{"ok": true})
 }

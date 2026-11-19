@@ -861,6 +861,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/notify/event-types` | `notify:read` | 購読可能なイベントタイプ |
 | GET | `/api/notify/history` | `notify:read` | 最近の配信履歴 |
 | POST | `/api/notify/channels/{key}/test` | `notify:write` | チャネルにテスト通知を送信 |
+| GET | `/api/notify/pending` | `notify:read` | 再送待ちの通知 |
+| DELETE | `/api/notify/pending` | `notify:write` | 再送待ちの通知をクリア |
 
 ## パフォーマンス監視
 
@@ -1929,9 +1931,12 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 
 | フィールド | 型 |
 | --- | --- |
+| `attempts` | integer |
+| `backfill` | boolean |
 | `channel` | string |
 | `error` | string |
 | `ok` | boolean |
+| `queued` | boolean |
 | `rule` | string |
 | `time` | 時刻 (RFC 3339) |
 | `title` | string |
@@ -1954,15 +1959,33 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 
 | フィールド | 型 |
 | --- | --- |
+| `backfillHours` | integer |
 | `proxy` | string |
+| `retries` | integer |
 | `serverName` | string |
+
+### notify.pendingView
+
+| フィールド | 型 |
+| --- | --- |
+| `attempts` | integer |
+| `channel` | string |
+| `error` | string |
+| `id` | string |
+| `nextTry` | 時刻 (RFC 3339) |
+| `queued` | 時刻 (RFC 3339) |
+| `rule` | string |
+| `title` | string |
+| `type` | string |
 
 ### notify.settingsView
 
 | フィールド | 型 |
 | --- | --- |
+| `backfillHours` | integer |
 | `hostname` | string |
 | `proxy` | string |
+| `retries` | integer |
 | `serverName` | string |
 
 ### perf.AlertState

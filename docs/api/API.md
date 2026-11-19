@@ -861,6 +861,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/notify/event-types` | `notify:read` | 可订阅的事件类型 |
 | GET | `/api/notify/history` | `notify:read` | 最近的投递记录 |
 | POST | `/api/notify/channels/{key}/test` | `notify:write` | 向渠道发送测试通知 |
+| GET | `/api/notify/pending` | `notify:read` | 等待补推的通知 |
+| DELETE | `/api/notify/pending` | `notify:write` | 清空等待补推的通知 |
 
 ## 性能监控
 
@@ -1929,9 +1931,12 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 
 | 字段 | 类型 |
 | --- | --- |
+| `attempts` | integer |
+| `backfill` | boolean |
 | `channel` | string |
 | `error` | string |
 | `ok` | boolean |
+| `queued` | boolean |
 | `rule` | string |
 | `time` | 时间 (RFC 3339) |
 | `title` | string |
@@ -1954,15 +1959,33 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 
 | 字段 | 类型 |
 | --- | --- |
+| `backfillHours` | integer |
 | `proxy` | string |
+| `retries` | integer |
 | `serverName` | string |
+
+### notify.pendingView
+
+| 字段 | 类型 |
+| --- | --- |
+| `attempts` | integer |
+| `channel` | string |
+| `error` | string |
+| `id` | string |
+| `nextTry` | 时间 (RFC 3339) |
+| `queued` | 时间 (RFC 3339) |
+| `rule` | string |
+| `title` | string |
+| `type` | string |
 
 ### notify.settingsView
 
 | 字段 | 类型 |
 | --- | --- |
+| `backfillHours` | integer |
 | `hostname` | string |
 | `proxy` | string |
+| `retries` | integer |
 | `serverName` | string |
 
 ### perf.AlertState

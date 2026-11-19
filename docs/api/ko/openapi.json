@@ -2121,6 +2121,12 @@
       },
       "notify.Record": {
         "properties": {
+          "attempts": {
+            "type": "integer"
+          },
+          "backfill": {
+            "type": "boolean"
+          },
           "channel": {
             "type": "string"
           },
@@ -2128,6 +2134,9 @@
             "type": "string"
           },
           "ok": {
+            "type": "boolean"
+          },
+          "queued": {
             "type": "boolean"
           },
           "rule": {
@@ -2183,8 +2192,14 @@
       },
       "notify.Settings": {
         "properties": {
+          "backfillHours": {
+            "type": "integer"
+          },
           "proxy": {
             "type": "string"
+          },
+          "retries": {
+            "type": "integer"
           },
           "serverName": {
             "type": "string"
@@ -2192,13 +2207,53 @@
         },
         "type": "object"
       },
+      "notify.pendingView": {
+        "properties": {
+          "attempts": {
+            "type": "integer"
+          },
+          "channel": {
+            "type": "string"
+          },
+          "error": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "nextTry": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "queued": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "rule": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "notify.settingsView": {
         "properties": {
+          "backfillHours": {
+            "type": "integer"
+          },
           "hostname": {
             "type": "string"
           },
           "proxy": {
             "type": "string"
+          },
+          "retries": {
+            "type": "integer"
           },
           "serverName": {
             "type": "string"
@@ -33660,6 +33715,116 @@
           }
         ],
         "summary": "모듈 로그의 모든 소스 목록",
+        "tags": [
+          "알림 센터"
+        ],
+        "x-required-scope": "notify:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/notify/pending": {
+      "delete": {
+        "description": "필요한 권한: `notify:write`.",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "재전송 대기 알림 비우기",
+        "tags": [
+          "알림 센터"
+        ],
+        "x-required-scope": "notify:write",
+        "x-token-allowed": true
+      },
+      "get": {
+        "description": "필요한 권한: `notify:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/notify.pendingView"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "재전송 대기 알림",
         "tags": [
           "알림 센터"
         ],
