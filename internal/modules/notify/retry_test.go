@@ -215,6 +215,33 @@ func TestPendingPersistAndCap(t *testing.T) {
 	}
 }
 
+// 渠道已有积压（已知不可用）时，新消息只尝试一次，失败直接排队，不再逐条等待重试：
+// 渠道长时间不可用、事件又多时，每条消息各占一个协程等几分钟，会堆积大量协程与连接
+func TestNoRetryWhileBacklogged(t *testing.T) {
+	f := &flakySender{fails: 100}
+	m, waits := newRetryModule(t, Settings{}, f)
+	m.handleSync(events.Event{Type: events.DDNSFailed, Level: events.LevelError, Title: "first", Time: time.Now()})
+	if f.calls != defaultRetries+1 || len(*waits) != defaultRetries {
+		t.Fatalf("第一条应按设置重试: calls=%d waits=%v", f.calls, *waits)
+	}
+	*waits = nil
+	for i := 0; i < 5; i++ {
+		m.handleSync(events.Event{Type: events.DDNSFailed, Level: events.LevelError, Title: "more", Time: time.Now()})
+	}
+	if f.calls != defaultRetries+1+5 || len(*waits) != 0 {
+		t.Fatalf("渠道已有积压时应只尝试一次、不等待重试: calls=%d waits=%v", f.calls, *waits)
+	}
+	if rec := lastRecord(m); !rec.Queued || rec.Attempts != 1 {
+		t.Fatalf("失败后应直接排队: %+v", rec)
+	}
+	m.pend.mu.Lock()
+	n := len(m.pend.items)
+	m.pend.mu.Unlock()
+	if n != 6 {
+		t.Fatalf("应排队 6 条，实际 %d", n)
+	}
+}
+
 func TestKickAfterLiveSuccess(t *testing.T) {
 	f := &flakySender{fails: 1}
 	m, _ := newRetryModule(t, Settings{Retries: intp(0)}, f)
