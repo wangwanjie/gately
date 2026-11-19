@@ -85,6 +85,7 @@
             <el-radio-button value="acme">{{ t('ssl.sourceAcme') }}</el-radio-button>
             <el-radio-button value="upload">{{ t('ssl.sourceUpload') }}</el-radio-button>
             <el-radio-button value="file">{{ t('ssl.sourceFile') }}</el-radio-button>
+            <el-radio-button v-if="fnos.available || editing.source === 'fnos'" value="fnos">{{ t('ssl.sourceFnos') }}</el-radio-button>
           </el-radio-group>
         </el-form-item>
 
@@ -203,6 +204,20 @@
           <el-form-item :label="t('ssl.certPath')" prop="certFile" required><el-input v-model="editing.certFile" placeholder="/etc/ssl/example/fullchain.pem" /></el-form-item>
           <el-form-item :label="t('ssl.keyPath')" prop="keyFile" required><el-input v-model="editing.keyFile" placeholder="/etc/ssl/example/privkey.pem" /></el-form-item>
           <el-form-item label=" "><div class="form-help">{{ t('ssl.fileHelp') }}</div></el-form-item>
+        </template>
+
+        <template v-if="editing.source === 'fnos'">
+          <el-form-item :label="t('ssl.fnosCert')" prop="fnosDomain" required>
+            <el-select v-model="editing.fnosDomain" filterable :placeholder="t('ssl.fnosCertPlaceholder')" :no-data-text="t('ssl.fnosNoCerts')" style="width: 100%">
+              <el-option v-for="c in fnosOptions" :key="c.domain" :label="c.domain" :value="c.domain">
+                <span>{{ c.domain }}</span>
+                <span v-if="c.notAfter" class="fnos-opt-note">{{ t('ssl.fnosValidUntil', { date: new Date(c.notAfter).toLocaleDateString() }) }}</span>
+              </el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label=" ">
+            <div class="form-help">{{ fnos.error || t('ssl.fnosHelp') }}</div>
+          </el-form-item>
         </template>
 
         <el-form-item :label="t('ssl.fileName')">
@@ -364,6 +379,8 @@ interface Cert {
   }
   certFile: string
   keyFile: string
+  // fnosDomain 为飞牛系统证书来源选中的证书域名
+  fnosDomain?: string
   certPem: string
   keyPem: string
   issuerPem: string
@@ -521,6 +538,7 @@ function emptyCert(): Cert {
     },
     certFile: '',
     keyFile: '',
+    fnosDomain: '',
     certPem: '',
     keyPem: '',
     issuerPem: '',
@@ -537,6 +555,7 @@ const rules = computed<FormRules>(() => ({
   keyPem: [{ required: true, whitespace: true, message: t('ssl.keyPemRequired'), trigger: 'blur' }],
   certFile: [{ required: true, whitespace: true, message: t('ssl.pathRequired'), trigger: 'blur' }],
   keyFile: [{ required: true, whitespace: true, message: t('ssl.pathRequired'), trigger: 'blur' }],
+  fnosDomain: [{ required: true, message: t('ssl.fnosCertRequired'), trigger: 'change' }],
 }))
 
 // advOpen 为编辑框是否展开 ACME 的「高级设置」；advCount 为与默认值不同的高级字段数
@@ -605,6 +624,32 @@ function deployLine(c: CertView, i: number): { text: string; cls: string } {
   return { text: t('ssl.deployPending'), cls: 'pending' }
 }
 
+// fnos 为飞牛系统登记的证书；available 为 false 时不显示该来源（不是飞牛系统或容器未挂载）
+interface FnOSCert {
+  domain: string
+  san?: string[]
+  notAfter?: string
+  used?: boolean
+}
+const fnos = ref<{ available: boolean; certs: FnOSCert[]; error?: string }>({ available: false, certs: [] })
+// fnosOptions 保留已选但已从飞牛中删除的证书，避免下拉框显示为空
+const fnosOptions = computed(() => {
+  const list = fnos.value.certs
+  const cur = editing.value.fnosDomain
+  if (cur && !list.some((c) => c.domain.toLowerCase() === cur.toLowerCase())) {
+    return [{ domain: cur }, ...list]
+  }
+  return list
+})
+
+async function loadFnOS() {
+  try {
+    fnos.value = await api.get<{ available: boolean; certs: FnOSCert[]; error?: string }>('/api/ssl/fnos-certs')
+  } catch {
+    fnos.value = { available: false, certs: [] }
+  }
+}
+
 async function loadTargets() {
   try {
     targets.value = await api.get<DeployTargets>('/api/ssl/deploy-targets')
@@ -633,7 +678,7 @@ async function deployNow(c: CertView) {
 }
 
 function sourceText(s: string) {
-  return ({ acme: 'ACME', upload: t('ssl.sourceUploadShort'), file: t('ssl.sourceFileShort') } as Record<string, string>)[s] ?? s
+  return ({ acme: 'ACME', upload: t('ssl.sourceUploadShort'), file: t('ssl.sourceFileShort'), fnos: t('ssl.sourceFnosShort') } as Record<string, string>)[s] ?? s
 }
 
 // isShortLived 判断是否为短期证书：配置为短期证书，或已签发证书总有效期不足 10 天（与后端一致）
@@ -734,6 +779,7 @@ function openEditor(row?: CertView, copy = false) {
     editing.value = emptyCert()
   }
   loadTargets()
+  loadFnOS()
   extra.value = { ...(editing.value.acme.credentials.extra ?? {}) }
   advOpen.value = advCount.value > 0
   editorVisible.value = true
@@ -843,6 +889,7 @@ async function saveSettings() {
 onMounted(async () => {
   loadRenew()
   loadTargets()
+  loadFnOS()
   try {
     providers.value = await api.get<ProviderMeta[]>('/api/ssl/providers')
   } catch {
@@ -901,6 +948,12 @@ watch(
 }
 .w-160 {
   width: 160px;
+}
+.fnos-opt-note {
+  float: right;
+  margin-left: 16px;
+  color: var(--el-text-color-secondary);
+  font-size: 12px;
 }
 .file-pick {
   display: inline-flex;
