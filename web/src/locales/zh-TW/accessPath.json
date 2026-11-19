@@ -21,7 +21,8 @@
     "siteMove": "把{hop}移到其他監聽",
     "adminListen": "修改目前使用的管理介面監聽位址（重新啟動後生效）",
     "lanOnly": "開啟僅限內網存取，而你目前來自外網",
-    "forceHTTPS": "開啟強制 HTTPS，而你目前經 HTTP 存取，跳轉後的 HTTPS 位址可能無法經目前路徑存取"
+    "forceHTTPS": "開啟強制 HTTPS，而你目前經 HTTP 存取，跳轉後的 HTTPS 位址可能無法經目前路徑存取",
+    "listenUnavailable": "{hop}改用的監聽位址 {addr} 在本機不可用，生效後會啟動失敗（{error}）"
   },
   "dialogTitle": "這次修改會影響你目前的存取路徑",
   "current": "目前存取路徑：",

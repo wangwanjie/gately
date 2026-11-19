@@ -21,7 +21,8 @@
     "siteMove": "把{hop}移到其他监听",
     "adminListen": "修改当前使用的管理界面监听地址（重启后生效）",
     "lanOnly": "开启「仅允许内网访问」，而你当前来自外网",
-    "forceHTTPS": "开启强制 HTTPS，而你当前经 HTTP 访问，跳转后的 HTTPS 地址可能无法经当前路径访问"
+    "forceHTTPS": "开启强制 HTTPS，而你当前经 HTTP 访问，跳转后的 HTTPS 地址可能无法经当前路径访问",
+    "listenUnavailable": "{hop}改用的监听地址 {addr} 在本机不可用，生效后会启动失败（{error}）"
   },
   "dialogTitle": "这次修改会影响你当前的访问路径",
   "current": "当前访问路径：",

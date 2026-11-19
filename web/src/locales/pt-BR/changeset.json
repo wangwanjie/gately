@@ -10,5 +10,9 @@
   "apply": "Aplicar tudo",
   "discard": "Descartar alterações",
   "discardConfirm": "O Gately vai restaurar a configuração de antes do lote e reiniciar; as alterações feitas desde então são descartadas (ficam no histórico de configuração).",
-  "applied": "Tudo aplicado ({n} itens), verificando o acesso"
+  "applied": "Tudo aplicado ({n} itens), verificando o acesso",
+  "checkTitle": "Estes listeners vão falhar ao iniciar",
+  "checkDesc": "Estes endereços de escuta não podem ser usados nesta máquina (não são locais ou o sistema não permite). Depois de aplicar, o acesso por eles falha e, sem confirmação, todo o lote é revertido. O macOS só configura 127.0.0.1 por padrão; para usar 127.0.0.2 e semelhantes, execute antes sudo ifconfig lo0 alias 127.0.0.2.",
+  "checkItem": "{item} — endereço de escuta {addr} indisponível ({error})",
+  "checkContinue": "Aplicar tudo mesmo assim"
 }

@@ -10,5 +10,9 @@
   "apply": "Aplicar todo",
   "discard": "Descartar cambios",
   "discardConfirm": "Gately restaurará la configuración de antes del lote y se reiniciará; los cambios hechos desde entonces se descartan (quedan en el historial de configuración).",
-  "applied": "Todo aplicado ({n} elementos), comprobando el acceso"
+  "applied": "Todo aplicado ({n} elementos), comprobando el acceso",
+  "checkTitle": "Estos listeners fallarán al arrancar",
+  "checkDesc": "Estas direcciones de escucha no se pueden usar en este equipo (no son locales o el sistema no lo permite). Al aplicar, el acceso a través de ellas falla y, si no se confirma, se revierte todo el lote. macOS solo configura 127.0.0.1 por defecto; para usar 127.0.0.2 y similares ejecuta antes sudo ifconfig lo0 alias 127.0.0.2.",
+  "checkItem": "{item} — la dirección de escucha {addr} no está disponible ({error})",
+  "checkContinue": "Aplicar todo igualmente"
 }

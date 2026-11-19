@@ -13,6 +13,8 @@ export interface ConfirmPending {
   waitRestart: boolean
   rollback: boolean
   hold: boolean
+  // errors 为修改生效以来模块报告的错误（例如监听启动失败）
+  errors: string[]
 }
 
 // HoldItem 是批量修改中暂缓生效的规则或监听
@@ -31,7 +33,7 @@ export interface ConfirmStatus {
   enabled: boolean
   timeout: number
   pending: ConfirmPending | null
-  rolledBack: { configs: string[]; reason: string } | null
+  rolledBack: { configs: string[]; reason: string; errors: string[] } | null
   hold: HoldState | null
 }
 
@@ -52,7 +54,9 @@ export const confirmState = reactive({
   // confirmedAfterPrompt 为弹窗出现后才确认成功，界面据此提示一次
   confirmedAfterPrompt: 0,
   // rolledBack 为刚刚回滚掉的配置，界面据此提示一次
-  rolledBack: null as { configs: string[]; reason: string } | null,
+  rolledBack: null as { configs: string[]; reason: string; errors: string[] } | null,
+  // errors 为修改生效以来模块报告的错误（例如监听启动失败），确认不了时往往就是原因
+  errors: [] as string[],
   // hold 为进行中的批量修改（修改已保存、暂缓生效），没有时为 null
   hold: null as HoldState | null,
   // reachable 为确认失败期间普通请求能否到达服务端：到不了时“立即回滚”同样发不出去，只能等自动回滚
@@ -179,6 +183,7 @@ function handleResult(status: string): boolean {
       }
       confirmState.phase = 'idle'
       confirmState.reachable = true
+      confirmState.errors = []
       sessionStorage.removeItem(WATCH_KEY)
       return true
     case 'rollingBack':
@@ -237,6 +242,7 @@ async function refreshRemaining() {
     if (s.pending && !s.pending.waitRestart && !s.pending.hold) {
       confirmState.configs = s.pending.configs
       confirmState.deadline = Date.now() + s.pending.remaining * 1000
+      confirmState.errors = s.pending.errors ?? []
     }
   } catch {
     // 连不上服务端：按本地估计倒计时，“立即回滚”也发不出去
@@ -320,8 +326,25 @@ export async function beginHold() {
   confirmState.hold = await api.post<HoldState>('/api/system/changeset/begin')
 }
 
+// HoldProblem 是全部生效后会启动失败的一项：监听地址在本机不可用
+export interface HoldProblem {
+  module: string
+  key: string
+  name?: string
+  addr: string
+  error: string
+}
+
+// checkHold 在全部生效前检查暂存的规则与监听，返回会启动失败的项
+export async function checkHold(): Promise<HoldProblem[]> {
+  const r = await api.post<{ problems: HoldProblem[] }>('/api/system/changeset/check')
+  return r.problems ?? []
+}
+
 // applyHold 批量修改全部生效；需要确认时与单次保存一样经新连接确认，确认不了时整批回滚
 export async function applyHold(): Promise<number> {
+  // 记下这批涉及的模块：生效后连不上服务端时，倒计时弹窗也能说明改了哪里
+  const mods = [...new Set((confirmState.hold?.items ?? []).map((it) => it.module))]
   let r: { applied: number; confirm: boolean; timeout: number }
   try {
     r = await api.post<{ applied: number; confirm: boolean; timeout: number }>('/api/system/changeset/apply')
@@ -332,12 +355,13 @@ export async function applyHold(): Promise<number> {
     // 响应丢失（生效重启了这次请求经过的监听）：修改可能已经生效，照常经新连接确认，确认不了时服务端到时回滚
     const n = confirmState.hold?.items.length ?? 0
     confirmState.hold = null
+    confirmState.configs = mods
     scheduleCheck(Date.now() + confirmState.timeout * 1000)
     return n
   }
   confirmState.hold = null
   if (r.confirm) {
-    confirmState.configs = []
+    confirmState.configs = mods
     scheduleCheck(Date.now() + r.timeout * 1000)
   }
   return r.applied
@@ -388,5 +412,6 @@ export async function loadConfirmStatus() {
     return
   }
   confirmState.deadline = Date.now() + p.remaining * 1000
+  confirmState.errors = p.errors ?? []
   confirmState.phase = 'found'
 }

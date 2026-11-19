@@ -21,7 +21,8 @@
     "siteMove": "Verschiebt {hop} in einen anderen Listener",
     "adminListen": "Ändert die Listen-Adresse der Oberfläche, die Sie gerade nutzen (nach einem Neustart)",
     "lanOnly": "Aktiviert „nur LAN“, während Sie von außerhalb verbunden sind",
-    "forceHTTPS": "Aktiviert „HTTPS erzwingen“, während Sie HTTP nutzen; die HTTPS-Adresse der Umleitung ist über Ihren aktuellen Weg eventuell nicht erreichbar"
+    "forceHTTPS": "Aktiviert „HTTPS erzwingen“, während Sie HTTP nutzen; die HTTPS-Adresse der Umleitung ist über Ihren aktuellen Weg eventuell nicht erreichbar",
+    "listenUnavailable": "{hop} würde auf {addr} lauschen, die auf diesem Rechner nicht nutzbar ist, und daher nicht starten ({error})"
   },
   "dialogTitle": "Diese Änderung betrifft Ihren Zugriffsweg",
   "current": "Aktueller Zugriffsweg:",

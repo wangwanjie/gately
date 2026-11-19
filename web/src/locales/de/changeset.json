@@ -10,5 +10,9 @@
   "apply": "Alle anwenden",
   "discard": "Änderungen verwerfen",
   "discardConfirm": "Gately stellt die Konfiguration von vor der Sammeländerung wieder her und startet neu; die Änderungen seither werden verworfen (sie bleiben im Konfigurationsverlauf).",
-  "applied": "Alles angewendet ({n} Einträge), Zugriff wird geprüft"
+  "applied": "Alles angewendet ({n} Einträge), Zugriff wird geprüft",
+  "checkTitle": "Diese Listener werden nicht starten",
+  "checkDesc": "Diese Listen-Adressen sind auf diesem Rechner nicht nutzbar (keine lokale Adresse oder vom System abgelehnt). Nach dem Anwenden scheitert der Zugriff über sie, und ohne Bestätigung wird die ganze Sammeländerung zurückgesetzt. macOS richtet standardmäßig nur 127.0.0.1 ein; für 127.0.0.2 und ähnliche zuerst sudo ifconfig lo0 alias 127.0.0.2 ausführen.",
+  "checkItem": "{item} — Listen-Adresse {addr} nicht verfügbar ({error})",
+  "checkContinue": "Trotzdem alle anwenden"
 }

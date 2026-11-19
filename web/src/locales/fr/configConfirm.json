@@ -18,5 +18,7 @@
   "rolledBackManual": "Les modifications de {modules} ont été annulées à votre demande. La version modifiée est conservée dans l’historique de configuration.",
   "rolledBackBoots": "Les modifications de {modules} n’ont pas été confirmées et Gately a démarré plusieurs fois de suite : elles ont été annulées. La version modifiée est conservée dans l’historique de configuration.",
   "unreachable": "Gately est injoignable pour l’instant, « Revenir maintenant » ne peut donc pas passer non plus ; attendez le retour automatique à la fin du compte à rebours, ou lancez sur le serveur :",
-  "rollbackUnreachable": "Gately est injoignable, impossible de revenir maintenant : attendez le retour automatique à la fin du compte à rebours, ou lancez gately rollback -pending sur le serveur"
+  "rollbackUnreachable": "Gately est injoignable, impossible de revenir maintenant : attendez le retour automatique à la fin du compte à rebours, ou lancez gately rollback -pending sur le serveur",
+  "errorsTitle": "Erreurs depuis l’application :",
+  "rolledBackErrors": "Erreurs avant le retour en arrière :"
 }

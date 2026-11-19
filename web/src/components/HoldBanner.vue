@@ -17,11 +17,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, h, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Layers } from 'lucide-vue-next'
-import { applyHold, confirmState, discardHold, type HoldItem } from '../configConfirm'
+import { applyHold, checkHold, confirmState, discardHold, type HoldItem } from '../configConfirm'
 
 const { t } = useI18n()
 const hold = computed(() => confirmState.hold)
@@ -40,6 +40,27 @@ function itemLabel(it: HoldItem): string {
 
 async function apply() {
   busy.value = 'apply'
+  // 先检查暂存的监听地址能否在本机使用：不能用的生效后会启动失败，让管理员知道后再决定
+  try {
+    const problems = await checkHold()
+    if (problems.length > 0) {
+      try {
+        await ElMessageBox.confirm(
+          h('div', [
+            h('p', t('changeset.checkDesc')),
+            h('ul', { class: 'hold-problems' }, problems.map((p) => h('li', t('changeset.checkItem', { item: itemLabel(p), addr: p.addr, error: p.error })))),
+          ]),
+          t('changeset.checkTitle'),
+          { type: 'warning', confirmButtonText: t('changeset.checkContinue'), cancelButtonText: t('common.cancel') },
+        )
+      } catch {
+        busy.value = ''
+        return
+      }
+    }
+  } catch {
+    // 检查失败不拦生效，确认与回滚照常保护
+  }
   try {
     const n = await applyHold()
     ElMessage.success(t('changeset.applied', { n }))

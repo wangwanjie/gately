@@ -21,7 +21,8 @@
     "siteMove": "{hop}을(를) 다른 수신으로 옮깁니다",
     "adminListen": "사용 중인 관리 화면 수신 주소를 변경합니다(재시작 후 적용)",
     "lanOnly": "내부망 전용 접근을 켜지만 지금은 외부에서 접속 중입니다",
-    "forceHTTPS": "HTTPS 강제를 켜지만 지금은 HTTP로 접속 중입니다. 리디렉션되는 HTTPS 주소에 현재 경로로 접속하지 못할 수 있습니다"
+    "forceHTTPS": "HTTPS 강제를 켜지만 지금은 HTTP로 접속 중입니다. 리디렉션되는 HTTPS 주소에 현재 경로로 접속하지 못할 수 있습니다",
+    "listenUnavailable": "{hop}이(가) 새로 쓸 수신 주소 {addr}는 이 기기에서 쓸 수 없어 적용 후 시작에 실패합니다({error})"
   },
   "dialogTitle": "이 변경은 현재 접속 경로에 영향을 줍니다",
   "current": "현재 접속 경로:",
