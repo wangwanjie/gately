@@ -101,6 +101,19 @@ Configurações que só valem após reiniciar (endereços de escuta da interface
 
 O prazo é ajustado em "Configurações → Controle de acesso → Listener do console → Confirmar após salvar" (30–600 segundos, 90 por padrão) e a função pode ser desativada. Ela vale apenas para o que é salvo pela interface de administração; alterações feitas com tokens de API e scripts não são afetadas. A API é `GET /api/system/confirm`.
 
+### Aviso antes de salvar: caminho de acesso atual {#access-path}
+
+O Gately sabe por quais dos seus próprios encaminhamentos passa a sua conexão com a interface de administração: o encaminhamento de portas e o roteamento por protocolo registram um salto ao se conectar a um destino nesta máquina, e o serviço web adiciona informações de caminho assinadas ao fazer proxy para a interface (não podem ser forjadas de fora). O cartão "Caminho de acesso atual", no topo de "Configurações → Controle de acesso", mostra o caminho, por exemplo `Visitante → Roteamento por protocolo "vps-443" → Serviço web "main" › site "admin.example.com" → Interface de administração`. Programas desta máquina, como frp ou Cloudflare Tunnel, aparecem como "Esta máquina".
+
+Antes de salvar, a interface pergunta ao servidor se a alteração afeta esse caminho. Se afetar, uma caixa de diálogo explica o motivo e destaca o salto afetado; você pode cancelar ou "Salvar mesmo assim":
+
+- alterar configurações de encaminhamento de uma regra, listener ou site do caminho (mudar só nome, grupo ou observação não conta), desativá-lo ou excluí-lo, ou mover o site para outro listener;
+- desligar um módulo do caminho (o interruptor geral dele ou a configuração "Módulos");
+- alterar o endereço de escuta da interface que você está usando;
+- ativar "Somente LAN" conectando de fora, ou "Forçar HTTPS" usando HTTP.
+
+Além do aviso, a confirmação e a reversão automática acima continuam valendo, então caminhos que o Gately não enxerga (por exemplo, outro proxy reverso na frente) também ficam protegidos. A API é `GET /api/system/access-path` e `POST /api/system/access-path/check`.
+
 ## Backup e restauração
 
 Em "Configurações" você encontra o backup e a restauração da configuração, que também é o ponto de entrada para importar configurações do Lucky.

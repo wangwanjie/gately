@@ -101,6 +101,19 @@ Les réglages qui ne s’appliquent qu’après redémarrage (adresses d’écou
 
 Le délai se règle dans « Paramètres → Contrôle d’accès → Écouteur de la console → Confirmer après enregistrement » (30 à 600 secondes, 90 par défaut), et la fonction peut être désactivée. Elle ne s’applique qu’aux enregistrements faits depuis l’interface d’administration ; les modifications faites avec des jetons d’API et des scripts ne sont pas concernées. L’API est `GET /api/system/confirm`.
 
+### Avertissement avant l’enregistrement : chemin d’accès actuel {#access-path}
+
+Gately sait par quelles de ses propres redirections passe votre connexion à l’interface d’administration : la redirection de ports et le routage par protocole enregistrent un saut lorsqu’ils se connectent à une cible sur cette machine, et le service web ajoute des informations de chemin signées lorsqu’il relaie vers l’interface (impossibles à falsifier de l’extérieur). La carte « Chemin d’accès actuel », en haut de « Paramètres → Contrôle d’accès », affiche ce chemin, par exemple `Visiteur → Routage par protocole « vps-443 » → Service web « main » › site « admin.example.com » → Interface d’administration`. Les programmes de cette machine comme frp ou Cloudflare Tunnel apparaissent comme « Cette machine ».
+
+Avant l’enregistrement, l’interface demande au serveur si la modification touche ce chemin. Si c’est le cas, une boîte de dialogue en donne les raisons et met en évidence le saut concerné ; vous pouvez annuler ou « Enregistrer quand même » :
+
+- modification des réglages de redirection d’une règle, d’un écouteur ou d’un site du chemin (changer seulement le nom, le groupe ou la remarque ne compte pas), désactivation ou suppression, ou déplacement du site vers un autre écouteur ;
+- désactivation d’un module du chemin (son interrupteur général ou le réglage « Modules ») ;
+- modification de l’adresse d’écoute de l’interface que vous utilisez ;
+- activation de « Réseau local uniquement » depuis l’extérieur, ou de « Forcer HTTPS » en HTTP.
+
+En plus de l’avertissement, la confirmation et le retour automatique ci-dessus restent actifs, si bien que les chemins que Gately ne voit pas (par exemple un autre proxy inverse devant) sont aussi protégés. L’API est `GET /api/system/access-path` et `POST /api/system/access-path/check`.
+
 ## Sauvegarde et restauration
 
 « Paramètres » propose la sauvegarde et la restauration de la configuration, et sert aussi de point d'entrée pour importer des configurations Lucky.

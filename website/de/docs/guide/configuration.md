@@ -101,6 +101,19 @@ Einstellungen, die erst nach einem Neustart wirken (Listen-Adressen der Oberflä
 
 Die Frist stellen Sie unter „Einstellungen → Zugriffskontrolle → Konsolen-Listener → Nach dem Speichern bestätigen“ ein (30–600 Sekunden, Standard 90) oder schalten die Funktion ab. Sie gilt nur für Speichervorgänge in der Verwaltungsoberfläche; Änderungen per API-Token und Skript sind nicht betroffen. Die API ist `GET /api/system/confirm`.
 
+### Warnung vor dem Speichern: aktueller Zugriffsweg {#access-path}
+
+Gately erkennt, über welche seiner eigenen Weiterleitungen Ihre Verbindung zur Verwaltungsoberfläche läuft: Portweiterleitung und Protokoll-Routing erfassen einen Sprung, wenn sie sich mit einem Ziel auf diesem Rechner verbinden, und der Webdienst fügt beim Weiterleiten an die Oberfläche signierte Weginformationen hinzu (von außen nicht fälschbar). Die Karte „Aktueller Zugriffsweg“ oben unter „Einstellungen → Zugriffskontrolle“ zeigt den Weg, etwa `Besucher → Protokoll-Routing „vps-443“ → Webdienst „main“ › Site „admin.example.com“ → Verwaltungsoberfläche`. Programme auf diesem Rechner wie frp oder Cloudflare Tunnel erscheinen als „Dieser Rechner“.
+
+Vor dem Speichern fragt die Oberfläche den Server, ob die Änderung diesen Weg betrifft. Wenn ja, nennt ein Dialog die Gründe und hebt den betroffenen Sprung hervor; Sie können abbrechen oder „Trotzdem speichern“:
+
+- Weiterleitungseinstellungen einer Regel, eines Listeners oder einer Site auf dem Weg ändern (nur Name, Gruppe oder Notiz zählt nicht), sie deaktivieren oder löschen oder die Site in einen anderen Listener verschieben;
+- ein Modul auf dem Weg abschalten (seinen Hauptschalter oder die Einstellung „Module“);
+- die genutzte Listen-Adresse der Oberfläche ändern;
+- „Nur LAN“ einschalten, während Sie von außen verbunden sind, oder „HTTPS erzwingen“ bei HTTP.
+
+Neben der Warnung bleiben Bestätigung und automatische Rücksetzung oben aktiv, sodass auch Wege geschützt sind, die Gately nicht sieht (etwa ein weiterer Reverse-Proxy davor). Die API ist `GET /api/system/access-path` und `POST /api/system/access-path/check`.
+
 ## Sicherung und Wiederherstellung
 
 Unter „Einstellungen“ finden Sie Konfigurationssicherung und -wiederherstellung; dort liegt auch der Einstieg für den Import von Lucky-Konfigurationen.

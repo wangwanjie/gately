@@ -101,6 +101,19 @@ Settings that only take effect after a restart (admin UI listen addresses, modul
 
 Adjust the time limit under "Settings → Access Control → Console listener → Confirm after saving" (30–600 seconds, 90 by default), or turn it off. It only applies to saves from the admin UI; changes made with API tokens and scripts are not affected. The API is `GET /api/system/confirm`.
 
+### Warning before saving: current access path {#access-path}
+
+Gately can tell which of its own forwarding your connection to the admin UI passes through: port forwarding and protocol routing record a hop when they connect to a target on this machine, and the web service adds signed path information when it proxies to the admin UI (it can't be forged from outside). The "Current access path" card at the top of "Settings → Access Control" shows the path, for example `Visitor → Protocol routing "vps-443" → Web service "main" › site "admin.example.com" → Admin UI`. Programs on this machine such as frp or Cloudflare Tunnel show as "This machine".
+
+Before saving, the admin UI asks the server whether the change affects this path. If it does, a dialog lists why and highlights the affected hop; you can cancel or "Save anyway":
+
+- changing forwarding settings of a rule, listener or site on the path (renaming, grouping or remarks don't count), disabling or deleting it, or moving the site to another listener;
+- turning off a module on the path (its global switch or the "Modules" setting);
+- changing the admin UI listen address you are using;
+- turning on "LAN access only" while connecting from outside the LAN, or "Force HTTPS" while on HTTP.
+
+Besides the warning, confirmation and automatic rollback above still apply, so paths Gately can't see (for example another reverse proxy in front) are protected too. The API is `GET /api/system/access-path` and `POST /api/system/access-path/check`.
+
 ## Backup and restore
 
 "Settings" provides configuration backup and restore, and is also the entry point for importing Lucky configurations.
