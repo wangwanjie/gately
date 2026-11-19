@@ -965,6 +965,9 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/history/{name}/{id}/restore` | 仅登录会话 | 回滚配置到历史版本 |
 | POST | `/api/system/restore` | 仅登录会话 | 从备份恢复配置 |
 | POST | `/api/system/restart` | 仅登录会话 | 重启 Gately |
+| GET | `/api/system/confirm` | 仅登录会话 | 查看待确认的配置变更 |
+| GET | `/api/system/confirm/connect` | 仅登录会话 | 确认配置变更 |
+| POST | `/api/system/confirm/rollback` | 仅登录会话 | 立即回滚待确认的配置变更 |
 | POST | `/api/system/selfcheck` | 仅登录会话 | 网络与配置自检 |
 | GET | `/api/system/onboarding` | 仅登录会话 | 首次启动引导状态 |
 | POST | `/api/system/onboarding/dismiss` | 仅登录会话 | 完成或关闭首次启动引导 |

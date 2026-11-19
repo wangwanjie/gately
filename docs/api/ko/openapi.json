@@ -43630,6 +43630,144 @@
         "x-token-allowed": false
       }
     },
+    "/api/system/confirm": {
+      "get": {
+        "description": "로그인 세션만 사용할 수 있습니다. 관리자 세션이 요청 헤더 `X-Gately-Confirm: 1`을 붙여 포트 포워딩, 프로토콜 라우팅, 웹 서비스 또는 전역 설정을 저장하고 설정 파일이 바뀌면, 서버는 변경 전 내용을 확인 대기 중인 설정 변경으로 기록합니다. 시간 안에 확인되지 않으면 Gately가 재시작하고 시작 시 변경 전 내용을 복원합니다(변경된 버전은 설정 기록에 보관). `enabled`는 사용 여부(전역 설정 `confirmTimeout`: 0은 기본 90초, 음수는 끔), `timeout`은 확인 제한 시간(초)입니다. `pending`은 진행 중인 변경이며 없으면 null입니다: `configs`는 관련 설정 이름(모듈 ID, 전역 설정은 `gately`), `remaining`은 자동 롤백까지 남은 초, `waitRestart`는 재시작 후 시간을 재기 시작함, `rollback`은 롤백이 결정되어 재시작 중임을 뜻합니다. `rolledBack`은 이번 시작 때 롤백된 변경(`configs`와 `reason`: `timeout` 시간 초과, `manual` 수동 롤백, `boots` 연속 시작 횟수 초과)이며 없으면 null입니다.\n\n**로그인 세션에서만 사용할 수 있으며, API 토큰으로는 이 엔드포인트에 접근할 수 없습니다.**",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "summary": "확인 대기 중인 설정 변경 보기",
+        "tags": [
+          "시스템"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/confirm/connect": {
+      "get": {
+        "description": "로그인 세션만, WebSocket만 받습니다. 브라우저는 WebSocket에 새 연결을 만들기 때문에 변경된 포워딩과 수신을 거치므로 새 설정에서도 관리 화면에 접속할 수 있음을 증명합니다. 변경 전에 맺은 긴 연결은 핫 업데이트 후에도 이전 대상에 연결되어 있어 확인에 쓸 수 없습니다. 연결되면 서버가 메시지 `{\"status\": ...}` 하나를 보내고 닫습니다: `confirmed` 확인됨, `none` 확인 대기 중인 변경 없음, `waitRestart` 재시작 후 확인, `rollingBack` 롤백 결정됨, `error` 확인 실패(`error`에 설명).\n\n**로그인 세션에서만 사용할 수 있으며, API 토큰으로는 이 엔드포인트에 접근할 수 없습니다.**",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "summary": "설정 변경 확인",
+        "tags": [
+          "시스템"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/confirm/rollback": {
+      "post": {
+        "description": "로그인 세션만 사용할 수 있습니다. 롤백으로 표시하고 재시작하며, 시작 시 변경 전 내용을 복원합니다. 확인 대기 중인 변경이 없으면 409를 반환합니다.\n\n**로그인 세션에서만 사용할 수 있으며, API 토큰으로는 이 엔드포인트에 접근할 수 없습니다.**",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "summary": "확인 대기 중인 설정 변경을 지금 롤백",
+        "tags": [
+          "시스템"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
     "/api/system/diagnostics": {
       "get": {
         "description": "`logs=0`은 로그를 제외하고, `preview=1`은 각 파일 내용을 JSON으로 반환합니다.\n\n**로그인 세션에서만 사용할 수 있으며, API 토큰으로는 이 엔드포인트에 접근할 수 없습니다.**",
@@ -43986,7 +44124,7 @@
     },
     "/api/system/restart": {
       "post": {
-        "description": "**로그인 세션에서만 사용할 수 있으며, API 토큰으로는 이 엔드포인트에 접근할 수 없습니다.**",
+        "description": "로그인 세션만 사용할 수 있습니다. 요청 헤더 `X-Gately-Confirm: 1`을 붙이면 재시작해야 적용되는 설정(관리 화면 수신 주소, 기능 모듈 켜기/끄기)이 이번 시작 때와 다를 경우 확인 대기 중인 설정 변경으로 기록하고 재시작 후 시간을 잽니다. 시간 안에 확인되지 않으면 이 설정들을 복원합니다. `GET /api/system/confirm`을 참고하세요.\n\n**로그인 세션에서만 사용할 수 있으며, API 토큰으로는 이 엔드포인트에 접근할 수 없습니다.**",
         "responses": {
           "200": {
             "description": "성공"
@@ -44175,7 +44313,7 @@
     },
     "/api/system/settings": {
       "get": {
-        "description": "로그인 세션에서만 사용할 수 있습니다. 읽기 전용 필드 `modules`는 모든 기능 모듈과 의존 관계를 나열하며, `gatewayAvailable`은 fnOS 통합 게이트웨이 방식으로 실행 중임을 뜻합니다. `updateProxy`는 업데이트 확인과 온라인 업그레이드 시 GitHub 접속에 쓰는 프록시입니다. `restrictOutbound` 가 true(기본값 false)이면 관리자가 설정한 외부 요청(웹훅, 알림, IP 목록 구독, DDNS 콜백 및 IP 조회 주소, 업데이트 확인과 프로그램 다운로드, 서드파티 로그인 등)이 루프백, 사설망, 링크 로컬(클라우드 메타데이터 주소 169.254.169.254 포함), ULA 주소로 연결하지 못하도록 거부합니다. 도메인 해석 결과와 리디렉션에도 적용되며 저장 즉시 적용됩니다. 리버스 프록시 업스트림, Wake-on-LAN, 스토리지 마운트 등 내부망 대상 기능에는 영향이 없습니다.`denyMode`는 미승인 접근(차단된 경우, 내부망 전용일 때의 외부 접근, 보안 진입점을 거치지 않은 접근)에 대한 응답 방식입니다. 비어 있으면 기본 안내 페이지, `notfound`는 단순 404, `blank`는 빈 페이지, `close`는 연결 끊기, `drop`은 시간 초과까지 응답하지 않음, `custom`은 사용자 지정 페이지입니다. `denyStatus`는 사용자 지정 페이지의 상태 코드(200, 403, 404, 410, 500, 502, 503)이고, `denyPage`는 사용자 지정 페이지 HTML(최대 64 KB, 스크립트와 외부 리소스를 금지하는 샌드박스 CSP 아래에서 표시)입니다. 로그인 제한: `maxLoginFailures`는 출발지별 연속 실패 허용 횟수, `lockMinutes`는 잠금 시간(분)이며, 같은 출발지가 반복해서 잠기면 잠금 시간이 매번 두 배가 됩니다(최대 24시간). `loginGlobalLimit`은 알 수 없는 출발지(로그인에 성공한 적이 없는 주소)에서 10분 동안 허용되는 비밀번호 로그인 실패 총수로, 0은 기본값 20, 음수는 끄기를 뜻합니다. 모두 소진되면 알 수 없는 출발지의 비밀번호 로그인은 429를 반환하며, 알려진 주소와 Passkey 로그인은 영향을 받지 않습니다.\n\n**로그인 세션에서만 사용할 수 있으며, API 토큰으로는 이 엔드포인트에 접근할 수 없습니다.**",
+        "description": "로그인 세션에서만 사용할 수 있습니다. 읽기 전용 필드 `modules`는 모든 기능 모듈과 의존 관계를 나열하며, `gatewayAvailable`은 fnOS 통합 게이트웨이 방식으로 실행 중임을 뜻합니다. `updateProxy`는 업데이트 확인과 온라인 업그레이드 시 GitHub 접속에 쓰는 프록시입니다. `restrictOutbound` 가 true(기본값 false)이면 관리자가 설정한 외부 요청(웹훅, 알림, IP 목록 구독, DDNS 콜백 및 IP 조회 주소, 업데이트 확인과 프로그램 다운로드, 서드파티 로그인 등)이 루프백, 사설망, 링크 로컬(클라우드 메타데이터 주소 169.254.169.254 포함), ULA 주소로 연결하지 못하도록 거부합니다. 도메인 해석 결과와 리디렉션에도 적용되며 저장 즉시 적용됩니다. 리버스 프록시 업스트림, Wake-on-LAN, 스토리지 마운트 등 내부망 대상 기능에는 영향이 없습니다.`denyMode`는 미승인 접근(차단된 경우, 내부망 전용일 때의 외부 접근, 보안 진입점을 거치지 않은 접근)에 대한 응답 방식입니다. 비어 있으면 기본 안내 페이지, `notfound`는 단순 404, `blank`는 빈 페이지, `close`는 연결 끊기, `drop`은 시간 초과까지 응답하지 않음, `custom`은 사용자 지정 페이지입니다. `denyStatus`는 사용자 지정 페이지의 상태 코드(200, 403, 404, 410, 500, 502, 503)이고, `denyPage`는 사용자 지정 페이지 HTML(최대 64 KB, 스크립트와 외부 리소스를 금지하는 샌드박스 CSP 아래에서 표시)입니다. 로그인 제한: `maxLoginFailures`는 출발지별 연속 실패 허용 횟수, `lockMinutes`는 잠금 시간(분)이며, 같은 출발지가 반복해서 잠기면 잠금 시간이 매번 두 배가 됩니다(최대 24시간). `loginGlobalLimit`은 알 수 없는 출발지(로그인에 성공한 적이 없는 주소)에서 10분 동안 허용되는 비밀번호 로그인 실패 총수로, 0은 기본값 20, 음수는 끄기를 뜻합니다. 모두 소진되면 알 수 없는 출발지의 비밀번호 로그인은 429를 반환하며, 알려진 주소와 Passkey 로그인은 영향을 받지 않습니다. `confirmTimeout`은 포트 포워딩, 프로토콜 라우팅, 웹 서비스, 전역 설정을 바꾼 뒤 관리 화면이 접속을 확인해야 하는 제한 시간(초, 30~600)이며, 확인되지 않으면 자동 롤백됩니다. 0은 기본 90, 음수는 끔. `GET /api/system/confirm`을 참고하세요.\n\n**로그인 세션에서만 사용할 수 있으며, API 토큰으로는 이 엔드포인트에 접근할 수 없습니다.**",
         "responses": {
           "200": {
             "description": "성공"

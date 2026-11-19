@@ -43630,6 +43630,144 @@
         "x-token-allowed": false
       }
     },
+    "/api/system/confirm": {
+      "get": {
+        "description": "Login sessions only. When an admin session saves port forwarding, protocol routing, web service or global settings with the header `X-Gately-Confirm: 1` and the config file changes, the server records the previous content as a pending configuration change; if it isn't confirmed in time, Gately restarts and restores the previous content on startup (the changed version is kept in config history). `enabled` tells whether this is on (global setting `confirmTimeout`: 0 means the default 90 seconds, negative turns it off), `timeout` is the time limit in seconds; `pending` is the change in progress, or null: `configs` lists the configs involved (module IDs, `gately` for global settings), `remaining` is the seconds left before automatic rollback, `waitRestart` means the timer starts after a restart, `rollback` means a rollback has been decided and Gately is restarting; `rolledBack` is the change rolled back at this start (`configs` and `reason`: `timeout` not confirmed in time, `manual` rolled back by hand, `boots` too many starts in a row), or null.\n\n**Available only to login sessions; API tokens cannot access this endpoint.**",
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "summary": "View the pending configuration change",
+        "tags": [
+          "System"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/confirm/connect": {
+      "get": {
+        "description": "Login sessions only, WebSocket only: browsers open a new connection for a WebSocket, which goes through the changed forwarding and listeners and so proves the admin UI is still reachable with the new configuration; long-lived connections opened before the change still reach the old target after a hot update and can't be used to confirm. Once connected the server sends one message `{\"status\": ...}` and closes: `confirmed` confirmed, `none` nothing pending, `waitRestart` confirm after the restart, `rollingBack` a rollback has been decided, `error` confirmation failed (with an `error` description).\n\n**Available only to login sessions; API tokens cannot access this endpoint.**",
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "summary": "Confirm the configuration change",
+        "tags": [
+          "System"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/confirm/rollback": {
+      "post": {
+        "description": "Login sessions only. Marks the change for rollback and restarts; the previous content is restored on startup. Returns 409 when nothing is pending.\n\n**Available only to login sessions; API tokens cannot access this endpoint.**",
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "summary": "Roll back the pending configuration change now",
+        "tags": [
+          "System"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
     "/api/system/diagnostics": {
       "get": {
         "description": "`logs=0` excludes logs; `preview=1` returns the content of each file as JSON.\n\n**Available only to login sessions; API tokens cannot access this endpoint.**",
@@ -43986,7 +44124,7 @@
     },
     "/api/system/restart": {
       "post": {
-        "description": "**Available only to login sessions; API tokens cannot access this endpoint.**",
+        "description": "Login sessions only. With the header `X-Gately-Confirm: 1`, settings that only take effect after a restart (admin UI listen addresses, module switches) that differ from this start are recorded as a pending configuration change; the timer starts after the restart, and if it isn't confirmed in time those settings are restored. See `GET /api/system/confirm`.\n\n**Available only to login sessions; API tokens cannot access this endpoint.**",
         "responses": {
           "200": {
             "description": "Success"
@@ -44175,7 +44313,7 @@
     },
     "/api/system/settings": {
       "get": {
-        "description": "Session only. The read-only field `modules` lists all feature modules and their dependencies; `gatewayAvailable` means Gately runs behind the fnOS unified gateway. `updateProxy` is the proxy used to reach GitHub when checking for updates and upgrading online. `restrictOutbound`, when true (default false), makes outbound requests configured by administrators (webhooks, notifications, IP list subscriptions, DDNS callbacks and IP lookup URLs, update checks and program downloads, third-party sign-in) refuse to connect to loopback, private, link-local (including the cloud metadata address 169.254.169.254) and ULA addresses; it also covers resolved domain names and redirects and takes effect as soon as it is saved. Reverse proxy upstreams, Wake-on-LAN, storage mounts and other features that target the internal network are not affected. `denyMode` is how unauthorized access (banned clients, access from outside while LAN only is on, or requests that skip the security entrance) is answered: empty for the default notice page, `notfound` for a plain 404, `blank` for a blank page, `close` to close the connection, `drop` to not respond until timeout, `custom` for a custom page. `denyStatus` is the status code of the custom page (200, 403, 404, 410, 500, 502, 503), and `denyPage` is the custom page HTML (up to 64 KB, shown under a sandboxed CSP that blocks scripts and external resources). Sign-in rate limiting: `maxLoginFailures` is the number of consecutive failures allowed per source and `lockMinutes` the lock duration in minutes; a source locked again and again gets twice the lock time each time (up to 24 hours). `loginGlobalLimit` is the total number of password sign-in failures allowed from unknown sources (addresses that never signed in successfully) within 10 minutes, 0 means the default of 20 and a negative value turns it off; once used up, password sign-ins from unknown sources return 429, while known addresses and Passkey sign-ins are not affected.\n\n**Available only to login sessions; API tokens cannot access this endpoint.**",
+        "description": "Session only. The read-only field `modules` lists all feature modules and their dependencies; `gatewayAvailable` means Gately runs behind the fnOS unified gateway. `updateProxy` is the proxy used to reach GitHub when checking for updates and upgrading online. `restrictOutbound`, when true (default false), makes outbound requests configured by administrators (webhooks, notifications, IP list subscriptions, DDNS callbacks and IP lookup URLs, update checks and program downloads, third-party sign-in) refuse to connect to loopback, private, link-local (including the cloud metadata address 169.254.169.254) and ULA addresses; it also covers resolved domain names and redirects and takes effect as soon as it is saved. Reverse proxy upstreams, Wake-on-LAN, storage mounts and other features that target the internal network are not affected. `denyMode` is how unauthorized access (banned clients, access from outside while LAN only is on, or requests that skip the security entrance) is answered: empty for the default notice page, `notfound` for a plain 404, `blank` for a blank page, `close` to close the connection, `drop` to not respond until timeout, `custom` for a custom page. `denyStatus` is the status code of the custom page (200, 403, 404, 410, 500, 502, 503), and `denyPage` is the custom page HTML (up to 64 KB, shown under a sandboxed CSP that blocks scripts and external resources). Sign-in rate limiting: `maxLoginFailures` is the number of consecutive failures allowed per source and `lockMinutes` the lock duration in minutes; a source locked again and again gets twice the lock time each time (up to 24 hours). `loginGlobalLimit` is the total number of password sign-in failures allowed from unknown sources (addresses that never signed in successfully) within 10 minutes, 0 means the default of 20 and a negative value turns it off; once used up, password sign-ins from unknown sources return 429, while known addresses and Passkey sign-ins are not affected. `confirmTimeout` is how long the admin UI has to confirm access still works after changing port forwarding, protocol routing, web service or global settings (seconds, 30–600); unconfirmed changes are rolled back automatically; 0 means the default 90, negative turns it off. See `GET /api/system/confirm`.\n\n**Available only to login sessions; API tokens cannot access this endpoint.**",
         "responses": {
           "200": {
             "description": "Success"

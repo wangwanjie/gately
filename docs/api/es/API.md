@@ -965,6 +965,9 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | POST | `/api/history/{name}/{id}/restore` | Solo sesión iniciada | Revertir una configuración a una versión del historial |
 | POST | `/api/system/restore` | Solo sesión iniciada | Restaurar la configuración desde una copia de seguridad |
 | POST | `/api/system/restart` | Solo sesión iniciada | Reiniciar Gately |
+| GET | `/api/system/confirm` | Solo sesión iniciada | Ver el cambio de configuración pendiente |
+| GET | `/api/system/confirm/connect` | Solo sesión iniciada | Confirmar el cambio de configuración |
+| POST | `/api/system/confirm/rollback` | Solo sesión iniciada | Revertir ahora el cambio de configuración pendiente |
 | POST | `/api/system/selfcheck` | Solo sesión iniciada | Autodiagnóstico de red y configuración |
 | GET | `/api/system/onboarding` | Solo sesión iniciada | Estado de la guía del primer inicio |
 | POST | `/api/system/onboarding/dismiss` | Solo sesión iniciada | Terminar o cerrar la guía del primer inicio |

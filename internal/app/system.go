@@ -130,6 +130,8 @@ func (a *App) handleRestore(w http.ResponseWriter, r *http.Request) {
 			_ = fsperm.WriteFile(filepath.Join(dir, filepath.Base(f)), b, 0o600)
 		}
 	}
+	// 恢复的配置由管理员明确选择，放弃待确认变更，避免重启后又被改回
+	a.discardPendingConfirm()
 	for name, b := range restored {
 		if err := a.store.WriteRaw(strings.TrimSuffix(name, ".json"), b); err != nil {
 			httpx.Error(w, http.StatusInternalServerError, "写入 %s 失败: %v", name, err)
@@ -189,6 +191,8 @@ func rotateSessionSecret(b []byte) ([]byte, error) {
 
 func (a *App) handleRestart(w http.ResponseWriter, r *http.Request) {
 	a.sysLogs.Add(logbuf.LevelWarn, "system", "收到重启请求")
+	// 管理界面带确认请求头重启时，需要重启才生效的设置改过就登记为待确认变更，重启后开始计时
+	a.prepareConfirmRestart(r)
 	httpx.OK(w, map[string]bool{"ok": true})
 	a.scheduleRestart()
 }

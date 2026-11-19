@@ -965,6 +965,9 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/history/{name}/{id}/restore` | 로그인 세션 전용 | 설정을 기록 버전으로 롤백 |
 | POST | `/api/system/restore` | 로그인 세션 전용 | 백업에서 설정 복원 |
 | POST | `/api/system/restart` | 로그인 세션 전용 | Gately 재시작 |
+| GET | `/api/system/confirm` | 로그인 세션 전용 | 확인 대기 중인 설정 변경 보기 |
+| GET | `/api/system/confirm/connect` | 로그인 세션 전용 | 설정 변경 확인 |
+| POST | `/api/system/confirm/rollback` | 로그인 세션 전용 | 확인 대기 중인 설정 변경을 지금 롤백 |
 | POST | `/api/system/selfcheck` | 로그인 세션 전용 | 네트워크 및 설정 자가 점검 |
 | GET | `/api/system/onboarding` | 로그인 세션 전용 | 첫 실행 안내 상태 |
 | POST | `/api/system/onboarding/dismiss` | 로그인 세션 전용 | 첫 실행 안내 완료 또는 닫기 |

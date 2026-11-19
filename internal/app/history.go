@@ -73,6 +73,8 @@ func (a *App) handleHistoryRestore(w http.ResponseWriter, r *http.Request) {
 		a.historyError(w, err)
 		return
 	}
+	// 回滚到的版本由管理员明确选择，不能在重启后又被待确认变更改回
+	a.discardPendingConfirm()
 	a.sysLogs.Add(logbuf.LevelWarn, "system", fmt.Sprintf("配置 %s 已回滚到历史版本 %s，正在重启", name, id))
 	httpx.OK(w, map[string]bool{"ok": true})
 	a.scheduleRestart()
