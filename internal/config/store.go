@@ -116,3 +116,18 @@ func (s *Store) WriteRaw(name string, data []byte) error {
 	s.snapshotLocked(name, p, data)
 	return os.Rename(tmpName, p)
 }
+
+// Remove 删除配置文件，删除前把现有内容保存为历史版本，删除本身也可撤销；文件不存在时什么也不做。
+func (s *Store) Remove(name string) error {
+	p, err := s.path(name)
+	if err != nil {
+		return err
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.snapshotLocked(name, p, nil)
+	if err := os.Remove(p); err != nil && !errors.Is(err, os.ErrNotExist) {
+		return err
+	}
+	return nil
+}
