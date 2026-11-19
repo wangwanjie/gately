@@ -125,6 +125,21 @@ func TestAccessPathThroughPortForward(t *testing.T) {
 	if r := check("PUT", "/api/system/settings", s); len(r) != 0 {
 		t.Fatalf("无关设置不应报风险: %+v", r)
 	}
+	// 命令行 -listen 覆盖时（OpenWrt LuCI 等）：设置接口返回生效中的覆盖地址，与配置文件中的地址不同，
+	// 原样保存不应误报；界面上改监听地址只写入配置文件、运行中仍用覆盖值，也不影响当前访问
+	oldListen, oldFile := a.opts.Listen, a.fileListen
+	t.Cleanup(func() {
+		a.opts.Listen, a.fileListen = oldListen, oldFile
+	})
+	a.opts.Listen, a.fileListen = a.settingsSnapshot().Listen, ":16601"
+	s = a.settingsSnapshot()
+	if r := check("PUT", "/api/system/settings", s); len(r) != 0 {
+		t.Fatalf("-listen 覆盖时原样保存不应报风险: %+v", r)
+	}
+	s.Listen = "127.0.0.1:1"
+	if r := check("PUT", "/api/system/settings", s); len(r) != 0 {
+		t.Fatalf("-listen 覆盖时改监听地址不影响当前访问: %+v", r)
+	}
 }
 
 func mustURL(s string) *url.URL {

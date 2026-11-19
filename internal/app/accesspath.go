@@ -594,11 +594,9 @@ func (a *App) settingsRisks(r *http.Request, p accessPath, body json.RawMessage)
 	}
 	next.normalize()
 	cur := a.settingsSnapshot()
-	// 命令行 -listen 覆盖时比较配置文件中的地址
-	curListen := cur.Listen
-	if a.opts.Listen != "" {
-		curListen = a.fileListen
-	}
+	// 命令行 -listen 覆盖时（OpenWrt LuCI 等）运行中始终使用覆盖值，界面上改监听地址只写入配置文件，
+	// 不会切断当前访问；设置接口返回的也是覆盖值，不能拿配置文件中的地址比较，否则每次保存都会误报
+	httpListenChanged := a.opts.Listen == "" && next.Listen != cur.Listen
 	var risks []pathRisk
 	for _, mod := range next.DisabledModules {
 		if slices.Contains(cur.DisabledModules, mod) {
@@ -611,7 +609,7 @@ func (a *App) settingsRisks(r *http.Request, p accessPath, body json.RawMessage)
 	adminIdx := len(p.Hops) - 1
 	if adminIdx >= 0 && p.Hops[adminIdx].Kind == hopAdmin && p.Hops[adminIdx].Listen != "" {
 		admin := p.Hops[adminIdx]
-		if (!admin.HTTPS && next.Listen != curListen) || (admin.HTTPS && next.HTTPSListen != cur.HTTPSListen) {
+		if (!admin.HTTPS && httpListenChanged) || (admin.HTTPS && next.HTTPSListen != cur.HTTPSListen) {
 			risks = append(risks, pathRisk{Kind: riskAdminListen, Hop: adminIdx})
 		}
 	}
