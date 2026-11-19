@@ -43632,7 +43632,7 @@
     },
     "/api/system/access-path/check": {
       "post": {
-        "description": "로그인 세션만 사용할 수 있으며 설정을 바꾸지 않습니다. 요청 본문: `method`, `path`는 보내려는 쓰기 요청, `body`는 그 요청 본문입니다. `path`(조회 API와 같음)와 `risks`를 반환합니다: `kind`는 `edit`(경로 위 규칙, 수신, 사이트의 포워딩 관련 설정 변경, `fields`에 항목 나열, 사이트 항목은 `site.` 접두사. 이름, 그룹, 메모는 제외), `delete`, `disable`, `moduleOff`(경로 위 모듈을 끔, `module`은 모듈 ID), `siteMove`(경로 위 사이트를 다른 수신으로 이동), `adminListen`(사용 중인 관리 화면 수신 주소 변경), `lanOnly`(외부에서 내부망 전용을 켬), `forceHTTPS`(HTTP로 접속 중에 HTTPS 강제를 켬) 중 하나이며, `hop`은 `hops`에서 영향을 받는 홉의 순번입니다(특정 홉과 무관하면 -1).\n\n**로그인 세션에서만 사용할 수 있으며, API 토큰으로는 이 엔드포인트에 접근할 수 없습니다.**",
+        "description": "로그인 세션만 사용할 수 있으며 설정을 바꾸지 않습니다. 요청 본문: `method`, `path`는 보내려는 쓰기 요청, `body`는 그 요청 본문입니다. `path`(조회 API와 같음)와 `risks`를 반환합니다: `kind`는 `edit`(경로 위 규칙, 수신, 사이트의 포워딩 관련 설정 변경, `fields`에 항목 나열, 사이트 항목은 `site.` 접두사. 이름, 그룹, 메모는 제외), `delete`, `disable`, `moduleOff`(경로 위 모듈을 끔, `module`은 모듈 ID), `siteMove`(경로 위 사이트를 다른 수신으로 이동), `adminListen`(사용 중인 관리 화면 수신 주소 변경), `lanOnly`(외부에서 내부망 전용을 켬), `forceHTTPS`(HTTP로 접속 중에 HTTPS 강제를 켬) 중 하나이며, `hop`은 `hops`에서 영향을 받는 홉의 순번입니다(특정 홉과 무관하면 -1). `kind`는 `listenUnavailable`일 수도 있습니다: 경로 위 규칙이나 수신이 새로 쓸 수신 주소를 이 기기에서 쓸 수 없어(`addr`는 주소, `error`는 시스템이 알려 준 원인) 적용 후 시작에 실패합니다.\n\n**로그인 세션에서만 사용할 수 있으며, API 토큰으로는 이 엔드포인트에 접근할 수 없습니다.**",
         "responses": {
           "200": {
             "description": "성공"
@@ -43814,6 +43814,52 @@
         "x-token-allowed": false
       }
     },
+    "/api/system/changeset/check": {
+      "post": {
+        "description": "로그인 세션만 사용할 수 있으며 설정을 바꾸지 않습니다. 보류된 규칙과 수신 중 켜져 있는 것을 검사해, 수신 주소를 이 기기에서 쓸 수 없는 것(예: 로컬 주소가 아님)을 `problems`에 나열합니다: `module`, `key`, `name`, `addr`와 시스템이 알려 준 `error`. 이들은 적용 후 시작에 실패합니다.\n\n**로그인 세션에서만 사용할 수 있으며, API 토큰으로는 이 엔드포인트에 접근할 수 없습니다.**",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "summary": "일괄 변경을 정상적으로 적용할 수 있는지 확인",
+        "tags": [
+          "시스템"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
     "/api/system/changeset/discard": {
       "post": {
         "description": "로그인 세션만 사용할 수 있습니다. 변경이 있으면 일괄 변경 시작 전 설정으로 복원하고 재시작하며(`restart`가 true), 없으면 그냥 끝냅니다. 진행 중인 일괄 변경이 없으면 409를 반환합니다.\n\n**로그인 세션에서만 사용할 수 있으며, API 토큰으로는 이 엔드포인트에 접근할 수 없습니다.**",
@@ -43862,7 +43908,7 @@
     },
     "/api/system/confirm": {
       "get": {
-        "description": "로그인 세션만 사용할 수 있습니다. 관리자 세션이 요청 헤더 `X-Gately-Confirm: 1`을 붙여 포트 포워딩, 프로토콜 라우팅, 웹 서비스 또는 전역 설정을 저장하고 설정 파일이 바뀌면, 서버는 변경 전 내용을 확인 대기 중인 설정 변경으로 기록합니다. 시간 안에 확인되지 않으면 Gately가 재시작하고 시작 시 변경 전 내용을 복원합니다(변경된 버전은 설정 기록에 보관). `enabled`는 사용 여부(전역 설정 `confirmTimeout`: 0은 기본 90초, 음수는 끔), `timeout`은 확인 제한 시간(초)입니다. `pending`은 진행 중인 변경이며 없으면 null입니다: `configs`는 관련 설정 이름(모듈 ID, 전역 설정은 `gately`), `remaining`은 자동 롤백까지 남은 초, `waitRestart`는 재시작 후 시간을 재기 시작함, `rollback`은 롤백이 결정되어 재시작 중임을 뜻합니다. `rolledBack`은 이번 시작 때 롤백된 변경(`configs`와 `reason`: `timeout` 시간 초과, `manual` 수동 롤백, `boots` 연속 시작 횟수 초과)이며 없으면 null입니다. `hold`는 진행 중인 일괄 변경(`items`는 보류된 규칙과 수신, `configs`는 변경된 설정 이름)이며 없으면 null, `pending.hold`는 확인 대기 변경이 아직 적용되지 않은 일괄 변경에 속함을 뜻합니다.\n\n**로그인 세션에서만 사용할 수 있으며, API 토큰으로는 이 엔드포인트에 접근할 수 없습니다.**",
+        "description": "로그인 세션만 사용할 수 있습니다. 관리자 세션이 요청 헤더 `X-Gately-Confirm: 1`을 붙여 포트 포워딩, 프로토콜 라우팅, 웹 서비스 또는 전역 설정을 저장하고 설정 파일이 바뀌면, 서버는 변경 전 내용을 확인 대기 중인 설정 변경으로 기록합니다. 시간 안에 확인되지 않으면 Gately가 재시작하고 시작 시 변경 전 내용을 복원합니다(변경된 버전은 설정 기록에 보관). `enabled`는 사용 여부(전역 설정 `confirmTimeout`: 0은 기본 90초, 음수는 끔), `timeout`은 확인 제한 시간(초)입니다. `pending`은 진행 중인 변경이며 없으면 null입니다: `configs`는 관련 설정 이름(모듈 ID, 전역 설정은 `gately`), `remaining`은 자동 롤백까지 남은 초, `waitRestart`는 재시작 후 시간을 재기 시작함, `rollback`은 롤백이 결정되어 재시작 중임을 뜻합니다. `rolledBack`은 이번 시작 때 롤백된 변경(`configs`와 `reason`: `timeout` 시간 초과, `manual` 수동 롤백, `boots` 연속 시작 횟수 초과)이며 없으면 null입니다. `hold`는 진행 중인 일괄 변경(`items`는 보류된 규칙과 수신, `configs`는 변경된 설정 이름)이며 없으면 null, `pending.hold`는 확인 대기 변경이 아직 적용되지 않은 일괄 변경에 속함을 뜻합니다. `pending.errors`는 변경이 적용된 뒤 세 모듈이 보고한 오류(수신 시작 실패 등), `rolledBack.errors`는 롤백된 변경이 적용되어 있던 동안 보고된 오류입니다.\n\n**로그인 세션에서만 사용할 수 있으며, API 토큰으로는 이 엔드포인트에 접근할 수 없습니다.**",
         "responses": {
           "200": {
             "description": "성공"

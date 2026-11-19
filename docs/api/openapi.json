@@ -43632,7 +43632,7 @@
     },
     "/api/system/access-path/check": {
       "post": {
-        "description": "仅登录会话可用，不改动任何配置。请求体：`method`、`path` 为将要发出的写请求，`body` 为它的请求体。返回 `path`（同查看接口）与 `risks`：`kind` 为 `edit`（改动路径上规则、监听或站点的转发相关设置，`fields` 列出字段，站点字段带 `site.` 前缀；名称、分组、备注不算）、`delete`、`disable`、`moduleOff`（关闭路径经过的模块，`module` 为模块 ID）、`siteMove`（把路径上的站点移到其他监听）、`adminListen`（修改正在使用的管理界面监听地址）、`lanOnly`（外网来源开启仅限内网）或 `forceHTTPS`（经 HTTP 访问时开启强制 HTTPS），`hop` 为受影响的跳在 `hops` 中的序号（-1 表示不针对某一跳）。\n\n**仅登录会话可用，API 令牌无法访问此接口。**",
+        "description": "仅登录会话可用，不改动任何配置。请求体：`method`、`path` 为将要发出的写请求，`body` 为它的请求体。返回 `path`（同查看接口）与 `risks`：`kind` 为 `edit`（改动路径上规则、监听或站点的转发相关设置，`fields` 列出字段，站点字段带 `site.` 前缀；名称、分组、备注不算）、`delete`、`disable`、`moduleOff`（关闭路径经过的模块，`module` 为模块 ID）、`siteMove`（把路径上的站点移到其他监听）、`adminListen`（修改正在使用的管理界面监听地址）、`lanOnly`（外网来源开启仅限内网）、`forceHTTPS`（经 HTTP 访问时开启强制 HTTPS）或 `listenUnavailable`（改用的监听地址在本机不可用，`addr` 为地址，`error` 为系统给出的原因，生效后会启动失败），`hop` 为受影响的跳在 `hops` 中的序号（-1 表示不针对某一跳）。\n\n**仅登录会话可用，API 令牌无法访问此接口。**",
         "responses": {
           "200": {
             "description": "成功"
@@ -43814,6 +43814,52 @@
         "x-token-allowed": false
       }
     },
+    "/api/system/changeset/check": {
+      "post": {
+        "description": "仅登录会话可用，不改动任何配置。检查暂存的规则与监听中启用的那些，监听地址在本机不可用（例如不是本机地址）时列在 `problems` 中：`module`、`key`、`name`、`addr` 与系统给出的 `error`。这些项生效后会启动失败。\n\n**仅登录会话可用，API 令牌无法访问此接口。**",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "summary": "检查批量修改能否正常生效",
+        "tags": [
+          "系统"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
     "/api/system/changeset/discard": {
       "post": {
         "description": "仅登录会话可用。有改动时恢复开始批量修改前的配置并重启（`restart` 为 true）；没有改动时直接结束。没有进行中的批量修改时返回 409。\n\n**仅登录会话可用，API 令牌无法访问此接口。**",
@@ -43862,7 +43908,7 @@
     },
     "/api/system/confirm": {
       "get": {
-        "description": "仅登录会话可用。管理员会话带请求头 `X-Gately-Confirm: 1` 保存端口转发、协议分流、Web 服务或全局设置后，若配置文件有变化，服务端记录改动前的内容，作为待确认的配置变更；超时未确认时 Gately 重启并在启动时恢复改动前的内容（修改后的版本保存在配置历史中）。`enabled` 为是否启用（全局设置 `confirmTimeout`：0 为默认 90 秒，负数关闭），`timeout` 为确认时限（秒）；`pending` 为进行中的变更，没有时为 null：`configs` 为涉及的配置名（模块 ID，全局设置为 `gately`），`remaining` 为距自动回滚的剩余秒数，`waitRestart` 表示等待重启后开始计时，`rollback` 表示已决定回滚、正在重启；`rolledBack` 为本次启动时回滚掉的变更（`configs` 与 `reason`：`timeout` 超时未确认、`manual` 手动回滚、`boots` 连续启动次数过多），没有时为 null；`hold` 为进行中的批量修改（`items` 为暂缓生效的规则与监听，`configs` 为改动过的配置名），没有时为 null，`pending.hold` 表示待确认变更处于批量修改中、尚未生效。\n\n**仅登录会话可用，API 令牌无法访问此接口。**",
+        "description": "仅登录会话可用。管理员会话带请求头 `X-Gately-Confirm: 1` 保存端口转发、协议分流、Web 服务或全局设置后，若配置文件有变化，服务端记录改动前的内容，作为待确认的配置变更；超时未确认时 Gately 重启并在启动时恢复改动前的内容（修改后的版本保存在配置历史中）。`enabled` 为是否启用（全局设置 `confirmTimeout`：0 为默认 90 秒，负数关闭），`timeout` 为确认时限（秒）；`pending` 为进行中的变更，没有时为 null：`configs` 为涉及的配置名（模块 ID，全局设置为 `gately`），`remaining` 为距自动回滚的剩余秒数，`waitRestart` 表示等待重启后开始计时，`rollback` 表示已决定回滚、正在重启；`rolledBack` 为本次启动时回滚掉的变更（`configs` 与 `reason`：`timeout` 超时未确认、`manual` 手动回滚、`boots` 连续启动次数过多），没有时为 null；`hold` 为进行中的批量修改（`items` 为暂缓生效的规则与监听，`configs` 为改动过的配置名），没有时为 null，`pending.hold` 表示待确认变更处于批量修改中、尚未生效，`pending.errors` 为修改生效以来三个模块报告的错误（如监听启动失败），`rolledBack.errors` 为回滚掉的修改生效期间报告的错误。\n\n**仅登录会话可用，API 令牌无法访问此接口。**",
         "responses": {
           "200": {
             "description": "成功"

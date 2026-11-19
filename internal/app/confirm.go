@@ -84,6 +84,10 @@ type pendingConfirm struct {
 	// Hold 表示处于批量修改中：保存的内容暂缓生效，不计时；结束批量修改（全部生效）时开始计时，
 	// 进程在此期间重启时按新配置启动，与 WaitRestart 一样从启动时开始计时
 	Hold bool `json:"hold,omitempty"`
+	// Applied 为修改开始生效的时间（第一次保存、批量修改全部生效或带着修改启动），据此收集生效后模块报告的错误
+	Applied time.Time `json:"applied,omitempty"`
+	// Errors 为决定回滚时收集到的模块错误（例如监听启动失败），回滚后告诉管理员原因
+	Errors []string `json:"errors,omitempty"`
 	// Boots 为登记后经历的启动次数
 	Boots int `json:"boots,omitempty"`
 	// Files 为配置名 → 改动前的内容；值为 null 表示改动前文件不存在，回滚时删除
@@ -125,6 +129,8 @@ type confirmRecovery struct {
 	errs []string
 	// cliMsgs 为启动时处理遗留命令行回滚请求的结果
 	cliMsgs []string
+	// applyErrs 为回滚掉的变更生效期间模块报告的错误
+	applyErrs []string
 }
 
 func confirmStatePath(dir string) string {
@@ -217,7 +223,7 @@ func recoverPendingConfirm(store *config.Store, now time.Time) confirmRecovery {
 		reason = "boots"
 	}
 	if reason != "" {
-		rec := confirmRecovery{rolledBack: p.names(), reason: reason, timeout: p.Timeout}
+		rec := confirmRecovery{rolledBack: p.names(), reason: reason, timeout: p.Timeout, applyErrs: p.Errors}
 		rec.errs = restoreConfirmFiles(store, p)
 		if err := removePendingConfirm(dir); err != nil {
 			rec.errs = append(rec.errs, "删除待确认状态失败: "+err.Error())
@@ -229,6 +235,7 @@ func recoverPendingConfirm(store *config.Store, now time.Time) confirmRecovery {
 		// 需要重启才生效的变更、批量修改中途重启时暂存的修改，都从这次启动开始计时
 		p.WaitRestart, p.Hold = false, false
 		p.Deadline = now.Add(time.Duration(p.Timeout) * time.Second)
+		p.Applied = now
 	} else if min := now.Add(confirmBootGrace); p.Deadline.Before(min) {
 		p.Deadline = min
 	}
@@ -359,6 +366,9 @@ func (a *App) beginConfirm(changed map[string]*string) {
 	if !p.Rollback && !p.WaitRestart && !p.Hold {
 		p.Timeout = timeout
 		p.Deadline = now.Add(time.Duration(timeout) * time.Second)
+		if p.Applied.IsZero() {
+			p.Applied = now
+		}
 	}
 	if err := savePendingConfirm(a.store.Dir(), p); err != nil {
 		a.sysLogs.Add(logbuf.LevelWarn, "system", "保存待确认状态失败，本次修改不会在未确认时自动回滚: "+err.Error())
@@ -403,6 +413,7 @@ func (a *App) confirmExpired(id string) {
 	}
 	cp := *p
 	cp.Rollback = true
+	cp.Errors = a.applyErrors(p.Applied)
 	if err := savePendingConfirm(a.store.Dir(), &cp); err == nil {
 		c.tx = &cp
 	}
@@ -536,6 +547,9 @@ func (a *App) rollbackPending() (bool, error) {
 	}
 	cp := *p
 	cp.Rollback = true
+	if !p.Hold {
+		cp.Errors = a.applyErrors(p.Applied)
+	}
 	if err := savePendingConfirm(a.store.Dir(), &cp); err != nil {
 		c.mu.Unlock()
 		return false, err
@@ -591,6 +605,12 @@ func (a *App) startConfirm() {
 			msg = fmt.Sprintf("配置变更（%s）在 %d 秒内未确认，已回滚到修改前的内容；修改后的版本保存在配置历史中", titles, rec.timeout)
 		}
 		a.sysLogs.Add(logbuf.LevelWarn, "system", msg)
+		for _, e := range rec.applyErrs {
+			a.sysLogs.Add(logbuf.LevelWarn, "system", "回滚前出现的错误: "+e)
+		}
+		if len(rec.applyErrs) > 0 {
+			msg += "\n" + strings.Join(rec.applyErrs, "\n")
+		}
 		// 通知中心在模块启动后才订阅事件
 		events.Publish(events.Event{Type: events.ConfigRolledBack, Source: "管理后台", Level: events.LevelWarn, Title: "配置已自动回滚", Message: msg})
 	}
@@ -629,6 +649,8 @@ type confirmView struct {
 
 type confirmRolledBackView struct {
 	Configs []string `json:"configs"`
+	// Errors 为修改生效期间模块报告的错误（例如监听启动失败），可能就是访问失败的原因
+	Errors []string `json:"errors"`
 	// Reason 为 timeout（超时未确认）、manual（手动回滚）或 boots（连续启动次数过多）
 	Reason string `json:"reason"`
 }
@@ -642,6 +664,8 @@ type confirmPendingView struct {
 	WaitRestart bool `json:"waitRestart"`
 	Rollback    bool `json:"rollback"`
 	Hold        bool `json:"hold"`
+	// Errors 为修改生效以来模块报告的错误（例如监听启动失败）
+	Errors []string `json:"errors"`
 }
 
 func (a *App) handleConfirmStatus(w http.ResponseWriter, r *http.Request) {
@@ -649,11 +673,20 @@ func (a *App) handleConfirmStatus(w http.ResponseWriter, r *http.Request) {
 	v := confirmView{Enabled: a.confirmEnabled(), Timeout: s.confirmTimeout()}
 	c := &a.confirm
 	if rec := c.recovered; len(rec.rolledBack) > 0 {
-		v.RolledBack = &confirmRolledBackView{Configs: rec.rolledBack, Reason: rec.reason}
+		v.RolledBack = &confirmRolledBackView{Configs: rec.rolledBack, Reason: rec.reason, Errors: rec.applyErrs}
+		if v.RolledBack.Errors == nil {
+			v.RolledBack.Errors = []string{}
+		}
 	}
 	c.mu.Lock()
 	if p := c.tx; p != nil {
-		pv := &confirmPendingView{ID: p.ID, Configs: p.names(), WaitRestart: p.WaitRestart, Rollback: p.Rollback, Hold: p.Hold}
+		pv := &confirmPendingView{ID: p.ID, Configs: p.names(), WaitRestart: p.WaitRestart, Rollback: p.Rollback, Hold: p.Hold, Errors: p.Errors}
+		if !p.Hold && !p.WaitRestart && !p.Rollback {
+			pv.Errors = a.applyErrors(p.Applied)
+		}
+		if pv.Errors == nil {
+			pv.Errors = []string{}
+		}
 		if p.WaitRestart {
 			pv.Remaining = p.Timeout
 		} else if left := time.Until(p.Deadline); left > 0 {
@@ -702,4 +735,45 @@ func (a *App) handleConfirmRollback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	httpx.OK(w, map[string]bool{"ok": true})
+}
+
+// maxApplyErrors 为收集的错误条数上限
+const maxApplyErrors = 5
+
+// applyErrors 收集修改生效以来三个模块报告的错误（例如监听启动失败：地址不是本机地址、端口被占用），
+// 访问失败时它们往往就是原因。since 为零时返回空。
+func (a *App) applyErrors(since time.Time) []string {
+	if since.IsZero() {
+		return nil
+	}
+	from := since.Add(-time.Second)
+	type item struct {
+		t   time.Time
+		msg string
+	}
+	var all []item
+	for _, e := range a.modules {
+		if !slices.Contains(confirmModules, e.mod.ID()) {
+			continue
+		}
+		for _, en := range e.logs.Range(0, 0, 500) {
+			if en.Level != logbuf.LevelError || en.Time.Before(from) {
+				continue
+			}
+			msg := en.Message
+			if en.Source != "" {
+				msg = en.Source + ": " + msg
+			}
+			all = append(all, item{en.Time, a.confirmTitle(e.mod.ID()) + " › " + msg})
+		}
+	}
+	slices.SortFunc(all, func(x, y item) int { return x.t.Compare(y.t) })
+	if len(all) > maxApplyErrors {
+		all = all[len(all)-maxApplyErrors:]
+	}
+	out := make([]string, 0, len(all))
+	for _, it := range all {
+		out = append(out, it.msg)
+	}
+	return out
 }

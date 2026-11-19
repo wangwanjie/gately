@@ -43632,7 +43632,7 @@
     },
     "/api/system/access-path/check": {
       "post": {
-        "description": "ログインセッションのみ利用可能で、設定は変更しません。リクエスト本文：`method`、`path` は送信しようとしている書き込みリクエスト、`body` はその本文。`path`（表示 API と同じ）と `risks` を返します：`kind` は `edit`（経路上のルール・待ち受け・サイトの転送に関わる設定の変更、`fields` に項目、サイトの項目には `site.` 接頭辞。名前・グループ・備考は含まない）、`delete`、`disable`、`moduleOff`（経路上のモジュールをオフ、`module` はモジュール ID）、`siteMove`（経路上のサイトを別の待ち受けへ移動）、`adminListen`（使用中の管理画面の待ち受けアドレスを変更）、`lanOnly`（外部から LAN のみ許可をオン）、`forceHTTPS`（HTTP 経由で HTTPS 強制をオン）のいずれか。`hop` は `hops` 内で影響を受けるホップの番号（特定のホップに対応しない場合は -1）。\n\n**ログインセッションでのみ利用できます。API トークンではこのエンドポイントにアクセスできません。**",
+        "description": "ログインセッションのみ利用可能で、設定は変更しません。リクエスト本文：`method`、`path` は送信しようとしている書き込みリクエスト、`body` はその本文。`path`（表示 API と同じ）と `risks` を返します：`kind` は `edit`（経路上のルール・待ち受け・サイトの転送に関わる設定の変更、`fields` に項目、サイトの項目には `site.` 接頭辞。名前・グループ・備考は含まない）、`delete`、`disable`、`moduleOff`（経路上のモジュールをオフ、`module` はモジュール ID）、`siteMove`（経路上のサイトを別の待ち受けへ移動）、`adminListen`（使用中の管理画面の待ち受けアドレスを変更）、`lanOnly`（外部から LAN のみ許可をオン）、`forceHTTPS`（HTTP 経由で HTTPS 強制をオン）のいずれか。`hop` は `hops` 内で影響を受けるホップの番号（特定のホップに対応しない場合は -1）。`kind` は `listenUnavailable` の場合もあります：経路上のルールや待ち受けが新しく使う待ち受けアドレスがこのマシンで使えず（`addr` がアドレス、`error` がシステムの理由）、反映後に起動に失敗します。\n\n**ログインセッションでのみ利用できます。API トークンではこのエンドポイントにアクセスできません。**",
         "responses": {
           "200": {
             "description": "成功"
@@ -43814,6 +43814,52 @@
         "x-token-allowed": false
       }
     },
+    "/api/system/changeset/check": {
+      "post": {
+        "description": "ログインセッションのみ利用可能で、設定は変更しません。保留中のルールと待ち受けのうち有効なものを調べ、待ち受けアドレスがこのマシンで使えない（ローカルアドレスでないなど）ものを `problems` に示します：`module`、`key`、`name`、`addr` とシステムの `error`。これらは反映後に起動に失敗します。\n\n**ログインセッションでのみ利用できます。API トークンではこのエンドポイントにアクセスできません。**",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "summary": "一括変更を正常に反映できるか確認",
+        "tags": [
+          "システム"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
     "/api/system/changeset/discard": {
       "post": {
         "description": "ログインセッションのみ利用可能。変更があれば一括変更を始める前の設定に戻して再起動し（`restart` が true）、なければそのまま終了します。一括変更中でなければ 409 を返します。\n\n**ログインセッションでのみ利用できます。API トークンではこのエンドポイントにアクセスできません。**",
@@ -43862,7 +43908,7 @@
     },
     "/api/system/confirm": {
       "get": {
-        "description": "ログインセッションのみ利用可能。管理者セッションがリクエストヘッダー `X-Gately-Confirm: 1` 付きでポート転送・プロトコル振り分け・Web サービス・グローバル設定を保存し、設定ファイルが変わった場合、サーバーは変更前の内容を未確認の設定変更として記録します。時間内に確認されなければ Gately は再起動し、起動時に変更前の内容を復元します（変更後の版は設定履歴に保存）。`enabled` は有効かどうか（グローバル設定 `confirmTimeout`：0 で既定の 90 秒、負数で無効）、`timeout` は確認期限（秒）。`pending` は進行中の変更で、なければ null：`configs` は対象の設定名（モジュール ID、グローバル設定は `gately`）、`remaining` は自動ロールバックまでの残り秒数、`waitRestart` は再起動後に計時を始めること、`rollback` はロールバックが決まり再起動中であることを表します。`rolledBack` は今回の起動時にロールバックした変更（`configs` と `reason`：`timeout` 期限切れ、`manual` 手動、`boots` 連続起動回数超過）で、なければ null. `hold` は進行中の一括変更（`items` は保留中のルールと待ち受け、`configs` は変更した設定名）で、なければ null。`pending.hold` は未確認の変更が未反映の一括変更に属することを表します。\n\n**ログインセッションでのみ利用できます。API トークンではこのエンドポイントにアクセスできません。**",
+        "description": "ログインセッションのみ利用可能。管理者セッションがリクエストヘッダー `X-Gately-Confirm: 1` 付きでポート転送・プロトコル振り分け・Web サービス・グローバル設定を保存し、設定ファイルが変わった場合、サーバーは変更前の内容を未確認の設定変更として記録します。時間内に確認されなければ Gately は再起動し、起動時に変更前の内容を復元します（変更後の版は設定履歴に保存）。`enabled` は有効かどうか（グローバル設定 `confirmTimeout`：0 で既定の 90 秒、負数で無効）、`timeout` は確認期限（秒）。`pending` は進行中の変更で、なければ null：`configs` は対象の設定名（モジュール ID、グローバル設定は `gately`）、`remaining` は自動ロールバックまでの残り秒数、`waitRestart` は再起動後に計時を始めること、`rollback` はロールバックが決まり再起動中であることを表します。`rolledBack` は今回の起動時にロールバックした変更（`configs` と `reason`：`timeout` 期限切れ、`manual` 手動、`boots` 連続起動回数超過）で、なければ null. `hold` は進行中の一括変更（`items` は保留中のルールと待ち受け、`configs` は変更した設定名）で、なければ null。`pending.hold` は未確認の変更が未反映の一括変更に属することを表します。`pending.errors` は変更の反映以降に 3 つのモジュールが報告したエラー（待ち受けの起動失敗など）、`rolledBack.errors` はロールバックした変更の反映中に報告されたエラーです。\n\n**ログインセッションでのみ利用できます。API トークンではこのエンドポイントにアクセスできません。**",
         "responses": {
           "200": {
             "description": "成功"

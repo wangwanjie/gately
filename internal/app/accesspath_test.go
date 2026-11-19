@@ -88,6 +88,10 @@ func TestAccessPathThroughPortForward(t *testing.T) {
 	if r := check("PUT", "/api/portforward/rules/"+key, edit("targetPorts", "1")); len(r) != 1 || r[0].Kind != riskEdit || r[0].Hop != 1 || r[0].Fields[0] != "targetPorts" {
 		t.Fatalf("改目标端口应报修改风险: %+v", r)
 	}
+	// 改用本机不可用的监听地址：除了修改风险，还说明新地址不可用
+	if r := check("PUT", "/api/portforward/rules/"+key, edit("listenAddress", "203.0.113.5")); len(r) != 2 || r[1].Kind != riskListenUnavailable || r[1].Addr != "203.0.113.5" || r[1].Error == "" {
+		t.Fatalf("应报告监听地址不可用: %+v", r)
+	}
 	if r := check("PUT", "/api/portforward/rules/"+key, edit("enable", false)); len(r) != 1 || r[0].Kind != riskDisable {
 		t.Fatalf("停用应报风险: %+v", r)
 	}

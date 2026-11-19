@@ -43632,7 +43632,7 @@
     },
     "/api/system/access-path/check": {
       "post": {
-        "description": "僅登入工作階段可用，不改動任何設定。請求主體：`method`、`path` 為將要送出的寫入請求，`body` 為它的請求主體。回傳 `path`（同查看介面）與 `risks`：`kind` 為 `edit`（改動路徑上規則、監聽或站點的轉發相關設定，`fields` 列出欄位，站點欄位帶 `site.` 前綴；名稱、分組、備註不算）、`delete`、`disable`、`moduleOff`（關閉路徑經過的模組，`module` 為模組 ID）、`siteMove`（把路徑上的站點移到其他監聽）、`adminListen`（修改正在使用的管理介面監聽位址）、`lanOnly`（外網來源開啟僅限內網）或 `forceHTTPS`（經 HTTP 存取時開啟強制 HTTPS），`hop` 為受影響的跳在 `hops` 中的序號（-1 表示不針對某一跳）。\n\n**僅限登入工作階段使用，API 權杖無法存取此介面。**",
+        "description": "僅登入工作階段可用，不改動任何設定。請求主體：`method`、`path` 為將要送出的寫入請求，`body` 為它的請求主體。回傳 `path`（同查看介面）與 `risks`：`kind` 為 `edit`（改動路徑上規則、監聽或站點的轉發相關設定，`fields` 列出欄位，站點欄位帶 `site.` 前綴；名稱、分組、備註不算）、`delete`、`disable`、`moduleOff`（關閉路徑經過的模組，`module` 為模組 ID）、`siteMove`（把路徑上的站點移到其他監聽）、`adminListen`（修改正在使用的管理介面監聽位址）、`lanOnly`（外網來源開啟僅限內網）或 `forceHTTPS`（經 HTTP 存取時開啟強制 HTTPS），`hop` 為受影響的跳在 `hops` 中的序號（-1 表示不針對某一跳）。`kind` 也可能為 `listenUnavailable`：路徑上的規則或監聽改用的監聽位址在本機不可用（`addr` 為位址，`error` 為系統給出的原因），生效後會啟動失敗。\n\n**僅限登入工作階段使用，API 權杖無法存取此介面。**",
         "responses": {
           "200": {
             "description": "成功"
@@ -43814,6 +43814,52 @@
         "x-token-allowed": false
       }
     },
+    "/api/system/changeset/check": {
+      "post": {
+        "description": "僅登入工作階段可用，不改動任何設定。檢查暫存的規則與監聽中啟用的那些，監聽位址在本機不可用（例如不是本機位址）時列在 `problems` 中：`module`、`key`、`name`、`addr` 與系統給出的 `error`。這些項生效後會啟動失敗。\n\n**僅限登入工作階段使用，API 權杖無法存取此介面。**",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "summary": "檢查批次修改能否正常生效",
+        "tags": [
+          "系統"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
     "/api/system/changeset/discard": {
       "post": {
         "description": "僅登入工作階段可用。有改動時還原開始批次修改前的設定並重新啟動（`restart` 為 true）；沒有改動時直接結束。沒有進行中的批次修改時回傳 409。\n\n**僅限登入工作階段使用，API 權杖無法存取此介面。**",
@@ -43862,7 +43908,7 @@
     },
     "/api/system/confirm": {
       "get": {
-        "description": "僅登入工作階段可用。管理員工作階段帶請求標頭 `X-Gately-Confirm: 1` 儲存連接埠轉發、協定分流、Web 服務或全域設定後，若設定檔有變化，伺服器記錄修改前的內容，作為待確認的設定變更；逾時未確認時 Gately 重新啟動並在啟動時還原修改前的內容（修改後的版本保存在設定歷史中）。`enabled` 為是否啟用（全域設定 `confirmTimeout`：0 為預設 90 秒，負數關閉），`timeout` 為確認時限（秒）；`pending` 為進行中的變更，沒有時為 null：`configs` 為涉及的設定名（模組 ID，全域設定為 `gately`），`remaining` 為距自動回滾的剩餘秒數，`waitRestart` 表示等待重新啟動後開始計時，`rollback` 表示已決定回滾、正在重新啟動；`rolledBack` 為本次啟動時回滾掉的變更（`configs` 與 `reason`：`timeout` 逾時未確認、`manual` 手動回滾、`boots` 連續啟動次數過多），沒有時為 null；`hold` 為進行中的批次修改（`items` 為暫緩生效的規則與監聽，`configs` 為改動過的設定名），沒有時為 null，`pending.hold` 表示待確認變更處於批次修改中、尚未生效。\n\n**僅限登入工作階段使用，API 權杖無法存取此介面。**",
+        "description": "僅登入工作階段可用。管理員工作階段帶請求標頭 `X-Gately-Confirm: 1` 儲存連接埠轉發、協定分流、Web 服務或全域設定後，若設定檔有變化，伺服器記錄修改前的內容，作為待確認的設定變更；逾時未確認時 Gately 重新啟動並在啟動時還原修改前的內容（修改後的版本保存在設定歷史中）。`enabled` 為是否啟用（全域設定 `confirmTimeout`：0 為預設 90 秒，負數關閉），`timeout` 為確認時限（秒）；`pending` 為進行中的變更，沒有時為 null：`configs` 為涉及的設定名（模組 ID，全域設定為 `gately`），`remaining` 為距自動回滾的剩餘秒數，`waitRestart` 表示等待重新啟動後開始計時，`rollback` 表示已決定回滾、正在重新啟動；`rolledBack` 為本次啟動時回滾掉的變更（`configs` 與 `reason`：`timeout` 逾時未確認、`manual` 手動回滾、`boots` 連續啟動次數過多），沒有時為 null；`hold` 為進行中的批次修改（`items` 為暫緩生效的規則與監聽，`configs` 為改動過的設定名），沒有時為 null，`pending.hold` 表示待確認變更處於批次修改中、尚未生效。`pending.errors` 為修改生效以來三個模組回報的錯誤（如監聽啟動失敗），`rolledBack.errors` 為回滾掉的修改生效期間回報的錯誤。\n\n**僅限登入工作階段使用，API 權杖無法存取此介面。**",
         "responses": {
           "200": {
             "description": "成功"

@@ -969,6 +969,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/system/confirm/connect` | 僅登入工作階段 | 確認設定變更 |
 | POST | `/api/system/confirm/rollback` | 僅登入工作階段 | 立即回滾待確認的設定變更 |
 | POST | `/api/system/changeset/begin` | 僅登入工作階段 | 開始批次修改 |
+| POST | `/api/system/changeset/check` | 僅登入工作階段 | 檢查批次修改能否正常生效 |
 | POST | `/api/system/changeset/apply` | 僅登入工作階段 | 批次修改全部生效 |
 | POST | `/api/system/changeset/discard` | 僅登入工作階段 | 放棄批次修改 |
 | GET | `/api/system/access-path` | 僅登入工作階段 | 查看目前存取路徑 |

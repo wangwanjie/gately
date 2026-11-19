@@ -43632,7 +43632,7 @@
     },
     "/api/system/access-path/check": {
       "post": {
-        "description": "Somente sessões autenticadas; não altera nada. Corpo: `method` e `path` da requisição de escrita prestes a ser enviada, `body` o corpo dela. Retorna `path` (como a consulta) e `risks`: `kind` é `edit` (altera configurações de encaminhamento de uma regra, listener ou site do caminho, `fields` os lista, os do site com prefixo `site.`; nome, grupo e observação não contam), `delete`, `disable`, `moduleOff` (desliga um módulo do caminho, `module` é o ID), `siteMove` (move um site do caminho para outro listener), `adminListen` (altera o endereço de escuta da interface em uso), `lanOnly` (somente LAN ativado de fora) ou `forceHTTPS` (Forçar HTTPS ativado via HTTP); `hop` é o índice do salto afetado em `hops` (-1 quando não se refere a um salto).\n\n**Disponível apenas para sessões de login; tokens de API não podem acessar este endpoint.**",
+        "description": "Somente sessões autenticadas; não altera nada. Corpo: `method` e `path` da requisição de escrita prestes a ser enviada, `body` o corpo dela. Retorna `path` (como a consulta) e `risks`: `kind` é `edit` (altera configurações de encaminhamento de uma regra, listener ou site do caminho, `fields` os lista, os do site com prefixo `site.`; nome, grupo e observação não contam), `delete`, `disable`, `moduleOff` (desliga um módulo do caminho, `module` é o ID), `siteMove` (move um site do caminho para outro listener), `adminListen` (altera o endereço de escuta da interface em uso), `lanOnly` (somente LAN ativado de fora) ou `forceHTTPS` (Forçar HTTPS ativado via HTTP); `hop` é o índice do salto afetado em `hops` (-1 quando não se refere a um salto). `kind` também pode ser `listenUnavailable`: uma regra ou listener do caminho escutaria em um endereço que não pode ser usado nesta máquina (`addr`, com o `error` do sistema), então falharia ao iniciar.\n\n**Disponível apenas para sessões de login; tokens de API não podem acessar este endpoint.**",
         "responses": {
           "200": {
             "description": "Sucesso"
@@ -43814,6 +43814,52 @@
         "x-token-allowed": false
       }
     },
+    "/api/system/changeset/check": {
+      "post": {
+        "description": "Somente sessões autenticadas; não altera nada. Verifica as regras e listeners ativos entre as alterações em espera e lista em `problems` os que têm endereço de escuta que não pode ser usado nesta máquina (por exemplo, não local): `module`, `key`, `name`, `addr` e o `error` do sistema. Eles falhariam ao iniciar depois de aplicados.\n\n**Disponível apenas para sessões de login; tokens de API não podem acessar este endpoint.**",
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "summary": "Verificar se as alterações em lote podem ser aplicadas",
+        "tags": [
+          "Sistema"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
     "/api/system/changeset/discard": {
       "post": {
         "description": "Somente sessões autenticadas. Se houve alterações, restaura a configuração de antes do lote e reinicia (`restart` é true); caso contrário apenas encerra o lote. Retorna 409 se não houver lote em andamento.\n\n**Disponível apenas para sessões de login; tokens de API não podem acessar este endpoint.**",
@@ -43862,7 +43908,7 @@
     },
     "/api/system/confirm": {
       "get": {
-        "description": "Somente sessões autenticadas. Quando uma sessão de administrador salva encaminhamento de portas, roteamento por protocolo, serviço web ou configurações globais com o cabeçalho `X-Gately-Confirm: 1` e o arquivo de configuração muda, o servidor guarda o conteúdo anterior como alteração de configuração pendente; sem confirmação a tempo, o Gately reinicia e restaura o conteúdo anterior na inicialização (a versão alterada fica no histórico de configuração). `enabled` indica se está ativo (configuração global `confirmTimeout`: 0 é o padrão de 90 segundos, negativo desativa), `timeout` é o prazo em segundos; `pending` é a alteração em andamento, ou null: `configs` são as configurações envolvidas (IDs de módulo, `gately` para as configurações globais), `remaining` são os segundos até a reversão automática, `waitRestart` indica que o prazo começa após reiniciar, `rollback` que a reversão já foi decidida e o Gately está reiniciando; `rolledBack` é a alteração revertida nesta inicialização (`configs` e `reason`: `timeout` não confirmada a tempo, `manual` revertida manualmente, `boots` muitas inicializações seguidas), ou null. `hold` é o lote em andamento (`items` são as regras e listeners em espera, `configs` as configurações alteradas), ou null; `pending.hold` indica que a alteração pendente pertence a um lote ainda não aplicado.\n\n**Disponível apenas para sessões de login; tokens de API não podem acessar este endpoint.**",
+        "description": "Somente sessões autenticadas. Quando uma sessão de administrador salva encaminhamento de portas, roteamento por protocolo, serviço web ou configurações globais com o cabeçalho `X-Gately-Confirm: 1` e o arquivo de configuração muda, o servidor guarda o conteúdo anterior como alteração de configuração pendente; sem confirmação a tempo, o Gately reinicia e restaura o conteúdo anterior na inicialização (a versão alterada fica no histórico de configuração). `enabled` indica se está ativo (configuração global `confirmTimeout`: 0 é o padrão de 90 segundos, negativo desativa), `timeout` é o prazo em segundos; `pending` é a alteração em andamento, ou null: `configs` são as configurações envolvidas (IDs de módulo, `gately` para as configurações globais), `remaining` são os segundos até a reversão automática, `waitRestart` indica que o prazo começa após reiniciar, `rollback` que a reversão já foi decidida e o Gately está reiniciando; `rolledBack` é a alteração revertida nesta inicialização (`configs` e `reason`: `timeout` não confirmada a tempo, `manual` revertida manualmente, `boots` muitas inicializações seguidas), ou null. `hold` é o lote em andamento (`items` são as regras e listeners em espera, `configs` as configurações alteradas), ou null; `pending.hold` indica que a alteração pendente pertence a um lote ainda não aplicado. `pending.errors` são os erros informados pelos três módulos desde que a alteração entrou em vigor (como um listener que não inicia), e `rolledBack.errors` os informados enquanto a alteração revertida estava em vigor.\n\n**Disponível apenas para sessões de login; tokens de API não podem acessar este endpoint.**",
         "responses": {
           "200": {
             "description": "Sucesso"

@@ -43632,7 +43632,7 @@
     },
     "/api/system/access-path/check": {
       "post": {
-        "description": "Login sessions only; changes nothing. Body: `method` and `path` of the write request about to be sent, `body` its request body. Returns `path` (as in the view endpoint) and `risks`: `kind` is `edit` (changes forwarding settings of a rule, listener or site on the path, `fields` lists them, site fields prefixed with `site.`; name, group and remark don't count), `delete`, `disable`, `moduleOff` (turns off a module on the path, `module` is its ID), `siteMove` (moves a site on the path to another listener), `adminListen` (changes the admin UI listen address in use), `lanOnly` (LAN-only turned on from outside the LAN) or `forceHTTPS` (Force HTTPS turned on while on HTTP); `hop` is the index of the affected hop in `hops` (-1 when not tied to one hop).\n\n**Available only to login sessions; API tokens cannot access this endpoint.**",
+        "description": "Login sessions only; changes nothing. Body: `method` and `path` of the write request about to be sent, `body` its request body. Returns `path` (as in the view endpoint) and `risks`: `kind` is `edit` (changes forwarding settings of a rule, listener or site on the path, `fields` lists them, site fields prefixed with `site.`; name, group and remark don't count), `delete`, `disable`, `moduleOff` (turns off a module on the path, `module` is its ID), `siteMove` (moves a site on the path to another listener), `adminListen` (changes the admin UI listen address in use), `lanOnly` (LAN-only turned on from outside the LAN) or `forceHTTPS` (Force HTTPS turned on while on HTTP); `hop` is the index of the affected hop in `hops` (-1 when not tied to one hop). `kind` can also be `listenUnavailable`: a rule or listener on the path would listen on an address that can't be used on this machine (`addr`, with the system's `error`), so it would fail to start.\n\n**Available only to login sessions; API tokens cannot access this endpoint.**",
         "responses": {
           "200": {
             "description": "Success"
@@ -43814,6 +43814,52 @@
         "x-token-allowed": false
       }
     },
+    "/api/system/changeset/check": {
+      "post": {
+        "description": "Login sessions only; changes nothing. Checks the enabled rules and listeners among the held changes and lists in `problems` those whose listen address can't be used on this machine (for example not a local address): `module`, `key`, `name`, `addr` and the system's `error`. They would fail to start once applied.\n\n**Available only to login sessions; API tokens cannot access this endpoint.**",
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "summary": "Check whether batch changes can be applied",
+        "tags": [
+          "System"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
     "/api/system/changeset/discard": {
       "post": {
         "description": "Login sessions only. If anything changed, restores the configuration from before the batch started and restarts (`restart` is true); otherwise just ends the batch. Returns 409 when no batch is in progress.\n\n**Available only to login sessions; API tokens cannot access this endpoint.**",
@@ -43862,7 +43908,7 @@
     },
     "/api/system/confirm": {
       "get": {
-        "description": "Login sessions only. When an admin session saves port forwarding, protocol routing, web service or global settings with the header `X-Gately-Confirm: 1` and the config file changes, the server records the previous content as a pending configuration change; if it isn't confirmed in time, Gately restarts and restores the previous content on startup (the changed version is kept in config history). `enabled` tells whether this is on (global setting `confirmTimeout`: 0 means the default 90 seconds, negative turns it off), `timeout` is the time limit in seconds; `pending` is the change in progress, or null: `configs` lists the configs involved (module IDs, `gately` for global settings), `remaining` is the seconds left before automatic rollback, `waitRestart` means the timer starts after a restart, `rollback` means a rollback has been decided and Gately is restarting; `rolledBack` is the change rolled back at this start (`configs` and `reason`: `timeout` not confirmed in time, `manual` rolled back by hand, `boots` too many starts in a row), or null. `hold` is the batch in progress (`items` are held rules and listeners, `configs` the configs changed), or null; `pending.hold` means the pending change belongs to a batch that has not been applied yet.\n\n**Available only to login sessions; API tokens cannot access this endpoint.**",
+        "description": "Login sessions only. When an admin session saves port forwarding, protocol routing, web service or global settings with the header `X-Gately-Confirm: 1` and the config file changes, the server records the previous content as a pending configuration change; if it isn't confirmed in time, Gately restarts and restores the previous content on startup (the changed version is kept in config history). `enabled` tells whether this is on (global setting `confirmTimeout`: 0 means the default 90 seconds, negative turns it off), `timeout` is the time limit in seconds; `pending` is the change in progress, or null: `configs` lists the configs involved (module IDs, `gately` for global settings), `remaining` is the seconds left before automatic rollback, `waitRestart` means the timer starts after a restart, `rollback` means a rollback has been decided and Gately is restarting; `rolledBack` is the change rolled back at this start (`configs` and `reason`: `timeout` not confirmed in time, `manual` rolled back by hand, `boots` too many starts in a row), or null. `hold` is the batch in progress (`items` are held rules and listeners, `configs` the configs changed), or null; `pending.hold` means the pending change belongs to a batch that has not been applied yet. `pending.errors` are errors the three modules reported since the change took effect (such as a listener failing to start), and `rolledBack.errors` those reported while the rolled-back change was in effect.\n\n**Available only to login sessions; API tokens cannot access this endpoint.**",
         "responses": {
           "200": {
             "description": "Success"

@@ -7,6 +7,7 @@ import (
 	"log"
 	"net"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 
@@ -197,5 +198,67 @@ func TestChangesetDiscardEmpty(t *testing.T) {
 	}
 	if p, _ := loadPendingConfirm(a.store.Dir()); p != nil {
 		t.Fatal("不应留下待确认状态")
+	}
+}
+
+// 监听地址在本机不可用：全部生效前的检查列出来；生效后模块报告的启动失败记入待确认变更，回滚后据此说明原因
+func TestChangesetListenProblemAndErrors(t *testing.T) {
+	t.Cleanup(applyhold.Drop)
+	a, srv, c := loginApp(t)
+	startModules(t, a)
+	rule := testRule(t, "entry")
+	rule["enable"] = true
+	code, body := doJSON(t, c, "POST", srv.URL+"/api/portforward/rules", rule)
+	if code != 200 {
+		t.Fatalf("%d %s", code, body)
+	}
+	var created map[string]any
+	_ = json.Unmarshal(body, &created)
+	key := created["key"].(string)
+
+	if code, _ := doJSON(t, c, "POST", srv.URL+"/api/system/changeset/begin", nil); code != 200 {
+		t.Fatal("开始批量修改失败")
+	}
+	// 203.0.113.0/24 为文档专用地址，不会是本机地址
+	created["listenAddress"] = "203.0.113.5"
+	if code, body := doConfirmJSON(t, c, "PUT", srv.URL+"/api/portforward/rules/"+key, created); code != 200 {
+		t.Fatalf("%d %s", code, body)
+	}
+	code, body = doJSON(t, c, "POST", srv.URL+"/api/system/changeset/check", nil)
+	var chk struct{ Problems []holdProblem }
+	if code != 200 || json.Unmarshal(body, &chk) != nil || len(chk.Problems) != 1 || chk.Problems[0].Addr != "203.0.113.5" || chk.Problems[0].Error == "" {
+		t.Fatalf("应列出不可用的监听地址: %d %s", code, body)
+	}
+
+	if code, body := doJSON(t, c, "POST", srv.URL+"/api/system/changeset/apply", nil); code != 200 {
+		t.Fatalf("%d %s", code, body)
+	}
+	a.confirm.writeMu.Lock()
+	a.confirm.writeMu.Unlock()
+	v := confirmStatus(t, c, srv.URL)
+	if v.Pending == nil || len(v.Pending.Errors) == 0 || !strings.Contains(v.Pending.Errors[0], "203.0.113.5") {
+		t.Fatalf("待确认状态应带上监听启动失败的错误: %+v", v.Pending)
+	}
+	// 到期回滚：错误随状态保存，启动时交给回滚提示
+	a.confirm.mu.Lock()
+	a.confirm.tx.Deadline = time.Now().Add(-time.Second)
+	id := a.confirm.tx.ID
+	a.confirm.mu.Unlock()
+	a.confirmExpired(id)
+	<-a.restartCh
+	rec := recoverPendingConfirm(a.store, time.Now())
+	if rec.reason != "timeout" || len(rec.applyErrs) == 0 || !strings.Contains(rec.applyErrs[0], "203.0.113.5") {
+		t.Fatalf("回滚结果应带上生效期间的错误: %+v", rec)
+	}
+}
+
+func TestListenProblem(t *testing.T) {
+	for _, ip := range []string{"", "0.0.0.0", "::", "127.0.0.1", "not-an-ip"} {
+		if err := listenProblem(ip); err != nil {
+			t.Errorf("%q 应可用: %v", ip, err)
+		}
+	}
+	if listenProblem("203.0.113.5") == nil {
+		t.Error("非本机地址应不可用")
 	}
 }
