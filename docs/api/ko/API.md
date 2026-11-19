@@ -968,6 +968,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/system/confirm` | 로그인 세션 전용 | 확인 대기 중인 설정 변경 보기 |
 | GET | `/api/system/confirm/connect` | 로그인 세션 전용 | 설정 변경 확인 |
 | POST | `/api/system/confirm/rollback` | 로그인 세션 전용 | 확인 대기 중인 설정 변경을 지금 롤백 |
+| GET | `/api/system/access-path` | 로그인 세션 전용 | 현재 접속 경로 보기 |
+| POST | `/api/system/access-path/check` | 로그인 세션 전용 | 변경이 현재 접속 경로에 영향을 주는지 확인 |
 | POST | `/api/system/selfcheck` | 로그인 세션 전용 | 네트워크 및 설정 자가 점검 |
 | GET | `/api/system/onboarding` | 로그인 세션 전용 | 첫 실행 안내 상태 |
 | POST | `/api/system/onboarding/dismiss` | 로그인 세션 전용 | 첫 실행 안내 완료 또는 닫기 |

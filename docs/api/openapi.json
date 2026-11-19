@@ -43584,6 +43584,98 @@
         "x-token-allowed": true
       }
     },
+    "/api/system/access-path": {
+      "get": {
+        "description": "仅登录会话可用。识别这次请求经过的 Gately 转发，由外向内列在 `hops` 中：`kind` 为 `client`（访客，`addr` 为地址）、`local`（本机的浏览器或 frp、Cloudflare 隧道等程序）、`gateway`（飞牛统一网关）、`portforward`、`protoroute`、`webservice`（`rule`/`name` 为规则或监听，`route` 为协议分流命中的路由，`site`/`siteName` 为 Web 服务站点，`listen` 为这一跳接入的本地地址，`missing` 表示配置中已找不到）与 `admin`（管理界面，`listen` 为监听地址，`https` 表示经 HTTPS）。端口转发与协议分流只在目标为本机时登记，Web 服务只在带着后台登录 Cookie 反代到本实例管理界面时附带签名的路径信息，外部伪造无效。\n\n**仅登录会话可用，API 令牌无法访问此接口。**",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "summary": "查看当前访问路径",
+        "tags": [
+          "系统"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/access-path/check": {
+      "post": {
+        "description": "仅登录会话可用，不改动任何配置。请求体：`method`、`path` 为将要发出的写请求，`body` 为它的请求体。返回 `path`（同查看接口）与 `risks`：`kind` 为 `edit`（改动路径上规则、监听或站点的转发相关设置，`fields` 列出字段，站点字段带 `site.` 前缀；名称、分组、备注不算）、`delete`、`disable`、`moduleOff`（关闭路径经过的模块，`module` 为模块 ID）、`siteMove`（把路径上的站点移到其他监听）、`adminListen`（修改正在使用的管理界面监听地址）、`lanOnly`（外网来源开启仅限内网）或 `forceHTTPS`（经 HTTP 访问时开启强制 HTTPS），`hop` 为受影响的跳在 `hops` 中的序号（-1 表示不针对某一跳）。\n\n**仅登录会话可用，API 令牌无法访问此接口。**",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "summary": "检查修改是否影响当前访问路径",
+        "tags": [
+          "系统"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
     "/api/system/backup": {
       "get": {
         "description": "备份含全部密钥。\n\n**仅登录会话可用，API 令牌无法访问此接口。**",

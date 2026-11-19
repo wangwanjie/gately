@@ -431,6 +431,8 @@ func (a *App) Handler() http.Handler {
 	rec.add("GET /api/system/confirm", a.handleConfirmStatus, "")
 	rec.add("GET /api/system/confirm/connect", a.handleConfirmSocket, "")
 	rec.add("POST /api/system/confirm/rollback", a.handleConfirmRollback, "")
+	rec.add("GET /api/system/access-path", a.handleAccessPath, "")
+	rec.add("POST /api/system/access-path/check", a.handleAccessCheck, "")
 	rec.add("POST /api/system/selfcheck", a.handleSelfCheck, "")
 	rec.add("GET /api/system/onboarding", a.handleOnboarding, "")
 	rec.add("POST /api/system/onboarding/dismiss", a.handleOnboardingDismiss, "")

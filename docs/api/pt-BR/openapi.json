@@ -43584,6 +43584,98 @@
         "x-token-allowed": true
       }
     },
+    "/api/system/access-path": {
+      "get": {
+        "description": "Somente sessões autenticadas. Identifica os encaminhamentos do Gately pelos quais esta requisição passou, de fora para dentro em `hops`: `kind` é `client` (visitante, `addr` é o endereço), `local` (um navegador ou um programa como frp ou Cloudflare Tunnel nesta máquina), `gateway` (gateway do fnOS), `portforward`, `protoroute`, `webservice` (`rule`/`name` são a regra ou o listener, `route` a rota correspondente do roteamento por protocolo, `site`/`siteName` o site do serviço web, `listen` o endereço local em que esse salto aceitou a conexão, `missing` indica que não está mais na configuração) e `admin` (a interface de administração, `listen` é o endereço de escuta, `https` indica HTTPS). O encaminhamento de portas e o roteamento por protocolo só registram saltos cujo destino é esta máquina; o serviço web só adiciona informações de caminho assinadas quando faz proxy para a interface desta instância com o cookie de login de administração, e valores forjados são rejeitados.\n\n**Disponível apenas para sessões de login; tokens de API não podem acessar este endpoint.**",
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "summary": "Ver o caminho de acesso atual",
+        "tags": [
+          "Sistema"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/access-path/check": {
+      "post": {
+        "description": "Somente sessões autenticadas; não altera nada. Corpo: `method` e `path` da requisição de escrita prestes a ser enviada, `body` o corpo dela. Retorna `path` (como a consulta) e `risks`: `kind` é `edit` (altera configurações de encaminhamento de uma regra, listener ou site do caminho, `fields` os lista, os do site com prefixo `site.`; nome, grupo e observação não contam), `delete`, `disable`, `moduleOff` (desliga um módulo do caminho, `module` é o ID), `siteMove` (move um site do caminho para outro listener), `adminListen` (altera o endereço de escuta da interface em uso), `lanOnly` (somente LAN ativado de fora) ou `forceHTTPS` (Forçar HTTPS ativado via HTTP); `hop` é o índice do salto afetado em `hops` (-1 quando não se refere a um salto).\n\n**Disponível apenas para sessões de login; tokens de API não podem acessar este endpoint.**",
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "summary": "Verificar se uma alteração afeta o caminho de acesso atual",
+        "tags": [
+          "Sistema"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
     "/api/system/backup": {
       "get": {
         "description": "O backup contém todas as chaves secretas.\n\n**Disponível apenas para sessões de login; tokens de API não podem acessar este endpoint.**",

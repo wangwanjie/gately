@@ -43584,6 +43584,98 @@
         "x-token-allowed": true
       }
     },
+    "/api/system/access-path": {
+      "get": {
+        "description": "僅登入工作階段可用。識別這次請求經過的 Gately 轉發，由外向內列在 `hops` 中：`kind` 為 `client`（訪客，`addr` 為位址）、`local`（本機的瀏覽器或 frp、Cloudflare 隧道等程式）、`gateway`（飛牛統一閘道）、`portforward`、`protoroute`、`webservice`（`rule`/`name` 為規則或監聽，`route` 為協定分流命中的路由，`site`/`siteName` 為 Web 服務站點，`listen` 為這一跳接入的本機位址，`missing` 表示設定中已找不到）與 `admin`（管理介面，`listen` 為監聽位址，`https` 表示經 HTTPS）。連接埠轉發與協定分流只在目標為本機時登記，Web 服務只在帶著後台登入 Cookie 反代到本實例管理介面時附帶簽章的路徑資訊，外部偽造無效。\n\n**僅限登入工作階段使用，API 權杖無法存取此介面。**",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "summary": "查看目前存取路徑",
+        "tags": [
+          "系統"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/access-path/check": {
+      "post": {
+        "description": "僅登入工作階段可用，不改動任何設定。請求主體：`method`、`path` 為將要送出的寫入請求，`body` 為它的請求主體。回傳 `path`（同查看介面）與 `risks`：`kind` 為 `edit`（改動路徑上規則、監聽或站點的轉發相關設定，`fields` 列出欄位，站點欄位帶 `site.` 前綴；名稱、分組、備註不算）、`delete`、`disable`、`moduleOff`（關閉路徑經過的模組，`module` 為模組 ID）、`siteMove`（把路徑上的站點移到其他監聽）、`adminListen`（修改正在使用的管理介面監聽位址）、`lanOnly`（外網來源開啟僅限內網）或 `forceHTTPS`（經 HTTP 存取時開啟強制 HTTPS），`hop` 為受影響的跳在 `hops` 中的序號（-1 表示不針對某一跳）。\n\n**僅限登入工作階段使用，API 權杖無法存取此介面。**",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "summary": "檢查修改是否影響目前存取路徑",
+        "tags": [
+          "系統"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
     "/api/system/backup": {
       "get": {
         "description": "備份含全部金鑰。\n\n**僅限登入工作階段使用，API 權杖無法存取此介面。**",
