@@ -218,6 +218,15 @@
                 <el-switch v-model="form.forceHTTPS" :disabled="!form.httpsListen && !form.forceHTTPS" />
                 <span class="help">{{ t('settings.listen.forceHttpsHelp') }}</span>
               </el-form-item>
+              <!-- 保存可能切断访问路径的配置后，限时确认管理界面仍可访问，超时自动回滚 -->
+              <el-form-item :label="t('settings.confirm.label')">
+                <el-switch v-model="confirmOn" data-test="confirm-switch" />
+                <template v-if="confirmOn">
+                  <el-input-number v-model="confirmValue" :min="30" :max="600" :step="10" class="limit-num" data-test="confirm-timeout" />
+                  <span class="help">{{ t('settings.confirm.seconds') }}</span>
+                </template>
+                <div class="form-help">{{ t('settings.confirm.help') }}</div>
+              </el-form-item>
             </el-form>
           </div>
         </div>
@@ -616,6 +625,7 @@ import RestartOverlay from '../components/RestartOverlay.vue'
 import { useFormLayout } from '../composables/useIsMobile'
 import { locales } from '../i18n/locales'
 import { moduleEnabled, navByModule, navGroups } from '../nav'
+import { confirmState } from '../configConfirm'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -688,6 +698,23 @@ const globalLimitOn = computed({
   set: (v: boolean) => {
     if (form.value) {
       form.value.loginGlobalLimit = v ? 0 : -1
+    }
+  },
+})
+// 配置变更确认：confirmTimeout 为 0 表示默认 90 秒，负数表示关闭
+const confirmOn = computed({
+  get: () => (form.value?.confirmTimeout ?? 0) >= 0,
+  set: (v: boolean) => {
+    if (form.value) {
+      form.value.confirmTimeout = v ? 0 : -1
+    }
+  },
+})
+const confirmValue = computed({
+  get: () => ((form.value?.confirmTimeout ?? 0) > 0 ? form.value!.confirmTimeout : 90),
+  set: (v: number | undefined) => {
+    if (form.value) {
+      form.value.confirmTimeout = !v || v === 90 ? 0 : v
     }
   },
 })
@@ -810,6 +837,9 @@ async function saveSettings() {
   try {
     const r = await api.put<SystemSettings>('/api/system/settings', form.value)
     applySettings(r)
+    // 确认开关与时限保存后立即用于之后的保存
+    confirmState.enabled = (r.confirmTimeout ?? 0) >= 0
+    confirmState.timeout = (r.confirmTimeout ?? 0) > 0 ? r.confirmTimeout : 90
     ElMessage.success(r.restartRequired ? t('settings.save.savedNeedRestart') : t('settings.save.saved'))
     loadInfo()
     // 安全入口、锁定策略等会影响安全评分
@@ -1366,7 +1396,8 @@ async function confirmRestart() {
   }
   try {
     await api.post('/api/system/restart')
-    overlay.value?.start(t('settings.restart.progress'))
+    // 需要重启才生效的设置待确认时，新配置下连不上要等服务端超时回滚并再次重启
+    overlay.value?.start(t('settings.restart.progress'), confirmState.enabled ? Math.max(120, confirmState.timeout + 90) * 1000 : 120000)
   } catch (e) {
     ElMessage.error((e as Error).message)
   }

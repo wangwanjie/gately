@@ -84,6 +84,8 @@
     <Onboarding v-if="sessionRole === 'admin' && !passwordIssue" />
     <!-- 默认密码或强度不足的密码：必须先修改，对话框无法关闭 -->
     <ForcePasswordDialog v-if="role === 'admin' && passwordIssue" :issue="passwordIssue" :username="username" @done="afterPasswordFixed" />
+    <!-- 保存可能切断访问路径的配置后，确认不了时倒计时提示，超时服务端自动回滚 -->
+    <ConfigConfirmDialog v-if="role === 'admin'" />
   </div>
 </template>
 
@@ -93,6 +95,8 @@ import DemoBanner from '../components/DemoBanner.vue'
 import UpdateBanner from '../components/UpdateBanner.vue'
 import SecurityBanner from '../components/SecurityBanner.vue'
 import ForcePasswordDialog from '../components/ForcePasswordDialog.vue'
+import ConfigConfirmDialog from '../components/ConfigConfirmDialog.vue'
+import { loadConfirmStatus } from '../configConfirm'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
@@ -259,6 +263,8 @@ onMounted(async () => {
   await loadSession()
   if (role.value === 'admin') {
     loadSecurity()
+    // 待确认的配置变更：重启后自动确认、提示别处留下的变更或刚发生的回滚
+    loadConfirmStatus()
     // 第三方登录、飞牛桌面入口等整页跳转进入时后端拿不到界面语言，这里上报一次；语言没变时后端不写文件
     api.put('/api/account/ui-language', { language: locale.value }).catch(() => undefined)
   }

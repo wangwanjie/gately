@@ -1,0 +1,20 @@
+{
+  "failedTitle": "No se puede confirmar la nueva configuración",
+  "failedDesc": "Tras guardar, una conexión nueva no llega a la interfaz de administración: este cambio puede haber cortado tu forma de acceso. Se confirmará solo cuando vuelva el acceso; si no se confirma a tiempo, Gately vuelve a la configuración anterior y se reinicia.",
+  "foundTitle": "Cambios de configuración sin confirmar",
+  "foundDesc": "Estos cambios se guardaron, pero aún no se ha confirmado el acceso. Si abriste esta página a través de la configuración modificada, consérvalos; si no se confirman a tiempo, Gately vuelve a la configuración anterior y se reinicia.",
+  "rollingBackTitle": "Revirtiendo",
+  "rollingBackDesc": "Gately está restaurando la configuración anterior y reiniciándose. La página se recargará al volver; no la cierres.",
+  "modules": "Afecta a: {modules}",
+  "separator": ", ",
+  "countdown": "s para la reversión automática",
+  "retrying": "Reintentando la conexión…",
+  "rollback": "Revertir ahora",
+  "keep": "Conservar cambios",
+  "confirmFailed": "Error al confirmar: una conexión nueva no llega a la interfaz de administración",
+  "confirmed": "Nueva configuración confirmada",
+  "rolledBackTitle": "Configuración revertida",
+  "rolledBackTimeout": "Los cambios en {modules} no se confirmaron a tiempo y se revirtieron. La versión modificada se conserva en el Historial de configuración.",
+  "rolledBackManual": "Los cambios en {modules} se revirtieron como pediste. La versión modificada se conserva en el Historial de configuración.",
+  "rolledBackBoots": "Los cambios en {modules} no se confirmaron y Gately se inició varias veces seguidas, así que se revirtieron. La versión modificada se conserva en el Historial de configuración."
+}

@@ -1,0 +1,20 @@
+{
+  "failedTitle": "無法確認新設定可以存取",
+  "failedDesc": "儲存後以新連線無法存取管理介面，這次修改可能切斷了你目前的存取路徑。存取恢復後會自動確認；屆時仍無法確認，Gately 會自動回滾到修改前的設定並重新啟動。",
+  "foundTitle": "有待確認的設定修改",
+  "foundDesc": "這些修改儲存後尚未確認存取正常。如果你正是透過修改後的方式開啟此頁面，請確認保留；屆時未確認，Gately 會自動回滾到修改前的設定並重新啟動。",
+  "rollingBackTitle": "正在回滾設定",
+  "rollingBackDesc": "Gately 正在還原修改前的設定並重新啟動，恢復後頁面會自動重新整理，請勿關閉此頁面。",
+  "modules": "涉及：{modules}",
+  "separator": "、",
+  "countdown": "秒後自動回滾",
+  "retrying": "正在持續重試連線…",
+  "rollback": "立即回滾",
+  "keep": "確認保留",
+  "confirmFailed": "確認失敗：無法以新連線存取管理介面",
+  "confirmed": "新設定已確認生效",
+  "rolledBackTitle": "設定已回滾",
+  "rolledBackTimeout": "{modules}的修改未在時限內確認，已回滾到修改前的設定。修改後的版本保存在「設定歷史」中。",
+  "rolledBackManual": "{modules}的修改已依你的要求回滾到修改前的設定。修改後的版本保存在「設定歷史」中。",
+  "rolledBackBoots": "{modules}的修改未確認且 Gately 連續啟動多次，已回滾到修改前的設定。修改後的版本保存在「設定歷史」中。"
+}

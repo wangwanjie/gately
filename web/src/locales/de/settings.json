@@ -279,5 +279,10 @@
     "progress": "Sicherung wird angewendet und Neustart läuft…",
     "keepAccount": "Aktuelles Administratorkonto beibehalten",
     "keepAccountHint": "Wenn aktiviert, werden Konto, API-Token und Einstellungen der Drittanbieter-Anmeldung aus der Sicherung ignoriert: Konto, Passwort, Zwei-Faktor-Authentifizierung, Nur-Lese-Benutzer, API-Token und die Drittanbieter-Anmeldung an der Verwaltungsoberfläche bleiben unverändert, und die Sicherung darf account.json weglassen. Ändern Sie zuvor das Standardpasswort, falls es noch verwendet wird."
+  },
+  "confirm": {
+    "label": "Nach dem Speichern bestätigen",
+    "seconds": "s",
+    "help": "Nach Änderungen an Portweiterleitung, Protokoll-Routing, Webdienst oder den Einstellungen auf dieser Seite prüft die Oberfläche über eine neue Verbindung, ob Gately noch erreichbar ist. Gelingt das nicht (etwa weil die Änderung Ihren Zugriffsweg unterbrochen hat), stellt Gately nach Ablauf der Frist die vorherige Konfiguration wieder her und startet neu. Einstellungen, die einen Neustart brauchen, werden ab dem Neustart gezählt."
   }
 }

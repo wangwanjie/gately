@@ -1,6 +1,7 @@
 // 管理 API 封装：会话通过 HttpOnly Cookie 维持，401 时跳转登录页。
 import router from './router'
 import { i18n, t } from './i18n'
+import { afterConfirmWrite, confirmHeaderFor } from './configConfirm'
 
 export class ApiError extends Error {
   constructor(
@@ -21,7 +22,26 @@ async function request<T>(method: string, url: string, body?: unknown): Promise<
     ;(init.headers as Record<string, string>)['Content-Type'] = 'application/json'
     init.body = JSON.stringify(body)
   }
-  const resp = await fetch(url, init)
+  // 修改端口转发、协议分流、Web 服务与全局设置可能切断当前访问路径：带上确认请求头，保存后经新连接确认，
+  // 确认不了时服务端到时自动回滚（见 configConfirm.ts）
+  const needConfirm = confirmHeaderFor(method, url)
+  if (needConfirm) {
+    ;(init.headers as Record<string, string>)['X-Gately-Confirm'] = '1'
+  }
+  let resp: Response
+  try {
+    resp = await fetch(url, init)
+  } catch (e) {
+    // 保存的响应可能因监听重启、连接被切断而丢失，配置却已改动
+    if (needConfirm) {
+      afterConfirmWrite(method, url)
+    }
+    throw e
+  }
+  // 成功，或前置代理因后端断开返回 502~504：都可能已经改动了配置；校验失败等 4xx 没有改动
+  if (needConfirm && (resp.ok || resp.status === 502 || resp.status === 503 || resp.status === 504)) {
+    afterConfirmWrite(method, url)
+  }
   const text = await resp.text()
   // 接口只返回 JSON；收到 HTML 等其他内容说明请求被安全入口或“未授权访问响应”拦截（例如会话过期后入口 Cookie 也已失效），
   // 自定义页面与空白页的状态码可能是 200，不能当作成功
@@ -239,6 +259,8 @@ export interface SystemSettings {
   lockMinutes: number
   // 陌生来源 10 分钟内累计的登录失败上限：0 为默认 20，负数为关闭
   loginGlobalLimit: number
+  // 修改端口转发、协议分流、Web 服务与全局设置后确认访问正常的时限（秒）：0 为默认 90，负数关闭
+  confirmTimeout: number
   timeZone: string
   language: string
   dnsServers: string[] | null

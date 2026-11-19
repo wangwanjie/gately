@@ -1,0 +1,20 @@
+{
+  "failedTitle": "Can't confirm the new configuration",
+  "failedDesc": "After saving, a new connection can't reach the admin UI, so this change may have cut off the way you are connected. It is confirmed automatically once access comes back; if it still can't be confirmed in time, Gately rolls back to the previous configuration and restarts.",
+  "foundTitle": "Unconfirmed configuration changes",
+  "foundDesc": "These changes were saved but access hasn't been confirmed yet. If you opened this page through the changed setup, keep them; otherwise Gately rolls back to the previous configuration and restarts when time runs out.",
+  "rollingBackTitle": "Rolling back",
+  "rollingBackDesc": "Gately is restoring the previous configuration and restarting. The page reloads once it is back; keep this page open.",
+  "modules": "Affects: {modules}",
+  "separator": ", ",
+  "countdown": "s until automatic rollback",
+  "retrying": "Retrying the connection…",
+  "rollback": "Roll back now",
+  "keep": "Keep changes",
+  "confirmFailed": "Confirmation failed: a new connection can't reach the admin UI",
+  "confirmed": "New configuration confirmed",
+  "rolledBackTitle": "Configuration rolled back",
+  "rolledBackTimeout": "The changes to {modules} weren't confirmed in time and were rolled back. The changed version is kept in Config History.",
+  "rolledBackManual": "The changes to {modules} were rolled back as you requested. The changed version is kept in Config History.",
+  "rolledBackBoots": "The changes to {modules} weren't confirmed and Gately started several times in a row, so they were rolled back. The changed version is kept in Config History."
+}

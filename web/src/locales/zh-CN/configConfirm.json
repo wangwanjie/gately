@@ -1,0 +1,20 @@
+{
+  "failedTitle": "无法确认新配置可以访问",
+  "failedDesc": "保存后用新连接访问不到管理界面，这次修改可能切断了你当前的访问路径。访问恢复后会自动确认；到时仍无法确认，Gately 会自动回滚到修改前的配置并重启。",
+  "foundTitle": "有待确认的配置修改",
+  "foundDesc": "这些修改保存后还没有确认访问正常。如果你正是通过修改后的方式打开了此页面，请确认保留；到时未确认，Gately 会自动回滚到修改前的配置并重启。",
+  "rollingBackTitle": "正在回滚配置",
+  "rollingBackDesc": "Gately 正在恢复修改前的配置并重启，恢复后页面会自动刷新，请勿关闭此页面。",
+  "modules": "涉及：{modules}",
+  "separator": "、",
+  "countdown": "秒后自动回滚",
+  "retrying": "正在持续重试连接…",
+  "rollback": "立即回滚",
+  "keep": "确认保留",
+  "confirmFailed": "确认失败：无法用新连接访问管理界面",
+  "confirmed": "新配置已确认生效",
+  "rolledBackTitle": "配置已回滚",
+  "rolledBackTimeout": "{modules}的修改在时限内未确认，已回滚到修改前的配置。修改后的版本保存在「配置历史」中。",
+  "rolledBackManual": "{modules}的修改已按你的要求回滚到修改前的配置。修改后的版本保存在「配置历史」中。",
+  "rolledBackBoots": "{modules}的修改未确认且 Gately 连续启动多次，已回滚到修改前的配置。修改后的版本保存在「配置历史」中。"
+}
