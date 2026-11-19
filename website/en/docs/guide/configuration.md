@@ -114,6 +114,19 @@ Before saving, the admin UI asks the server whether the change affects this path
 
 Besides the warning, confirmation and automatic rollback above still apply, so paths Gately can't see (for example another reverse proxy in front) are protected too. The API is `GET /api/system/access-path` and `POST /api/system/access-path/check`.
 
+### Command-line rollback {#rollback-cli}
+
+If the admin UI is already unreachable, run `gately rollback` on the server (Docker: `docker exec -it gately gately rollback`). It lists the pending change and recent config saves and lets you pick one to undo by number, or use options:
+
+| Command | Effect |
+| --- | --- |
+| `gately rollback -list` | Only list, change nothing |
+| `gately rollback -last` | Undo the most recent save: restore that config to its content from before the save |
+| `gately rollback -pending` | Roll back the pending configuration change now |
+| `gately rollback -config portforward -version <version>` | Restore a config to a given history version (see `-list`) |
+
+You confirm by typing `yes`; add `-y` in scripts. If Gately is running it does the rollback and restarts; otherwise the config files are rewritten directly and take effect on the next start. The previous content is kept in [Config History](/en/docs/guide/audit) as well, so the rollback can be undone. Use `-c` if the config directory is not in the default location.
+
 ## Backup and restore
 
 "Settings" provides configuration backup and restore, and is also the entry point for importing Lucky configurations.

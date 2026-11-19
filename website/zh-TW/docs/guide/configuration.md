@@ -114,6 +114,19 @@ Gately 能識別你目前存取管理介面經過了哪些自身的轉發：連�
 
 提醒之外，上面的確認與自動回滾照常生效，沒有識別出的路徑（例如外層還有別的反向代理）同樣受保護。介面見 `GET /api/system/access-path` 與 `POST /api/system/access-path/check`。
 
+### 命令列回滾 {#rollback-cli}
+
+管理介面已經打不開時，在伺服器上執行 `gately rollback`（Docker 為 `docker exec -it gately gately rollback`）：列出待確認的變更與最近的設定儲存，輸入序號撤銷，或直接使用參數：
+
+| 命令 | 作用 |
+| --- | --- |
+| `gately rollback -list` | 只列出，不做修改 |
+| `gately rollback -last` | 撤銷最近一次儲存：把那份設定還原為儲存前的內容 |
+| `gately rollback -pending` | 立即回滾待確認的設定變更 |
+| `gately rollback -config portforward -version <版本>` | 把某份設定還原為指定的歷史版本（版本見 `-list`） |
+
+執行前需輸入 `yes` 確認，腳本中加 `-y`。Gately 正在執行時由它處理並重新啟動，沒有執行時直接改寫設定檔、下次啟動生效。改寫前的內容同樣保存在[設定歷史](/zh-TW/docs/guide/audit)中，回滾本身也能撤銷。設定目錄不是預設位置時用 `-c` 指定。
+
 ## 備份與還原
 
 「設定」中提供設定備份與還原，並承擔從 Lucky 匯入設定的入口。
