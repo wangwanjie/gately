@@ -7,9 +7,13 @@ description: Annonces et notes de version de chaque version de Gately.
 
 Les annonces des versions majeures sont listées ci-dessous. Consultez [GitHub Releases](https://github.com/wangwanjie/gately/releases) pour la liste complète des changements et les téléchargements de chaque version.
 
+## [v0.6.8.4](/fr/news/v0.6.8.4)
+
+19 novembre 2026 · Correctif de sécurité : les clés des canaux de notification pouvaient apparaître dans les erreurs de livraison ; les modifications de la redirection de ports, du routage par protocole, des services Web et des paramètres globaux ne sont conservées que si une nouvelle connexion les confirme, sinon elles sont annulées automatiquement ; les notifications en échec sont retentées puis renvoyées au rétablissement du canal ; les certificats peuvent utiliser le certificat système fnOS ; les paramètres système affichent l'utilisation du stockage ; correction des ports pièges de la prévention d'intrusion qui occupaient le port d'administration et faisaient quitter Gately au redémarrage.
+
 ## [v0.6.8.2](/fr/news/v0.6.8.2)
 
- · Le port knocking accepte une clé par personne ; la redirection de ports et le routage par protocole peuvent exempter des sources de la limite par source ; lors d'un proxy vers un autre Gately, les cookies de connexion et d'entrée sécurisée du backend ne sont plus supprimés, ce qui corrige aussi le 421 de la v0.6.8.1 derrière un reverse proxy ; les panneaux de navigation se trient par glisser-déposer et se regroupent ; les reverse proxies partagent le pool de connexions du backend, ce qui divise la mémoire par deux avec mille sites.
+18 novembre 2026 · Le port knocking accepte une clé par personne ; la redirection de ports et le routage par protocole peuvent exempter des sources de la limite par source ; lors d'un proxy vers un autre Gately, les cookies de connexion et d'entrée sécurisée du backend ne sont plus supprimés, ce qui corrige aussi le 421 de la v0.6.8.1 derrière un reverse proxy ; les panneaux de navigation se trient par glisser-déposer et se regroupent ; les reverse proxies partagent le pool de connexions du backend, ce qui divise la mémoire par deux avec mille sites.
 
 ## [v0.6.8.1](/fr/news/v0.6.8.1)
 

@@ -7,9 +7,13 @@ description: Release announcements and notes for each Gately version.
 
 Announcements for major releases are listed below. See [GitHub Releases](https://github.com/wangwanjie/gately/releases) for the full changes and downloads of every version.
 
+## [v0.6.8.4](/en/news/v0.6.8.4)
+
+November 19, 2026 · Security fix: notification channel keys could appear in delivery errors; changes to port forwarding, protocol routing, Web services and global settings take effect only once a new connection confirms them and are otherwise rolled back automatically; failed notifications are retried and resent when the channel recovers; certificates can use the fnOS system certificate; System settings shows storage usage; fixes Intrusion Prevention trap ports occupying the admin port and making Gately exit on restart.
+
 ## [v0.6.8.2](/en/news/v0.6.8.2)
 
- · Port Knocking supports one key per person; port forwarding and protocol routing can exempt sources from the per-source limit; when proxying to another Gately, the backend's own sign-in and secure-entry cookies are no longer stripped; the 421 seen since v0.6.8.1 behind a front reverse proxy is fixed; navigation panels support drag-and-drop sorting and panel groups; reverse proxies share the backend connection pool, halving memory at a thousand sites.
+November 18, 2026 · Port Knocking supports one key per person; port forwarding and protocol routing can exempt sources from the per-source limit; when proxying to another Gately, the backend's own sign-in and secure-entry cookies are no longer stripped; the 421 seen since v0.6.8.1 behind a front reverse proxy is fixed; navigation panels support drag-and-drop sorting and panel groups; reverse proxies share the backend connection pool, halving memory at a thousand sites.
 
 ## [v0.6.8.1](/en/news/v0.6.8.1)
 
