@@ -187,6 +187,31 @@
     "autoUpdateCheck": "Vérification automatique des mises à jour",
     "autoUpdateCheckHelp": "Interroge GitHub toutes les 12 heures pour rechercher les nouvelles versions de Gately et les avis de sécurité, et vérifie les programmes gérés installés ; les résultats s'affichent en haut de la page et sont notifiés selon les règles du centre de notifications. Les requêtes sont anonymes et n'envoient aucune information."
   },
+  "storageUsage": {
+    "title": "Utilisation du stockage",
+    "configDir": "Répertoire de configuration",
+    "disk": "Capacité du disque",
+    "diskText": "{used} utilisés sur {total}, {free} libres",
+    "configTotal": "Taille du répertoire de configuration",
+    "files": "{n} fichier(s)",
+    "truncated": "Trop de fichiers ou comptage trop long ; seule la partie déjà comptée est affichée.",
+    "help": "Utilisation du répertoire de configuration (et d'un répertoire des journaux défini à part) par usage. Seules les tailles sont comptées et les liens symboliques ne sont pas suivis ; un répertoire des journaux situé hors du répertoire de configuration n'est pas inclus dans sa taille.",
+    "cat": {
+      "logs": "Journaux d'exécution",
+      "visitors": "Audit des visiteurs",
+      "audit": "Journal d'audit des opérations",
+      "history": "Historique de configuration",
+      "backups": "Sauvegardes de configuration",
+      "guard": "Données de protection",
+      "network": "Données de réseau overlay",
+      "iplists": "Listes d'IP",
+      "certs": "Certificats",
+      "geoip": "Base GeoIP",
+      "programs": "Programmes gérés",
+      "config": "Fichiers de configuration",
+      "other": "Autres"
+    }
+  },
   "runtime": {
     "title": "Paramètres d'exécution",
     "logLevel": "Niveau de journalisation",

@@ -371,6 +371,7 @@
             </el-form>
           </div>
         </div>
+        <StorageUsageCard :active="tab === 'runtime'" />
         <div v-if="form" class="g-card">
           <div class="g-card-head">
             <div class="g-card-title"><Gauge :size="16" />{{ t('settings.runtime.title') }}</div>
@@ -586,6 +587,7 @@
 import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
 import BackupSchedule from '../components/BackupSchedule.vue'
 import DiagnosticsCard from '../components/DiagnosticsCard.vue'
+import StorageUsageCard from '../components/StorageUsageCard.vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import QRCode from 'qrcode'

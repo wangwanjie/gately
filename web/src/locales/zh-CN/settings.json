@@ -187,6 +187,31 @@
     "autoUpdateCheck": "自动检查更新",
     "autoUpdateCheckHelp": "每 12 小时访问一次 GitHub，检查 Gately 的新版本与安全公告，并检查已安装的托管程序；发现后在页面顶部提示，并按通知中心的规则发送通知。只发送匿名请求，不上传任何信息。"
   },
+  "storageUsage": {
+    "title": "存储占用",
+    "configDir": "配置目录",
+    "disk": "磁盘容量",
+    "diskText": "已用 {used} / 共 {total}，可用 {free}",
+    "configTotal": "配置目录占用",
+    "files": "{n} 个文件",
+    "truncated": "文件过多或统计超时，只列出了已统计到的部分。",
+    "help": "按用途统计配置目录（以及单独设置的日志目录）的占用，只统计大小，不跟随符号链接；日志目录设在配置目录之外时不计入配置目录占用。",
+    "cat": {
+      "logs": "运行日志",
+      "visitors": "访客审计",
+      "audit": "操作审计日志",
+      "history": "配置历史",
+      "backups": "配置备份",
+      "guard": "防护数据",
+      "network": "组网数据",
+      "iplists": "IP 列表",
+      "certs": "证书",
+      "geoip": "GeoIP 数据库",
+      "programs": "托管程序",
+      "config": "配置文件",
+      "other": "其他"
+    }
+  },
   "runtime": {
     "title": "运行参数",
     "logLevel": "日志级别",

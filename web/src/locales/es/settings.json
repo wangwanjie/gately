@@ -187,6 +187,31 @@
     "autoUpdateCheck": "Comprobar actualizaciones automáticamente",
     "autoUpdateCheckHelp": "Consulta GitHub cada 12 horas para buscar nuevas versiones de Gately y avisos de seguridad, y comprueba los programas gestionados instalados; lo encontrado se muestra en la parte superior de la página y se notifica según las reglas del centro de notificaciones. Las solicitudes son anónimas y no envían ninguna información."
   },
+  "storageUsage": {
+    "title": "Uso de almacenamiento",
+    "configDir": "Directorio de configuración",
+    "disk": "Capacidad del disco",
+    "diskText": "{used} usados de {total}, {free} libres",
+    "configTotal": "Tamaño del directorio de configuración",
+    "files": "{n} archivo(s)",
+    "truncated": "Demasiados archivos o el recuento tardó demasiado; solo se muestra la parte contada.",
+    "help": "Uso del directorio de configuración (y de un directorio de registros configurado aparte) por finalidad. Solo se cuentan tamaños y no se siguen enlaces simbólicos; un directorio de registros fuera del directorio de configuración no se incluye en su tamaño.",
+    "cat": {
+      "logs": "Registros de ejecución",
+      "visitors": "Auditoría de visitantes",
+      "audit": "Registro de auditoría de operaciones",
+      "history": "Historial de configuración",
+      "backups": "Copias de configuración",
+      "guard": "Datos de protección",
+      "network": "Datos de red superpuesta",
+      "iplists": "Listas de IP",
+      "certs": "Certificados",
+      "geoip": "Base de datos GeoIP",
+      "programs": "Programas gestionados",
+      "config": "Archivos de configuración",
+      "other": "Otros"
+    }
+  },
   "runtime": {
     "title": "Parámetros de ejecución",
     "logLevel": "Nivel de registro",
