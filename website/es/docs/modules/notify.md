@@ -11,6 +11,17 @@ El Centro de notificaciones se suscribe al bus de eventos interno de Gately y, s
 
 Una entrega individual agota el tiempo a los 45 segundos.
 
+## Reintentos y reenvío {#retry}
+
+Los envíos pueden fallar si la red es inestable. El centro de notificaciones reintenta automáticamente y reenvía cuando el canal se recupera; ambos se ajustan en «Ajustes de notificación» en la cabecera de la página:
+
+- **Reintentos si falla**: 3 por defecto, a los 10, 30 y 60 segundos de un fallo (a partir del cuarto, cada 60 segundos), hasta 10; 0 desactiva los reintentos. Al pasar el cursor por el resultado de una entrada reintentada en «Envíos recientes» se ve el número de intentos.
+- **Plazo de reenvío**: 24 horas por defecto, hasta 168; 0 desactiva el reenvío. Una notificación que sigue fallando tras los reintentos aparece como «Pendiente de reenvío» y se guarda en `notify/pending.json` dentro del directorio de configuración, así que sobrevive a un reinicio. Después se reenvía por canal: primero el mensaje más antiguo; si falla, espera 1 minuto y duplica la espera tras cada fallo, hasta 15 minutos; si sale bien, envía en orden el resto pendiente de ese canal. Cuando una notificación nueva en ese canal se envía con éxito, el reenvío empieza de inmediato. El mensaje reenviado termina con «Reenvío: el primer envío falló y se volvió a enviar al recuperarse el canal», la hora del texto sigue siendo la del evento y los reenvíos correctos aparecen como «Reenviado».
+- Se guardan hasta 100 mensajes por canal; los más antiguos se descartan por encima de ese límite. Los que superan el plazo o cuyo canal se eliminó o desactivó se descartan y dejan una entrada fallida en «Envíos recientes». Mientras haya mensajes pendientes, encima de «Envíos recientes» se muestran el número y sus canales, con «Borrar» para descartarlos todos.
+- Las notificaciones de prueba se envían una sola vez, sin reintentos ni reenvío.
+
+API: `GET /api/notify/pending` lista las notificaciones pendientes y `DELETE /api/notify/pending` las borra; los campos de ajustes son `retries` y `backfillHours`, con valores por defecto si no se indican.
+
 ## Idioma de las notificaciones
 
 El contenido de las notificaciones y los registros usan el idioma del servidor definido en «Ajustes del sistema». Cuando el idioma del servidor es «Seguir el sistema», se toma el idioma indicado por la variable de entorno `GATELY_LANG` y después por `LANG`. Los servicios en Docker, fnOS y OpenWrt normalmente no definen ninguna de las dos; en ese caso se sigue el idioma de la interfaz que el administrador usó en su último inicio de sesión o al cambiarlo en la barra superior, y si no hay ninguno se usa el inglés. Los inicios de sesión de cuentas de solo lectura no cambian este idioma. El «Origen» de una notificación se traduce cuando es un nombre generado por el programa (como «Panel de administración»); los nombres de tareas y otros nombres escritos por el usuario se mantienen tal cual.
