@@ -30,7 +30,7 @@ All configuration lives in the config directory, with one plain-text `<name>.jso
 `ssl.json` contains certificate private keys. Before committing it to version control, make sure the repository is private, or add the file to your ignore list.
 :::
 
-**Settings → Network & Runtime → Storage usage** shows the capacity of the partition holding the config directory, the total size of the config directory and usage by purpose: run logs, visitor audit, operation audit log, config history, config backups, protection data, overlay network data, IP lists, certificates, GeoIP database, managed programs (`bin/`), config files and other, so you can tell what is filling the disk. Only sizes are counted and symbolic links are not followed; a **Log directory** outside the config directory is listed separately and not counted in the config directory size. It is counted when you open the tab; click **Refresh** to count again.
+**Settings → Network & Runtime → Storage usage** shows the capacity of the partition holding the config directory, the total size of the config directory and usage by purpose: run logs, visitor audit, operation audit log, config history, config backups, protection data, notification resend queue (`notify/`), overlay network data, IP lists, certificates, GeoIP database, managed programs (`bin/`), File Browser data (`filebrowser/`), config files (including Docker compose projects in `compose/`) and other, so you can tell what is filling the disk. Only sizes are counted and symbolic links are not followed; a **Log directory** outside the config directory is listed separately and not counted in the config directory size. It is counted when you open the tab; click **Refresh** to count again.
 
 ## Declarative configuration
 
