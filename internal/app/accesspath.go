@@ -191,8 +191,12 @@ func (a *App) traceAccessPath(r *http.Request) accessPath {
 	}
 	peer := hops.Normalize(r.RemoteAddr)
 	client := ""
-	if h, ok := hops.Decode(r.Header.Get(hops.Header)); ok && h.Module == "webservice" {
-		inner = append(inner, pathHop{Kind: "webservice", Rule: h.Rule, Site: h.Site, Listen: h.Listen})
+	if hh, ok := hops.Decode(r.Header.Get(hops.Header)); ok && hh.Module == "webservice" {
+		// 经本实例多层站点（443 站点 → 本机 444 监听器 → 管理界面）时由内向外逐层加入，从最外一层的对端继续追溯
+		var h hops.Hop
+		for _, h = range hh.Chain() {
+			inner = append(inner, pathHop{Kind: "webservice", Rule: h.Rule, Site: h.Site, Listen: h.Listen})
+		}
 		peer = h.Peer
 		// Web 服务识别的访客地址只在它不同于 TCP 对端时才有额外信息（取自可信代理的请求头或 PROXY 协议），
 		// 否则就是前一跳转发拨出的地址

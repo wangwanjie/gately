@@ -7,7 +7,6 @@ import (
 	"net/netip"
 	"net/url"
 	"slices"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -41,22 +40,34 @@ func hasAdminCookie(h http.Header) bool {
 // 剥掉会让后端登录后永远 401、开了安全入口时一直被拒、第三方登录回调提示浏览器不匹配；它们对本实例不是凭据，转发不泄露任何东西。
 // 后端是本实例的 Web 服务监听器时（443 站点 → 本机 444 监听器 → 管理后台），请求仍在本进程内，Cookie 原样交给下一跳，
 // 由那一跳按它自己的后端再判断，否则第一跳就剥掉，经过两层站点登录后台会一直 401。
-// 返回请求是否带着后台 Cookie 发往本实例的管理后台。
-func stripAdminCookies(r *http.Request, up *url.URL) bool {
+// 返回带着后台 Cookie 的请求发往哪里（见 adminDest）。
+func stripAdminCookies(r *http.Request, up *url.URL) adminDest {
 	if !hasAdminCookie(r.Header) {
-		return false
+		return destOther
 	}
 	if upstreamMatches(r.Context(), up, httpx.IsAdminAddr) {
-		return true
+		return destAdmin
 	}
 	if upstreamMatches(r.Context(), up, httpx.IsWebListenAddr) {
-		return false
+		return destWebListen
 	}
 	stripCookieFunc(r, func(c *http.Cookie) bool {
 		return slices.Contains(adminCookies, c.Name) && httpx.OwnAdminCookie(c.Name, c.Value)
 	})
-	return false
+	return destOther
 }
+
+// adminDest 为带着后台 Cookie 的请求的去向
+type adminDest int
+
+const (
+	// destOther 为其他后端（或请求没有后台 Cookie）：后台 Cookie 已剥掉
+	destOther adminDest = iota
+	// destAdmin 为本实例的管理后台
+	destAdmin
+	// destWebListen 为本实例的另一个 Web 服务监听器：Cookie 原样交给下一层，由它再判断
+	destWebListen
+)
 
 // upstreamIsAdmin 判断后端地址是否为本实例的管理后台：主机名解析出的全部地址都必须落在后台的监听上
 // （端口相同；后台监听全部地址时为本机地址，监听具体地址时与之相同，见 httpx.IsAdminAddr）。
@@ -67,20 +78,8 @@ func upstreamIsAdmin(ctx context.Context, u *url.URL) bool {
 
 // upstreamMatches 判断后端地址解析出的全部地址是否都满足 match（端口按协议补全默认值），解析失败时为 false。
 func upstreamMatches(ctx context.Context, u *url.URL, match func(netip.Addr, uint16) bool) bool {
-	if u == nil {
-		return false
-	}
-	port := u.Port()
-	if port == "" {
-		switch u.Scheme {
-		case "https", "wss":
-			port = "443"
-		default:
-			port = "80"
-		}
-	}
-	p, err := strconv.ParseUint(port, 10, 16)
-	if err != nil || p == 0 {
+	p := upstreamPort(u)
+	if p == 0 {
 		return false
 	}
 	ips := resolveUpstreamIPs(ctx, u.Hostname())
@@ -88,7 +87,7 @@ func upstreamMatches(ctx context.Context, u *url.URL, match func(netip.Addr, uin
 		return false
 	}
 	for _, ip := range ips {
-		if !match(ip, uint16(p)) {
+		if !match(ip, p) {
 			return false
 		}
 	}

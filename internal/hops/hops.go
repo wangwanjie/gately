@@ -7,6 +7,7 @@
 // Web 服务反向代理到管理界面时复用后端连接池，同一条连接会承载不同访客的请求，不能按连接登记；
 // 改为在发往管理界面的请求上附带进程内签名的请求头（Header），说明经过的监听与站点和访客连接的对端。
 // 签名密钥每次启动随机生成且不出进程，外部伪造的请求头无法通过校验。
+// 站点反代到本实例的另一个 Web 服务监听器时同样附带请求头，下一层把它串在自己这一跳的 Prev 中继续传递。
 package hops
 
 import (
@@ -40,9 +41,27 @@ type Hop struct {
 	Peer string `json:"peer"`
 	// Client 为 Web 服务识别出的访客地址（经可信代理时为真实地址），可为空
 	Client string `json:"client,omitempty"`
+	// Prev 为这一跳之前、同一进程内更外层的 Web 服务跳（443 站点 → 本机 444 监听器 → 管理界面），由内向外排列；
+	// 此时本跳的 Peer 是外层反代拨出的连接，继续追溯要从最外一层的 Peer 开始
+	Prev []Hop `json:"prev,omitempty"`
+	// ToPort 为发往本实例另一个 Web 服务监听器时目标的端口：下一层只在它等于自己接入连接的本地端口时
+	// 才把这一跳串进 Prev，访客把别处拿到的请求头带到其他监听上不会被采信
+	ToPort uint16 `json:"toPort,omitempty"`
 }
 
-var registry sync.Map // 规范化的地址 → Hop
+// MaxChain 限制请求头中串联的 Web 服务跳数，防止站点互相反代形成环时请求头无限增长
+const MaxChain = 8
+
+// Chain 返回本跳与更外层的 Web 服务跳，由内向外排列。
+func (h Hop) Chain() []Hop {
+	out := make([]Hop, 0, 1+len(h.Prev))
+	inner := h
+	inner.Prev, inner.ToPort = nil, 0
+	out = append(out, inner)
+	return append(out, h.Prev...)
+}
+
+var registry sync.Map // 规范化的地址 → *Hop
 
 // Normalize 把 ip:port 规范为统一形式（IPv4 映射地址还原为 IPv4），无法解析时原样返回。
 func Normalize(addr string) string {
@@ -75,8 +94,10 @@ func Track(in, out net.Conn, h Hop) func() {
 	h.Listen = Normalize(in.LocalAddr().String())
 	h.Peer = RawPeer(in)
 	key := Normalize(out.LocalAddr().String())
-	registry.Store(key, h)
-	return func() { registry.CompareAndDelete(key, h) }
+	// 存指针：Hop 含切片不可比较，CompareAndDelete 按指针判断是否仍是本次登记
+	p := &h
+	registry.Store(key, p)
+	return func() { registry.CompareAndDelete(key, p) }
 }
 
 // Lookup 按下一跳看到的 TCP 对端查找登记的转发。
@@ -85,7 +106,7 @@ func Lookup(peer string) (Hop, bool) {
 	if !ok {
 		return Hop{}, false
 	}
-	return v.(Hop), true
+	return *v.(*Hop), true
 }
 
 // RawPeer 返回连接最底层的 TCP 对端：依次拆开 TLS、PROXY 协议等包装（NetConn、Raw 方法），

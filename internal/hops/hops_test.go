@@ -68,3 +68,13 @@ func TestNormalize(t *testing.T) {
 		t.Fatalf("IPv4 映射地址应还原: %s", got)
 	}
 }
+
+// Chain 由内向外列出本跳与 Prev，返回的本跳不再带 Prev；编码后 Prev 原样保留
+func TestChain(t *testing.T) {
+	h := Hop{Module: "webservice", Rule: "in", Prev: []Hop{{Module: "webservice", Rule: "out"}}}
+	d, ok := Decode(Encode(h))
+	c := d.Chain()
+	if !ok || len(c) != 2 || c[0].Rule != "in" || c[0].Prev != nil || c[1].Rule != "out" {
+		t.Fatalf("应由内向外列出: %+v %v", c, ok)
+	}
+}
