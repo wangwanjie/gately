@@ -654,6 +654,10 @@ func portSets(s Settings, listening map[int]bool) (open, trap []portRange, skipp
 	// skipped 只列正在监听的端口（界面与自检提示“正在被监听，已排除”）；模块登记的端口可能是很大的范围，静默排除
 	_, skipped = subtractPorts(traps, listening)
 	trap, _ = subtractPortsFunc(traps, protectedPorts(listening, extra))
+	if !openports.Ready() {
+		// Gately 正在启动模块，端口登记还不完整：先不启用诱饵，启动完成后收到通知再计算
+		trap = nil
+	}
 	if skipped == nil {
 		skipped = []int{}
 	}

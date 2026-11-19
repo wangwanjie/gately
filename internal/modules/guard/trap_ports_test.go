@@ -99,3 +99,42 @@ func TestUserTrapFollowsPorts(t *testing.T) {
 		t.Fatal("关闭诱饵端口后刷新应停止监听")
 	}
 }
+
+// TestTrapWaitsForStartup 覆盖启动期间不启用诱饵：入侵防护比 frps、EasyTier、FTP 等先启动，
+// 那时它们还没登记端口，诱饵不能先占住；EndStartup 之后防火墙轮询协程收到通知，按完整的登记启用诱饵并避开已登记的端口。
+func TestTrapWaitsForStartup(t *testing.T) {
+	openports.BeginStartup()
+	t.Cleanup(openports.EndStartup)
+	m := newTestModule(t)
+	old := listeningPortsFn
+	listeningPortsFn = func() (map[int]bool, error) { return map[int]bool{}, nil }
+	t.Cleanup(func() { listeningPortsFn = old })
+	ports := freePorts(t, 2)
+	s := Settings{Trap: TrapSettings{Enable: true, Ports: strconv.Itoa(ports[0]) + "," + strconv.Itoa(ports[1])}}
+	if _, trap, _ := portSets(s, map[int]bool{}); len(trap) != 0 {
+		t.Fatalf("启动期间内核诱饵集合应为空: %v", trap)
+	}
+	m.mu.Lock()
+	m.cfg.Settings.Trap = s.Trap
+	m.applyTrapLocked()
+	got := m.trap.listening()
+	m.mu.Unlock()
+	if len(got) != 0 {
+		t.Fatalf("启动期间不应监听诱饵端口: %v", got)
+	}
+	// 模块在启动期间登记端口，随后启动完成
+	openports.SetPorts("test-trap-startup", []int{ports[1]})
+	t.Cleanup(func() { openports.Clear("test-trap-startup") })
+	openports.EndStartup()
+	for deadline := time.Now().Add(3 * time.Second); time.Now().Before(deadline); time.Sleep(20 * time.Millisecond) {
+		m.mu.Lock()
+		got = m.trap.listening()
+		m.mu.Unlock()
+		if slices.Equal(got, []int{ports[0]}) {
+			break
+		}
+	}
+	if !slices.Equal(got, []int{ports[0]}) {
+		t.Fatalf("启动完成后应启用诱饵并避开登记的端口: %v", got)
+	}
+}
