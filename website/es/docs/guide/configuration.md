@@ -101,6 +101,19 @@ Los ajustes que solo se aplican tras reiniciar (direcciones de escucha de la int
 
 El plazo se ajusta en «Ajustes → Control de acceso → Listener de la consola → Confirmar tras guardar» (30–600 segundos, 90 por defecto) y también se puede desactivar. Solo afecta a lo que se guarda desde la interfaz de administración; los cambios hechos con tokens de API y scripts no se ven afectados. La API es `GET /api/system/confirm`.
 
+### Aviso antes de guardar: camino de acceso actual {#access-path}
+
+Gately sabe por cuál de sus propios reenvíos pasa tu conexión a la interfaz de administración: el reenvío de puertos y el enrutamiento por protocolo registran un salto al conectar con un destino de este equipo, y el servicio web añade información firmada del camino cuando hace de proxy hacia la interfaz (no se puede falsificar desde fuera). La tarjeta «Camino de acceso actual», arriba en «Ajustes → Control de acceso», muestra el camino, por ejemplo `Visitante → Enrutamiento por protocolo «vps-443» → Servicio web «main» › sitio «admin.example.com» → Interfaz de administración`. Los programas de este equipo, como frp o Cloudflare Tunnel, aparecen como «Este equipo».
+
+Antes de guardar, la interfaz pregunta al servidor si el cambio afecta a ese camino. Si es así, un diálogo explica por qué y resalta el salto afectado; puedes cancelar o «Guardar igualmente»:
+
+- cambiar ajustes de reenvío de una regla, listener o sitio del camino (cambiar solo nombre, grupo o nota no cuenta), desactivarlo o eliminarlo, o mover el sitio a otro listener;
+- desactivar un módulo del camino (su interruptor general o el ajuste «Módulos»);
+- cambiar la dirección de escucha de la interfaz que estás usando;
+- activar «Solo LAN» conectándote desde fuera, o «Forzar HTTPS» usando HTTP.
+
+Además del aviso, la confirmación y la reversión automática de arriba siguen activas, así que también se protegen caminos que Gately no ve (por ejemplo, otro proxy inverso delante). La API es `GET /api/system/access-path` y `POST /api/system/access-path/check`.
+
 ## Copia de seguridad y restauración
 
 «Ajustes» ofrece la copia de seguridad y la restauración de la configuración, y es también el punto de entrada para importar configuraciones de Lucky.
