@@ -20,9 +20,13 @@
         <span class="muted">{{ t('configConfirm.countdown') }}</span>
       </div>
       <p v-if="state.phase === 'failed'" class="muted retrying">{{ t('configConfirm.retrying') }}</p>
+      <!-- 连不上服务端时“立即回滚”同样发不出去：说明只能等自动回滚，或在服务器上用命令行回滚 -->
+      <p v-if="state.phase !== 'rollingBack' && !state.reachable" class="unreachable" data-test="config-confirm-unreachable">
+        {{ t('configConfirm.unreachable') }}<code>gately rollback -pending</code>
+      </p>
     </div>
     <template v-if="state.phase !== 'rollingBack'" #footer>
-      <el-button :loading="state.busy" data-test="config-confirm-rollback" @click="onRollback">{{ t('configConfirm.rollback') }}</el-button>
+      <el-button v-if="state.reachable" :loading="state.busy" data-test="config-confirm-rollback" @click="onRollback">{{ t('configConfirm.rollback') }}</el-button>
       <el-button v-if="state.phase === 'found'" type="primary" :loading="state.busy" data-test="config-confirm-keep" @click="onConfirm">{{ t('configConfirm.keep') }}</el-button>
     </template>
   </el-dialog>
@@ -91,6 +95,11 @@ async function onRollback() {
   try {
     await rollbackNow()
   } catch (e) {
+    // 连不上服务端时界面改为说明只能等待自动回滚，不再显示英文的 Failed to fetch
+    if (!state.reachable) {
+      ElMessage.warning(t('configConfirm.rollbackUnreachable'))
+      return
+    }
     ElMessage.error((e as Error).message)
   }
 }
@@ -143,6 +152,19 @@ watch(
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   color: var(--el-color-warning);
+}
+.unreachable {
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 1.7;
+  background: var(--el-fill-color-light);
+  color: var(--el-text-color-regular);
+}
+.unreachable code {
+  margin-left: 4px;
+  font-family: var(--el-font-family-mono, monospace);
 }
 .retrying {
   margin: 0;
