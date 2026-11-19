@@ -36,6 +36,7 @@ import (
 	"github.com/wangwanjie/gately/internal/loginips"
 	"github.com/wangwanjie/gately/internal/luckyimport"
 	"github.com/wangwanjie/gately/internal/module"
+	"github.com/wangwanjie/gately/internal/openports"
 	"github.com/wangwanjie/gately/internal/proxyx"
 	"github.com/wangwanjie/gately/internal/sysstat"
 	"github.com/wangwanjie/gately/internal/thirdauth"
@@ -511,6 +512,11 @@ func (a *App) run(parent context.Context) error {
 	// 模块使用独立的可取消上下文：重启时先取消，确保后台协程退出后 Stop 不会一直等待
 	ctx, cancelModules := context.WithCancel(parent)
 	defer cancelModules()
+	// 管理界面在全部模块启动之后才监听：先把它的端口登记为开放端口，入侵防护计算诱饵端口时据此避开。
+	// 否则诱饵端口包含管理端口时，用户态诱饵会抢先占住它，随后管理界面监听失败、进程退出；
+	// 有防火墙时内核诱饵规则则会拦下访问管理界面的连接
+	openports.SetPorts(adminPortsOwner, adminPorts(a.settingsSnapshot()))
+	defer openports.Clear(adminPortsOwner)
 	var disabled []string
 	for _, e := range a.modules {
 		if !e.enabled {
@@ -1300,4 +1306,26 @@ func (p prefixRouter) Doc(pattern string, d module.Doc) {
 		return
 	}
 	p.rec.docs[method+" "+p.prefix+path] = d
+}
+
+// adminPortsOwner 为管理界面端口在 openports 中的登记名
+const adminPortsOwner = "admin"
+
+// adminPorts 返回管理界面（HTTP 与 HTTPS）监听的端口。只监听回环地址时同样返回：
+// 用户态诱饵监听全部地址，与回环地址上的同一端口同样冲突。
+func adminPorts(s Settings) []int {
+	var ports []int
+	for _, addr := range []string{s.Listen, s.HTTPSListen} {
+		if addr == "" {
+			continue
+		}
+		_, portText, err := net.SplitHostPort(addr)
+		if err != nil {
+			continue
+		}
+		if p, err := net.LookupPort("tcp", portText); err == nil && p > 0 {
+			ports = append(ports, p)
+		}
+	}
+	return ports
 }
