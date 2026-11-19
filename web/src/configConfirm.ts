@@ -39,6 +39,8 @@ export const confirmState = reactive({
   confirmedAfterPrompt: 0,
   // rolledBack 为刚刚回滚掉的配置，界面据此提示一次
   rolledBack: null as { configs: string[]; reason: string } | null,
+  // reachable 为确认失败期间普通请求能否到达服务端：到不了时“立即回滚”同样发不出去，只能等自动回滚
+  reachable: true,
 })
 
 // 本标签页等待过确认（保存后确认失败或经确认重启），重新打开页面后据此提示回滚结果、自动确认重启后的配置
@@ -153,6 +155,7 @@ function handleResult(status: string): boolean {
         confirmState.confirmedAfterPrompt++
       }
       confirmState.phase = 'idle'
+      confirmState.reachable = true
       sessionStorage.removeItem(WATCH_KEY)
       return true
     case 'rollingBack':
@@ -182,7 +185,7 @@ async function runCheck() {
     confirmState.phase = 'failed'
     sessionStorage.setItem(WATCH_KEY, '1')
     // 普通请求可能还能经旧连接到达：取服务端给出的剩余时间，消除两边时钟差
-    refreshRemaining()
+    await refreshRemaining()
     while (!again) {
       if (confirmState.deadline && Date.now() > confirmState.deadline + 2000) {
         startRollingBack()
@@ -191,20 +194,32 @@ async function runCheck() {
       if (handleResult(await socketConfirm())) {
         break
       }
+      // 顺带检查普通请求能否到达服务端（决定“立即回滚”能否使用）
+      await refreshRemaining()
       await sleep(3000)
     }
   } while (again)
 }
 
 async function refreshRemaining() {
+  const ctrl = new AbortController()
+  const timer = window.setTimeout(() => ctrl.abort(), 3000)
   try {
-    const s = await api.get<ConfirmStatus>('/api/system/confirm')
+    const resp = await fetch('/api/system/confirm', { credentials: 'same-origin', cache: 'no-store', signal: ctrl.signal })
+    if (!resp.ok) {
+      throw new Error(String(resp.status))
+    }
+    const s = (await resp.json()) as ConfirmStatus
+    confirmState.reachable = true
     if (s.pending && !s.pending.waitRestart) {
       confirmState.configs = s.pending.configs
       confirmState.deadline = Date.now() + s.pending.remaining * 1000
     }
   } catch {
-    // 旧连接也断了，按本地估计倒计时
+    // 连不上服务端：按本地估计倒计时，“立即回滚”也发不出去
+    confirmState.reachable = false
+  } finally {
+    window.clearTimeout(timer)
   }
 }
 
@@ -248,12 +263,17 @@ export async function confirmNow(): Promise<boolean> {
   }
 }
 
-// rollbackNow 立即回滚：普通请求，可能经修改前的连接到达
+// rollbackNow 立即回滚：普通请求，只有还能连上服务端时才有效；连不上时标记不可达，界面改为提示等待自动回滚
 export async function rollbackNow() {
   confirmState.busy = true
   try {
     await api.post('/api/system/confirm/rollback')
     startRollingBack()
+  } catch (e) {
+    if (e instanceof TypeError) {
+      confirmState.reachable = false
+    }
+    throw e
   } finally {
     confirmState.busy = false
   }

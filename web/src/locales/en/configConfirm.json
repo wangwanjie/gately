@@ -16,5 +16,7 @@
   "rolledBackTitle": "Configuration rolled back",
   "rolledBackTimeout": "The changes to {modules} weren't confirmed in time and were rolled back. The changed version is kept in Config History.",
   "rolledBackManual": "The changes to {modules} were rolled back as you requested. The changed version is kept in Config History.",
-  "rolledBackBoots": "The changes to {modules} weren't confirmed and Gately started several times in a row, so they were rolled back. The changed version is kept in Config History."
+  "rolledBackBoots": "The changes to {modules} weren't confirmed and Gately started several times in a row, so they were rolled back. The changed version is kept in Config History.",
+  "unreachable": "Gately can't be reached right now, so \"Roll back now\" can't get through either; wait for the automatic rollback when the countdown ends, or run this on the server:",
+  "rollbackUnreachable": "Gately can't be reached, so it can't roll back now: wait for the automatic rollback when the countdown ends, or run gately rollback -pending on the server"
 }

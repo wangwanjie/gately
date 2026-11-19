@@ -16,5 +16,7 @@
   "rolledBackTitle": "설정이 롤백됨",
   "rolledBackTimeout": "{modules} 변경이 시간 안에 확인되지 않아 변경 전 설정으로 롤백했습니다. 변경된 버전은 설정 기록에 보관됩니다.",
   "rolledBackManual": "요청에 따라 {modules} 변경을 변경 전 설정으로 롤백했습니다. 변경된 버전은 설정 기록에 보관됩니다.",
-  "rolledBackBoots": "{modules} 변경이 확인되지 않은 채 Gately가 여러 번 연속으로 시작되어 변경 전 설정으로 롤백했습니다. 변경된 버전은 설정 기록에 보관됩니다."
+  "rolledBackBoots": "{modules} 변경이 확인되지 않은 채 Gately가 여러 번 연속으로 시작되어 변경 전 설정으로 롤백했습니다. 변경된 버전은 설정 기록에 보관됩니다.",
+  "unreachable": "지금 Gately에 연결할 수 없어 「지금 롤백」도 보낼 수 없습니다. 카운트다운이 끝나 자동 롤백되기를 기다리거나 서버에서 다음을 실행하세요:",
+  "rollbackUnreachable": "Gately에 연결할 수 없어 지금 롤백할 수 없습니다. 카운트다운이 끝나 자동 롤백되기를 기다리거나 서버에서 gately rollback -pending을 실행하세요"
 }
