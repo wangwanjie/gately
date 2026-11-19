@@ -142,6 +142,9 @@ type prefixConn struct {
 	prefix []byte
 }
 
+// NetConn 返回被包装的连接，访问路径追溯（hops.RawPeer）据此取得最底层的 TCP 对端。
+func (c *prefixConn) NetConn() net.Conn { return c.Conn }
+
 func (c *prefixConn) Read(b []byte) (int, error) {
 	if len(c.prefix) > 0 {
 		n := copy(b, c.prefix)

@@ -506,6 +506,8 @@ func (l *listenerRunner) start(certs CertSource, trusted []string) (err error) {
 	}()
 	baseCtx, cancel := context.WithCancel(context.Background())
 	l.cancel = cancel
+	// 记下监听 key：反向代理到本实例管理界面时据此说明访问路径（见 adminhop.go）
+	baseCtx = context.WithValue(baseCtx, ctxKeyListenerKey{}, l.cfg.Key)
 	l.baseCtx = baseCtx
 	// 额外 HTTP 端口的连接在上下文中做标记，处理请求时据此决定是否跳转到 HTTPS（见 fromHTTPPort）；
 	// 标记上下文仍派生自 baseCtx，监听停止时同样被取消

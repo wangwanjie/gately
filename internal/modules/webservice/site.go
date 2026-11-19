@@ -574,6 +574,8 @@ type upstreamRoundTripper struct {
 	// target 把请求改写为发往指定后端（去路径前缀、URL、Host 与 SNI），重试换后端时使用
 	target func(pr *httputil.ProxyRequest, up *upstream)
 	log    func(r *http.Request) *logbuf.Logger
+	// site 为站点 key，发往本实例管理后台的请求据此说明访问路径
+	site string
 }
 
 func (rt *upstreamRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
@@ -596,8 +598,10 @@ func (rt *upstreamRoundTripper) RoundTrip(req *http.Request) (*http.Response, er
 		if h1 := rt.h1[up]; h1 != nil && out.Header.Get("Upgrade") != "" {
 			tr = h1
 		}
-		// 后台登录 Cookie 只交给本实例的管理后台，按实际发往的后端判断（换后端重试时重新判断）
-		stripAdminCookies(out, up.url)
+		// 后台登录 Cookie 只交给本实例的管理后台，按实际发往的后端判断（换后端重试时重新判断）；
+		// 发往管理后台时附带访问路径（经过的监听与站点），管理界面据此识别保存会不会影响当前访问
+		admin := stripAdminCookies(out, up.url)
+		markAdminHop(out, admin, rt.site, att)
 		resp, err := tr.RoundTrip(out)
 		if err == nil || !dialFailed(err) || req.Context().Err() != nil || (body != nil && body.read.Load()) {
 			return resp, err
@@ -646,7 +650,7 @@ func (h *siteHandler) newProxy(s Site, p *pool, strip string) http.Handler {
 		stripLocationPrefix(pr.Out.URL, strip)
 		target(pr, up)
 	}
-	rt := &upstreamRoundTripper{trs: map[*upstream]*http.Transport{}, pool: p, target: retarget, log: h.reqLog}
+	rt := &upstreamRoundTripper{trs: map[*upstream]*http.Transport{}, pool: p, target: retarget, log: h.reqLog, site: s.Key}
 	for _, up := range p.ups {
 		tr := h.transportFor(s, up)
 		rt.trs[up] = tr
