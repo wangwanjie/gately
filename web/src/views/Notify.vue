@@ -86,6 +86,18 @@
     </section>
 
     <h3 class="section">{{ t('notify.recentDeliveries') }}</h3>
+    <!-- 重试用尽仍失败、等待渠道恢复后补推的通知 -->
+    <el-alert v-if="pending.length" type="warning" :closable="false" show-icon class="pending-alert">
+      <template #title>
+        <span>{{ t('notify.pendingCount', { n: pending.length }) }}</span>
+        <span class="pending-channels">{{ pendingChannels }}</span>
+        <el-popconfirm :title="t('notify.clearPendingConfirm')" @confirm="clearPending">
+          <template #reference>
+            <el-button link type="primary" size="small">{{ t('notify.clearPending') }}</el-button>
+          </template>
+        </el-popconfirm>
+      </template>
+    </el-alert>
     <el-table :data="history" size="small" stripe :empty-text="t('notify.noDeliveries')">
       <template v-if="loadError" #empty>
         <LoadError compact :error="loadError" @retry="load" />
@@ -97,10 +109,11 @@
       <el-table-column :label="t('notify.rule')" width="140" prop="rule" show-overflow-tooltip />
       <el-table-column :label="t('notify.channel')" width="140" prop="channel" show-overflow-tooltip />
       <!-- 结果列固定在右侧，手机上不用横向滑动就能看到是否发送成功 -->
-      <el-table-column :label="t('notify.result')" width="90" fixed="right">
+      <el-table-column :label="t('notify.result')" width="110" fixed="right">
         <template #default="{ row }">
-          <StatusBadge v-if="row.ok" type="running" :text="t('notify.success')" />
-          <StatusBadge v-else type="error" :text="t('notify.failed')" :title="row.error" />
+          <StatusBadge v-if="row.ok" type="running" :text="row.backfill ? t('notify.backfilled') : t('notify.success')" :title="attemptsTitle(row)" />
+          <StatusBadge v-else-if="row.queued" type="warn" :text="t('notify.queued')" :title="failTitle(row)" />
+          <StatusBadge v-else type="error" :text="t('notify.failed')" :title="failTitle(row)" />
         </template>
       </el-table-column>
     </el-table>
@@ -220,6 +233,14 @@
         <el-form-item :label="t('notify.proxy')">
           <ProxyInput v-model="settingsDraft.proxy" :owner="settingsDraft" />
           <div class="form-help">{{ t('notify.proxyGlobalHelp') }}</div>
+        </el-form-item>
+        <el-form-item :label="t('notify.retries')">
+          <el-input-number v-model="settingsDraft.retries" :min="0" :max="10" :step="1" step-strictly controls-position="right" />
+          <div class="form-help">{{ t('notify.retriesHelp') }}</div>
+        </el-form-item>
+        <el-form-item :label="t('notify.backfillHours')">
+          <el-input-number v-model="settingsDraft.backfillHours" :min="0" :max="168" :step="1" step-strictly controls-position="right" />
+          <div class="form-help">{{ t('notify.backfillHoursHelp') }}</div>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -360,6 +381,19 @@ interface DeliveryRecord {
   rule: string
   channel: string
   ok: boolean
+  error?: string
+  // attempts 为本次投递共尝试的次数；queued 为重试用尽后已排队等待补推；backfill 为补推的记录
+  attempts?: number
+  queued?: boolean
+  backfill?: boolean
+}
+
+interface PendingItem {
+  id: string
+  channel: string
+  title: string
+  queued: string
+  attempts: number
   error?: string
 }
 
@@ -510,14 +544,22 @@ function channelTarget(c: Channel) {
 // ---- 通知设置 ----
 const settingsVisible = ref(false)
 const savingSettings = ref(false)
-const settingsDraft = ref({ proxy: '', serverName: '' })
+// 重试次数与补推保留时长：未设置时服务端使用默认值 3 次、24 小时
+const DEFAULT_RETRIES = 3
+const DEFAULT_BACKFILL_HOURS = 24
+const settingsDraft = ref({ proxy: '', serverName: '', retries: DEFAULT_RETRIES, backfillHours: DEFAULT_BACKFILL_HOURS })
 // 本机主机名：服务器名称留空时通知中使用它
 const settingsHostname = ref('')
 
 async function openSettings() {
   try {
-    const s = await api.get<{ proxy?: string; serverName?: string; hostname?: string }>('/api/notify/settings')
-    settingsDraft.value = { proxy: s.proxy ?? '', serverName: s.serverName ?? '' }
+    const s = await api.get<{ proxy?: string; serverName?: string; hostname?: string; retries?: number; backfillHours?: number }>('/api/notify/settings')
+    settingsDraft.value = {
+      proxy: s.proxy ?? '',
+      serverName: s.serverName ?? '',
+      retries: s.retries ?? DEFAULT_RETRIES,
+      backfillHours: s.backfillHours ?? DEFAULT_BACKFILL_HOURS,
+    }
     settingsHostname.value = s.hostname ?? ''
     settingsVisible.value = true
   } catch (e) {
@@ -528,7 +570,13 @@ async function openSettings() {
 async function saveSettings() {
   savingSettings.value = true
   try {
-    await api.put('/api/notify/settings', { proxy: settingsDraft.value.proxy.trim(), serverName: settingsDraft.value.serverName.trim() })
+    const d = settingsDraft.value
+    await api.put('/api/notify/settings', {
+      proxy: d.proxy.trim(),
+      serverName: d.serverName.trim(),
+      retries: d.retries ?? DEFAULT_RETRIES,
+      backfillHours: d.backfillHours ?? DEFAULT_BACKFILL_HOURS,
+    })
     settingsVisible.value = false
     ElMessage.success(t('common.saved'))
   } catch (e) {
@@ -538,16 +586,48 @@ async function saveSettings() {
   }
 }
 
+// ---- 投递结果与待补推 ----
+const pending = ref<PendingItem[]>([])
+// 积压通知所在的渠道及条数，例如「Telegram ×3、邮件 ×1」
+const pendingChannels = computed(() => {
+  const n = new Map<string, number>()
+  for (const p of pending.value) {
+    n.set(p.channel, (n.get(p.channel) ?? 0) + 1)
+  }
+  return [...n].map(([c, k]) => `${c} ×${k}`).join(t('notify.separator'))
+})
+
+function attemptsTitle(row: DeliveryRecord) {
+  return row.attempts && row.attempts > 1 ? t('notify.attempts', { n: row.attempts }) : undefined
+}
+
+function failTitle(row: DeliveryRecord) {
+  const a = attemptsTitle(row)
+  return a ? `${a}\n${row.error ?? ''}` : row.error
+}
+
+async function clearPending() {
+  try {
+    await api.del('/api/notify/pending')
+    pending.value = []
+    ElMessage.success(t('notify.pendingCleared'))
+  } catch (e) {
+    ElMessage.error((e as Error).message)
+  }
+}
+
 async function load() {
   try {
-    const [c, r, h] = await Promise.all([
+    const [c, r, h, p] = await Promise.all([
       api.get<Channel[]>('/api/notify/channels'),
       api.get<Rule[]>('/api/notify/rules'),
       api.get<DeliveryRecord[]>('/api/notify/history'),
+      api.get<PendingItem[]>('/api/notify/pending'),
     ])
     channels.value = c
     rules.value = r
     history.value = h
+    pending.value = p
     loadError.value = ''
   } catch (e) {
     loadError.value = errorText(e)
@@ -679,6 +759,19 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.pending-alert {
+  margin-bottom: 10px;
+}
+.pending-alert :deep(.el-alert__title) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+}
+.pending-channels {
+  color: var(--el-text-color-secondary);
+  word-break: break-all;
+}
 .section-head {
   display: flex;
   flex-wrap: wrap;

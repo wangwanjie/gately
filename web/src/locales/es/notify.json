@@ -115,5 +115,16 @@
   "proxy": "Proxy",
   "proxyGlobalHelp": "Proxy predeterminado de todos los canales; cada canal puede definir el suyo o conectarse directamente. Admite proxies http://, https:// y socks5://; «Usar el proxy global de actualizaciones» reutiliza el proxy de actualizaciones de los ajustes del sistema. Sin proxy, los canales HTTP siguen HTTPS_PROXY y variables similares y el correo se conecta directamente.",
   "proxyChannelHelp": "Para redes donde el servicio de notificaciones solo es accesible a través de un proxy. De forma predeterminada sigue el proxy global de los ajustes de notificación.",
-  "proxySmtpHelp": "El correo abre su conexión TCP a través del proxy: los proxies http(s) usan el método CONNECT (el proxy debe permitir el puerto de correo) y los socks5 resuelven el nombre del servidor en el proxy."
+  "proxySmtpHelp": "El correo abre su conexión TCP a través del proxy: los proxies http(s) usan el método CONNECT (el proxy debe permitir el puerto de correo) y los socks5 resuelven el nombre del servidor en el proxy.",
+  "retries": "Reintentos si falla",
+  "retriesHelp": "Los envíos fallidos se reintentan a los 10, 30 y 60 segundos; 0 desactiva los reintentos. Las notificaciones de prueba se envían una sola vez.",
+  "backfillHours": "Plazo de reenvío (horas)",
+  "backfillHoursHelp": "Las notificaciones que siguen fallando tras los reintentos se guardan y se reenvían en su orden original cuando el canal se recupera (el texto indica que es un reenvío); se descartan si siguen sin enviarse pasado este plazo. 0 desactiva el reenvío. Se guardan hasta 100 por canal y el reenvío continúa tras un reinicio.",
+  "queued": "Pendiente de reenvío",
+  "backfilled": "Reenviado",
+  "attempts": "{n} intentos",
+  "pendingCount": "{n} notificaciones fallaron y se reenviarán cuando el canal se recupere:",
+  "clearPending": "Borrar",
+  "clearPendingConfirm": "¿Borrar todas las notificaciones pendientes? Ya no se reenviarán.",
+  "pendingCleared": "Notificaciones pendientes borradas"
 }
