@@ -19,6 +19,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/wangwanjie/gately/internal/applyhold"
 	"github.com/wangwanjie/gately/internal/auth"
 	"github.com/wangwanjie/gately/internal/config"
 	"github.com/wangwanjie/gately/internal/crud"
@@ -352,6 +353,14 @@ func (m *Module) stopLocked(key string) {
 }
 
 func (m *Module) restartLocked(key string) {
+	// 批量修改期间暂缓生效：配置已保存，运行中的监听与站点表保持不变，结束批量修改时再按最新配置重启
+	if applyhold.Defer(ID, key, func() {
+		m.mu.Lock()
+		defer m.mu.Unlock()
+		m.restartLocked(key)
+	}) {
+		return
+	}
 	// 站点表替换后再按新配置检查一次敲门放行：saveLocked 里的检查发生在替换之前，期间旧站点表上登录的
 	// 已删除用户或旧凭据仍可能登记放行，替换后不再有这样的请求
 	defer m.syncKnockLocked()
@@ -482,7 +491,8 @@ func (m *Module) Routes(r module.Router) {
 		},
 		View:    m.viewLocked,
 		Changed: m.restartLocked,
-		Removed: m.stopLocked,
+		// 监听已不在配置中，按配置重启即停止；经 restartLocked 以便批量修改期间同样暂缓
+		Removed: m.restartLocked,
 	}
 	// 列表带 ETag，「Web 服务」页轮询时内容没变返回 304（见 listeners_etag.go）
 	listeners.Register(etagRouter{Router: r, pattern: "GET /listeners", perm: ID + ":write"}, "/listeners")
@@ -708,7 +718,16 @@ func (m *Module) handlePutSettings(w http.ResponseWriter, r *http.Request) {
 	trustedChanged := !slices.Equal(old.TrustedProxies, s.TrustedProxies)
 	for _, l := range m.cfg.Listeners {
 		if trustedChanged && l.AcceptProxyProtocol {
-			m.stopLocked(l.Key)
+			key := l.Key
+			// 需要重新监听；批量修改期间与其他改动一起生效
+			if !applyhold.Defer(ID, key+"#relisten", func() {
+				m.mu.Lock()
+				defer m.mu.Unlock()
+				m.stopLocked(key)
+				m.restartLocked(key)
+			}) {
+				m.stopLocked(key)
+			}
 		}
 		m.restartLocked(l.Key)
 	}

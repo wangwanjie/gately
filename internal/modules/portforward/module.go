@@ -8,6 +8,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/wangwanjie/gately/internal/applyhold"
 	"github.com/wangwanjie/gately/internal/config"
 	"github.com/wangwanjie/gately/internal/crud"
 	"github.com/wangwanjie/gately/internal/fwopen"
@@ -153,6 +154,14 @@ func (m *Module) stopRuleLocked(key string) {
 // 监听参数不变时只热替换目标与路由表，不断开已有连接：管理界面本身可能正经由这条规则访问，
 // 重启会把正在等待响应的保存请求一起断开。
 func (m *Module) restartLocked(key string) {
+	// 批量修改期间暂缓生效：配置已保存，运行中的规则保持不变，结束批量修改时再按最新配置重启
+	if applyhold.Defer(ID, key, func() {
+		m.mu.Lock()
+		defer m.mu.Unlock()
+		m.restartLocked(key)
+	}) {
+		return
+	}
 	if r, ok := m.runners[key]; ok && m.cfg.Settings.Enable {
 		for _, rule := range m.cfg.Rules {
 			if rule.Key == key && rule.Enable && r.canUpdate(rule, m.cfg.Settings) {
@@ -242,7 +251,8 @@ func (m *Module) Routes(r module.Router) {
 		},
 		Removed: func(key string) {
 			m.publishIPSetUsersLocked()
-			m.stopRuleLocked(key)
+			// 规则已不在配置中，按配置重启即停止；经 restartLocked 以便批量修改期间同样暂缓
+			m.restartLocked(key)
 		},
 	}
 	rules.Register(r, "/rules")
