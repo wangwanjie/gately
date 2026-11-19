@@ -44907,6 +44907,57 @@
         "x-token-allowed": false
       }
     },
+    "/api/system/storage": {
+      "get": {
+        "description": "Renvoie la capacité de la partition contenant le répertoire de configuration (`disk`, null sur les plateformes non prises en charge), la taille totale et le nombre de fichiers du répertoire de configuration, et l'utilisation par usage dans `items` : `key` est la catégorie (logs journaux d'exécution, visitors audit des visiteurs, audit journal d'audit des opérations, history historique de configuration, backups sauvegardes de configuration, guard données de protection, network données de réseau overlay, iplists listes d'IP, certs certificats, geoip base GeoIP, programs programmes gérés, config fichiers de configuration, other autres), `paths` liste les chemins couverts (relatifs dans le répertoire de configuration ; absolus si le répertoire des journaux est en dehors, qui n'est alors pas compté dans `total`). Seules les tailles sont comptées et les liens symboliques ne sont pas suivis ; avec trop de fichiers ou après 10 secondes, le comptage s'arrête plus tôt et `truncated` vaut true.\n\nPermission requise : `system:read`.",
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Afficher l'utilisation du stockage",
+        "tags": [
+          "Système"
+        ],
+        "x-required-scope": "system:read",
+        "x-token-allowed": true
+      }
+    },
     "/api/system/update": {
       "get": {
         "description": "Lit immédiatement la liste des versions sur GitHub et les avis de sécurité publiés de Gately (GitHub Security Advisories), via le proxy du réglage global `updateProxy` ; moins de 30 secondes après la dernière vérification réussie, le résultat précédent est renvoyé. `hasUpdate` indique qu'une nouvelle version existe ; `security` vaut true quand la version actuelle est concernée par des problèmes de sécurité publiés, `advisories` liste les avis qui concernent la version actuelle (`id`, `summary`, `severity`, `url`, `ranges`) et `securityReleases` les versions plus récentes dont les notes contiennent une section sécurité. `selfUpgrade.supported` indique si ce déploiement peut être mis à jour en ligne ; sinon `reason` vaut `os`, `docker`, `fnos`, `opkg`, `apk` ou `readonly`. Renvoie 502 en cas d'échec de lecture. Les comptes en lecture seule et les jetons d'API n'ayant que des droits de lecture reçoivent le résultat de la dernière vérification (comme `/api/system/update/state`) sans contacter GitHub.\n\nPermission requise : `status:read`.",

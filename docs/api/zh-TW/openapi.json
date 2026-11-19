@@ -44907,6 +44907,57 @@
         "x-token-allowed": false
       }
     },
+    "/api/system/storage": {
+      "get": {
+        "description": "回傳設定目錄所在分割區的容量（`disk`，不支援的平台為 null）、設定目錄的總大小與檔案數，以及按用途分類的佔用 `items`：`key` 為分類（logs 執行日誌、visitors 訪客稽核、audit 操作稽核日誌、history 設定歷史、backups 設定備份、guard 防護資料、network 組網資料、iplists IP 清單、certs 憑證、geoip GeoIP 資料庫、programs 託管程式、config 設定檔、other 其他），`paths` 為包含的路徑（設定目錄內為相對路徑；日誌目錄設在設定目錄之外時為絕對路徑，且不計入 `total`）。只統計大小，不跟隨符號連結；檔案過多或超過 10 秒時提前結束，`truncated` 為 true。\n\n所需權限：`system:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "檢視儲存佔用",
+        "tags": [
+          "系統"
+        ],
+        "x-required-scope": "system:read",
+        "x-token-allowed": true
+      }
+    },
     "/api/system/update": {
       "get": {
         "description": "立即讀取 GitHub 上的發布列表與 Gately 已公開的安全公告（GitHub Security Advisories），存取時使用全域設定 `updateProxy` 中的代理；距上次成功檢查不足 30 秒時直接回傳上次結果。`hasUpdate` 表示有新版本；`security` 為 true 表示目前版本受已公開的安全問題影響，`advisories` 列出影響目前版本的安全公告（`id`、`summary`、`severity`、`url`、`ranges`），`securityReleases` 列出比目前版本新、更新說明帶有安全章節的版本。`selfUpgrade.supported` 表示目前部署方式能否線上升級，不能時 `reason` 為 `os`、`docker`、`fnos`、`opkg`、`apk` 或 `readonly`。讀取失敗回傳 502。唯讀帳號與只有讀取權限的 API 權杖只回傳上次檢查的結果（同 `/api/system/update/state`），不存取 GitHub。\n\n所需權限：`status:read`。",

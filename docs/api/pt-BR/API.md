@@ -952,6 +952,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | PUT | `/api/system/settings` | Somente sessão de login | Salvar configurações globais |
 | GET | `/api/system/settings/secrets` | Somente sessão de login | Ver Client Secrets do login de terceiros em texto puro |
 | GET | `/api/system/info` | `status:read` | Ver informações do sistema |
+| GET | `/api/system/storage` | `system:read` | Ver uso de armazenamento |
 | GET | `/api/system/update` | `status:read` | Verificar novas versões e avisos de segurança |
 | GET | `/api/system/update/state` | `status:read` | Ver o resultado da última verificação de atualizações |
 | POST | `/api/system/upgrade` | Somente sessão de login | Atualizar online para a versão mais recente |

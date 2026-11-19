@@ -44907,6 +44907,57 @@
         "x-token-allowed": false
       }
     },
+    "/api/system/storage": {
+      "get": {
+        "description": "설정 디렉터리가 있는 파티션의 용량(`disk`, 지원하지 않는 플랫폼에서는 null), 설정 디렉터리의 전체 크기와 파일 수, 용도별 사용량 `items`를 반환합니다. `key`는 분류(logs 실행 로그, visitors 방문자 감사, audit 작업 감사 로그, history 설정 기록, backups 설정 백업, guard 보호 데이터, network 네트워크 데이터, iplists IP 목록, certs 인증서, geoip GeoIP 데이터베이스, programs 관리 프로그램, config 설정 파일, other 기타)이고, `paths`는 포함된 경로입니다(설정 디렉터리 안은 상대 경로, 로그 디렉터리가 설정 디렉터리 밖에 있으면 절대 경로이며 `total`에 포함되지 않음). 크기만 집계하고 심볼릭 링크는 따라가지 않습니다. 파일이 너무 많거나 10초를 넘으면 일찍 끝나며 `truncated`가 true입니다.\n\n필요한 권한: `system:read`.",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "저장소 사용량 보기",
+        "tags": [
+          "시스템"
+        ],
+        "x-required-scope": "system:read",
+        "x-token-allowed": true
+      }
+    },
     "/api/system/update": {
       "get": {
         "description": "GitHub 의 릴리스 목록과 Gately 의 공개된 보안 공지(GitHub Security Advisories)를 즉시 읽습니다. 전역 설정 `updateProxy` 의 프록시를 사용하며, 마지막 성공 확인 후 30초 이내에는 이전 결과를 반환합니다. `hasUpdate` 는 새 버전이 있음을, `security` 가 true 이면 현재 버전이 공개된 보안 문제의 영향을 받음을 뜻합니다. `advisories` 는 현재 버전에 영향을 주는 보안 공지(`id`, `summary`, `severity`, `url`, `ranges`), `securityReleases` 는 현재 버전보다 새롭고 릴리스 노트에 보안 섹션이 있는 버전입니다. `selfUpgrade.supported` 는 이 배포 방식에서 온라인 업그레이드가 가능한지 나타내며, 불가능하면 `reason` 은 `os`, `docker`, `fnos`, `opkg`, `apk`, `readonly` 중 하나입니다. 읽기에 실패하면 502 를 반환합니다. 읽기 전용 계정과 읽기 권한만 있는 API 토큰은 GitHub에 접속하지 않고 마지막 확인 결과(`/api/system/update/state`와 동일)를 반환합니다.\n\n필요한 권한: `status:read`.",

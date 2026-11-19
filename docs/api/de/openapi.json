@@ -44907,6 +44907,57 @@
         "x-token-allowed": false
       }
     },
+    "/api/system/storage": {
+      "get": {
+        "description": "Gibt die Kapazität der Partition mit dem Konfigurationsverzeichnis (`disk`, null auf nicht unterstützten Plattformen), Gesamtgröße und Dateianzahl des Konfigurationsverzeichnisses sowie die Belegung nach Zweck in `items` zurück: `key` ist die Kategorie (logs Laufzeitprotokolle, visitors Besucher-Audit, audit Audit-Protokoll der Vorgänge, history Konfigurationsverlauf, backups Konfigurationssicherungen, guard Schutzdaten, network Overlay-Netzwerkdaten, iplists IP-Listen, certs Zertifikate, geoip GeoIP-Datenbank, programs verwaltete Programme, config Konfigurationsdateien, other Sonstiges), `paths` sind die enthaltenen Pfade (relativ im Konfigurationsverzeichnis; absolut, wenn das Protokollverzeichnis außerhalb liegt, das dann nicht in `total` zählt). Es werden nur Größen gezählt, symbolischen Links wird nicht gefolgt; bei zu vielen Dateien oder nach 10 Sekunden endet die Zählung vorzeitig und `truncated` ist true.\n\nErforderliche Berechtigung: `system:read`.",
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Speicherbelegung anzeigen",
+        "tags": [
+          "System"
+        ],
+        "x-required-scope": "system:read",
+        "x-token-allowed": true
+      }
+    },
     "/api/system/update": {
       "get": {
         "description": "Liest sofort die Release-Liste auf GitHub und die veröffentlichten Sicherheitshinweise von Gately (GitHub Security Advisories) über den Proxy der globalen Einstellung `updateProxy`; innerhalb von 30 Sekunden nach der letzten erfolgreichen Prüfung wird das vorige Ergebnis geliefert. `hasUpdate` bedeutet, dass es eine neue Version gibt; `security` ist true, wenn die aktuelle Version von veröffentlichten Sicherheitsproblemen betroffen ist, `advisories` listet die Hinweise, die die aktuelle Version betreffen (`id`, `summary`, `severity`, `url`, `ranges`), und `securityReleases` neuere Versionen, deren Release Notes einen Sicherheitsabschnitt haben. `selfUpgrade.supported` gibt an, ob diese Installation online aktualisiert werden kann; wenn nicht, ist `reason` `os`, `docker`, `fnos`, `opkg`, `apk` oder `readonly`. Liefert 502, wenn das Lesen fehlschlägt. Schreibgeschützte Konten und API-Tokens mit nur Leserechten erhalten das Ergebnis der letzten Prüfung (wie `/api/system/update/state`), ohne GitHub abzufragen.\n\nErforderliche Berechtigung: `status:read`.",

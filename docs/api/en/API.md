@@ -952,6 +952,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | PUT | `/api/system/settings` | Login sessions only | Save global settings |
 | GET | `/api/system/settings/secrets` | Login sessions only | View third-party login Client Secrets in plain text |
 | GET | `/api/system/info` | `status:read` | View system information |
+| GET | `/api/system/storage` | `system:read` | View storage usage |
 | GET | `/api/system/update` | `status:read` | Check for new versions and security advisories |
 | GET | `/api/system/update/state` | `status:read` | View the result of the last update check |
 | POST | `/api/system/upgrade` | Login sessions only | Upgrade online to the latest version |

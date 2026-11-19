@@ -44907,6 +44907,57 @@
         "x-token-allowed": false
       }
     },
+    "/api/system/storage": {
+      "get": {
+        "description": "Devuelve la capacidad de la partición que contiene el directorio de configuración (`disk`, null en plataformas no compatibles), el tamaño total y el número de archivos del directorio de configuración, y el uso por finalidad en `items`: `key` es la categoría (logs registros de ejecución, visitors auditoría de visitantes, audit registro de auditoría de operaciones, history historial de configuración, backups copias de configuración, guard datos de protección, network datos de red superpuesta, iplists listas de IP, certs certificados, geoip base de datos GeoIP, programs programas gestionados, config archivos de configuración, other otros), `paths` son las rutas incluidas (relativas dentro del directorio de configuración; absolutas si el directorio de registros está fuera de él, y entonces no cuentan en `total`). Solo se cuentan tamaños y no se siguen enlaces simbólicos; con demasiados archivos o tras 10 segundos el recuento termina antes y `truncated` es true.\n\nPermiso necesario: `system:read`.",
+        "responses": {
+          "200": {
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parámetros de solicitud incorrectos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token no válido, caducado o sin sesión iniciada"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Al token le falta el permiso necesario"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Ver uso de almacenamiento",
+        "tags": [
+          "Sistema"
+        ],
+        "x-required-scope": "system:read",
+        "x-token-allowed": true
+      }
+    },
     "/api/system/update": {
       "get": {
         "description": "Lee de inmediato la lista de versiones de GitHub y los avisos de seguridad publicados de Gately (GitHub Security Advisories), usando el proxy del ajuste global `updateProxy`; si la última comprobación correcta fue hace menos de 30 segundos, devuelve el resultado anterior. `hasUpdate` indica que hay una versión nueva; `security` es true cuando la versión actual está afectada por problemas de seguridad publicados, `advisories` enumera los avisos que afectan a la versión actual (`id`, `summary`, `severity`, `url`, `ranges`) y `securityReleases` las versiones más recientes cuyas notas incluyen una sección de seguridad. `selfUpgrade.supported` indica si este despliegue puede actualizarse en línea; si no, `reason` es `os`, `docker`, `fnos`, `opkg`, `apk` o `readonly`. Devuelve 502 si la lectura falla. Las cuentas de solo lectura y los tokens de API con solo permisos de lectura reciben el resultado de la última comprobación (como `/api/system/update/state`) sin contactar con GitHub.\n\nPermiso necesario: `status:read`.",

@@ -416,6 +416,7 @@ func (a *App) Handler() http.Handler {
 	rec.add("GET /api/system/settings/secrets", a.handleSettingsSecrets, "")
 	rec.docs["GET /api/system/settings/secrets"] = module.Doc{Summary: "查看第三方登录 Client Secret 明文", Resp: map[string]string{}}
 	rec.add("GET /api/system/info", a.handleSystemInfo, "")
+	rec.add("GET /api/system/storage", a.handleStorageUsage, "")
 	rec.add("GET /api/system/update", a.handleCheckUpdate, "")
 	rec.add("GET /api/system/update/state", a.handleUpdateState, "")
 	rec.add("POST /api/system/upgrade", a.handleUpgrade, "")
