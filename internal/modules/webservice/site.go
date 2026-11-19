@@ -599,9 +599,9 @@ func (rt *upstreamRoundTripper) RoundTrip(req *http.Request) (*http.Response, er
 			tr = h1
 		}
 		// 后台登录 Cookie 只交给本实例的管理后台，按实际发往的后端判断（换后端重试时重新判断）；
-		// 发往管理后台时附带访问路径（经过的监听与站点），管理界面据此识别保存会不会影响当前访问
-		admin := stripAdminCookies(out, up.url)
-		markAdminHop(out, admin, rt.site, att)
+		// 发往管理后台（或本实例的另一个 Web 服务监听器）时附带访问路径（经过的监听与站点），管理界面据此识别保存会不会影响当前访问
+		dest := stripAdminCookies(out, up.url)
+		markAdminHop(out, dest, up.url, rt.site, att)
 		resp, err := tr.RoundTrip(out)
 		if err == nil || !dialFailed(err) || req.Context().Err() != nil || (body != nil && body.read.Load()) {
 			return resp, err

@@ -181,6 +181,13 @@ func TestTraceWebserviceHop(t *testing.T) {
 	if len(p.Hops) != 4 || p.Hops[0].Kind != hopClient || p.Hops[0].Addr != "203.0.113.9:5000" || p.Hops[1].Kind != hopLocal {
 		t.Fatalf("经本机程序转来的外网访客应列在最外: %+v", p.Hops)
 	}
+	// 本实例两层站点：内层这一跳的 Prev 带着外层，由外向内显示为 访客 → 外层 → 内层 → 管理界面
+	p = trace(hops.Hop{Module: "webservice", Rule: "in", Site: "si", Peer: "127.0.0.1:42000",
+		Prev: []hops.Hop{{Module: "webservice", Rule: "out", Site: "so", Peer: "198.51.100.8:6000"}}})
+	if len(p.Hops) != 4 || p.Hops[0].Kind != hopClient || p.Hops[0].Addr != "198.51.100.8:6000" ||
+		p.Hops[1].Rule != "out" || p.Hops[2].Rule != "in" || p.Hops[3].Kind != hopAdmin {
+		t.Fatalf("两层站点应逐层显示并从外层的对端继续追溯: %+v", p.Hops)
+	}
 	// 伪造的路径头无效，按直接访问处理
 	r := httptest.NewRequest("GET", "/api/system/access-path", nil)
 	r.RemoteAddr = "198.51.100.7:1234"
