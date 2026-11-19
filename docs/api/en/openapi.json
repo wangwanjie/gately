@@ -44907,6 +44907,57 @@
         "x-token-allowed": false
       }
     },
+    "/api/system/storage": {
+      "get": {
+        "description": "Returns the capacity of the partition holding the config directory (`disk`, null on unsupported platforms), the total size and file count of the config directory, and usage by purpose in `items`: `key` is the category (logs run logs, visitors visitor audit, audit operation audit log, history config history, backups config backups, guard protection data, network overlay network data, iplists IP lists, certs certificates, geoip GeoIP database, programs managed programs, config config files, other other), `paths` lists the paths it covers (relative inside the config directory; absolute when the log directory is outside the config directory, which is then not counted in `total`). Only sizes are counted and symbolic links are not followed; with too many files or after 10 seconds counting stops early and `truncated` is true.\n\nRequired permission: `system:read`.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "View storage usage",
+        "tags": [
+          "System"
+        ],
+        "x-required-scope": "system:read",
+        "x-token-allowed": true
+      }
+    },
     "/api/system/update": {
       "get": {
         "description": "Immediately reads the release list on GitHub and Gately's published security advisories (GitHub Security Advisories), through the proxy in the global `updateProxy` setting; within 30 seconds of the last successful check the previous result is returned. `hasUpdate` means a new version exists; `security` is true when the current version is affected by published security issues, `advisories` lists the advisories affecting the current version (`id`, `summary`, `severity`, `url`, `ranges`), and `securityReleases` lists versions newer than the current one whose release notes have a security section. `selfUpgrade.supported` tells whether this deployment can upgrade online; if not, `reason` is `os`, `docker`, `fnos`, `opkg`, `apk` or `readonly`. Returns 502 when reading fails. Read-only accounts and API tokens with only read permissions get the result of the last check (as from `/api/system/update/state`) without contacting GitHub.\n\nRequired permission: `status:read`.",
