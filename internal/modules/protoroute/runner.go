@@ -11,6 +11,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/wangwanjie/gately/internal/hops"
 	"github.com/wangwanjie/gately/internal/iplist"
 	"github.com/wangwanjie/gately/internal/knockgate"
 	"github.com/wangwanjie/gately/internal/l4proxy"
@@ -262,6 +263,8 @@ func (r *runner) handle(ctx context.Context, rt *runtime, client net.Conn, pair 
 		return
 	}
 	defer conn.Close()
+	// 目标在本机时登记这一跳，管理界面经此规则访问时能识别出访问路径
+	defer hops.Track(client, conn, hops.Hop{Module: "protoroute", Rule: rt.rule.Key, Route: t.name})()
 	if err := l4proxy.WritePrefix(conn, client, t.proxyProtocol, peeked); err != nil {
 		rt.log.Warnf("%s 写入目标失败: %v", client.RemoteAddr(), err)
 		return

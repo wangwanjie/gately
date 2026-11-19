@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/wangwanjie/gately/internal/banlist"
+	"github.com/wangwanjie/gately/internal/hops"
 	"github.com/wangwanjie/gately/internal/iplist"
 	"github.com/wangwanjie/gately/internal/l4proxy"
 	"github.com/wangwanjie/gately/internal/logbuf"
@@ -204,6 +205,8 @@ func (r *runner) handleTCP(ctx context.Context, rt *route, client net.Conn, targ
 		return
 	}
 	defer target.Close()
+	// 目标在本机时登记这一跳，管理界面经此规则访问时能识别出访问路径
+	defer hops.Track(client, target, hops.Hop{Module: "portforward", Rule: rt.rule.Key})()
 	if err := l4proxy.WritePrefix(target, client, rt.rule.ProxyProtocol, nil); err != nil {
 		rt.log.Warnf("%s 发送 PROXY 协议头失败: %v", client.RemoteAddr(), err)
 		return
