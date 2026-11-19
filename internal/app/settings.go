@@ -60,6 +60,9 @@ type Settings struct {
 	// LoginGlobalLimit 为陌生来源（从未成功登录过的地址）10 分钟内允许累计的登录失败总数：用完后陌生地址的登录暂时受限，
 	// 常用地址不受影响，用来抵御靠大量不同地址分散尝试、绕过单 IP 限流的爆破。0 表示默认 20，负数表示关闭
 	LoginGlobalLimit int `json:"loginGlobalLimit"`
+	// ConfirmTimeout 为管理界面修改端口转发、协议分流、Web 服务与全局设置后确认访问正常的时限（秒），
+	// 超时未确认自动回滚（见 confirm.go）。0 表示默认 90，负数表示关闭
+	ConfirmTimeout int `json:"confirmTimeout"`
 	// LegacyAPIToken 是旧版的单个全局 API 令牌，仅用于启动时迁移为"遗留令牌"，迁移后清空。
 	// 现在的令牌由 apitoken 包管理，保存在 tokens.json。
 	LegacyAPIToken string `json:"apiToken,omitempty"`
@@ -172,6 +175,9 @@ func (s *Settings) normalize() {
 	}
 	slices.Sort(off)
 	s.DisabledModules = off
+	if s.ConfirmTimeout < 0 {
+		s.ConfirmTimeout = -1
+	}
 }
 
 // Validate 校验设置。
@@ -213,6 +219,9 @@ func (s *Settings) Validate() error {
 	}
 	if s.LoginGlobalLimit > 10000 {
 		return errors.New("陌生来源的失败预算不能超过 10000")
+	}
+	if s.ConfirmTimeout > 0 && (s.ConfirmTimeout < minConfirmTimeout || s.ConfirmTimeout > maxConfirmTimeout) {
+		return fmt.Errorf("配置变更的确认时限应在 %d~%d 秒之间", minConfirmTimeout, maxConfirmTimeout)
 	}
 	if s.TimeZone != "" {
 		if _, err := time.LoadLocation(s.TimeZone); err != nil {

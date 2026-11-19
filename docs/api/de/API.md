@@ -965,6 +965,9 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | POST | `/api/history/{name}/{id}/restore` | Nur Anmeldesitzung | Konfiguration auf eine Verlaufsversion zurücksetzen |
 | POST | `/api/system/restore` | Nur Anmeldesitzung | Konfiguration aus Backup wiederherstellen |
 | POST | `/api/system/restart` | Nur Anmeldesitzung | Gately neu starten |
+| GET | `/api/system/confirm` | Nur Anmeldesitzung | Ausstehende Konfigurationsänderung anzeigen |
+| GET | `/api/system/confirm/connect` | Nur Anmeldesitzung | Konfigurationsänderung bestätigen |
+| POST | `/api/system/confirm/rollback` | Nur Anmeldesitzung | Ausstehende Konfigurationsänderung jetzt zurücksetzen |
 | POST | `/api/system/selfcheck` | Nur Anmeldesitzung | Selbsttest von Netzwerk und Konfiguration |
 | GET | `/api/system/onboarding` | Nur Anmeldesitzung | Status der Einführung beim ersten Start |
 | POST | `/api/system/onboarding/dismiss` | Nur Anmeldesitzung | Einführung beim ersten Start abschließen oder schließen |

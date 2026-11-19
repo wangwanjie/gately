@@ -965,6 +965,9 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | POST | `/api/history/{name}/{id}/restore` | Somente sessão de login | Reverter uma configuração para uma versão do histórico |
 | POST | `/api/system/restore` | Somente sessão de login | Restaurar a configuração a partir do backup |
 | POST | `/api/system/restart` | Somente sessão de login | Reiniciar o Gately |
+| GET | `/api/system/confirm` | Somente sessão de login | Ver a alteração de configuração pendente |
+| GET | `/api/system/confirm/connect` | Somente sessão de login | Confirmar a alteração de configuração |
+| POST | `/api/system/confirm/rollback` | Somente sessão de login | Reverter agora a alteração de configuração pendente |
 | POST | `/api/system/selfcheck` | Somente sessão de login | Autoverificação de rede e configuração |
 | GET | `/api/system/onboarding` | Somente sessão de login | Estado da introdução do primeiro início |
 | POST | `/api/system/onboarding/dismiss` | Somente sessão de login | Concluir ou fechar a introdução do primeiro início |

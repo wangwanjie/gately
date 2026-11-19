@@ -965,6 +965,9 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/history/{name}/{id}/restore` | ログインセッションのみ | 設定を履歴バージョンにロールバック |
 | POST | `/api/system/restore` | ログインセッションのみ | バックアップから設定を復元 |
 | POST | `/api/system/restart` | ログインセッションのみ | Gately を再起動 |
+| GET | `/api/system/confirm` | ログインセッションのみ | 未確認の設定変更を表示 |
+| GET | `/api/system/confirm/connect` | ログインセッションのみ | 設定変更を確認 |
+| POST | `/api/system/confirm/rollback` | ログインセッションのみ | 未確認の設定変更を今すぐロールバック |
 | POST | `/api/system/selfcheck` | ログインセッションのみ | ネットワークと設定のセルフチェック |
 | GET | `/api/system/onboarding` | ログインセッションのみ | 初回起動ガイドの状態 |
 | POST | `/api/system/onboarding/dismiss` | ログインセッションのみ | 初回起動ガイドを完了または閉じる |

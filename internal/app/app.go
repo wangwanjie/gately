@@ -151,6 +151,10 @@ type App struct {
 	crash *crashlog.Recorder
 	// gwOrigins 为经统一网关访问时已确认的管理界面页面来源，见 gatewayOriginHost
 	gwOrigins gatewayOrigins
+	// confirm 为待确认的配置变更（超时自动回滚），见 confirm.go
+	confirm confirmState
+	// bootSettings 为本次启动时配置文件中的全局设置，用于判断需要重启才生效的设置是否改过
+	bootSettings Settings
 }
 
 // New 加载配置并初始化所有模块，但不启动网络服务。
@@ -180,6 +184,11 @@ func New(opts Options) (_ *App, err error) {
 		return nil, err
 	}
 	store.EnableHistory(historyKeep, historySkip...)
+	// 上次运行留下的待确认配置变更：已超时或已决定回滚时，在加载任何配置之前恢复改动前的内容
+	var confirmRec confirmRecovery
+	if !opts.Demo {
+		confirmRec = recoverPendingConfirm(store, time.Now())
+	}
 	if opts.ApplyDir != "" {
 		// 声明式配置目录里同样是带密钥的配置文件，与配置目录一样不允许被存储挂载、静态站点或文件服务提供出去
 		fsperm.Protect(opts.ApplyDir)
@@ -213,10 +222,12 @@ func New(opts Options) (_ *App, err error) {
 		updWake:    make(chan struct{}, 1),
 		audit:      audit.New(opts.ConfigDir),
 	}
+	a.confirm.recovered = confirmRec
 	if _, err := store.Load(settingsName, &a.settings); err != nil {
 		return nil, err
 	}
 	a.settings.normalize()
+	a.bootSettings = a.settings
 	a.sysLogs.SetEcho(echo)
 	a.sysLogs.SetMinLevel(effectiveLogLevel(a.settings))
 	// 先按设置开启日志落盘并恢复上次的日志，后续初始化过程中的日志也能写入文件
@@ -417,6 +428,9 @@ func (a *App) Handler() http.Handler {
 	rec.add("POST /api/history/{name}/{id}/restore", a.handleHistoryRestore, "")
 	rec.add("POST /api/system/restore", a.handleRestore, "")
 	rec.add("POST /api/system/restart", a.handleRestart, "")
+	rec.add("GET /api/system/confirm", a.handleConfirmStatus, "")
+	rec.add("GET /api/system/confirm/connect", a.handleConfirmSocket, "")
+	rec.add("POST /api/system/confirm/rollback", a.handleConfirmRollback, "")
 	rec.add("POST /api/system/selfcheck", a.handleSelfCheck, "")
 	rec.add("GET /api/system/onboarding", a.handleOnboarding, "")
 	rec.add("POST /api/system/onboarding/dismiss", a.handleOnboardingDismiss, "")
@@ -464,7 +478,7 @@ func (a *App) Handler() http.Handler {
 	rec.add("GET /api/openapi.json", a.handleOpenAPI, "")
 	a.routes = rec.routes
 	a.routeDocs = rec.docs
-	mux.Handle("/api/", a.requireAuth(a.demoGuard(a.roleGuard(a.defaultPasswordGuard(a.redactReadOnly(a.audit.Middleware(a.demoOverlay(protected))))))))
+	mux.Handle("/api/", a.requireAuth(a.demoGuard(a.roleGuard(a.defaultPasswordGuard(a.redactReadOnly(a.audit.Middleware(a.demoOverlay(a.confirmGuard(protected)))))))))
 	mux.Handle("/", a.staticHandler())
 	// 压缩放在翻译之外，压缩的是翻译后的最终内容；已预压缩的静态资源自带 Content-Encoding，不会重复压缩
 	// 最外层限制请求体读取速度，登录等未认证接口同样受限
@@ -506,6 +520,9 @@ func (a *App) run(parent context.Context) error {
 		a.sysLogs.Add(logbuf.LevelInfo, "", "以下功能模块已关闭，未启动："+strings.Join(disabled, "、"))
 	}
 	go a.watchAccountReset(ctx)
+	// 待确认的配置变更在模块启动后开始计时：通知中心此时已订阅事件，可以发出回滚通知
+	a.startConfirm()
+	defer a.stopConfirmTimer()
 	if demo.Enabled() {
 		a.sysLogs.Add(logbuf.LevelInfo, "", "演示模式：全部数据面服务不启动，写操作与对外动作不可用")
 		go a.runDemoReset(ctx)

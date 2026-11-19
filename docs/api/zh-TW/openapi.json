@@ -43630,6 +43630,144 @@
         "x-token-allowed": false
       }
     },
+    "/api/system/confirm": {
+      "get": {
+        "description": "僅登入工作階段可用。管理員工作階段帶請求標頭 `X-Gately-Confirm: 1` 儲存連接埠轉發、協定分流、Web 服務或全域設定後，若設定檔有變化，伺服器記錄修改前的內容，作為待確認的設定變更；逾時未確認時 Gately 重新啟動並在啟動時還原修改前的內容（修改後的版本保存在設定歷史中）。`enabled` 為是否啟用（全域設定 `confirmTimeout`：0 為預設 90 秒，負數關閉），`timeout` 為確認時限（秒）；`pending` 為進行中的變更，沒有時為 null：`configs` 為涉及的設定名（模組 ID，全域設定為 `gately`），`remaining` 為距自動回滾的剩餘秒數，`waitRestart` 表示等待重新啟動後開始計時，`rollback` 表示已決定回滾、正在重新啟動；`rolledBack` 為本次啟動時回滾掉的變更（`configs` 與 `reason`：`timeout` 逾時未確認、`manual` 手動回滾、`boots` 連續啟動次數過多），沒有時為 null。\n\n**僅限登入工作階段使用，API 權杖無法存取此介面。**",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "summary": "查看待確認的設定變更",
+        "tags": [
+          "系統"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/confirm/connect": {
+      "get": {
+        "description": "僅登入工作階段可用，只接受 WebSocket：瀏覽器為 WebSocket 建立新連線，經過的是修改後的轉發與監聽，能證明新設定下仍可存取管理介面；修改前建立的長連線在熱更新後仍連著舊目標，不能用來確認。連線建立後伺服器傳送一則訊息 `{\"status\": ...}` 並關閉：`confirmed` 已確認，`none` 沒有待確認變更，`waitRestart` 需重新啟動後再確認，`rollingBack` 已決定回滾，`error` 確認失敗（附 `error` 說明）。\n\n**僅限登入工作階段使用，API 權杖無法存取此介面。**",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "summary": "確認設定變更",
+        "tags": [
+          "系統"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/confirm/rollback": {
+      "post": {
+        "description": "僅登入工作階段可用。標記回滾並重新啟動，啟動時還原修改前的內容；沒有待確認變更時回傳 409。\n\n**僅限登入工作階段使用，API 權杖無法存取此介面。**",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "summary": "立即回滾待確認的設定變更",
+        "tags": [
+          "系統"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
     "/api/system/diagnostics": {
       "get": {
         "description": "`logs=0` 不含日誌，`preview=1` 以 JSON 回傳各檔案內容。\n\n**僅限登入工作階段使用，API 權杖無法存取此介面。**",
@@ -43986,7 +44124,7 @@
     },
     "/api/system/restart": {
       "post": {
-        "description": "**僅限登入工作階段使用，API 權杖無法存取此介面。**",
+        "description": "僅登入工作階段可用。帶請求標頭 `X-Gately-Confirm: 1` 時，需要重新啟動才生效的設定（管理介面監聽位址、功能模組開關）與本次啟動時不同，就登記為待確認的設定變更，重新啟動後開始計時，逾時未確認自動還原這幾項設定，見 `GET /api/system/confirm`。\n\n**僅限登入工作階段使用，API 權杖無法存取此介面。**",
         "responses": {
           "200": {
             "description": "成功"
@@ -44175,7 +44313,7 @@
     },
     "/api/system/settings": {
       "get": {
-        "description": "僅登入工作階段可用。唯讀欄位 `modules` 列出全部功能模組及相依關係，`gatewayAvailable` 表示以飛牛統一閘道方式執行。`updateProxy` 為檢查更新與線上升級存取 GitHub 時使用的代理。`restrictOutbound` 為 true 時（預設 false），管理員設定的對外請求（Webhook、通知、IP 清單訂閱、DDNS 回呼與 IP 查詢位址、更新檢查與程式下載、第三方登入等）會在連線時拒絕迴環、私有網路、連結本機（含雲端供應商中繼資料位址 169.254.169.254）與 ULA 等位址，對網域解析結果和重新導向同樣有效，儲存後立即生效；反向代理上游、網路喚醒、儲存掛載等面向內網的功能不受影響。`denyMode` 為未授權存取（被封鎖、僅內網時的外網存取、未經過安全入口）的回應方式：空為預設提示頁，`notfound` 純 404，`blank` 空白頁，`close` 中斷連線，`drop` 不回應直到逾時，`custom` 自訂頁面；`denyStatus` 為自訂頁面的狀態碼（200、403、404、410、500、502、503），`denyPage` 為自訂頁面 HTML（上限 64 KB，在禁止指令碼與外部資源的沙箱 CSP 下顯示）。登入限流：`maxLoginFailures` 為單一來源連續失敗的上限，`lockMinutes` 為鎖定分鐘數，同一來源反覆被鎖定時鎖定時長加倍（最長 24 小時）；`loginGlobalLimit` 為陌生來源（從未登入成功過的位址）10 分鐘內允許的密碼登入失敗總數，0 表示預設 20，負數表示關閉，用完後陌生來源的密碼登入回傳 429，常用位址與 Passkey 登入不受影響。\n\n**僅限登入工作階段使用，API 權杖無法存取此介面。**",
+        "description": "僅登入工作階段可用。唯讀欄位 `modules` 列出全部功能模組及相依關係，`gatewayAvailable` 表示以飛牛統一閘道方式執行。`updateProxy` 為檢查更新與線上升級存取 GitHub 時使用的代理。`restrictOutbound` 為 true 時（預設 false），管理員設定的對外請求（Webhook、通知、IP 清單訂閱、DDNS 回呼與 IP 查詢位址、更新檢查與程式下載、第三方登入等）會在連線時拒絕迴環、私有網路、連結本機（含雲端供應商中繼資料位址 169.254.169.254）與 ULA 等位址，對網域解析結果和重新導向同樣有效，儲存後立即生效；反向代理上游、網路喚醒、儲存掛載等面向內網的功能不受影響。`denyMode` 為未授權存取（被封鎖、僅內網時的外網存取、未經過安全入口）的回應方式：空為預設提示頁，`notfound` 純 404，`blank` 空白頁，`close` 中斷連線，`drop` 不回應直到逾時，`custom` 自訂頁面；`denyStatus` 為自訂頁面的狀態碼（200、403、404、410、500、502、503），`denyPage` 為自訂頁面 HTML（上限 64 KB，在禁止指令碼與外部資源的沙箱 CSP 下顯示）。登入限流：`maxLoginFailures` 為單一來源連續失敗的上限，`lockMinutes` 為鎖定分鐘數，同一來源反覆被鎖定時鎖定時長加倍（最長 24 小時）；`loginGlobalLimit` 為陌生來源（從未登入成功過的位址）10 分鐘內允許的密碼登入失敗總數，0 表示預設 20，負數表示關閉，用完後陌生來源的密碼登入回傳 429，常用位址與 Passkey 登入不受影響。`confirmTimeout` 為管理介面修改連接埠轉發、協定分流、Web 服務與全域設定後確認存取正常的時限（秒，30~600），逾時未確認自動回滾；0 為預設 90，負數關閉，見 `GET /api/system/confirm`。\n\n**僅限登入工作階段使用，API 權杖無法存取此介面。**",
         "responses": {
           "200": {
             "description": "成功"

@@ -43630,6 +43630,144 @@
         "x-token-allowed": false
       }
     },
+    "/api/system/confirm": {
+      "get": {
+        "description": "Sessions connectées uniquement. Quand une session administrateur enregistre la redirection de ports, le routage par protocole, le service web ou les paramètres globaux avec l'en-tête `X-Gately-Confirm: 1` et que le fichier de configuration change, le serveur conserve le contenu précédent comme modification de configuration en attente ; sans confirmation à temps, Gately redémarre et restaure le contenu précédent au démarrage (la version modifiée reste dans l'historique de configuration). `enabled` indique si la fonction est active (paramètre global `confirmTimeout` : 0 pour la valeur par défaut de 90 secondes, négatif pour la désactiver), `timeout` est le délai en secondes ; `pending` est la modification en cours, ou null : `configs` liste les configurations concernées (ID de module, `gately` pour les paramètres globaux), `remaining` les secondes restantes avant le retour automatique, `waitRestart` indique que le délai démarre après un redémarrage, `rollback` que le retour en arrière est décidé et que Gately redémarre ; `rolledBack` est la modification annulée à ce démarrage (`configs` et `reason` : `timeout` non confirmée à temps, `manual` annulée à la main, `boots` trop de démarrages consécutifs), ou null.\n\n**Disponible uniquement pour les sessions de connexion ; les jetons d'API ne peuvent pas accéder à ce point d'accès.**",
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "summary": "Voir la modification de configuration en attente",
+        "tags": [
+          "Système"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/confirm/connect": {
+      "get": {
+        "description": "Sessions connectées uniquement, WebSocket uniquement : le navigateur ouvre une nouvelle connexion pour un WebSocket, qui passe par la redirection et les écoutes modifiées et prouve que l'interface d'administration reste accessible avec la nouvelle configuration ; les connexions persistantes ouvertes avant la modification atteignent encore l'ancienne cible après une mise à jour à chaud et ne peuvent pas servir à confirmer. Une fois connecté, le serveur envoie un message `{\"status\": ...}` puis ferme : `confirmed` confirmé, `none` rien en attente, `waitRestart` confirmer après le redémarrage, `rollingBack` retour en arrière décidé, `error` échec de la confirmation (description dans `error`).\n\n**Disponible uniquement pour les sessions de connexion ; les jetons d'API ne peuvent pas accéder à ce point d'accès.**",
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "summary": "Confirmer la modification de configuration",
+        "tags": [
+          "Système"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/confirm/rollback": {
+      "post": {
+        "description": "Sessions connectées uniquement. Marque le retour en arrière et redémarre ; le contenu précédent est restauré au démarrage. Renvoie 409 s'il n'y a rien en attente.\n\n**Disponible uniquement pour les sessions de connexion ; les jetons d'API ne peuvent pas accéder à ce point d'accès.**",
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "summary": "Annuler maintenant la modification de configuration en attente",
+        "tags": [
+          "Système"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
     "/api/system/diagnostics": {
       "get": {
         "description": "`logs=0` exclut les journaux ; `preview=1` renvoie le contenu de chaque fichier en JSON.\n\n**Disponible uniquement pour les sessions de connexion ; les jetons d'API ne peuvent pas accéder à ce point d'accès.**",
@@ -43986,7 +44124,7 @@
     },
     "/api/system/restart": {
       "post": {
-        "description": "**Disponible uniquement pour les sessions de connexion ; les jetons d'API ne peuvent pas accéder à ce point d'accès.**",
+        "description": "Sessions connectées uniquement. Avec l'en-tête `X-Gately-Confirm: 1`, les réglages qui ne s'appliquent qu'après redémarrage (adresses d'écoute de l'interface d'administration, activation des modules) différents de ce démarrage sont enregistrés comme modification de configuration en attente ; le délai démarre après le redémarrage et, sans confirmation à temps, ces réglages sont restaurés. Voir `GET /api/system/confirm`.\n\n**Disponible uniquement pour les sessions de connexion ; les jetons d'API ne peuvent pas accéder à ce point d'accès.**",
         "responses": {
           "200": {
             "description": "Succès"
@@ -44175,7 +44313,7 @@
     },
     "/api/system/settings": {
       "get": {
-        "description": "Session uniquement. Le champ en lecture seule `modules` liste tous les modules et leurs dépendances ; `gatewayAvailable` indique que Gately fonctionne derrière la passerelle unifiée de fnOS. `updateProxy` est le proxy utilisé pour joindre GitHub lors de la recherche de mises à jour et de la mise à niveau en ligne. `restrictOutbound`, à true (false par défaut), fait refuser aux requêtes sortantes configurées par l'administrateur (webhooks, notifications, abonnements aux listes d'IP, rappels DDNS et URL de détection d'IP, vérification des mises à jour et téléchargements de programmes, connexion via un tiers) de se connecter aux adresses de bouclage, privées, link-local (dont l'adresse de métadonnées cloud 169.254.169.254) et ULA ; cela couvre aussi les noms de domaine résolus et les redirections, et prend effet dès l'enregistrement. Les amonts de proxy inverse, Wake-on-LAN, les montages de stockage et les autres fonctions destinées au réseau interne ne sont pas concernés. `denyMode` est la façon de répondre aux accès non autorisés (clients bannis, accès depuis l’extérieur en mode réseau local uniquement, accès sans passer par le point d’entrée sécurisé) : vide pour la page d’avertissement par défaut, `notfound` pour un simple 404, `blank` pour une page vierge, `close` pour fermer la connexion, `drop` pour ne pas répondre jusqu’au délai d’expiration, `custom` pour une page personnalisée. `denyStatus` est le code d’état de la page personnalisée (200, 403, 404, 410, 500, 502, 503) et `denyPage` le HTML de la page personnalisée (64 Ko maximum, affiché sous une CSP en bac à sable qui bloque les scripts et les ressources externes). Limitation des connexions : `maxLoginFailures` est le nombre d'échecs consécutifs autorisés par source et `lockMinutes` la durée du verrouillage en minutes ; une source verrouillée à répétition voit cette durée doubler à chaque fois (jusqu'à 24 heures). `loginGlobalLimit` est le nombre total d'échecs de connexion par mot de passe autorisés depuis des sources inconnues (adresses ne s'étant jamais connectées avec succès) sur 10 minutes ; 0 signifie la valeur par défaut de 20 et une valeur négative le désactive. Une fois épuisé, les connexions par mot de passe depuis des sources inconnues renvoient 429 ; les adresses connues et les connexions par Passkey ne sont pas concernées.\n\n**Disponible uniquement pour les sessions de connexion ; les jetons d'API ne peuvent pas accéder à ce point d'accès.**",
+        "description": "Session uniquement. Le champ en lecture seule `modules` liste tous les modules et leurs dépendances ; `gatewayAvailable` indique que Gately fonctionne derrière la passerelle unifiée de fnOS. `updateProxy` est le proxy utilisé pour joindre GitHub lors de la recherche de mises à jour et de la mise à niveau en ligne. `restrictOutbound`, à true (false par défaut), fait refuser aux requêtes sortantes configurées par l'administrateur (webhooks, notifications, abonnements aux listes d'IP, rappels DDNS et URL de détection d'IP, vérification des mises à jour et téléchargements de programmes, connexion via un tiers) de se connecter aux adresses de bouclage, privées, link-local (dont l'adresse de métadonnées cloud 169.254.169.254) et ULA ; cela couvre aussi les noms de domaine résolus et les redirections, et prend effet dès l'enregistrement. Les amonts de proxy inverse, Wake-on-LAN, les montages de stockage et les autres fonctions destinées au réseau interne ne sont pas concernés. `denyMode` est la façon de répondre aux accès non autorisés (clients bannis, accès depuis l’extérieur en mode réseau local uniquement, accès sans passer par le point d’entrée sécurisé) : vide pour la page d’avertissement par défaut, `notfound` pour un simple 404, `blank` pour une page vierge, `close` pour fermer la connexion, `drop` pour ne pas répondre jusqu’au délai d’expiration, `custom` pour une page personnalisée. `denyStatus` est le code d’état de la page personnalisée (200, 403, 404, 410, 500, 502, 503) et `denyPage` le HTML de la page personnalisée (64 Ko maximum, affiché sous une CSP en bac à sable qui bloque les scripts et les ressources externes). Limitation des connexions : `maxLoginFailures` est le nombre d'échecs consécutifs autorisés par source et `lockMinutes` la durée du verrouillage en minutes ; une source verrouillée à répétition voit cette durée doubler à chaque fois (jusqu'à 24 heures). `loginGlobalLimit` est le nombre total d'échecs de connexion par mot de passe autorisés depuis des sources inconnues (adresses ne s'étant jamais connectées avec succès) sur 10 minutes ; 0 signifie la valeur par défaut de 20 et une valeur négative le désactive. Une fois épuisé, les connexions par mot de passe depuis des sources inconnues renvoient 429 ; les adresses connues et les connexions par Passkey ne sont pas concernées. `confirmTimeout` est le délai dont dispose l'interface d'administration pour confirmer que l'accès fonctionne après une modification de la redirection de ports, du routage par protocole, du service web ou des paramètres globaux (secondes, 30 à 600) ; sans confirmation, la modification est annulée automatiquement ; 0 pour la valeur par défaut de 90, négatif pour désactiver. Voir `GET /api/system/confirm`.\n\n**Disponible uniquement pour les sessions de connexion ; les jetons d'API ne peuvent pas accéder à ce point d'accès.**",
         "responses": {
           "200": {
             "description": "Succès"

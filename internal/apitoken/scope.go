@@ -40,6 +40,8 @@ var forbiddenPrefixes = []string{
 	"/api/system/diagnostics",
 	"/api/system/restore",
 	"/api/system/restart",
+	// 确认或回滚配置变更只在管理界面中进行
+	"/api/system/confirm",
 	// 在线升级会替换可执行文件
 	"/api/system/upgrade",
 	"/api/system/selfcheck",

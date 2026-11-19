@@ -43630,6 +43630,144 @@
         "x-token-allowed": false
       }
     },
+    "/api/system/confirm": {
+      "get": {
+        "description": "ログインセッションのみ利用可能。管理者セッションがリクエストヘッダー `X-Gately-Confirm: 1` 付きでポート転送・プロトコル振り分け・Web サービス・グローバル設定を保存し、設定ファイルが変わった場合、サーバーは変更前の内容を未確認の設定変更として記録します。時間内に確認されなければ Gately は再起動し、起動時に変更前の内容を復元します（変更後の版は設定履歴に保存）。`enabled` は有効かどうか（グローバル設定 `confirmTimeout`：0 で既定の 90 秒、負数で無効）、`timeout` は確認期限（秒）。`pending` は進行中の変更で、なければ null：`configs` は対象の設定名（モジュール ID、グローバル設定は `gately`）、`remaining` は自動ロールバックまでの残り秒数、`waitRestart` は再起動後に計時を始めること、`rollback` はロールバックが決まり再起動中であることを表します。`rolledBack` は今回の起動時にロールバックした変更（`configs` と `reason`：`timeout` 期限切れ、`manual` 手動、`boots` 連続起動回数超過）で、なければ null。\n\n**ログインセッションでのみ利用できます。API トークンではこのエンドポイントにアクセスできません。**",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "summary": "未確認の設定変更を表示",
+        "tags": [
+          "システム"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/confirm/connect": {
+      "get": {
+        "description": "ログインセッションのみ、WebSocket のみ受け付けます。ブラウザーは WebSocket 用に新しい接続を作るため、変更後の転送と待ち受けを通り、新しい設定でも管理画面にアクセスできることを示せます。変更前に張られた長い接続はホット更新後も古い宛先につながっており、確認には使えません。接続後、サーバーはメッセージ `{\"status\": ...}` を 1 件送って閉じます：`confirmed` 確認済み、`none` 未確認の変更なし、`waitRestart` 再起動後に確認、`rollingBack` ロールバック決定済み、`error` 確認失敗（`error` に説明）。\n\n**ログインセッションでのみ利用できます。API トークンではこのエンドポイントにアクセスできません。**",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "summary": "設定変更を確認",
+        "tags": [
+          "システム"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/confirm/rollback": {
+      "post": {
+        "description": "ログインセッションのみ利用可能。ロールバックを指定して再起動し、起動時に変更前の内容を復元します。未確認の変更がない場合は 409 を返します。\n\n**ログインセッションでのみ利用できます。API トークンではこのエンドポイントにアクセスできません。**",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "summary": "未確認の設定変更を今すぐロールバック",
+        "tags": [
+          "システム"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
     "/api/system/diagnostics": {
       "get": {
         "description": "`logs=0` でログを除外し、`preview=1` で各ファイルの内容を JSON で返します。\n\n**ログインセッションでのみ利用できます。API トークンではこのエンドポイントにアクセスできません。**",
@@ -43986,7 +44124,7 @@
     },
     "/api/system/restart": {
       "post": {
-        "description": "**ログインセッションでのみ利用できます。API トークンではこのエンドポイントにアクセスできません。**",
+        "description": "ログインセッションのみ利用可能。リクエストヘッダー `X-Gately-Confirm: 1` を付けると、再起動後に有効になる設定（管理画面の待ち受けアドレス、機能モジュールのオン／オフ）が今回の起動時と異なる場合、未確認の設定変更として記録し、再起動後に計時を始めます。時間内に確認されなければこれらの設定を元に戻します。`GET /api/system/confirm` を参照。\n\n**ログインセッションでのみ利用できます。API トークンではこのエンドポイントにアクセスできません。**",
         "responses": {
           "200": {
             "description": "成功"
@@ -44175,7 +44313,7 @@
     },
     "/api/system/settings": {
       "get": {
-        "description": "ログインセッションのみ利用可能。読み取り専用フィールド `modules` はすべての機能モジュールと依存関係を示し、`gatewayAvailable` は fnOS 統合ゲートウェイ経由で動作していることを示します。`updateProxy` は更新確認とオンラインアップグレードで GitHub にアクセスする際のプロキシです。`restrictOutbound` が true（既定は false）の場合、管理者が設定した外向きリクエスト（Webhook、通知、IP リストの購読、DDNS のコールバックと IP 取得 URL、更新確認とプログラムのダウンロード、サードパーティログインなど）は、ループバック、プライベート、リンクローカル（クラウドのメタデータアドレス 169.254.169.254 を含む）、ULA などのアドレスへの接続時に拒否されます。名前解決の結果とリダイレクトにも適用され、保存後すぐに有効になります。リバースプロキシの上流、Wake-on-LAN、ストレージのマウントなど内部ネットワーク向けの機能には影響しません。`denyMode` は未認可アクセス（ブロック中、内部ネットワーク限定時の外部からのアクセス、セキュアエントリを経由しないアクセス）への応答方式です。空はデフォルトの案内ページ、`notfound` は単純な 404、`blank` は空白ページ、`close` は接続を切断、`drop` はタイムアウトまで応答しない、`custom` はカスタムページです。`denyStatus` はカスタムページのステータスコード（200、403、404、410、500、502、503）、`denyPage` はカスタムページの HTML（上限 64 KB、スクリプトと外部リソースを禁止するサンドボックス CSP の下で表示）です。ログイン制限：`maxLoginFailures` は送信元ごとの連続失敗の上限、`lockMinutes` はロック時間（分）で、同じ送信元が繰り返しロックされるたびにロック時間は倍になります（最長 24 時間）。`loginGlobalLimit` は未知の送信元（一度もログインに成功していないアドレス）からの 10 分間のパスワードログイン失敗の合計上限で、0 は既定値 20、負の値は無効を意味します。使い切ると未知の送信元からのパスワードログインは 429 を返し、既知のアドレスと Passkey ログインには影響しません。\n\n**ログインセッションでのみ利用できます。API トークンではこのエンドポイントにアクセスできません。**",
+        "description": "ログインセッションのみ利用可能。読み取り専用フィールド `modules` はすべての機能モジュールと依存関係を示し、`gatewayAvailable` は fnOS 統合ゲートウェイ経由で動作していることを示します。`updateProxy` は更新確認とオンラインアップグレードで GitHub にアクセスする際のプロキシです。`restrictOutbound` が true（既定は false）の場合、管理者が設定した外向きリクエスト（Webhook、通知、IP リストの購読、DDNS のコールバックと IP 取得 URL、更新確認とプログラムのダウンロード、サードパーティログインなど）は、ループバック、プライベート、リンクローカル（クラウドのメタデータアドレス 169.254.169.254 を含む）、ULA などのアドレスへの接続時に拒否されます。名前解決の結果とリダイレクトにも適用され、保存後すぐに有効になります。リバースプロキシの上流、Wake-on-LAN、ストレージのマウントなど内部ネットワーク向けの機能には影響しません。`denyMode` は未認可アクセス（ブロック中、内部ネットワーク限定時の外部からのアクセス、セキュアエントリを経由しないアクセス）への応答方式です。空はデフォルトの案内ページ、`notfound` は単純な 404、`blank` は空白ページ、`close` は接続を切断、`drop` はタイムアウトまで応答しない、`custom` はカスタムページです。`denyStatus` はカスタムページのステータスコード（200、403、404、410、500、502、503）、`denyPage` はカスタムページの HTML（上限 64 KB、スクリプトと外部リソースを禁止するサンドボックス CSP の下で表示）です。ログイン制限：`maxLoginFailures` は送信元ごとの連続失敗の上限、`lockMinutes` はロック時間（分）で、同じ送信元が繰り返しロックされるたびにロック時間は倍になります（最長 24 時間）。`loginGlobalLimit` は未知の送信元（一度もログインに成功していないアドレス）からの 10 分間のパスワードログイン失敗の合計上限で、0 は既定値 20、負の値は無効を意味します。使い切ると未知の送信元からのパスワードログインは 429 を返し、既知のアドレスと Passkey ログインには影響しません。`confirmTimeout` は、ポート転送・プロトコル振り分け・Web サービス・グローバル設定の変更後に管理画面がアクセスできることを確認する期限（秒、30～600）で、確認されなければ自動的にロールバックします。0 で既定の 90、負数で無効。`GET /api/system/confirm` を参照。\n\n**ログインセッションでのみ利用できます。API トークンではこのエンドポイントにアクセスできません。**",
         "responses": {
           "200": {
             "description": "成功"

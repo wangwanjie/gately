@@ -43630,6 +43630,144 @@
         "x-token-allowed": false
       }
     },
+    "/api/system/confirm": {
+      "get": {
+        "description": "Solo sesiones iniciadas. Cuando una sesión de administrador guarda el reenvío de puertos, el enrutamiento por protocolo, el servicio web o los ajustes globales con la cabecera `X-Gately-Confirm: 1` y el archivo de configuración cambia, el servidor guarda el contenido anterior como cambio de configuración pendiente; si no se confirma a tiempo, Gately se reinicia y restaura el contenido anterior al arrancar (la versión modificada queda en el historial de configuración). `enabled` indica si está activo (ajuste global `confirmTimeout`: 0 es el valor por defecto de 90 segundos, negativo lo desactiva), `timeout` es el plazo en segundos; `pending` es el cambio en curso, o null: `configs` son las configuraciones afectadas (ID de módulo, `gately` para los ajustes globales), `remaining` son los segundos que faltan para la reversión automática, `waitRestart` indica que el plazo empieza tras reiniciar, `rollback` que ya se decidió revertir y Gately se está reiniciando; `rolledBack` es el cambio revertido en este arranque (`configs` y `reason`: `timeout` sin confirmar a tiempo, `manual` revertido a mano, `boots` demasiados arranques seguidos), o null.\n\n**Solo disponible para sesiones de inicio de sesión; los tokens de API no pueden acceder a este endpoint.**",
+        "responses": {
+          "200": {
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parámetros de solicitud incorrectos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token no válido, caducado o sin sesión iniciada"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Al token le falta el permiso necesario"
+          }
+        },
+        "summary": "Ver el cambio de configuración pendiente",
+        "tags": [
+          "Sistema"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/confirm/connect": {
+      "get": {
+        "description": "Solo sesiones iniciadas y solo WebSocket: el navegador abre una conexión nueva para un WebSocket, que pasa por el reenvío y las escuchas modificados y demuestra que la interfaz de administración sigue accesible con la nueva configuración; las conexiones persistentes abiertas antes del cambio siguen llegando al destino anterior tras una actualización en caliente y no sirven para confirmar. Al conectar, el servidor envía un mensaje `{\"status\": ...}` y cierra: `confirmed` confirmado, `none` nada pendiente, `waitRestart` confirmar tras reiniciar, `rollingBack` reversión decidida, `error` fallo al confirmar (con la descripción en `error`).\n\n**Solo disponible para sesiones de inicio de sesión; los tokens de API no pueden acceder a este endpoint.**",
+        "responses": {
+          "200": {
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parámetros de solicitud incorrectos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token no válido, caducado o sin sesión iniciada"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Al token le falta el permiso necesario"
+          }
+        },
+        "summary": "Confirmar el cambio de configuración",
+        "tags": [
+          "Sistema"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/confirm/rollback": {
+      "post": {
+        "description": "Solo sesiones iniciadas. Marca la reversión y reinicia; al arrancar se restaura el contenido anterior. Devuelve 409 si no hay nada pendiente.\n\n**Solo disponible para sesiones de inicio de sesión; los tokens de API no pueden acceder a este endpoint.**",
+        "responses": {
+          "200": {
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parámetros de solicitud incorrectos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token no válido, caducado o sin sesión iniciada"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Al token le falta el permiso necesario"
+          }
+        },
+        "summary": "Revertir ahora el cambio de configuración pendiente",
+        "tags": [
+          "Sistema"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
     "/api/system/diagnostics": {
       "get": {
         "description": "`logs=0` excluye los registros; `preview=1` devuelve el contenido de cada archivo en JSON.\n\n**Solo disponible para sesiones de inicio de sesión; los tokens de API no pueden acceder a este endpoint.**",
@@ -43986,7 +44124,7 @@
     },
     "/api/system/restart": {
       "post": {
-        "description": "**Solo disponible para sesiones de inicio de sesión; los tokens de API no pueden acceder a este endpoint.**",
+        "description": "Solo sesiones iniciadas. Con la cabecera `X-Gately-Confirm: 1`, los ajustes que solo se aplican tras reiniciar (direcciones de escucha de la interfaz de administración, módulos activados) que difieran de este arranque se registran como un cambio de configuración pendiente; el plazo empieza tras el reinicio y, si no se confirma a tiempo, esos ajustes se restauran. Véase `GET /api/system/confirm`.\n\n**Solo disponible para sesiones de inicio de sesión; los tokens de API no pueden acceder a este endpoint.**",
         "responses": {
           "200": {
             "description": "Correcto"
@@ -44175,7 +44313,7 @@
     },
     "/api/system/settings": {
       "get": {
-        "description": "Solo sesión. El campo de solo lectura `modules` lista todos los módulos y sus dependencias; `gatewayAvailable` indica que Gately se ejecuta tras la pasarela unificada de fnOS. `updateProxy` es el proxy usado para acceder a GitHub al buscar actualizaciones y actualizar en línea. `restrictOutbound`, cuando es true (por defecto false), hace que las solicitudes salientes configuradas por el administrador (webhooks, notificaciones, suscripciones a listas de IP, callbacks de DDNS y URL de consulta de IP, comprobación de actualizaciones y descargas de programas, inicio de sesión de terceros) rechacen conectar con direcciones de bucle invertido, privadas, de enlace local (incluida la dirección de metadatos de la nube 169.254.169.254) y ULA; también cubre nombres de dominio resueltos y redirecciones, y surte efecto al guardar. Los upstreams del proxy inverso, Wake-on-LAN, los montajes de almacenamiento y otras funciones dirigidas a la red interna no se ven afectados. `denyMode` es la forma de responder al acceso no autorizado (clientes bloqueados, acceso desde fuera con solo red local activado o sin pasar por la entrada segura): vacío para la página de aviso predeterminada, `notfound` para un 404 simple, `blank` para una página en blanco, `close` para cerrar la conexión, `drop` para no responder hasta que expire, `custom` para una página personalizada. `denyStatus` es el código de estado de la página personalizada (200, 403, 404, 410, 500, 502, 503) y `denyPage` es el HTML de la página personalizada (hasta 64 KB, mostrado bajo una CSP de sandbox que bloquea scripts y recursos externos). Limitación de inicios de sesión: `maxLoginFailures` es el número de fallos consecutivos permitidos por origen y `lockMinutes` la duración del bloqueo en minutos; si un origen se bloquea una y otra vez, la duración se duplica cada vez (hasta 24 horas). `loginGlobalLimit` es el total de fallos de inicio de sesión con contraseña permitidos desde orígenes desconocidos (direcciones que nunca han iniciado sesión correctamente) en 10 minutos; 0 significa el valor predeterminado de 20 y un valor negativo lo desactiva. Al agotarse, los inicios de sesión con contraseña desde orígenes desconocidos devuelven 429; las direcciones conocidas y los inicios de sesión con Passkey no se ven afectados.\n\n**Solo disponible para sesiones de inicio de sesión; los tokens de API no pueden acceder a este endpoint.**",
+        "description": "Solo sesión. El campo de solo lectura `modules` lista todos los módulos y sus dependencias; `gatewayAvailable` indica que Gately se ejecuta tras la pasarela unificada de fnOS. `updateProxy` es el proxy usado para acceder a GitHub al buscar actualizaciones y actualizar en línea. `restrictOutbound`, cuando es true (por defecto false), hace que las solicitudes salientes configuradas por el administrador (webhooks, notificaciones, suscripciones a listas de IP, callbacks de DDNS y URL de consulta de IP, comprobación de actualizaciones y descargas de programas, inicio de sesión de terceros) rechacen conectar con direcciones de bucle invertido, privadas, de enlace local (incluida la dirección de metadatos de la nube 169.254.169.254) y ULA; también cubre nombres de dominio resueltos y redirecciones, y surte efecto al guardar. Los upstreams del proxy inverso, Wake-on-LAN, los montajes de almacenamiento y otras funciones dirigidas a la red interna no se ven afectados. `denyMode` es la forma de responder al acceso no autorizado (clientes bloqueados, acceso desde fuera con solo red local activado o sin pasar por la entrada segura): vacío para la página de aviso predeterminada, `notfound` para un 404 simple, `blank` para una página en blanco, `close` para cerrar la conexión, `drop` para no responder hasta que expire, `custom` para una página personalizada. `denyStatus` es el código de estado de la página personalizada (200, 403, 404, 410, 500, 502, 503) y `denyPage` es el HTML de la página personalizada (hasta 64 KB, mostrado bajo una CSP de sandbox que bloquea scripts y recursos externos). Limitación de inicios de sesión: `maxLoginFailures` es el número de fallos consecutivos permitidos por origen y `lockMinutes` la duración del bloqueo en minutos; si un origen se bloquea una y otra vez, la duración se duplica cada vez (hasta 24 horas). `loginGlobalLimit` es el total de fallos de inicio de sesión con contraseña permitidos desde orígenes desconocidos (direcciones que nunca han iniciado sesión correctamente) en 10 minutos; 0 significa el valor predeterminado de 20 y un valor negativo lo desactiva. Al agotarse, los inicios de sesión con contraseña desde orígenes desconocidos devuelven 429; las direcciones conocidas y los inicios de sesión con Passkey no se ven afectados. `confirmTimeout` es el plazo para que la interfaz de administración confirme que el acceso funciona tras cambiar el reenvío de puertos, el enrutamiento por protocolo, el servicio web o los ajustes globales (segundos, 30–600); lo no confirmado se revierte automáticamente; 0 es el valor por defecto de 90 y negativo lo desactiva. Véase `GET /api/system/confirm`.\n\n**Solo disponible para sesiones de inicio de sesión; los tokens de API no pueden acceder a este endpoint.**",
         "responses": {
           "200": {
             "description": "Correcto"

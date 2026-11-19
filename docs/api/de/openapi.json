@@ -43630,6 +43630,144 @@
         "x-token-allowed": false
       }
     },
+    "/api/system/confirm": {
+      "get": {
+        "description": "Nur für Anmeldesitzungen. Speichert eine Admin-Sitzung Portweiterleitung, Protokoll-Routing, Webdienst oder globale Einstellungen mit dem Header `X-Gately-Confirm: 1` und ändert sich dabei die Konfigurationsdatei, hält der Server den vorherigen Inhalt als ausstehende Konfigurationsänderung fest; ohne rechtzeitige Bestätigung startet Gately neu und stellt beim Start den vorherigen Inhalt wieder her (die geänderte Fassung bleibt im Konfigurationsverlauf). `enabled` gibt an, ob die Funktion aktiv ist (globale Einstellung `confirmTimeout`: 0 für den Standard von 90 Sekunden, negativ zum Abschalten), `timeout` ist die Frist in Sekunden; `pending` ist die laufende Änderung oder null: `configs` nennt die betroffenen Konfigurationen (Modul-IDs, `gately` für globale Einstellungen), `remaining` die verbleibenden Sekunden bis zur automatischen Rücksetzung, `waitRestart` bedeutet, dass die Frist nach einem Neustart beginnt, `rollback`, dass die Rücksetzung beschlossen ist und Gately neu startet; `rolledBack` ist die bei diesem Start zurückgesetzte Änderung (`configs` und `reason`: `timeout` nicht rechtzeitig bestätigt, `manual` manuell zurückgesetzt, `boots` zu viele Starts hintereinander) oder null.\n\n**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "summary": "Ausstehende Konfigurationsänderung anzeigen",
+        "tags": [
+          "System"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/confirm/connect": {
+      "get": {
+        "description": "Nur für Anmeldesitzungen, nur WebSocket: Der Browser öffnet für einen WebSocket eine neue Verbindung, die über die geänderte Weiterleitung und die Listener läuft und so belegt, dass die Verwaltungsoberfläche mit der neuen Konfiguration erreichbar bleibt; vor der Änderung geöffnete langlebige Verbindungen erreichen nach einem Hot-Update weiter das alte Ziel und taugen nicht zur Bestätigung. Nach dem Verbindungsaufbau sendet der Server eine Nachricht `{\"status\": ...}` und schließt: `confirmed` bestätigt, `none` nichts ausstehend, `waitRestart` nach dem Neustart bestätigen, `rollingBack` Rücksetzung beschlossen, `error` Bestätigung fehlgeschlagen (Beschreibung in `error`).\n\n**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "summary": "Konfigurationsänderung bestätigen",
+        "tags": [
+          "System"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/confirm/rollback": {
+      "post": {
+        "description": "Nur für Anmeldesitzungen. Markiert die Rücksetzung und startet neu; beim Start wird der vorherige Inhalt wiederhergestellt. Liefert 409, wenn nichts aussteht.\n\n**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "summary": "Ausstehende Konfigurationsänderung jetzt zurücksetzen",
+        "tags": [
+          "System"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
     "/api/system/diagnostics": {
       "get": {
         "description": "`logs=0` schließt Protokolle aus; `preview=1` liefert den Inhalt jeder Datei als JSON.\n\n**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",
@@ -43986,7 +44124,7 @@
     },
     "/api/system/restart": {
       "post": {
-        "description": "**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",
+        "description": "Nur für Anmeldesitzungen. Mit dem Header `X-Gately-Confirm: 1` werden Einstellungen, die erst nach einem Neustart wirken (Listen-Adressen der Verwaltungsoberfläche, Modulschalter) und sich vom aktuellen Start unterscheiden, als ausstehende Konfigurationsänderung erfasst; die Frist beginnt nach dem Neustart, ohne rechtzeitige Bestätigung werden diese Einstellungen wiederhergestellt. Siehe `GET /api/system/confirm`.\n\n**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",
         "responses": {
           "200": {
             "description": "Erfolgreich"
@@ -44175,7 +44313,7 @@
     },
     "/api/system/settings": {
       "get": {
-        "description": "Nur mit Sitzung. Das schreibgeschützte Feld `modules` listet alle Funktionsmodule und ihre Abhängigkeiten; `gatewayAvailable` bedeutet, dass Gately hinter dem einheitlichen fnOS-Gateway läuft. `updateProxy` ist der Proxy für den Zugriff auf GitHub bei Update-Prüfung und Online-Upgrade. `restrictOutbound` sorgt bei true (Standard false) dafür, dass vom Administrator konfigurierte ausgehende Anfragen (Webhooks, Benachrichtigungen, IP-Listen-Abonnements, DDNS-Callbacks und IP-Abfrage-URLs, Update-Prüfung und Programm-Downloads, Anmeldung über Drittanbieter) die Verbindung zu Loopback-, privaten, Link-Local- (einschließlich der Cloud-Metadatenadresse 169.254.169.254) und ULA-Adressen verweigern; das gilt auch für aufgelöste Domainnamen und Weiterleitungen und wirkt sofort nach dem Speichern. Reverse-Proxy-Upstreams, Wake-on-LAN, Speicher-Mounts und andere auf das interne Netz ausgerichtete Funktionen bleiben unberührt. `denyMode` legt fest, wie auf unbefugten Zugriff (gesperrte Clients, Zugriff von außen bei „nur LAN“, Zugriff ohne den sicheren Einstiegspunkt) geantwortet wird: leer für die Standard-Hinweisseite, `notfound` für ein einfaches 404, `blank` für eine leere Seite, `close` zum Schließen der Verbindung, `drop` für keine Antwort bis zum Timeout, `custom` für eine eigene Seite. `denyStatus` ist der Statuscode der eigenen Seite (200, 403, 404, 410, 500, 502, 503), `denyPage` das HTML der eigenen Seite (höchstens 64 KB, angezeigt unter einer Sandbox-CSP, die Skripte und externe Ressourcen blockiert). Anmeldebegrenzung: `maxLoginFailures` ist die Zahl der erlaubten aufeinanderfolgenden Fehlversuche pro Quelle, `lockMinutes` die Sperrdauer in Minuten; wird eine Quelle wiederholt gesperrt, verdoppelt sich die Sperrdauer jedes Mal (bis zu 24 Stunden). `loginGlobalLimit` ist die Gesamtzahl der erlaubten Passwort-Fehlversuche von unbekannten Quellen (Adressen ohne bisherige erfolgreiche Anmeldung) innerhalb von 10 Minuten; 0 bedeutet den Standardwert 20, ein negativer Wert schaltet sie ab. Ist das Budget aufgebraucht, liefern Passwort-Anmeldungen unbekannter Quellen 429; bekannte Adressen und Passkey-Anmeldungen sind nicht betroffen.\n\n**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",
+        "description": "Nur mit Sitzung. Das schreibgeschützte Feld `modules` listet alle Funktionsmodule und ihre Abhängigkeiten; `gatewayAvailable` bedeutet, dass Gately hinter dem einheitlichen fnOS-Gateway läuft. `updateProxy` ist der Proxy für den Zugriff auf GitHub bei Update-Prüfung und Online-Upgrade. `restrictOutbound` sorgt bei true (Standard false) dafür, dass vom Administrator konfigurierte ausgehende Anfragen (Webhooks, Benachrichtigungen, IP-Listen-Abonnements, DDNS-Callbacks und IP-Abfrage-URLs, Update-Prüfung und Programm-Downloads, Anmeldung über Drittanbieter) die Verbindung zu Loopback-, privaten, Link-Local- (einschließlich der Cloud-Metadatenadresse 169.254.169.254) und ULA-Adressen verweigern; das gilt auch für aufgelöste Domainnamen und Weiterleitungen und wirkt sofort nach dem Speichern. Reverse-Proxy-Upstreams, Wake-on-LAN, Speicher-Mounts und andere auf das interne Netz ausgerichtete Funktionen bleiben unberührt. `denyMode` legt fest, wie auf unbefugten Zugriff (gesperrte Clients, Zugriff von außen bei „nur LAN“, Zugriff ohne den sicheren Einstiegspunkt) geantwortet wird: leer für die Standard-Hinweisseite, `notfound` für ein einfaches 404, `blank` für eine leere Seite, `close` zum Schließen der Verbindung, `drop` für keine Antwort bis zum Timeout, `custom` für eine eigene Seite. `denyStatus` ist der Statuscode der eigenen Seite (200, 403, 404, 410, 500, 502, 503), `denyPage` das HTML der eigenen Seite (höchstens 64 KB, angezeigt unter einer Sandbox-CSP, die Skripte und externe Ressourcen blockiert). Anmeldebegrenzung: `maxLoginFailures` ist die Zahl der erlaubten aufeinanderfolgenden Fehlversuche pro Quelle, `lockMinutes` die Sperrdauer in Minuten; wird eine Quelle wiederholt gesperrt, verdoppelt sich die Sperrdauer jedes Mal (bis zu 24 Stunden). `loginGlobalLimit` ist die Gesamtzahl der erlaubten Passwort-Fehlversuche von unbekannten Quellen (Adressen ohne bisherige erfolgreiche Anmeldung) innerhalb von 10 Minuten; 0 bedeutet den Standardwert 20, ein negativer Wert schaltet sie ab. Ist das Budget aufgebraucht, liefern Passwort-Anmeldungen unbekannter Quellen 429; bekannte Adressen und Passkey-Anmeldungen sind nicht betroffen. `confirmTimeout` ist die Frist, in der die Verwaltungsoberfläche nach Änderungen an Portweiterleitung, Protokoll-Routing, Webdienst oder globalen Einstellungen bestätigen muss, dass der Zugriff funktioniert (Sekunden, 30–600); Unbestätigtes wird automatisch zurückgesetzt; 0 für den Standard von 90, negativ zum Abschalten. Siehe `GET /api/system/confirm`.\n\n**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",
         "responses": {
           "200": {
             "description": "Erfolgreich"

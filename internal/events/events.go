@@ -53,6 +53,8 @@ const (
 	// ProgramUpdate 为托管程序（frp、Tailscale 等）有新版本，DockerUpdate 为 Docker 定时检查发现容器镜像有新版本
 	ProgramUpdate = "program.update"
 	DockerUpdate  = "docker.update"
+	// ConfigRolledBack 为需要确认的配置变更（端口转发、协议分流、Web 服务、全局设置）未在时限内确认，已自动回滚
+	ConfigRolledBack = "config.rolledback"
 )
 
 // Event 是一次可通知的事件。
@@ -101,6 +103,7 @@ var Catalog = []TypeInfo{
 	{LoginNewIP, "管理后台：新地址登录", LevelWarn},
 	{AuditChange, "管理后台：配置变更", LevelInfo},
 	{AuditAccess, "管理后台：访问敏感内容", LevelWarn},
+	{ConfigRolledBack, "管理后台：配置已自动回滚", LevelWarn},
 	{PerfAlert, "性能监控：触发告警", LevelWarn},
 	{PerfRecovered, "性能监控：告警恢复", LevelInfo},
 	{SystemUpdate, "Gately：发现新版本", LevelInfo},
