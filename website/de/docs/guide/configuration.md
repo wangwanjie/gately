@@ -123,6 +123,8 @@ Manche Änderungen funktionieren nur zusammen, etwa den Port, an den das Protoko
 3. Sind Sie fertig, klicken Sie im Banner auf „Alle anwenden“: Die zurückgehaltenen Änderungen werden auf einmal in Speicherreihenfolge wirksam und wie ein einzelnes Speichern über eine neue Verbindung bestätigt; gelingt das nicht, wird die ganze Sammeländerung auf die Konfiguration von vor ihrem Start zurückgesetzt;
 4. Zum Verwerfen klicken Sie auf „Änderungen verwerfen“: Gately stellt die Konfiguration von vor der Sammeländerung wieder her und startet neu.
 
+Vor „Alle anwenden“ prüft Gately, ob die Listen-Adressen der zurückgehaltenen Regeln und Listener auf diesem Rechner nutzbar sind, und listet andernfalls die betroffenen mit dem Grund des Systems auf, damit Sie entscheiden können; auch die Warnung vor dem Speichern weist auf eine nicht nutzbare neue Listen-Adresse hin. Lässt sich die Änderung nicht bestätigen oder wurde sie zurückgesetzt, zeigen Dialog und Rücksetzhinweis die Fehler, die die Module in der Zwischenzeit gemeldet haben, etwa einen Listener, der nicht startet. Beachten Sie, dass macOS standardmäßig nur 127.0.0.1 einrichtet; für 127.0.0.2 oder eine andere Loopback-Adresse zuerst `sudo ifconfig lo0 alias 127.0.0.2` ausführen. Unter Linux ist der ganze Bereich 127.0.0.0/8 direkt nutzbar.
+
 Globale Einstellungen gehören nicht zur Sammeländerung und wirken weiterhin sofort. Startet Gately während einer Sammeländerung neu, startet es mit der neuen Konfiguration und wartet wie bei einem einzelnen Speichern auf Bestätigung. Die API ist `POST /api/system/changeset/begin`, `/apply` und `/discard`.
 
 ### Rücksetzung per Befehlszeile {#rollback-cli}

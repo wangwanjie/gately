@@ -123,6 +123,8 @@ Some changes only work together, for example changing the port protocol routing 
 3. When everything is done, click "Apply all" on the banner: the staged changes take effect at once in the order they were saved, then are confirmed over a new connection like a single save; if that can't be confirmed, the whole batch is rolled back to the configuration from before it started;
 4. To drop it, click "Discard changes": Gately restores the configuration from before the batch and restarts.
 
+Before "Apply all", Gately checks whether the listen addresses of the held rules and listeners can be used on this machine and, if not, lists them with the system's reason so you can decide; the warning before saving also points out an unusable new listen address. If the change can't be confirmed or has been rolled back, the dialog and the rollback notice list the errors the modules reported meanwhile, such as a listener failing to start. Note that macOS only configures 127.0.0.1 by default; to use 127.0.0.2 or another loopback address run `sudo ifconfig lo0 alias 127.0.0.2` first. On Linux the whole 127.0.0.0/8 range works as is.
+
 Global settings are not part of batch changes and still apply immediately. If Gately restarts during a batch, it starts with the new configuration and waits for confirmation like a single save. The API is `POST /api/system/changeset/begin`, `/apply` and `/discard`.
 
 ### Command-line rollback {#rollback-cli}
