@@ -11,8 +11,18 @@ Decken mehrere Zertifikate dieselbe Domain ab, wird das zuletzt ablaufende verwe
 - Wildcard-Zertifikate und EAB (zum Beispiel ZeroSSL);
 - **Kurzlebige Zertifikate und IP-Adress-Zertifikate**: Mit dem kurzlebigen Profil von Let's Encrypt (etwa 6 Tage gültig) lassen sich Zertifikate für öffentliche IP-Adressen ausstellen;
 - Ein vorhandenes Zertifikat hochladen oder aus Dateien lesen;
+- **fnOS-Systemzertifikate**: ein in fnOS beantragtes oder importiertes Zertifikat verwenden und dessen Erneuerungen folgen;
 - In ein Verzeichnis abbilden: Nach einer Änderung des Zertifikats werden die Dateien in das angegebene Verzeichnis geschrieben und ein Skript ausgeführt, sodass andere Dienste neu laden können;
 - Automatische Bereitstellung: Nach einer Änderung wird das Zertifikat in mehrere lokale Verzeichnisse kopiert, per SSH auf andere Hosts übertragen und dort ein Befehl ausgeführt, oder die Docker-Container, die es nutzen, werden neu gestartet.
+
+## fnOS-Systemzertifikate {#fnos}
+
+Läuft Gately auf fnOS, wählen Sie als Zertifikatsquelle „fnOS-Systemzertifikat“ und dann ein Zertifikat aus fnOS unter Einstellungen → Sicherheit → Zertifikate. fnOS registriert seine Zertifikate in `/usr/trim/etc/network_cert_all.conf` und legt jede Erneuerung in einem neuen Verzeichnis ab. Gately sucht deshalb alle 30 Minuten per Domain die aktuellen Dateien, lädt das Zertifikat bei Änderungen und führt Zuordnung und automatische Bereitstellung wie gewohnt aus. Ist eine vollständige Kette (fullchain) registriert, wird sie verwendet.
+
+- **fnOS-App (fpk)**: läuft als root und liest die Dateien direkt, unbeeinflusst von den ACLs, die fnOS standardmäßig aktiviert; keine weitere Einrichtung nötig;
+- **Docker**: beide Pfade schreibgeschützt unter denselben Pfaden in den Container einbinden, zum Beispiel `/usr/trim/etc/network_cert_all.conf:/usr/trim/etc/network_cert_all.conf:ro` und `/usr/trim/var/trim_connect/ssls:/usr/trim/var/trim_connect/ssls:ro` unter `volumes` in compose. Die Dateien gehören root mit Modus 0660, der Container muss daher als root laufen (Standard beim offiziellen Image).
+
+Die Option wird ausgeblendet, wenn Gately nicht auf fnOS läuft oder die Dateien nicht eingebunden sind. Wird das Zertifikat in fnOS gelöscht, behält Gately das zuletzt geladene Zertifikat und zeigt den Fehler im Status an.
 
 ## DNS-01-Validierung
 
