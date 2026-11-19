@@ -435,6 +435,7 @@ func (a *App) Handler() http.Handler {
 	rec.add("GET /api/system/confirm/connect", a.handleConfirmSocket, "")
 	rec.add("POST /api/system/confirm/rollback", a.handleConfirmRollback, "")
 	rec.add("POST /api/system/changeset/begin", a.handleHoldBegin, "")
+	rec.add("POST /api/system/changeset/check", a.handleHoldCheck, "")
 	rec.add("POST /api/system/changeset/apply", a.handleHoldApply, "")
 	rec.add("POST /api/system/changeset/discard", a.handleHoldDiscard, "")
 	rec.add("GET /api/system/access-path", a.handleAccessPath, "")

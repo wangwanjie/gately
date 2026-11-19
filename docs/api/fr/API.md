@@ -969,6 +969,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | GET | `/api/system/confirm/connect` | Session connectée uniquement | Confirmer la modification de configuration |
 | POST | `/api/system/confirm/rollback` | Session connectée uniquement | Annuler maintenant la modification de configuration en attente |
 | POST | `/api/system/changeset/begin` | Session connectée uniquement | Démarrer une série de modifications |
+| POST | `/api/system/changeset/check` | Session connectée uniquement | Vérifier que la série de modifications peut s’appliquer |
 | POST | `/api/system/changeset/apply` | Session connectée uniquement | Appliquer la série de modifications |
 | POST | `/api/system/changeset/discard` | Session connectée uniquement | Abandonner la série de modifications |
 | GET | `/api/system/access-path` | Session connectée uniquement | Voir le chemin d’accès actuel |

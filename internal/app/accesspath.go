@@ -247,6 +247,8 @@ const (
 	riskAdminListen = "adminListen" // 修改当前使用的管理界面监听地址
 	riskLANOnly     = "lanOnly"     // 开启仅限内网访问，而当前来自外网
 	riskForceHTTPS  = "forceHTTPS"  // 开启强制 HTTPS，而当前经 HTTP 访问
+	// riskListenUnavailable 为路径上的规则或监听改用的监听地址在本机不可用（例如 macOS 上未配置的 127.0.0.2），生效后会启动失败
+	riskListenUnavailable = "listenUnavailable"
 )
 
 type pathRisk struct {
@@ -257,6 +259,9 @@ type pathRisk struct {
 	Module string `json:"module,omitempty"`
 	// Fields 为 edit 时改动的设置项（JSON 字段名），站点的字段带 site. 前缀
 	Fields []string `json:"fields,omitempty"`
+	// Addr / Error 为 listenUnavailable 时不可用的监听地址与系统给出的原因
+	Addr  string `json:"addr,omitempty"`
+	Error string `json:"error,omitempty"`
 }
 
 type accessCheckRequest struct {
@@ -409,7 +414,46 @@ func (a *App) itemEditRisks(mod string, hop pathHop, i int, body json.RawMessage
 	if len(fields) == 0 {
 		return nil
 	}
-	return []pathRisk{{Kind: riskEdit, Hop: i, Fields: fields}}
+	risks := []pathRisk{{Kind: riskEdit, Hop: i, Fields: fields}}
+	// 改了监听地址：先试一下新地址能否在本机使用，不能用时说明原因，免得生效后才发现监听启动失败
+	for _, f := range listenFields {
+		if !slices.Contains(fields, f) {
+			continue
+		}
+		if ip, _ := next[f].(string); ip != "" {
+			if err := listenProblem(ip); err != nil {
+				risks = append(risks, pathRisk{Kind: riskListenUnavailable, Hop: i, Addr: ip, Error: err.Error()})
+			}
+		}
+	}
+	return risks
+}
+
+// listenFields 为规则与监听中表示监听地址的字段：端口转发、协议分流为 listenAddress，Web 服务为 listenIp
+var listenFields = []string{"listenAddress", "listenIp"}
+
+// listenProblem 检查监听地址能否在本机使用：在该地址的随机端口上试着监听一下，不与正在使用的端口冲突。
+// 空地址与 0.0.0.0、:: 等通配地址总能使用。地址不是本机地址时（例如 macOS 默认只配置了 127.0.0.1，
+// 127.0.0.2 需要先 ifconfig lo0 alias）返回系统的错误。
+func listenProblem(ip string) error {
+	ip = strings.Trim(strings.TrimSpace(ip), "[]")
+	if ip == "" {
+		return nil
+	}
+	a, err := netip.ParseAddr(ip)
+	if err != nil {
+		// 不是 IP（例如格式错误）交给模块自己的校验
+		return nil
+	}
+	if a.IsUnspecified() {
+		return nil
+	}
+	ln, err := net.Listen("tcp", net.JoinHostPort(a.String(), "0"))
+	if err != nil {
+		return err
+	}
+	_ = ln.Close()
+	return nil
 }
 
 // findSite 在监听中按 key 找站点（默认站点的 key 可能为空或不在站点列表中）。

@@ -144,6 +144,7 @@ func (a *App) handleHoldApply(w http.ResponseWriter, r *http.Request) {
 		} else {
 			cp.Timeout = timeout
 			cp.Deadline = time.Now().Add(time.Duration(timeout) * time.Second)
+			cp.Applied = time.Now()
 			if err := savePendingConfirm(a.store.Dir(), &cp); err != nil {
 				c.mu.Unlock()
 				httpx.Error(w, http.StatusInternalServerError, "保存待确认状态失败: %v", err)
@@ -216,4 +217,50 @@ func (a *App) handleHoldDiscard(w http.ResponseWriter, r *http.Request) {
 	a.sysLogs.Add(logbuf.LevelWarn, "system", fmt.Sprintf("已放弃批量修改（%s），正在重启并恢复修改前的配置", a.confirmTitles(cp.names())))
 	httpx.OK(w, map[string]bool{"restart": true})
 	a.scheduleRestart()
+}
+
+// holdProblem 是批量修改全部生效后会出问题的一项：监听地址在本机不可用，生效后会启动失败。
+type holdProblem struct {
+	Module string `json:"module"`
+	Key    string `json:"key"`
+	Name   string `json:"name,omitempty"`
+	Addr   string `json:"addr"`
+	Error  string `json:"error"`
+}
+
+// handleHoldCheck 在全部生效前检查暂存的规则与监听：启用中且监听地址在本机不可用的列出来（不改动任何配置）。
+func (a *App) handleHoldCheck(w http.ResponseWriter, r *http.Request) {
+	problems := []holdProblem{}
+	cache := map[string]map[string]json.RawMessage{}
+	seen := map[string]bool{}
+	for _, it := range applyhold.Pending() {
+		mod := it[0]
+		key, _, _ := strings.Cut(it[1], "#")
+		if seen[mod+"/"+key] {
+			continue
+		}
+		seen[mod+"/"+key] = true
+		if cache[mod] == nil {
+			cache[mod] = a.loadPathConfig(mod)
+		}
+		raw, ok := cache[mod][key]
+		if !ok {
+			continue
+		}
+		var item map[string]any
+		if json.Unmarshal(raw, &item) != nil || item["enable"] != true {
+			continue
+		}
+		for _, f := range listenFields {
+			ip, _ := item[f].(string)
+			if ip == "" {
+				continue
+			}
+			if err := listenProblem(ip); err != nil {
+				name, _ := item["name"].(string)
+				problems = append(problems, holdProblem{Module: mod, Key: key, Name: name, Addr: ip, Error: err.Error()})
+			}
+		}
+	}
+	httpx.OK(w, map[string]any{"problems": problems})
 }

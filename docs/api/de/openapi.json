@@ -43632,7 +43632,7 @@
     },
     "/api/system/access-path/check": {
       "post": {
-        "description": "Nur für Anmeldesitzungen; ändert nichts. Body: `method` und `path` der gleich gesendeten Schreibanfrage, `body` deren Body. Liefert `path` (wie die Abfrage) und `risks`: `kind` ist `edit` (ändert Weiterleitungseinstellungen einer Regel, eines Listeners oder einer Site auf dem Weg, `fields` nennt sie, Site-Felder mit Präfix `site.`; Name, Gruppe und Notiz zählen nicht), `delete`, `disable`, `moduleOff` (schaltet ein Modul auf dem Weg ab, `module` ist seine ID), `siteMove` (verschiebt eine Site auf dem Weg in einen anderen Listener), `adminListen` (ändert die genutzte Listen-Adresse der Oberfläche), `lanOnly` („nur LAN“ von außerhalb aktiviert) oder `forceHTTPS` („HTTPS erzwingen“ bei HTTP aktiviert); `hop` ist der Index des betroffenen Sprungs in `hops` (-1, wenn kein bestimmter Sprung).\n\n**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",
+        "description": "Nur für Anmeldesitzungen; ändert nichts. Body: `method` und `path` der gleich gesendeten Schreibanfrage, `body` deren Body. Liefert `path` (wie die Abfrage) und `risks`: `kind` ist `edit` (ändert Weiterleitungseinstellungen einer Regel, eines Listeners oder einer Site auf dem Weg, `fields` nennt sie, Site-Felder mit Präfix `site.`; Name, Gruppe und Notiz zählen nicht), `delete`, `disable`, `moduleOff` (schaltet ein Modul auf dem Weg ab, `module` ist seine ID), `siteMove` (verschiebt eine Site auf dem Weg in einen anderen Listener), `adminListen` (ändert die genutzte Listen-Adresse der Oberfläche), `lanOnly` („nur LAN“ von außerhalb aktiviert) oder `forceHTTPS` („HTTPS erzwingen“ bei HTTP aktiviert); `hop` ist der Index des betroffenen Sprungs in `hops` (-1, wenn kein bestimmter Sprung). `kind` kann auch `listenUnavailable` sein: Eine Regel oder ein Listener auf dem Weg würde auf einer Adresse lauschen, die auf diesem Rechner nicht nutzbar ist (`addr`, mit dem `error` des Systems), und daher nicht starten.\n\n**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",
         "responses": {
           "200": {
             "description": "Erfolgreich"
@@ -43814,6 +43814,52 @@
         "x-token-allowed": false
       }
     },
+    "/api/system/changeset/check": {
+      "post": {
+        "description": "Nur für Anmeldesitzungen; ändert nichts. Prüft die aktivierten Regeln und Listener unter den zurückgehaltenen Änderungen und listet in `problems` jene, deren Listen-Adresse auf diesem Rechner nicht nutzbar ist (etwa keine lokale Adresse): `module`, `key`, `name`, `addr` und den `error` des Systems. Sie würden nach dem Anwenden nicht starten.\n\n**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "summary": "Prüfen, ob die Sammeländerung angewendet werden kann",
+        "tags": [
+          "System"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
     "/api/system/changeset/discard": {
       "post": {
         "description": "Nur für Anmeldesitzungen. Gab es Änderungen, wird die Konfiguration von vor der Sammeländerung wiederhergestellt und neu gestartet (`restart` ist true); sonst wird die Sammeländerung einfach beendet. Liefert 409, wenn keine Sammeländerung läuft.\n\n**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",
@@ -43862,7 +43908,7 @@
     },
     "/api/system/confirm": {
       "get": {
-        "description": "Nur für Anmeldesitzungen. Speichert eine Admin-Sitzung Portweiterleitung, Protokoll-Routing, Webdienst oder globale Einstellungen mit dem Header `X-Gately-Confirm: 1` und ändert sich dabei die Konfigurationsdatei, hält der Server den vorherigen Inhalt als ausstehende Konfigurationsänderung fest; ohne rechtzeitige Bestätigung startet Gately neu und stellt beim Start den vorherigen Inhalt wieder her (die geänderte Fassung bleibt im Konfigurationsverlauf). `enabled` gibt an, ob die Funktion aktiv ist (globale Einstellung `confirmTimeout`: 0 für den Standard von 90 Sekunden, negativ zum Abschalten), `timeout` ist die Frist in Sekunden; `pending` ist die laufende Änderung oder null: `configs` nennt die betroffenen Konfigurationen (Modul-IDs, `gately` für globale Einstellungen), `remaining` die verbleibenden Sekunden bis zur automatischen Rücksetzung, `waitRestart` bedeutet, dass die Frist nach einem Neustart beginnt, `rollback`, dass die Rücksetzung beschlossen ist und Gately neu startet; `rolledBack` ist die bei diesem Start zurückgesetzte Änderung (`configs` und `reason`: `timeout` nicht rechtzeitig bestätigt, `manual` manuell zurückgesetzt, `boots` zu viele Starts hintereinander) oder null. `hold` ist die laufende Sammeländerung (`items` die zurückgehaltenen Regeln und Listener, `configs` die geänderten Konfigurationen) oder null; `pending.hold` bedeutet, dass die ausstehende Änderung zu einer noch nicht angewendeten Sammeländerung gehört.\n\n**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",
+        "description": "Nur für Anmeldesitzungen. Speichert eine Admin-Sitzung Portweiterleitung, Protokoll-Routing, Webdienst oder globale Einstellungen mit dem Header `X-Gately-Confirm: 1` und ändert sich dabei die Konfigurationsdatei, hält der Server den vorherigen Inhalt als ausstehende Konfigurationsänderung fest; ohne rechtzeitige Bestätigung startet Gately neu und stellt beim Start den vorherigen Inhalt wieder her (die geänderte Fassung bleibt im Konfigurationsverlauf). `enabled` gibt an, ob die Funktion aktiv ist (globale Einstellung `confirmTimeout`: 0 für den Standard von 90 Sekunden, negativ zum Abschalten), `timeout` ist die Frist in Sekunden; `pending` ist die laufende Änderung oder null: `configs` nennt die betroffenen Konfigurationen (Modul-IDs, `gately` für globale Einstellungen), `remaining` die verbleibenden Sekunden bis zur automatischen Rücksetzung, `waitRestart` bedeutet, dass die Frist nach einem Neustart beginnt, `rollback`, dass die Rücksetzung beschlossen ist und Gately neu startet; `rolledBack` ist die bei diesem Start zurückgesetzte Änderung (`configs` und `reason`: `timeout` nicht rechtzeitig bestätigt, `manual` manuell zurückgesetzt, `boots` zu viele Starts hintereinander) oder null. `hold` ist die laufende Sammeländerung (`items` die zurückgehaltenen Regeln und Listener, `configs` die geänderten Konfigurationen) oder null; `pending.hold` bedeutet, dass die ausstehende Änderung zu einer noch nicht angewendeten Sammeländerung gehört. `pending.errors` sind die Fehler, die die drei Module seit dem Wirksamwerden der Änderung gemeldet haben (etwa ein Listener, der nicht startet), `rolledBack.errors` die während der zurückgesetzten Änderung gemeldeten.\n\n**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",
         "responses": {
           "200": {
             "description": "Erfolgreich"

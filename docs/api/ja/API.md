@@ -969,6 +969,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/system/confirm/connect` | ログインセッションのみ | 設定変更を確認 |
 | POST | `/api/system/confirm/rollback` | ログインセッションのみ | 未確認の設定変更を今すぐロールバック |
 | POST | `/api/system/changeset/begin` | ログインセッションのみ | 一括変更を開始 |
+| POST | `/api/system/changeset/check` | ログインセッションのみ | 一括変更を正常に反映できるか確認 |
 | POST | `/api/system/changeset/apply` | ログインセッションのみ | 一括変更をすべて反映 |
 | POST | `/api/system/changeset/discard` | ログインセッションのみ | 一括変更を破棄 |
 | GET | `/api/system/access-path` | ログインセッションのみ | 現在のアクセス経路を表示 |

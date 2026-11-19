@@ -43632,7 +43632,7 @@
     },
     "/api/system/access-path/check": {
       "post": {
-        "description": "Sessions connectées uniquement ; ne modifie rien. Corps : `method` et `path` de la requête d’écriture sur le point d’être envoyée, `body` son corps. Renvoie `path` (comme la consultation) et `risks` : `kind` vaut `edit` (modifie des réglages de redirection d’une règle, d’un écouteur ou d’un site du chemin, `fields` les liste, ceux du site préfixés par `site.` ; nom, groupe et remarque ne comptent pas), `delete`, `disable`, `moduleOff` (désactive un module du chemin, `module` est son ID), `siteMove` (déplace un site du chemin vers un autre écouteur), `adminListen` (modifie l’adresse d’écoute de l’interface utilisée), `lanOnly` (accès réservé au réseau local activé depuis l’extérieur) ou `forceHTTPS` (Forcer HTTPS activé en HTTP) ; `hop` est l’indice du saut concerné dans `hops` (-1 s’il ne vise pas un saut).\n\n**Disponible uniquement pour les sessions de connexion ; les jetons d'API ne peuvent pas accéder à ce point d'accès.**",
+        "description": "Sessions connectées uniquement ; ne modifie rien. Corps : `method` et `path` de la requête d’écriture sur le point d’être envoyée, `body` son corps. Renvoie `path` (comme la consultation) et `risks` : `kind` vaut `edit` (modifie des réglages de redirection d’une règle, d’un écouteur ou d’un site du chemin, `fields` les liste, ceux du site préfixés par `site.` ; nom, groupe et remarque ne comptent pas), `delete`, `disable`, `moduleOff` (désactive un module du chemin, `module` est son ID), `siteMove` (déplace un site du chemin vers un autre écouteur), `adminListen` (modifie l’adresse d’écoute de l’interface utilisée), `lanOnly` (accès réservé au réseau local activé depuis l’extérieur) ou `forceHTTPS` (Forcer HTTPS activé en HTTP) ; `hop` est l’indice du saut concerné dans `hops` (-1 s’il ne vise pas un saut). `kind` peut aussi valoir `listenUnavailable` : une règle ou un écouteur du chemin écouterait sur une adresse inutilisable sur cette machine (`addr`, avec l’`error` du système) et échouerait donc au démarrage.\n\n**Disponible uniquement pour les sessions de connexion ; les jetons d'API ne peuvent pas accéder à ce point d'accès.**",
         "responses": {
           "200": {
             "description": "Succès"
@@ -43814,6 +43814,52 @@
         "x-token-allowed": false
       }
     },
+    "/api/system/changeset/check": {
+      "post": {
+        "description": "Sessions connectées uniquement ; ne modifie rien. Vérifie les règles et écouteurs activés parmi les modifications en attente et liste dans `problems` ceux dont l’adresse d’écoute est inutilisable sur cette machine (par exemple non locale) : `module`, `key`, `name`, `addr` et l’`error` du système. Ils échoueraient au démarrage une fois appliqués.\n\n**Disponible uniquement pour les sessions de connexion ; les jetons d'API ne peuvent pas accéder à ce point d'accès.**",
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "summary": "Vérifier que la série de modifications peut s’appliquer",
+        "tags": [
+          "Système"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
     "/api/system/changeset/discard": {
       "post": {
         "description": "Sessions connectées uniquement. S’il y a eu des modifications, restaure la configuration d’avant la série et redémarre (`restart` vaut true) ; sinon termine simplement la série. Renvoie 409 si aucune série n’est en cours.\n\n**Disponible uniquement pour les sessions de connexion ; les jetons d'API ne peuvent pas accéder à ce point d'accès.**",
@@ -43862,7 +43908,7 @@
     },
     "/api/system/confirm": {
       "get": {
-        "description": "Sessions connectées uniquement. Quand une session administrateur enregistre la redirection de ports, le routage par protocole, le service web ou les paramètres globaux avec l'en-tête `X-Gately-Confirm: 1` et que le fichier de configuration change, le serveur conserve le contenu précédent comme modification de configuration en attente ; sans confirmation à temps, Gately redémarre et restaure le contenu précédent au démarrage (la version modifiée reste dans l'historique de configuration). `enabled` indique si la fonction est active (paramètre global `confirmTimeout` : 0 pour la valeur par défaut de 90 secondes, négatif pour la désactiver), `timeout` est le délai en secondes ; `pending` est la modification en cours, ou null : `configs` liste les configurations concernées (ID de module, `gately` pour les paramètres globaux), `remaining` les secondes restantes avant le retour automatique, `waitRestart` indique que le délai démarre après un redémarrage, `rollback` que le retour en arrière est décidé et que Gately redémarre ; `rolledBack` est la modification annulée à ce démarrage (`configs` et `reason` : `timeout` non confirmée à temps, `manual` annulée à la main, `boots` trop de démarrages consécutifs), ou null. `hold` est la série en cours (`items` les règles et écouteurs en attente, `configs` les configurations modifiées), ou null ; `pending.hold` indique que la modification en attente appartient à une série pas encore appliquée.\n\n**Disponible uniquement pour les sessions de connexion ; les jetons d'API ne peuvent pas accéder à ce point d'accès.**",
+        "description": "Sessions connectées uniquement. Quand une session administrateur enregistre la redirection de ports, le routage par protocole, le service web ou les paramètres globaux avec l'en-tête `X-Gately-Confirm: 1` et que le fichier de configuration change, le serveur conserve le contenu précédent comme modification de configuration en attente ; sans confirmation à temps, Gately redémarre et restaure le contenu précédent au démarrage (la version modifiée reste dans l'historique de configuration). `enabled` indique si la fonction est active (paramètre global `confirmTimeout` : 0 pour la valeur par défaut de 90 secondes, négatif pour la désactiver), `timeout` est le délai en secondes ; `pending` est la modification en cours, ou null : `configs` liste les configurations concernées (ID de module, `gately` pour les paramètres globaux), `remaining` les secondes restantes avant le retour automatique, `waitRestart` indique que le délai démarre après un redémarrage, `rollback` que le retour en arrière est décidé et que Gately redémarre ; `rolledBack` est la modification annulée à ce démarrage (`configs` et `reason` : `timeout` non confirmée à temps, `manual` annulée à la main, `boots` trop de démarrages consécutifs), ou null. `hold` est la série en cours (`items` les règles et écouteurs en attente, `configs` les configurations modifiées), ou null ; `pending.hold` indique que la modification en attente appartient à une série pas encore appliquée. `pending.errors` liste les erreurs signalées par les trois modules depuis l’application de la modification (par exemple un écouteur qui ne démarre pas), et `rolledBack.errors` celles signalées pendant que la modification annulée était en vigueur.\n\n**Disponible uniquement pour les sessions de connexion ; les jetons d'API ne peuvent pas accéder à ce point d'accès.**",
         "responses": {
           "200": {
             "description": "Succès"
