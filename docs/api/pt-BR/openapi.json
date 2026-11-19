@@ -43722,9 +43722,147 @@
         "x-token-allowed": false
       }
     },
+    "/api/system/changeset/apply": {
+      "post": {
+        "description": "Somente sessões autenticadas. Aplica de uma vez as alterações em espera, na ordem em que foram salvas. `applied` é o número de regras e listeners aplicados; quando `confirm` é true é preciso confirmar por uma nova conexão como em um salvamento individual (`GET /api/system/confirm/connect`) e, sem confirmação em `timeout` segundos, todo o lote volta à configuração de antes do início. Retorna 409 se não houver lote em andamento.\n\n**Disponível apenas para sessões de login; tokens de API não podem acessar este endpoint.**",
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "summary": "Aplicar alterações em lote",
+        "tags": [
+          "Sistema"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/changeset/begin": {
+      "post": {
+        "description": "Somente sessões autenticadas. A partir de agora, o que for salvo em encaminhamento de portas, roteamento por protocolo e serviço web só atualiza a configuração e fica em espera: regras e listeners em execução não mudam e o caminho de acesso atual continua funcionando. Pensado para alterações que só funcionam juntas (como mudar ao mesmo tempo a porta de destino do roteamento por protocolo e a porta de escuta do serviço web). Salvamentos de uma sessão de administrador com `X-Gately-Confirm: 1` registram o conteúdo anterior (mesmo com a confirmação desligada). Se já houver um lote em andamento, retorna o estado dele. Retorna `items` (regras e listeners em espera: `module`, `key`, `name`) e `configs` (configurações alteradas). Alterações nas configurações globais continuam valendo na hora.\n\n**Disponível apenas para sessões de login; tokens de API não podem acessar este endpoint.**",
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "summary": "Iniciar alterações em lote",
+        "tags": [
+          "Sistema"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/changeset/discard": {
+      "post": {
+        "description": "Somente sessões autenticadas. Se houve alterações, restaura a configuração de antes do lote e reinicia (`restart` é true); caso contrário apenas encerra o lote. Retorna 409 se não houver lote em andamento.\n\n**Disponível apenas para sessões de login; tokens de API não podem acessar este endpoint.**",
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "summary": "Descartar alterações em lote",
+        "tags": [
+          "Sistema"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
     "/api/system/confirm": {
       "get": {
-        "description": "Somente sessões autenticadas. Quando uma sessão de administrador salva encaminhamento de portas, roteamento por protocolo, serviço web ou configurações globais com o cabeçalho `X-Gately-Confirm: 1` e o arquivo de configuração muda, o servidor guarda o conteúdo anterior como alteração de configuração pendente; sem confirmação a tempo, o Gately reinicia e restaura o conteúdo anterior na inicialização (a versão alterada fica no histórico de configuração). `enabled` indica se está ativo (configuração global `confirmTimeout`: 0 é o padrão de 90 segundos, negativo desativa), `timeout` é o prazo em segundos; `pending` é a alteração em andamento, ou null: `configs` são as configurações envolvidas (IDs de módulo, `gately` para as configurações globais), `remaining` são os segundos até a reversão automática, `waitRestart` indica que o prazo começa após reiniciar, `rollback` que a reversão já foi decidida e o Gately está reiniciando; `rolledBack` é a alteração revertida nesta inicialização (`configs` e `reason`: `timeout` não confirmada a tempo, `manual` revertida manualmente, `boots` muitas inicializações seguidas), ou null.\n\n**Disponível apenas para sessões de login; tokens de API não podem acessar este endpoint.**",
+        "description": "Somente sessões autenticadas. Quando uma sessão de administrador salva encaminhamento de portas, roteamento por protocolo, serviço web ou configurações globais com o cabeçalho `X-Gately-Confirm: 1` e o arquivo de configuração muda, o servidor guarda o conteúdo anterior como alteração de configuração pendente; sem confirmação a tempo, o Gately reinicia e restaura o conteúdo anterior na inicialização (a versão alterada fica no histórico de configuração). `enabled` indica se está ativo (configuração global `confirmTimeout`: 0 é o padrão de 90 segundos, negativo desativa), `timeout` é o prazo em segundos; `pending` é a alteração em andamento, ou null: `configs` são as configurações envolvidas (IDs de módulo, `gately` para as configurações globais), `remaining` são os segundos até a reversão automática, `waitRestart` indica que o prazo começa após reiniciar, `rollback` que a reversão já foi decidida e o Gately está reiniciando; `rolledBack` é a alteração revertida nesta inicialização (`configs` e `reason`: `timeout` não confirmada a tempo, `manual` revertida manualmente, `boots` muitas inicializações seguidas), ou null. `hold` é o lote em andamento (`items` são as regras e listeners em espera, `configs` as configurações alteradas), ou null; `pending.hold` indica que a alteração pendente pertence a um lote ainda não aplicado.\n\n**Disponível apenas para sessões de login; tokens de API não podem acessar este endpoint.**",
         "responses": {
           "200": {
             "description": "Sucesso"

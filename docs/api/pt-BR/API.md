@@ -968,6 +968,9 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | GET | `/api/system/confirm` | Somente sessão de login | Ver a alteração de configuração pendente |
 | GET | `/api/system/confirm/connect` | Somente sessão de login | Confirmar a alteração de configuração |
 | POST | `/api/system/confirm/rollback` | Somente sessão de login | Reverter agora a alteração de configuração pendente |
+| POST | `/api/system/changeset/begin` | Somente sessão de login | Iniciar alterações em lote |
+| POST | `/api/system/changeset/apply` | Somente sessão de login | Aplicar alterações em lote |
+| POST | `/api/system/changeset/discard` | Somente sessão de login | Descartar alterações em lote |
 | GET | `/api/system/access-path` | Somente sessão de login | Ver o caminho de acesso atual |
 | POST | `/api/system/access-path/check` | Somente sessão de login | Verificar se uma alteração afeta o caminho de acesso atual |
 | POST | `/api/system/selfcheck` | Somente sessão de login | Autoverificação de rede e configuração |

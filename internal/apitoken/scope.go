@@ -42,6 +42,8 @@ var forbiddenPrefixes = []string{
 	"/api/system/restart",
 	// 确认或回滚配置变更只在管理界面中进行
 	"/api/system/confirm",
+	// 批量修改只在管理界面中进行
+	"/api/system/changeset",
 	// 访问路径含访客与本机转发的地址，只在管理界面中使用
 	"/api/system/access-path",
 	// 在线升级会替换可执行文件

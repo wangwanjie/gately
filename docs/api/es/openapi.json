@@ -43722,9 +43722,147 @@
         "x-token-allowed": false
       }
     },
+    "/api/system/changeset/apply": {
+      "post": {
+        "description": "Solo sesiones iniciadas. Aplica de una vez los cambios en espera, en el orden en que se guardaron. `applied` es el número de reglas y listeners aplicados; si `confirm` es true hay que confirmar por una conexión nueva como en un guardado individual (`GET /api/system/confirm/connect`) y, si no se confirma en `timeout` segundos, todo el lote se revierte a la configuración de antes de empezarlo. Devuelve 409 si no hay un lote en curso.\n\n**Solo disponible para sesiones de inicio de sesión; los tokens de API no pueden acceder a este endpoint.**",
+        "responses": {
+          "200": {
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parámetros de solicitud incorrectos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token no válido, caducado o sin sesión iniciada"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Al token le falta el permiso necesario"
+          }
+        },
+        "summary": "Aplicar los cambios por lotes",
+        "tags": [
+          "Sistema"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/changeset/begin": {
+      "post": {
+        "description": "Solo sesiones iniciadas. A partir de ahora lo que se guarde en reenvío de puertos, enrutamiento por protocolo y servicio web solo actualiza la configuración y queda en espera: las reglas y listeners en marcha siguen igual y el camino de acceso actual sigue funcionando. Pensado para cambios que solo funcionan juntos (como cambiar a la vez el puerto destino del enrutamiento por protocolo y el puerto de escucha del servicio web). Los guardados de una sesión de administrador con `X-Gately-Confirm: 1` registran el contenido anterior (aunque la confirmación esté desactivada). Si ya hay un lote en curso, devuelve su estado. Devuelve `items` (reglas y listeners en espera: `module`, `key`, `name`) y `configs` (configuraciones modificadas). Los cambios en los ajustes globales se siguen aplicando al momento.\n\n**Solo disponible para sesiones de inicio de sesión; los tokens de API no pueden acceder a este endpoint.**",
+        "responses": {
+          "200": {
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parámetros de solicitud incorrectos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token no válido, caducado o sin sesión iniciada"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Al token le falta el permiso necesario"
+          }
+        },
+        "summary": "Iniciar cambios por lotes",
+        "tags": [
+          "Sistema"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/changeset/discard": {
+      "post": {
+        "description": "Solo sesiones iniciadas. Si hubo cambios, restaura la configuración de antes del lote y reinicia (`restart` es true); si no, simplemente termina el lote. Devuelve 409 si no hay un lote en curso.\n\n**Solo disponible para sesiones de inicio de sesión; los tokens de API no pueden acceder a este endpoint.**",
+        "responses": {
+          "200": {
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parámetros de solicitud incorrectos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token no válido, caducado o sin sesión iniciada"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Al token le falta el permiso necesario"
+          }
+        },
+        "summary": "Descartar los cambios por lotes",
+        "tags": [
+          "Sistema"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
     "/api/system/confirm": {
       "get": {
-        "description": "Solo sesiones iniciadas. Cuando una sesión de administrador guarda el reenvío de puertos, el enrutamiento por protocolo, el servicio web o los ajustes globales con la cabecera `X-Gately-Confirm: 1` y el archivo de configuración cambia, el servidor guarda el contenido anterior como cambio de configuración pendiente; si no se confirma a tiempo, Gately se reinicia y restaura el contenido anterior al arrancar (la versión modificada queda en el historial de configuración). `enabled` indica si está activo (ajuste global `confirmTimeout`: 0 es el valor por defecto de 90 segundos, negativo lo desactiva), `timeout` es el plazo en segundos; `pending` es el cambio en curso, o null: `configs` son las configuraciones afectadas (ID de módulo, `gately` para los ajustes globales), `remaining` son los segundos que faltan para la reversión automática, `waitRestart` indica que el plazo empieza tras reiniciar, `rollback` que ya se decidió revertir y Gately se está reiniciando; `rolledBack` es el cambio revertido en este arranque (`configs` y `reason`: `timeout` sin confirmar a tiempo, `manual` revertido a mano, `boots` demasiados arranques seguidos), o null.\n\n**Solo disponible para sesiones de inicio de sesión; los tokens de API no pueden acceder a este endpoint.**",
+        "description": "Solo sesiones iniciadas. Cuando una sesión de administrador guarda el reenvío de puertos, el enrutamiento por protocolo, el servicio web o los ajustes globales con la cabecera `X-Gately-Confirm: 1` y el archivo de configuración cambia, el servidor guarda el contenido anterior como cambio de configuración pendiente; si no se confirma a tiempo, Gately se reinicia y restaura el contenido anterior al arrancar (la versión modificada queda en el historial de configuración). `enabled` indica si está activo (ajuste global `confirmTimeout`: 0 es el valor por defecto de 90 segundos, negativo lo desactiva), `timeout` es el plazo en segundos; `pending` es el cambio en curso, o null: `configs` son las configuraciones afectadas (ID de módulo, `gately` para los ajustes globales), `remaining` son los segundos que faltan para la reversión automática, `waitRestart` indica que el plazo empieza tras reiniciar, `rollback` que ya se decidió revertir y Gately se está reiniciando; `rolledBack` es el cambio revertido en este arranque (`configs` y `reason`: `timeout` sin confirmar a tiempo, `manual` revertido a mano, `boots` demasiados arranques seguidos), o null. `hold` es el lote en curso (`items` son las reglas y listeners en espera, `configs` las configuraciones modificadas), o null; `pending.hold` indica que el cambio pendiente pertenece a un lote aún sin aplicar.\n\n**Solo disponible para sesiones de inicio de sesión; los tokens de API no pueden acceder a este endpoint.**",
         "responses": {
           "200": {
             "description": "Correcto"

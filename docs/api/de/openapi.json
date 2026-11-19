@@ -43722,9 +43722,147 @@
         "x-token-allowed": false
       }
     },
+    "/api/system/changeset/apply": {
+      "post": {
+        "description": "Nur für Anmeldesitzungen. Wendet die zurückgehaltenen Änderungen auf einmal in Speicherreihenfolge an. `applied` ist die Zahl der angewendeten Regeln und Listener; ist `confirm` true, muss wie bei einem einzelnen Speichern über eine neue Verbindung bestätigt werden (`GET /api/system/confirm/connect`), sonst wird die ganze Sammeländerung nach `timeout` Sekunden auf die Konfiguration von vor ihrem Start zurückgesetzt. Liefert 409, wenn keine Sammeländerung läuft.\n\n**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "summary": "Sammeländerung anwenden",
+        "tags": [
+          "System"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/changeset/begin": {
+      "post": {
+        "description": "Nur für Anmeldesitzungen. Ab jetzt schreiben Speichervorgänge bei Portweiterleitung, Protokoll-Routing und Webdienst nur die Konfiguration und werden zurückgehalten: laufende Regeln und Listener bleiben unverändert, der aktuelle Zugriffsweg bleibt nutzbar. Gedacht für Änderungen, die nur zusammen funktionieren (etwa gleichzeitig Zielport des Protokoll-Routings und Listen-Port des Webdiensts ändern). Speichervorgänge einer Admin-Sitzung mit `X-Gately-Confirm: 1` halten den vorherigen Inhalt fest (auch bei abgeschalteter Bestätigung). Läuft bereits eine Sammeländerung, wird ihr Zustand geliefert. Liefert `items` (zurückgehaltene Regeln und Listener: `module`, `key`, `name`) und `configs` (geänderte Konfigurationen). Änderungen an globalen Einstellungen wirken weiterhin sofort.\n\n**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "summary": "Sammeländerung starten",
+        "tags": [
+          "System"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/changeset/discard": {
+      "post": {
+        "description": "Nur für Anmeldesitzungen. Gab es Änderungen, wird die Konfiguration von vor der Sammeländerung wiederhergestellt und neu gestartet (`restart` ist true); sonst wird die Sammeländerung einfach beendet. Liefert 409, wenn keine Sammeländerung läuft.\n\n**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "summary": "Sammeländerung verwerfen",
+        "tags": [
+          "System"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
     "/api/system/confirm": {
       "get": {
-        "description": "Nur für Anmeldesitzungen. Speichert eine Admin-Sitzung Portweiterleitung, Protokoll-Routing, Webdienst oder globale Einstellungen mit dem Header `X-Gately-Confirm: 1` und ändert sich dabei die Konfigurationsdatei, hält der Server den vorherigen Inhalt als ausstehende Konfigurationsänderung fest; ohne rechtzeitige Bestätigung startet Gately neu und stellt beim Start den vorherigen Inhalt wieder her (die geänderte Fassung bleibt im Konfigurationsverlauf). `enabled` gibt an, ob die Funktion aktiv ist (globale Einstellung `confirmTimeout`: 0 für den Standard von 90 Sekunden, negativ zum Abschalten), `timeout` ist die Frist in Sekunden; `pending` ist die laufende Änderung oder null: `configs` nennt die betroffenen Konfigurationen (Modul-IDs, `gately` für globale Einstellungen), `remaining` die verbleibenden Sekunden bis zur automatischen Rücksetzung, `waitRestart` bedeutet, dass die Frist nach einem Neustart beginnt, `rollback`, dass die Rücksetzung beschlossen ist und Gately neu startet; `rolledBack` ist die bei diesem Start zurückgesetzte Änderung (`configs` und `reason`: `timeout` nicht rechtzeitig bestätigt, `manual` manuell zurückgesetzt, `boots` zu viele Starts hintereinander) oder null.\n\n**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",
+        "description": "Nur für Anmeldesitzungen. Speichert eine Admin-Sitzung Portweiterleitung, Protokoll-Routing, Webdienst oder globale Einstellungen mit dem Header `X-Gately-Confirm: 1` und ändert sich dabei die Konfigurationsdatei, hält der Server den vorherigen Inhalt als ausstehende Konfigurationsänderung fest; ohne rechtzeitige Bestätigung startet Gately neu und stellt beim Start den vorherigen Inhalt wieder her (die geänderte Fassung bleibt im Konfigurationsverlauf). `enabled` gibt an, ob die Funktion aktiv ist (globale Einstellung `confirmTimeout`: 0 für den Standard von 90 Sekunden, negativ zum Abschalten), `timeout` ist die Frist in Sekunden; `pending` ist die laufende Änderung oder null: `configs` nennt die betroffenen Konfigurationen (Modul-IDs, `gately` für globale Einstellungen), `remaining` die verbleibenden Sekunden bis zur automatischen Rücksetzung, `waitRestart` bedeutet, dass die Frist nach einem Neustart beginnt, `rollback`, dass die Rücksetzung beschlossen ist und Gately neu startet; `rolledBack` ist die bei diesem Start zurückgesetzte Änderung (`configs` und `reason`: `timeout` nicht rechtzeitig bestätigt, `manual` manuell zurückgesetzt, `boots` zu viele Starts hintereinander) oder null. `hold` ist die laufende Sammeländerung (`items` die zurückgehaltenen Regeln und Listener, `configs` die geänderten Konfigurationen) oder null; `pending.hold` bedeutet, dass die ausstehende Änderung zu einer noch nicht angewendeten Sammeländerung gehört.\n\n**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",
         "responses": {
           "200": {
             "description": "Erfolgreich"

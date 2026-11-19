@@ -29,6 +29,7 @@ import (
 
 	"github.com/coder/websocket"
 
+	"github.com/wangwanjie/gately/internal/applyhold"
 	"github.com/wangwanjie/gately/internal/auth"
 	"github.com/wangwanjie/gately/internal/config"
 	"github.com/wangwanjie/gately/internal/demo"
@@ -64,6 +65,8 @@ const (
 	confirmNone        = "none"
 	confirmWaitRestart = "waitRestart"
 	confirmRollingBack = "rollingBack"
+	// confirmHold 表示处于批量修改中，修改尚未生效，无需确认
+	confirmHold = "hold"
 )
 
 // pendingConfirm 是一次待确认的配置变更，可能包含多次保存：同一配置只记录第一次保存前的内容。
@@ -78,6 +81,9 @@ type pendingConfirm struct {
 	WaitRestart bool `json:"waitRestart,omitempty"`
 	// Rollback 表示已决定回滚（超时或手动），下次启动时无条件恢复
 	Rollback bool `json:"rollback,omitempty"`
+	// Hold 表示处于批量修改中：保存的内容暂缓生效，不计时；结束批量修改（全部生效）时开始计时，
+	// 进程在此期间重启时按新配置启动，与 WaitRestart 一样从启动时开始计时
+	Hold bool `json:"hold,omitempty"`
 	// Boots 为登记后经历的启动次数
 	Boots int `json:"boots,omitempty"`
 	// Files 为配置名 → 改动前的内容；值为 null 表示改动前文件不存在，回滚时删除
@@ -205,7 +211,7 @@ func recoverPendingConfirm(store *config.Store, now time.Time) confirmRecovery {
 	switch {
 	case p.Rollback && now.Before(p.Deadline):
 		reason = "manual"
-	case p.Rollback || (!p.WaitRestart && !now.Before(p.Deadline)):
+	case p.Rollback || (!p.WaitRestart && !p.Hold && !now.Before(p.Deadline)):
 		reason = "timeout"
 	case p.Boots >= confirmMaxBoots:
 		reason = "boots"
@@ -219,9 +225,9 @@ func recoverPendingConfirm(store *config.Store, now time.Time) confirmRecovery {
 		return rec
 	}
 	p.Boots++
-	if p.WaitRestart {
-		// 需要重启才生效的变更从这次启动开始计时
-		p.WaitRestart = false
+	if p.WaitRestart || p.Hold {
+		// 需要重启才生效的变更、批量修改中途重启时暂存的修改，都从这次启动开始计时
+		p.WaitRestart, p.Hold = false, false
 		p.Deadline = now.Add(time.Duration(p.Timeout) * time.Second)
 	} else if min := now.Add(confirmBootGrace); p.Deadline.Before(min) {
 		p.Deadline = min
@@ -254,7 +260,9 @@ func (a *App) confirmTargets(r *http.Request) []string {
 	if r.Header.Get(confirmHeader) != "1" || r.Method == http.MethodGet || r.Method == http.MethodHead {
 		return nil
 	}
-	if auth.IsToken(r.Context()) || auth.RoleFromContext(r.Context()) != auth.RoleAdmin || !a.confirmEnabled() {
+	// 批量修改期间即使关闭了确认也要记录改动前的内容：放弃修改时据此恢复
+	if auth.IsToken(r.Context()) || auth.RoleFromContext(r.Context()) != auth.RoleAdmin || demo.Enabled() ||
+		(!a.confirmEnabled() && !applyhold.Active()) {
 		return nil
 	}
 	if r.URL.Path == "/api/system/settings" && r.Method == http.MethodPut {
@@ -316,9 +324,14 @@ func (a *App) confirmGuard(next http.Handler) http.Handler {
 
 // beginConfirm 登记一次保存：并入进行中的待确认变更（同一配置保留最早的原内容）并重新计时。
 func (a *App) beginConfirm(changed map[string]*string) {
+	hold := applyhold.Active()
 	timeout := a.settingsSnapshot().confirmTimeout()
 	if timeout <= 0 {
-		return
+		if !hold {
+			return
+		}
+		// 关闭了确认的批量修改：仍记录原内容供放弃时恢复，全部生效时不计时
+		timeout = defaultConfirmTimeout
 	}
 	c := &a.confirm
 	c.mu.Lock()
@@ -339,8 +352,11 @@ func (a *App) beginConfirm(changed map[string]*string) {
 			p.Files[n] = orig
 		}
 	}
-	// 已决定回滚或等待重启时不再改动计时，新保存的内容随之回滚
-	if !p.Rollback && !p.WaitRestart {
+	// 已决定回滚或等待重启时不再改动计时，新保存的内容随之回滚；批量修改期间不计时
+	if hold {
+		p.Hold = true
+	}
+	if !p.Rollback && !p.WaitRestart && !p.Hold {
 		p.Timeout = timeout
 		p.Deadline = now.Add(time.Duration(timeout) * time.Second)
 	}
@@ -349,10 +365,8 @@ func (a *App) beginConfirm(changed map[string]*string) {
 		return
 	}
 	c.tx = p
-	if !p.Rollback && !p.WaitRestart {
-		a.armConfirmTimerLocked()
-	}
-	if fresh {
+	a.armConfirmTimerLocked()
+	if fresh && !p.Hold {
 		a.sysLogs.Add(logbuf.LevelInfo, "system", fmt.Sprintf("配置变更（%s）待确认：%d 秒内未在管理界面确认访问正常将自动回滚", a.confirmTitles(p.names()), timeout))
 	}
 }
@@ -365,7 +379,7 @@ func (a *App) armConfirmTimerLocked() {
 		c.timer = nil
 	}
 	p := c.tx
-	if p == nil || p.WaitRestart || p.Rollback {
+	if p == nil || p.WaitRestart || p.Rollback || p.Hold {
 		return
 	}
 	id := p.ID
@@ -377,7 +391,7 @@ func (a *App) confirmExpired(id string) {
 	c := &a.confirm
 	c.mu.Lock()
 	p := c.tx
-	if p == nil || p.ID != id || p.WaitRestart || p.Rollback {
+	if p == nil || p.ID != id || p.WaitRestart || p.Rollback || p.Hold {
 		c.mu.Unlock()
 		return
 	}
@@ -414,6 +428,8 @@ func (a *App) confirmPending() (string, error) {
 		return confirmRollingBack, nil
 	case p.WaitRestart:
 		return confirmWaitRestart, nil
+	case p.Hold:
+		return confirmHold, nil
 	}
 	// 状态文件留着会在下次启动时回滚，删除失败就不能算确认
 	if err := removePendingConfirm(a.store.Dir()); err != nil {
@@ -431,6 +447,7 @@ func (a *App) confirmPending() (string, error) {
 // discardPendingConfirm 放弃待确认的变更（不回滚），用于从备份或历史版本恢复配置：
 // 恢复后的配置由用户明确选择，不应在下次启动时被改回。
 func (a *App) discardPendingConfirm() {
+	applyhold.Drop()
 	c := &a.confirm
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -606,6 +623,8 @@ type confirmView struct {
 	Pending *confirmPendingView `json:"pending"`
 	// RolledBack 为本次启动时回滚掉的变更，没有时为 null：管理界面据此告诉等待确认的页面配置已回滚
 	RolledBack *confirmRolledBackView `json:"rolledBack"`
+	// Hold 为进行中的批量修改，没有时为 null
+	Hold *holdView `json:"hold"`
 }
 
 type confirmRolledBackView struct {
@@ -622,6 +641,7 @@ type confirmPendingView struct {
 	Remaining   int  `json:"remaining"`
 	WaitRestart bool `json:"waitRestart"`
 	Rollback    bool `json:"rollback"`
+	Hold        bool `json:"hold"`
 }
 
 func (a *App) handleConfirmStatus(w http.ResponseWriter, r *http.Request) {
@@ -633,7 +653,7 @@ func (a *App) handleConfirmStatus(w http.ResponseWriter, r *http.Request) {
 	}
 	c.mu.Lock()
 	if p := c.tx; p != nil {
-		pv := &confirmPendingView{ID: p.ID, Configs: p.names(), WaitRestart: p.WaitRestart, Rollback: p.Rollback}
+		pv := &confirmPendingView{ID: p.ID, Configs: p.names(), WaitRestart: p.WaitRestart, Rollback: p.Rollback, Hold: p.Hold}
 		if p.WaitRestart {
 			pv.Remaining = p.Timeout
 		} else if left := time.Until(p.Deadline); left > 0 {
@@ -642,6 +662,9 @@ func (a *App) handleConfirmStatus(w http.ResponseWriter, r *http.Request) {
 		v.Pending = pv
 	}
 	c.mu.Unlock()
+	if applyhold.Active() {
+		v.Hold = a.holdView()
+	}
 	httpx.OK(w, v)
 }
 

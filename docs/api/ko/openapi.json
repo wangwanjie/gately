@@ -43722,9 +43722,147 @@
         "x-token-allowed": false
       }
     },
+    "/api/system/changeset/apply": {
+      "post": {
+        "description": "로그인 세션만 사용할 수 있습니다. 보류된 변경을 저장 순서대로 한 번에 적용합니다. `applied`는 적용된 규칙과 수신 수이며, `confirm`이 true이면 단일 저장과 마찬가지로 새 연결로 확인해야 하고(`GET /api/system/confirm/connect`), `timeout`초 안에 확인되지 않으면 일괄 변경 시작 전 설정으로 통째로 롤백합니다. 진행 중인 일괄 변경이 없으면 409를 반환합니다.\n\n**로그인 세션에서만 사용할 수 있으며, API 토큰으로는 이 엔드포인트에 접근할 수 없습니다.**",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "summary": "일괄 변경 모두 적용",
+        "tags": [
+          "시스템"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/changeset/begin": {
+      "post": {
+        "description": "로그인 세션만 사용할 수 있습니다. 이후 포트 포워딩, 프로토콜 라우팅, 웹 서비스의 저장은 설정에만 기록되고 적용이 보류되며, 실행 중인 규칙과 수신은 그대로이고 현재 접속 경로도 계속 쓸 수 있습니다. 여러 곳을 함께 바꿔야 동작하는 변경(예: 프로토콜 라우팅 대상 포트와 웹 서비스 수신 포트를 함께 변경)에 적합합니다. 관리자 세션이 `X-Gately-Confirm: 1`을 붙여 저장하면 변경 전 내용을 기록합니다(확인을 꺼도 기록). 이미 일괄 변경 중이면 현재 상태를 반환합니다. `items`(보류된 규칙과 수신: `module`, `key`, `name`)와 `configs`(변경된 설정 이름)를 반환합니다. 전역 설정 변경은 평소처럼 즉시 적용됩니다.\n\n**로그인 세션에서만 사용할 수 있으며, API 토큰으로는 이 엔드포인트에 접근할 수 없습니다.**",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "summary": "일괄 변경 시작",
+        "tags": [
+          "시스템"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/changeset/discard": {
+      "post": {
+        "description": "로그인 세션만 사용할 수 있습니다. 변경이 있으면 일괄 변경 시작 전 설정으로 복원하고 재시작하며(`restart`가 true), 없으면 그냥 끝냅니다. 진행 중인 일괄 변경이 없으면 409를 반환합니다.\n\n**로그인 세션에서만 사용할 수 있으며, API 토큰으로는 이 엔드포인트에 접근할 수 없습니다.**",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "summary": "일괄 변경 취소",
+        "tags": [
+          "시스템"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
     "/api/system/confirm": {
       "get": {
-        "description": "로그인 세션만 사용할 수 있습니다. 관리자 세션이 요청 헤더 `X-Gately-Confirm: 1`을 붙여 포트 포워딩, 프로토콜 라우팅, 웹 서비스 또는 전역 설정을 저장하고 설정 파일이 바뀌면, 서버는 변경 전 내용을 확인 대기 중인 설정 변경으로 기록합니다. 시간 안에 확인되지 않으면 Gately가 재시작하고 시작 시 변경 전 내용을 복원합니다(변경된 버전은 설정 기록에 보관). `enabled`는 사용 여부(전역 설정 `confirmTimeout`: 0은 기본 90초, 음수는 끔), `timeout`은 확인 제한 시간(초)입니다. `pending`은 진행 중인 변경이며 없으면 null입니다: `configs`는 관련 설정 이름(모듈 ID, 전역 설정은 `gately`), `remaining`은 자동 롤백까지 남은 초, `waitRestart`는 재시작 후 시간을 재기 시작함, `rollback`은 롤백이 결정되어 재시작 중임을 뜻합니다. `rolledBack`은 이번 시작 때 롤백된 변경(`configs`와 `reason`: `timeout` 시간 초과, `manual` 수동 롤백, `boots` 연속 시작 횟수 초과)이며 없으면 null입니다.\n\n**로그인 세션에서만 사용할 수 있으며, API 토큰으로는 이 엔드포인트에 접근할 수 없습니다.**",
+        "description": "로그인 세션만 사용할 수 있습니다. 관리자 세션이 요청 헤더 `X-Gately-Confirm: 1`을 붙여 포트 포워딩, 프로토콜 라우팅, 웹 서비스 또는 전역 설정을 저장하고 설정 파일이 바뀌면, 서버는 변경 전 내용을 확인 대기 중인 설정 변경으로 기록합니다. 시간 안에 확인되지 않으면 Gately가 재시작하고 시작 시 변경 전 내용을 복원합니다(변경된 버전은 설정 기록에 보관). `enabled`는 사용 여부(전역 설정 `confirmTimeout`: 0은 기본 90초, 음수는 끔), `timeout`은 확인 제한 시간(초)입니다. `pending`은 진행 중인 변경이며 없으면 null입니다: `configs`는 관련 설정 이름(모듈 ID, 전역 설정은 `gately`), `remaining`은 자동 롤백까지 남은 초, `waitRestart`는 재시작 후 시간을 재기 시작함, `rollback`은 롤백이 결정되어 재시작 중임을 뜻합니다. `rolledBack`은 이번 시작 때 롤백된 변경(`configs`와 `reason`: `timeout` 시간 초과, `manual` 수동 롤백, `boots` 연속 시작 횟수 초과)이며 없으면 null입니다. `hold`는 진행 중인 일괄 변경(`items`는 보류된 규칙과 수신, `configs`는 변경된 설정 이름)이며 없으면 null, `pending.hold`는 확인 대기 변경이 아직 적용되지 않은 일괄 변경에 속함을 뜻합니다.\n\n**로그인 세션에서만 사용할 수 있으며, API 토큰으로는 이 엔드포인트에 접근할 수 없습니다.**",
         "responses": {
           "200": {
             "description": "성공"

@@ -43722,9 +43722,147 @@
         "x-token-allowed": false
       }
     },
+    "/api/system/changeset/apply": {
+      "post": {
+        "description": "Sessions connectées uniquement. Applique d’un coup les modifications en attente, dans l’ordre d’enregistrement. `applied` est le nombre de règles et d’écouteurs appliqués ; quand `confirm` vaut true, il faut confirmer via une nouvelle connexion comme pour un enregistrement isolé (`GET /api/system/confirm/connect`), sinon au bout de `timeout` secondes toute la série revient à la configuration d’avant son démarrage. Renvoie 409 si aucune série n’est en cours.\n\n**Disponible uniquement pour les sessions de connexion ; les jetons d'API ne peuvent pas accéder à ce point d'accès.**",
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "summary": "Appliquer la série de modifications",
+        "tags": [
+          "Système"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/changeset/begin": {
+      "post": {
+        "description": "Sessions connectées uniquement. Désormais, les enregistrements de la redirection de ports, du routage par protocole et du service web ne font que mettre à jour la configuration et sont mis en attente : les règles et écouteurs en service restent inchangés et le chemin d’accès actuel reste utilisable. Prévu pour des modifications qui ne fonctionnent qu’ensemble (par exemple changer à la fois le port cible du routage par protocole et le port d’écoute du service web). Les enregistrements d’une session administrateur avec `X-Gately-Confirm: 1` conservent le contenu précédent (même si la confirmation est désactivée). Si une série est déjà en cours, renvoie son état. Renvoie `items` (règles et écouteurs en attente : `module`, `key`, `name`) et `configs` (configurations modifiées). Les modifications des paramètres globaux s’appliquent toujours immédiatement.\n\n**Disponible uniquement pour les sessions de connexion ; les jetons d'API ne peuvent pas accéder à ce point d'accès.**",
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "summary": "Démarrer une série de modifications",
+        "tags": [
+          "Système"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/changeset/discard": {
+      "post": {
+        "description": "Sessions connectées uniquement. S’il y a eu des modifications, restaure la configuration d’avant la série et redémarre (`restart` vaut true) ; sinon termine simplement la série. Renvoie 409 si aucune série n’est en cours.\n\n**Disponible uniquement pour les sessions de connexion ; les jetons d'API ne peuvent pas accéder à ce point d'accès.**",
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "summary": "Abandonner la série de modifications",
+        "tags": [
+          "Système"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
     "/api/system/confirm": {
       "get": {
-        "description": "Sessions connectées uniquement. Quand une session administrateur enregistre la redirection de ports, le routage par protocole, le service web ou les paramètres globaux avec l'en-tête `X-Gately-Confirm: 1` et que le fichier de configuration change, le serveur conserve le contenu précédent comme modification de configuration en attente ; sans confirmation à temps, Gately redémarre et restaure le contenu précédent au démarrage (la version modifiée reste dans l'historique de configuration). `enabled` indique si la fonction est active (paramètre global `confirmTimeout` : 0 pour la valeur par défaut de 90 secondes, négatif pour la désactiver), `timeout` est le délai en secondes ; `pending` est la modification en cours, ou null : `configs` liste les configurations concernées (ID de module, `gately` pour les paramètres globaux), `remaining` les secondes restantes avant le retour automatique, `waitRestart` indique que le délai démarre après un redémarrage, `rollback` que le retour en arrière est décidé et que Gately redémarre ; `rolledBack` est la modification annulée à ce démarrage (`configs` et `reason` : `timeout` non confirmée à temps, `manual` annulée à la main, `boots` trop de démarrages consécutifs), ou null.\n\n**Disponible uniquement pour les sessions de connexion ; les jetons d'API ne peuvent pas accéder à ce point d'accès.**",
+        "description": "Sessions connectées uniquement. Quand une session administrateur enregistre la redirection de ports, le routage par protocole, le service web ou les paramètres globaux avec l'en-tête `X-Gately-Confirm: 1` et que le fichier de configuration change, le serveur conserve le contenu précédent comme modification de configuration en attente ; sans confirmation à temps, Gately redémarre et restaure le contenu précédent au démarrage (la version modifiée reste dans l'historique de configuration). `enabled` indique si la fonction est active (paramètre global `confirmTimeout` : 0 pour la valeur par défaut de 90 secondes, négatif pour la désactiver), `timeout` est le délai en secondes ; `pending` est la modification en cours, ou null : `configs` liste les configurations concernées (ID de module, `gately` pour les paramètres globaux), `remaining` les secondes restantes avant le retour automatique, `waitRestart` indique que le délai démarre après un redémarrage, `rollback` que le retour en arrière est décidé et que Gately redémarre ; `rolledBack` est la modification annulée à ce démarrage (`configs` et `reason` : `timeout` non confirmée à temps, `manual` annulée à la main, `boots` trop de démarrages consécutifs), ou null. `hold` est la série en cours (`items` les règles et écouteurs en attente, `configs` les configurations modifiées), ou null ; `pending.hold` indique que la modification en attente appartient à une série pas encore appliquée.\n\n**Disponible uniquement pour les sessions de connexion ; les jetons d'API ne peuvent pas accéder à ce point d'accès.**",
         "responses": {
           "200": {
             "description": "Succès"

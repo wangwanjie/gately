@@ -968,6 +968,9 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | GET | `/api/system/confirm` | Solo sesión iniciada | Ver el cambio de configuración pendiente |
 | GET | `/api/system/confirm/connect` | Solo sesión iniciada | Confirmar el cambio de configuración |
 | POST | `/api/system/confirm/rollback` | Solo sesión iniciada | Revertir ahora el cambio de configuración pendiente |
+| POST | `/api/system/changeset/begin` | Solo sesión iniciada | Iniciar cambios por lotes |
+| POST | `/api/system/changeset/apply` | Solo sesión iniciada | Aplicar los cambios por lotes |
+| POST | `/api/system/changeset/discard` | Solo sesión iniciada | Descartar los cambios por lotes |
 | GET | `/api/system/access-path` | Solo sesión iniciada | Ver el camino de acceso actual |
 | POST | `/api/system/access-path/check` | Solo sesión iniciada | Comprobar si un cambio afecta al camino de acceso actual |
 | POST | `/api/system/selfcheck` | Solo sesión iniciada | Autodiagnóstico de red y configuración |

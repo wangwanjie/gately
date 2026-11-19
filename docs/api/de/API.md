@@ -968,6 +968,9 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | GET | `/api/system/confirm` | Nur Anmeldesitzung | Ausstehende Konfigurationsänderung anzeigen |
 | GET | `/api/system/confirm/connect` | Nur Anmeldesitzung | Konfigurationsänderung bestätigen |
 | POST | `/api/system/confirm/rollback` | Nur Anmeldesitzung | Ausstehende Konfigurationsänderung jetzt zurücksetzen |
+| POST | `/api/system/changeset/begin` | Nur Anmeldesitzung | Sammeländerung starten |
+| POST | `/api/system/changeset/apply` | Nur Anmeldesitzung | Sammeländerung anwenden |
+| POST | `/api/system/changeset/discard` | Nur Anmeldesitzung | Sammeländerung verwerfen |
 | GET | `/api/system/access-path` | Nur Anmeldesitzung | Aktuellen Zugriffsweg anzeigen |
 | POST | `/api/system/access-path/check` | Nur Anmeldesitzung | Prüfen, ob eine Änderung den aktuellen Zugriffsweg betrifft |
 | POST | `/api/system/selfcheck` | Nur Anmeldesitzung | Selbsttest von Netzwerk und Konfiguration |

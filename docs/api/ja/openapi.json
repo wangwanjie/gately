@@ -43722,9 +43722,147 @@
         "x-token-allowed": false
       }
     },
+    "/api/system/changeset/apply": {
+      "post": {
+        "description": "ログインセッションのみ利用可能。保留中の変更を保存順にまとめて反映します。`applied` は反映したルールと待ち受けの数。`confirm` が true のときは単独の保存と同様に新しい接続で確認が必要で（`GET /api/system/confirm/connect`）、`timeout` 秒以内に確認されなければ一括変更を始める前の設定へまとめてロールバックします。一括変更中でなければ 409 を返します。\n\n**ログインセッションでのみ利用できます。API トークンではこのエンドポイントにアクセスできません。**",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "summary": "一括変更をすべて反映",
+        "tags": [
+          "システム"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/changeset/begin": {
+      "post": {
+        "description": "ログインセッションのみ利用可能。以降、ポート転送・プロトコル振り分け・Web サービスの保存は設定に書き込むだけで反映を保留し、実行中のルールと待ち受けはそのまま、現在のアクセス経路も使い続けられます。複数箇所を一緒に変えないと使えない変更（プロトコル振り分けの転送先ポートと Web サービスの待ち受けポートを同時に変えるなど）向けです。管理者セッションが `X-Gately-Confirm: 1` 付きで保存すると変更前の内容を記録します（確認がオフでも記録）。すでに一括変更中なら現在の状態を返します。`items`（保留中のルールと待ち受け：`module`、`key`、`name`）と `configs`（変更した設定名）を返します。グローバル設定の変更はこれまでどおり即時に反映されます。\n\n**ログインセッションでのみ利用できます。API トークンではこのエンドポイントにアクセスできません。**",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "summary": "一括変更を開始",
+        "tags": [
+          "システム"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/changeset/discard": {
+      "post": {
+        "description": "ログインセッションのみ利用可能。変更があれば一括変更を始める前の設定に戻して再起動し（`restart` が true）、なければそのまま終了します。一括変更中でなければ 409 を返します。\n\n**ログインセッションでのみ利用できます。API トークンではこのエンドポイントにアクセスできません。**",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "summary": "一括変更を破棄",
+        "tags": [
+          "システム"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
     "/api/system/confirm": {
       "get": {
-        "description": "ログインセッションのみ利用可能。管理者セッションがリクエストヘッダー `X-Gately-Confirm: 1` 付きでポート転送・プロトコル振り分け・Web サービス・グローバル設定を保存し、設定ファイルが変わった場合、サーバーは変更前の内容を未確認の設定変更として記録します。時間内に確認されなければ Gately は再起動し、起動時に変更前の内容を復元します（変更後の版は設定履歴に保存）。`enabled` は有効かどうか（グローバル設定 `confirmTimeout`：0 で既定の 90 秒、負数で無効）、`timeout` は確認期限（秒）。`pending` は進行中の変更で、なければ null：`configs` は対象の設定名（モジュール ID、グローバル設定は `gately`）、`remaining` は自動ロールバックまでの残り秒数、`waitRestart` は再起動後に計時を始めること、`rollback` はロールバックが決まり再起動中であることを表します。`rolledBack` は今回の起動時にロールバックした変更（`configs` と `reason`：`timeout` 期限切れ、`manual` 手動、`boots` 連続起動回数超過）で、なければ null。\n\n**ログインセッションでのみ利用できます。API トークンではこのエンドポイントにアクセスできません。**",
+        "description": "ログインセッションのみ利用可能。管理者セッションがリクエストヘッダー `X-Gately-Confirm: 1` 付きでポート転送・プロトコル振り分け・Web サービス・グローバル設定を保存し、設定ファイルが変わった場合、サーバーは変更前の内容を未確認の設定変更として記録します。時間内に確認されなければ Gately は再起動し、起動時に変更前の内容を復元します（変更後の版は設定履歴に保存）。`enabled` は有効かどうか（グローバル設定 `confirmTimeout`：0 で既定の 90 秒、負数で無効）、`timeout` は確認期限（秒）。`pending` は進行中の変更で、なければ null：`configs` は対象の設定名（モジュール ID、グローバル設定は `gately`）、`remaining` は自動ロールバックまでの残り秒数、`waitRestart` は再起動後に計時を始めること、`rollback` はロールバックが決まり再起動中であることを表します。`rolledBack` は今回の起動時にロールバックした変更（`configs` と `reason`：`timeout` 期限切れ、`manual` 手動、`boots` 連続起動回数超過）で、なければ null. `hold` は進行中の一括変更（`items` は保留中のルールと待ち受け、`configs` は変更した設定名）で、なければ null。`pending.hold` は未確認の変更が未反映の一括変更に属することを表します。\n\n**ログインセッションでのみ利用できます。API トークンではこのエンドポイントにアクセスできません。**",
         "responses": {
           "200": {
             "description": "成功"
