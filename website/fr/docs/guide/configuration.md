@@ -87,6 +87,20 @@ La hauteur de la zone des journaux est réglable : faites glisser la barre situ�
 - Les messages sont exportés dans la langue de l'interface ; les comptes en lecture seule et les jetons d'API disposant seulement de la permission de lecture peuvent aussi exporter, et les mots de passe et jetons présents dans les adresses sont masqués comme à l'affichage ;
 - L'API est `GET /api/logs/export` et `GET /api/<module>/logs/export`, avec `format` à `csv` ou `jsonl` et les autres paramètres de filtre identiques à ceux de la consultation des journaux ; l'API de la liste des sources est `GET /api/logs/sources` et `GET /api/<module>/logs/sources`.
 
+## Confirmation après enregistrement et retour automatique {#confirm}
+
+Lorsque vous administrez Gately à distance via un domaine, modifier la redirection de ports, le routage par protocole, le service web ou les paramètres globaux peut couper le chemin même qu’emprunte l’interface d’administration. Après l’enregistrement de ces réglages, l’interface vérifie donc, via une connexion nouvellement ouverte, qu’elle atteint toujours Gately :
+
+- si l’accès fonctionne, la confirmation se fait discrètement en arrière-plan ;
+- sinon, une boîte de dialogue avec compte à rebours s’affiche ; la confirmation se fait d’elle-même dès que l’accès revient, ou vous pouvez cliquer sur « Revenir maintenant » ;
+- si rien n’est confirmé à l’échéance, Gately redémarre et restaure la configuration précédente au démarrage. La version modifiée est conservée dans l’[historique de configuration](/fr/docs/guide/audit). La page se recharge une fois Gately revenu et indique quelles modifications ont été annulées.
+
+La confirmation passe par un WebSocket : le navigateur ouvre toujours une nouvelle connexion pour lui, qui traverse donc la redirection et les écoutes modifiées. Les connexions persistantes ouvertes avant la modification atteignent encore l’ancienne cible après une mise à jour à chaud et ne prouvent rien sur la nouvelle configuration.
+
+Les réglages qui ne s’appliquent qu’après redémarrage (adresses d’écoute de l’interface, activation des modules) sont enregistrés lorsque vous redémarrez depuis l’interface d’administration, et le délai démarre après le redémarrage. Si Gately démarre 3 fois de suite sans confirmation (par exemple parce que la nouvelle configuration l’empêche de fonctionner), la modification est aussi annulée. Si vous ouvrez l’interface à une nouvelle adresse alors qu’une modification est en attente, une boîte de dialogue propose « Conserver » ou « Revenir maintenant ».
+
+Le délai se règle dans « Paramètres → Contrôle d’accès → Écouteur de la console → Confirmer après enregistrement » (30 à 600 secondes, 90 par défaut), et la fonction peut être désactivée. Elle ne s’applique qu’aux enregistrements faits depuis l’interface d’administration ; les modifications faites avec des jetons d’API et des scripts ne sont pas concernées. L’API est `GET /api/system/confirm`.
+
 ## Sauvegarde et restauration
 
 « Paramètres » propose la sauvegarde et la restauration de la configuration, et sert aussi de point d'entrée pour importer des configurations Lucky.

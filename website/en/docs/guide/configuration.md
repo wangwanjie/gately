@@ -87,6 +87,20 @@ The log area can be resized: drag the bar below it (on touch screens, press and 
 - Messages are exported in the interface language; read-only accounts and API tokens with only read permission can also export, and passwords and tokens in addresses are hidden just as when viewing;
 - The API is `GET /api/logs/export` and `GET /api/<module>/logs/export`, with `format` set to `csv` or `jsonl` and the other filter parameters the same as for viewing logs; the source list API is `GET /api/logs/sources` and `GET /api/<module>/logs/sources`.
 
+## Confirm after saving and automatic rollback {#confirm}
+
+When you manage Gately remotely through a domain, changing port forwarding, protocol routing, the web service or global settings can cut off the very path the admin UI uses. So after saving these, the admin UI checks over a freshly opened connection that it can still reach Gately:
+
+- If access works, it is confirmed silently in the background;
+- If it can't be confirmed, a countdown dialog appears; it confirms on its own once access comes back, or you can click "Roll back now";
+- If it still isn't confirmed when time runs out, Gately restarts and restores the previous configuration on startup. The changed version is kept in [Config History](/en/docs/guide/audit). The page reloads once Gately is back and tells you which changes were rolled back.
+
+Confirmation uses a WebSocket: browsers always open a new connection for it, so it goes through the changed forwarding and listeners. Long-lived connections opened before the change still reach the old target after a hot update and prove nothing about the new configuration.
+
+Settings that only take effect after a restart (admin UI listen addresses, module switches) are recorded when you restart from the admin UI, and the timer starts after the restart. If Gately starts 3 times in a row without a confirmation (for example the new configuration keeps it from running), the change is rolled back too. If you open the admin UI at a new address while a change is pending, a dialog asks you to "Keep changes" or "Roll back now".
+
+Adjust the time limit under "Settings → Access Control → Console listener → Confirm after saving" (30–600 seconds, 90 by default), or turn it off. It only applies to saves from the admin UI; changes made with API tokens and scripts are not affected. The API is `GET /api/system/confirm`.
+
 ## Backup and restore
 
 "Settings" provides configuration backup and restore, and is also the entry point for importing Lucky configurations.

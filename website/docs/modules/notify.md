@@ -146,6 +146,7 @@ WAF 拦截和上游状态变化可能频繁发生，建议为这类规则设置 
 | `login.newip` | 管理后台：新地址登录 | 警告 | 管理后台登录成功且来源地址此前从未登录成功过，附带 `ip`、`user` 字段。密码、Passkey、第三方登录与飞牛统一网关登录都会检查；第一次登录只建立基线、不通知；IPv6 按 /64 网段归并；最多记录 200 个来源，超出时淘汰最久未出现的 |
 | `audit.change` | 管理后台：配置变更 | 信息 | 管理后台中的任意变更操作，附带 `actor`、`ip`、`method`、`path` 字段，见[审计与配置历史](/docs/guide/audit) |
 | `audit.access` | 管理后台：访问敏感内容 | 警告 | 下载备份、诊断包、证书私钥或打开终端等，字段同上 |
+| `config.rolledback` | 管理后台：配置已自动回滚 | 警告 | 保存端口转发、协议分流、Web 服务或全局设置后未在时限内确认访问正常（或手动回滚、连续启动多次），Gately 已重启并恢复修改前的配置，见[保存后确认与自动回滚](/docs/guide/configuration#confirm) |
 | `perf.alert` | 性能监控：触发告警 | 警告或错误 | 性能告警规则的条件持续满足到设定时长，级别取规则设置，附带 `rule`、`metric`、`target`、`value`、`condition` 字段，见[性能监控](/docs/modules/perf) |
 | `perf.recovered` | 性能监控：告警恢复 | 信息 | 已触发的性能告警条件解除，字段同上 |
 | `system.update` | Gately：发现新版本 | 信息 | 自动或手动检查更新发现新版本，附带 `current`、`latest`、`url` 字段，同一版本只通知一次，见[自动检查更新](/docs/guide/install#update-check) |

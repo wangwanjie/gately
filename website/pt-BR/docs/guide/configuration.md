@@ -87,6 +87,20 @@ A altura da área de logs pode ser ajustada: arraste a barra abaixo dela (em tel
 - As mensagens são exportadas no idioma da interface; contas somente leitura e tokens de API só com permissão de leitura também podem exportar, e senhas e tokens em endereços ficam ocultos como na visualização;
 - A API é `GET /api/logs/export` e `GET /api/<módulo>/logs/export`, com `format` igual a `csv` ou `jsonl` e os demais parâmetros de filtro iguais aos da visualização de logs; a API da lista de origens é `GET /api/logs/sources` e `GET /api/<módulo>/logs/sources`.
 
+## Confirmação após salvar e reversão automática {#confirm}
+
+Ao administrar o Gately remotamente por um domínio, alterar o encaminhamento de portas, o roteamento por protocolo, o serviço web ou as configurações globais pode cortar o próprio caminho usado pela interface de administração. Por isso, depois de salvar essas configurações, a interface verifica por uma conexão recém-aberta se ainda alcança o Gately:
+
+- se o acesso funcionar, a confirmação acontece em segundo plano, sem interromper;
+- se não for possível confirmar, aparece uma caixa de diálogo com contagem regressiva; a confirmação ocorre sozinha quando o acesso voltar, ou você pode clicar em "Reverter agora";
+- se ainda não houver confirmação quando o tempo acabar, o Gately reinicia e restaura a configuração anterior na inicialização. A versão alterada fica no [Histórico de configuração](/pt-BR/docs/guide/audit). A página recarrega quando o Gately volta e informa quais alterações foram revertidas.
+
+A confirmação usa um WebSocket: o navegador sempre abre uma conexão nova para ele, que passa pelo encaminhamento e pelas escutas alterados. Conexões persistentes abertas antes da alteração continuam chegando ao destino antigo após uma atualização a quente e não provam nada sobre a nova configuração.
+
+Configurações que só valem após reiniciar (endereços de escuta da interface, módulos ativados) são registradas quando você reinicia pela interface de administração, e o prazo começa após o reinício. Se o Gately iniciar 3 vezes seguidas sem confirmação (por exemplo, a nova configuração o impede de funcionar), a alteração também é revertida. Se você abrir a interface em um endereço novo com uma alteração pendente, uma caixa de diálogo pergunta se deseja "Manter alterações" ou "Reverter agora".
+
+O prazo é ajustado em "Configurações → Controle de acesso → Listener do console → Confirmar após salvar" (30–600 segundos, 90 por padrão) e a função pode ser desativada. Ela vale apenas para o que é salvo pela interface de administração; alterações feitas com tokens de API e scripts não são afetadas. A API é `GET /api/system/confirm`.
+
 ## Backup e restauração
 
 Em "Configurações" você encontra o backup e a restauração da configuração, que também é o ponto de entrada para importar configurações do Lucky.
