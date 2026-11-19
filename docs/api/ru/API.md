@@ -968,6 +968,9 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/system/confirm` | Только сессия входа | Просмотр ожидающего подтверждения изменения конфигурации |
 | GET | `/api/system/confirm/connect` | Только сессия входа | Подтвердить изменение конфигурации |
 | POST | `/api/system/confirm/rollback` | Только сессия входа | Немедленно откатить ожидающее изменение конфигурации |
+| POST | `/api/system/changeset/begin` | Только сессия входа | Начать пакетные изменения |
+| POST | `/api/system/changeset/apply` | Только сессия входа | Применить пакетные изменения |
+| POST | `/api/system/changeset/discard` | Только сессия входа | Отменить пакетные изменения |
 | GET | `/api/system/access-path` | Только сессия входа | Просмотр текущего пути доступа |
 | POST | `/api/system/access-path/check` | Только сессия входа | Проверить, затрагивает ли изменение текущий путь доступа |
 | POST | `/api/system/selfcheck` | Только сессия входа | Самопроверка сети и конфигурации |

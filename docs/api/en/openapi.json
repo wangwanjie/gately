@@ -43722,9 +43722,147 @@
         "x-token-allowed": false
       }
     },
+    "/api/system/changeset/apply": {
+      "post": {
+        "description": "Login sessions only. Applies the held changes at once, in the order they were saved. `applied` is the number of rules and listeners applied; when `confirm` is true the change must be confirmed over a new connection like a single save (`GET /api/system/confirm/connect`), and if that does not happen within `timeout` seconds the whole batch is rolled back to the configuration from before the batch started. Returns 409 when no batch is in progress.\n\n**Available only to login sessions; API tokens cannot access this endpoint.**",
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "summary": "Apply batch changes",
+        "tags": [
+          "System"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/changeset/begin": {
+      "post": {
+        "description": "Login sessions only. From now on saves to port forwarding, protocol routing and the web service only update the configuration and are held: running rules and listeners stay as they are and the current access path keeps working. Meant for changes that only work together (such as changing the protocol routing target port and the web service listen port). Saves by an admin session with `X-Gately-Confirm: 1` record the previous content (even when confirmation is off). If a batch is already in progress, returns its state. Returns `items` (held rules and listeners: `module`, `key`, `name`) and `configs` (configs changed). Global settings changes still apply immediately.\n\n**Available only to login sessions; API tokens cannot access this endpoint.**",
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "summary": "Start batch changes",
+        "tags": [
+          "System"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/changeset/discard": {
+      "post": {
+        "description": "Login sessions only. If anything changed, restores the configuration from before the batch started and restarts (`restart` is true); otherwise just ends the batch. Returns 409 when no batch is in progress.\n\n**Available only to login sessions; API tokens cannot access this endpoint.**",
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "summary": "Discard batch changes",
+        "tags": [
+          "System"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
     "/api/system/confirm": {
       "get": {
-        "description": "Login sessions only. When an admin session saves port forwarding, protocol routing, web service or global settings with the header `X-Gately-Confirm: 1` and the config file changes, the server records the previous content as a pending configuration change; if it isn't confirmed in time, Gately restarts and restores the previous content on startup (the changed version is kept in config history). `enabled` tells whether this is on (global setting `confirmTimeout`: 0 means the default 90 seconds, negative turns it off), `timeout` is the time limit in seconds; `pending` is the change in progress, or null: `configs` lists the configs involved (module IDs, `gately` for global settings), `remaining` is the seconds left before automatic rollback, `waitRestart` means the timer starts after a restart, `rollback` means a rollback has been decided and Gately is restarting; `rolledBack` is the change rolled back at this start (`configs` and `reason`: `timeout` not confirmed in time, `manual` rolled back by hand, `boots` too many starts in a row), or null.\n\n**Available only to login sessions; API tokens cannot access this endpoint.**",
+        "description": "Login sessions only. When an admin session saves port forwarding, protocol routing, web service or global settings with the header `X-Gately-Confirm: 1` and the config file changes, the server records the previous content as a pending configuration change; if it isn't confirmed in time, Gately restarts and restores the previous content on startup (the changed version is kept in config history). `enabled` tells whether this is on (global setting `confirmTimeout`: 0 means the default 90 seconds, negative turns it off), `timeout` is the time limit in seconds; `pending` is the change in progress, or null: `configs` lists the configs involved (module IDs, `gately` for global settings), `remaining` is the seconds left before automatic rollback, `waitRestart` means the timer starts after a restart, `rollback` means a rollback has been decided and Gately is restarting; `rolledBack` is the change rolled back at this start (`configs` and `reason`: `timeout` not confirmed in time, `manual` rolled back by hand, `boots` too many starts in a row), or null. `hold` is the batch in progress (`items` are held rules and listeners, `configs` the configs changed), or null; `pending.hold` means the pending change belongs to a batch that has not been applied yet.\n\n**Available only to login sessions; API tokens cannot access this endpoint.**",
         "responses": {
           "200": {
             "description": "Success"

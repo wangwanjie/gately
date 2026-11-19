@@ -968,6 +968,9 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | GET | `/api/system/confirm` | Login sessions only | View the pending configuration change |
 | GET | `/api/system/confirm/connect` | Login sessions only | Confirm the configuration change |
 | POST | `/api/system/confirm/rollback` | Login sessions only | Roll back the pending configuration change now |
+| POST | `/api/system/changeset/begin` | Login sessions only | Start batch changes |
+| POST | `/api/system/changeset/apply` | Login sessions only | Apply batch changes |
+| POST | `/api/system/changeset/discard` | Login sessions only | Discard batch changes |
 | GET | `/api/system/access-path` | Login sessions only | View the current access path |
 | POST | `/api/system/access-path/check` | Login sessions only | Check whether a change affects the current access path |
 | POST | `/api/system/selfcheck` | Login sessions only | Network and configuration self-check |

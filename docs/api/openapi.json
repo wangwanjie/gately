@@ -43722,9 +43722,147 @@
         "x-token-allowed": false
       }
     },
+    "/api/system/changeset/apply": {
+      "post": {
+        "description": "仅登录会话可用。按保存顺序一次性生效暂存的修改。`applied` 为生效的规则与监听数量；`confirm` 为 true 时需要像单次保存一样经新连接确认（`GET /api/system/confirm/connect`），`timeout` 秒内未确认时整批回滚到开始批量修改前的配置。没有进行中的批量修改时返回 409。\n\n**仅登录会话可用，API 令牌无法访问此接口。**",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "summary": "批量修改全部生效",
+        "tags": [
+          "系统"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/changeset/begin": {
+      "post": {
+        "description": "仅登录会话可用。此后端口转发、协议分流与 Web 服务的保存只写入配置、暂缓生效，运行中的规则与监听保持不变，当前访问路径继续可用；适合几处要一起改才能用的修改（如同时改协议分流的目标端口与 Web 服务的监听端口）。管理员会话带 `X-Gately-Confirm: 1` 的保存记录改动前的内容（关闭了确认时同样记录）。已在批量修改中时直接返回当前状态。返回 `items`（暂缓生效的规则与监听：`module`、`key`、`name`）与 `configs`（改动过的配置名）。全局设置的修改照常立即生效。\n\n**仅登录会话可用，API 令牌无法访问此接口。**",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "summary": "开始批量修改",
+        "tags": [
+          "系统"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/changeset/discard": {
+      "post": {
+        "description": "仅登录会话可用。有改动时恢复开始批量修改前的配置并重启（`restart` 为 true）；没有改动时直接结束。没有进行中的批量修改时返回 409。\n\n**仅登录会话可用，API 令牌无法访问此接口。**",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "summary": "放弃批量修改",
+        "tags": [
+          "系统"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
     "/api/system/confirm": {
       "get": {
-        "description": "仅登录会话可用。管理员会话带请求头 `X-Gately-Confirm: 1` 保存端口转发、协议分流、Web 服务或全局设置后，若配置文件有变化，服务端记录改动前的内容，作为待确认的配置变更；超时未确认时 Gately 重启并在启动时恢复改动前的内容（修改后的版本保存在配置历史中）。`enabled` 为是否启用（全局设置 `confirmTimeout`：0 为默认 90 秒，负数关闭），`timeout` 为确认时限（秒）；`pending` 为进行中的变更，没有时为 null：`configs` 为涉及的配置名（模块 ID，全局设置为 `gately`），`remaining` 为距自动回滚的剩余秒数，`waitRestart` 表示等待重启后开始计时，`rollback` 表示已决定回滚、正在重启；`rolledBack` 为本次启动时回滚掉的变更（`configs` 与 `reason`：`timeout` 超时未确认、`manual` 手动回滚、`boots` 连续启动次数过多），没有时为 null。\n\n**仅登录会话可用，API 令牌无法访问此接口。**",
+        "description": "仅登录会话可用。管理员会话带请求头 `X-Gately-Confirm: 1` 保存端口转发、协议分流、Web 服务或全局设置后，若配置文件有变化，服务端记录改动前的内容，作为待确认的配置变更；超时未确认时 Gately 重启并在启动时恢复改动前的内容（修改后的版本保存在配置历史中）。`enabled` 为是否启用（全局设置 `confirmTimeout`：0 为默认 90 秒，负数关闭），`timeout` 为确认时限（秒）；`pending` 为进行中的变更，没有时为 null：`configs` 为涉及的配置名（模块 ID，全局设置为 `gately`），`remaining` 为距自动回滚的剩余秒数，`waitRestart` 表示等待重启后开始计时，`rollback` 表示已决定回滚、正在重启；`rolledBack` 为本次启动时回滚掉的变更（`configs` 与 `reason`：`timeout` 超时未确认、`manual` 手动回滚、`boots` 连续启动次数过多），没有时为 null；`hold` 为进行中的批量修改（`items` 为暂缓生效的规则与监听，`configs` 为改动过的配置名），没有时为 null，`pending.hold` 表示待确认变更处于批量修改中、尚未生效。\n\n**仅登录会话可用，API 令牌无法访问此接口。**",
         "responses": {
           "200": {
             "description": "成功"

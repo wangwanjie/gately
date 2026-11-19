@@ -968,6 +968,9 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/system/confirm` | 仅登录会话 | 查看待确认的配置变更 |
 | GET | `/api/system/confirm/connect` | 仅登录会话 | 确认配置变更 |
 | POST | `/api/system/confirm/rollback` | 仅登录会话 | 立即回滚待确认的配置变更 |
+| POST | `/api/system/changeset/begin` | 仅登录会话 | 开始批量修改 |
+| POST | `/api/system/changeset/apply` | 仅登录会话 | 批量修改全部生效 |
+| POST | `/api/system/changeset/discard` | 仅登录会话 | 放弃批量修改 |
 | GET | `/api/system/access-path` | 仅登录会话 | 查看当前访问路径 |
 | POST | `/api/system/access-path/check` | 仅登录会话 | 检查修改是否影响当前访问路径 |
 | POST | `/api/system/selfcheck` | 仅登录会话 | 网络与配置自检 |
