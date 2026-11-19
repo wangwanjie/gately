@@ -562,6 +562,13 @@ func (a *App) rollbackPending() (bool, error) {
 	cp.Rollback = true
 	if !p.Hold {
 		cp.Errors = a.applyErrors(p.Applied)
+	} else {
+		// 批量修改期间没有截止时间（或沿用并入时已过的截止时间）：与放弃批量修改一样补上，
+		// 启动时据此识别为手动回滚，否则会按“超时未确认”提示
+		if cp.Timeout <= 0 {
+			cp.Timeout = defaultConfirmTimeout
+		}
+		cp.Deadline = time.Now().Add(time.Duration(cp.Timeout) * time.Second)
 	}
 	if err := savePendingConfirm(a.store.Dir(), &cp); err != nil {
 		c.mu.Unlock()
@@ -570,6 +577,10 @@ func (a *App) rollbackPending() (bool, error) {
 	c.tx = &cp
 	a.armConfirmTimerLocked()
 	c.mu.Unlock()
+	if p.Hold {
+		// 暂存的修改不再生效，重启后按恢复的配置启动
+		applyhold.Drop()
+	}
 	a.sysLogs.Add(logbuf.LevelWarn, "system", fmt.Sprintf("已手动回滚配置变更（%s），正在重启", a.confirmTitles(p.names())))
 	a.scheduleRestart()
 	return true, nil
