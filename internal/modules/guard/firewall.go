@@ -122,6 +122,9 @@ type firewall struct {
 	importFn func(source string, addrs []netip.Addr, ports portHits)
 	// onActive 在轮询协程中发现规则生效状态或重定向是否可用发生变化（重试成功或重写失败）时调用，调用时不持有 f.mu
 	onActive func()
+	// onPorts 在轮询协程刷新端口之后调用（模块登记的端口变化或定时轮询，规则是否生效都调用），调用时不持有 f.mu；
+	// 用户态诱饵端口据此跟随端口变化重新计算
+	onPorts func()
 	// hs 为接收诱饵端口与可疑来源重定向连接的用户态监听（见 handshake.go），诱饵端口或扫描检测开启时创建
 	hs *hsListener
 	// redirOK 表示重定向规则已写入内核（nftables 需要 Linux 5.2 起支持 inet 族的 nat，iptables 需要 nat 表的 REDIRECT 目标）
@@ -947,6 +950,7 @@ func (f *firewall) loop(ctx context.Context) {
 		case <-openWake:
 			openWake = nil
 			f.refreshOpen(ctx)
+			f.portsChanged()
 		case <-trustsrc.Notify():
 			// 可信来源变化（frpc 刚登录）时立即更新放行集合，不等下一次轮询
 			f.refreshTrust(ctx)
@@ -974,12 +978,42 @@ func (f *firewall) loop(ctx context.Context) {
 			}
 			doFlush()
 			f.poll(ctx)
+			f.portsChanged()
 		}
 	}
 }
 
 // minFlushGap 为两次写入封禁变化的最短间隔，见 loop
 const minFlushGap = 250 * time.Millisecond
+
+// setOnPorts 设置端口刷新后的回调，见 firewall.onPorts。
+func (f *firewall) setOnPorts(fn func()) {
+	f.mu.Lock()
+	f.onPorts = fn
+	f.mu.Unlock()
+}
+
+// portsChanged 调用 onPorts，调用方不能持有 f.mu。
+func (f *firewall) portsChanged() {
+	f.mu.Lock()
+	fn := f.onPorts
+	f.mu.Unlock()
+	if fn != nil {
+		fn()
+	}
+}
+
+// trapListening 返回诱饵端口要避开的监听端口（含 portGrace 内监听过的端口，不含用户态诱饵自己的监听），
+// 防火墙规则未生效时也可调用；读取失败时返回已读到的部分。
+func (f *firewall) trapListening() map[int]bool {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	listening, _ := f.listeningLocked()
+	if listening == nil {
+		listening = map[int]bool{}
+	}
+	return listening
+}
 
 // openRefreshDelay 为收到端口登记变化后合并后续变化的时间
 const openRefreshDelay = 300 * time.Millisecond

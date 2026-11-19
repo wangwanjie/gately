@@ -412,6 +412,7 @@ func (m *Module) Start(ctx context.Context) error {
 	m.unsub = append(m.unsub, func() { webprobe.SetHandler(nil) })
 	// TLS 握手失败处理函数只在有规则时注册（见 refreshTLSLocked），没有规则时 Web 服务连分类都不做
 	m.unsub = append(m.unsub, func() { webprobe.SetTLSHandler(nil) })
+	m.fw.setOnPorts(m.refreshTrap)
 	m.fw.start(m.ctx, s, m.local, m.importPortBans, m.onFirewallActive)
 	m.applyTrapLocked()
 	for _, j := range m.cfg.Jails {
