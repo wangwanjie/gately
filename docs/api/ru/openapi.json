@@ -2869,6 +2869,9 @@
           "enable": {
             "type": "boolean"
           },
+          "fnosDomain": {
+            "type": "string"
+          },
           "group": {
             "type": "string"
           },
@@ -40195,6 +40198,57 @@
           }
         ],
         "summary": "Список доступных целей развёртывания",
+        "tags": [
+          "SSL-сертификат"
+        ],
+        "x-required-scope": "ssl:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/ssl/fnos-certs": {
+      "get": {
+        "description": "Читает системные сертификаты, зарегистрированные fnOS (`/usr/trim/etc/network_cert_all.conf`), для источника сертификата `fnos`. `available` равно false, если это не fnOS или файл не смонтирован в контейнер; каждый элемент `certs` содержит `domain`, `san`, `notAfter` (срок действия) и `used` (используется самой fnOS); пути к файлам не возвращаются. `error` содержит причину, если файл не удаётся разобрать.\n\nТребуемое разрешение: `ssl:read`.",
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Список системных сертификатов fnOS",
         "tags": [
           "SSL-сертификат"
         ],

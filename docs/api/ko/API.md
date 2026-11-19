@@ -368,6 +368,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/ssl/certs/{key}/download` | `ssl:write` | 인증서와 개인 키 다운로드 |
 | POST | `/api/ssl/certs/{key}/deploy` | `ssl:write` | 인증서 지금 배포 |
 | GET | `/api/ssl/deploy-targets` | `ssl:read` | 선택 가능한 배포 대상 목록 |
+| GET | `/api/ssl/fnos-certs` | `ssl:read` | fnOS 시스템 인증서 목록 |
 | GET | `/api/ssl/providers` | `ssl:read` | 지원되는 DNS 검증 서비스 제공자 목록 조회 |
 | GET | `/api/ssl/settings` | `ssl:read` | 인증서 전역 설정 읽기 |
 | PUT | `/api/ssl/settings` | `ssl:write` | 인증서 전역 설정 저장 |
@@ -2218,6 +2219,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `certPem` | string |
 | `deploys` | Array of `ssl.Deploy` |
 | `enable` | boolean |
+| `fnosDomain` | string |
 | `group` | string |
 | `issuedProfile` | string |
 | `issuerPem` | string |

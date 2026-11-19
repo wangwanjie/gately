@@ -2869,6 +2869,9 @@
           "enable": {
             "type": "boolean"
           },
+          "fnosDomain": {
+            "type": "string"
+          },
           "group": {
             "type": "string"
           },
@@ -40195,6 +40198,57 @@
           }
         ],
         "summary": "列出可选的部署目标",
+        "tags": [
+          "SSL 证书"
+        ],
+        "x-required-scope": "ssl:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/ssl/fnos-certs": {
+      "get": {
+        "description": "读取飞牛 fnOS 登记的系统证书（`/usr/trim/etc/network_cert_all.conf`），供证书来源 `fnos` 选择。`available` 为 false 表示不是飞牛系统或容器未挂载该文件；`certs` 每项含 `domain`、`san`、`notAfter`（到期时间）与 `used`（飞牛自身正在使用），不返回文件路径；登记文件无法解析时 `error` 为原因。\n\n所需权限：`ssl:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "列出飞牛系统证书",
         "tags": [
           "SSL 证书"
         ],

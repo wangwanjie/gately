@@ -2869,6 +2869,9 @@
           "enable": {
             "type": "boolean"
           },
+          "fnosDomain": {
+            "type": "string"
+          },
           "group": {
             "type": "string"
           },
@@ -40195,6 +40198,57 @@
           }
         ],
         "summary": "列出可選的部署目標",
+        "tags": [
+          "SSL 憑證"
+        ],
+        "x-required-scope": "ssl:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/ssl/fnos-certs": {
+      "get": {
+        "description": "讀取飛牛 fnOS 登記的系統憑證（`/usr/trim/etc/network_cert_all.conf`），供憑證來源 `fnos` 選擇。`available` 為 false 表示不是飛牛系統或容器未掛載該檔案；`certs` 每項含 `domain`、`san`、`notAfter`（到期時間）與 `used`（飛牛自身正在使用），不回傳檔案路徑；登記檔案無法解析時 `error` 為原因。\n\n所需權限：`ssl:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖缺少所需權限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "列出飛牛系統憑證",
         "tags": [
           "SSL 憑證"
         ],

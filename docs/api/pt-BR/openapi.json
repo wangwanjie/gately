@@ -2869,6 +2869,9 @@
           "enable": {
             "type": "boolean"
           },
+          "fnosDomain": {
+            "type": "string"
+          },
           "group": {
             "type": "string"
           },
@@ -40195,6 +40198,57 @@
           }
         ],
         "summary": "Listar destinos de implantação disponíveis",
+        "tags": [
+          "Certificado SSL"
+        ],
+        "x-required-scope": "ssl:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/ssl/fnos-certs": {
+      "get": {
+        "description": "Lê os certificados do sistema registrados pelo fnOS (`/usr/trim/etc/network_cert_all.conf`) para a origem de certificado `fnos`. `available` é false quando não é fnOS ou o arquivo não está montado no contêiner; cada item de `certs` tem `domain`, `san`, `notAfter` (validade) e `used` (em uso pelo próprio fnOS); caminhos de arquivo não são retornados. `error` traz o motivo quando o arquivo não pode ser interpretado.\n\nPermissão necessária: `ssl:read`.",
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "O token não tem a permissão necessária"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Listar certificados do sistema fnOS",
         "tags": [
           "Certificado SSL"
         ],

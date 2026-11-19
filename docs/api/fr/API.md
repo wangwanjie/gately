@@ -368,6 +368,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | GET | `/api/ssl/certs/{key}/download` | `ssl:write` | Télécharger le certificat et la clé privée |
 | POST | `/api/ssl/certs/{key}/deploy` | `ssl:write` | Déployer un certificat maintenant |
 | GET | `/api/ssl/deploy-targets` | `ssl:read` | Lister les cibles de déploiement disponibles |
+| GET | `/api/ssl/fnos-certs` | `ssl:read` | Lister les certificats système de fnOS |
 | GET | `/api/ssl/providers` | `ssl:read` | Lister les fournisseurs de validation DNS pris en charge |
 | GET | `/api/ssl/settings` | `ssl:read` | Lire les paramètres globaux des certificats |
 | PUT | `/api/ssl/settings` | `ssl:write` | Enregistrer les paramètres globaux des certificats |
@@ -2218,6 +2219,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `certPem` | string |
 | `deploys` | Tableau de `ssl.Deploy` |
 | `enable` | boolean |
+| `fnosDomain` | string |
 | `group` | string |
 | `issuedProfile` | string |
 | `issuerPem` | string |

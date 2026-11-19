@@ -270,7 +270,7 @@ func (m *Module) checkAll(force bool) {
 		// 失败的部署在退避结束后重试
 		m.scheduleDeploysLocked(c)
 		switch c.Source {
-		case SourceFile:
+		case SourceFile, SourceFnOS:
 			m.reloadFileLocked(c)
 			m.warnExpiringLocked(c, now)
 		case SourceACME:
@@ -412,11 +412,20 @@ func (m *Module) done() <-chan struct{} {
 	return m.ctx.Done()
 }
 
-// reloadFileLocked 重新读取文件来源的证书，内容变化时更新。
+// reloadFileLocked 重新读取文件来源与飞牛系统证书来源的证书，内容变化时更新。
 func (m *Module) reloadFileLocked(c *Cert) {
 	st := m.stateLocked(c.Key)
-	certPEM, err1 := os.ReadFile(c.CertFile)
-	keyPEM, err2 := os.ReadFile(c.KeyFile)
+	certFile, keyFile := c.CertFile, c.KeyFile
+	if c.Source == SourceFnOS {
+		fc, err := findFnOSCert(c.FnOSDomain)
+		if err != nil {
+			st.LastError = err.Error()
+			return
+		}
+		certFile, keyFile = fc.chainFile(), fc.PrivateKey
+	}
+	certPEM, err1 := os.ReadFile(certFile)
+	keyPEM, err2 := os.ReadFile(keyFile)
 	if err := errors.Join(err1, err2); err != nil {
 		st.LastError = "读取证书文件失败: " + err.Error()
 		return
@@ -432,7 +441,11 @@ func (m *Module) reloadFileLocked(c *Cert) {
 	c.CertPEM, c.KeyPEM = string(certPEM), string(keyPEM)
 	c.UpdatedAt = time.Now()
 	_ = m.saveLocked()
-	m.logs.Logger(label(c)).Infof("已从文件加载新证书")
+	if c.Source == SourceFnOS {
+		m.logs.Logger(label(c)).Infof("已从飞牛系统加载新证书：%s", certFile)
+	} else {
+		m.logs.Logger(label(c)).Infof("已从文件加载新证书")
+	}
 	m.rebuildTLSLocked()
 	m.applyMappingLocked(c, true)
 	m.scheduleDeploysLocked(c)
@@ -701,7 +714,7 @@ func (m *Module) changedLocked(key string) {
 		c.UpdatedAt = time.Now()
 		m.applyMappingLocked(c, true)
 		m.scheduleDeploysLocked(c)
-	case SourceFile:
+	case SourceFile, SourceFnOS:
 		m.reloadFileLocked(c)
 		m.scheduleDeploysLocked(c)
 	case SourceACME:
@@ -756,6 +769,7 @@ func (m *Module) Routes(r module.Router) {
 	r.HandleFunc("GET /certs/{key}/download", m.handleDownload)
 	r.HandleFunc("POST /certs/{key}/deploy", m.handleDeploy)
 	r.HandleFunc("GET /deploy-targets", m.handleDeployTargets)
+	r.HandleFunc("GET /fnos-certs", m.handleFnOSCerts)
 	r.HandleFunc("GET /providers", func(w http.ResponseWriter, r *http.Request) {
 		var out []dnsprovider.Meta
 		for _, p := range dnsprovider.List() {
