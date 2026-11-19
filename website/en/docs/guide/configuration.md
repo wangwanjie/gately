@@ -92,7 +92,7 @@ The log area can be resized: drag the bar below it (on touch screens, press and 
 When you manage Gately remotely through a domain, changing port forwarding, protocol routing, the web service or global settings can cut off the very path the admin UI uses. So after saving these, the admin UI checks over a freshly opened connection that it can still reach Gately:
 
 - If access works, it is confirmed silently in the background;
-- If it can't be confirmed, a countdown dialog appears; it confirms on its own once access comes back, or you can click "Roll back now";
+- If it can't be confirmed, a countdown dialog appears and confirms on its own once access comes back; "Roll back now" is offered while Gately can still be reached, otherwise that request can't get through either, so wait for the countdown or run `gately rollback -pending` on the server;
 - If it still isn't confirmed when time runs out, Gately restarts and restores the previous configuration on startup. The changed version is kept in [Config History](/en/docs/guide/audit). The page reloads once Gately is back and tells you which changes were rolled back.
 
 Confirmation uses a WebSocket: browsers always open a new connection for it, so it goes through the changed forwarding and listeners. Long-lived connections opened before the change still reach the old target after a hot update and prove nothing about the new configuration.
@@ -113,6 +113,17 @@ Before saving, the admin UI asks the server whether the change affects this path
 - turning on "LAN access only" while connecting from outside the LAN, or "Force HTTPS" while on HTTP.
 
 Besides the warning, confirmation and automatic rollback above still apply, so paths Gately can't see (for example another reverse proxy in front) are protected too. The API is `GET /api/system/access-path` and `POST /api/system/access-path/check`.
+
+### Batch changes: several edits that only work together {#changeset}
+
+Some changes only work together, for example changing the port protocol routing sends to the web service to 18081 and then moving the web service listener to 18081. Saving the first one alone cuts your current access, so you can no longer make the second. Use batch changes:
+
+1. In the warning before saving, choose "Stage, apply together later", or click "Start batch changes" on the "Current access path" card in "Settings → Access Control";
+2. From then on, saves to port forwarding, protocol routing and the web service only update the configuration: pages show the new values, but running rules and listeners stay as they are and your current access path keeps working. A banner at the top of the page lists the staged rules and listeners, and no warnings are shown before saving meanwhile;
+3. When everything is done, click "Apply all" on the banner: the staged changes take effect at once in the order they were saved, then are confirmed over a new connection like a single save; if that can't be confirmed, the whole batch is rolled back to the configuration from before it started;
+4. To drop it, click "Discard changes": Gately restores the configuration from before the batch and restarts.
+
+Global settings are not part of batch changes and still apply immediately. If Gately restarts during a batch, it starts with the new configuration and waits for confirmation like a single save. The API is `POST /api/system/changeset/begin`, `/apply` and `/discard`.
 
 ### Command-line rollback {#rollback-cli}
 

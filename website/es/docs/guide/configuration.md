@@ -92,7 +92,7 @@ La altura del área de registros se puede ajustar: arrastra la barra situada deb
 Al administrar Gately a distancia mediante un dominio, cambiar el reenvío de puertos, el enrutamiento por protocolo, el servicio web o los ajustes globales puede cortar el propio camino que usa la interfaz de administración. Por eso, tras guardar estos ajustes, la interfaz comprueba con una conexión recién abierta que sigue llegando a Gately:
 
 - Si el acceso funciona, se confirma en segundo plano sin molestar;
-- Si no se puede confirmar, aparece un diálogo con cuenta atrás; se confirma solo cuando vuelve el acceso, o puedes pulsar «Revertir ahora»;
+- Si no se puede confirmar, aparece un diálogo con cuenta atrás que se confirma solo cuando vuelve el acceso; «Revertir ahora» se ofrece mientras aún se llega a Gately; si no, esa petición tampoco llega, así que espera a la cuenta atrás o ejecuta `gately rollback -pending` en el servidor;
 - Si al agotarse el plazo sigue sin confirmarse, Gately se reinicia y restaura la configuración anterior al arrancar. La versión modificada queda en el [Historial de configuración](/es/docs/guide/audit). La página se recarga cuando Gately vuelve e indica qué cambios se revirtieron.
 
 La confirmación usa un WebSocket: el navegador siempre abre una conexión nueva para él, así que pasa por el reenvío y las escuchas modificados. Las conexiones persistentes abiertas antes del cambio siguen llegando al destino anterior tras una actualización en caliente y no prueban nada sobre la nueva configuración.
@@ -113,6 +113,17 @@ Antes de guardar, la interfaz pregunta al servidor si el cambio afecta a ese cam
 - activar «Solo LAN» conectándote desde fuera, o «Forzar HTTPS» usando HTTP.
 
 Además del aviso, la confirmación y la reversión automática de arriba siguen activas, así que también se protegen caminos que Gately no ve (por ejemplo, otro proxy inverso delante). La API es `GET /api/system/access-path` y `POST /api/system/access-path/check`.
+
+### Cambios por lotes: varios cambios que solo funcionan juntos {#changeset}
+
+Algunos cambios solo funcionan juntos, por ejemplo cambiar a 18081 el puerto al que el enrutamiento por protocolo envía al servicio web y luego mover el listener del servicio web a 18081. Si guardas solo el primero, se corta tu acceso actual y ya no puedes hacer el segundo. Usa los cambios por lotes:
+
+1. En el aviso antes de guardar elige «Guardar en espera y aplicar luego», o pulsa «Iniciar cambios por lotes» en la tarjeta «Camino de acceso actual» de «Ajustes → Control de acceso»;
+2. Desde entonces, lo que guardes en reenvío de puertos, enrutamiento por protocolo y servicio web solo actualiza la configuración: las páginas muestran los valores nuevos, pero las reglas y listeners en marcha no cambian y tu camino de acceso actual sigue funcionando. Un aviso arriba en la página enumera las reglas y listeners en espera, y mientras tanto no aparecen avisos antes de guardar;
+3. Al terminar, pulsa «Aplicar todo» en el aviso: los cambios en espera se aplican de una vez en el orden en que se guardaron y se confirman por una conexión nueva como un guardado individual; si no se puede confirmar, todo el lote vuelve a la configuración de antes de empezar;
+4. Para descartarlo, pulsa «Descartar cambios»: Gately restaura la configuración de antes del lote y se reinicia.
+
+Los ajustes globales no forman parte de los lotes y se siguen aplicando al momento. Si Gately se reinicia durante un lote, arranca con la configuración nueva y espera la confirmación como en un guardado individual. La API es `POST /api/system/changeset/begin`, `/apply` y `/discard`.
 
 ### Reversión desde la línea de comandos {#rollback-cli}
 

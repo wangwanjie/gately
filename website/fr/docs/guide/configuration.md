@@ -92,7 +92,7 @@ La hauteur de la zone des journaux est réglable : faites glisser la barre situ�
 Lorsque vous administrez Gately à distance via un domaine, modifier la redirection de ports, le routage par protocole, le service web ou les paramètres globaux peut couper le chemin même qu’emprunte l’interface d’administration. Après l’enregistrement de ces réglages, l’interface vérifie donc, via une connexion nouvellement ouverte, qu’elle atteint toujours Gately :
 
 - si l’accès fonctionne, la confirmation se fait discrètement en arrière-plan ;
-- sinon, une boîte de dialogue avec compte à rebours s’affiche ; la confirmation se fait d’elle-même dès que l’accès revient, ou vous pouvez cliquer sur « Revenir maintenant » ;
+- sinon, une boîte de dialogue avec compte à rebours s’affiche et confirme d’elle-même dès que l’accès revient ; « Revenir maintenant » est proposé tant que Gately reste joignable, sinon cette requête ne passe pas non plus : attendez la fin du compte à rebours ou lancez `gately rollback -pending` sur le serveur ;
 - si rien n’est confirmé à l’échéance, Gately redémarre et restaure la configuration précédente au démarrage. La version modifiée est conservée dans l’[historique de configuration](/fr/docs/guide/audit). La page se recharge une fois Gately revenu et indique quelles modifications ont été annulées.
 
 La confirmation passe par un WebSocket : le navigateur ouvre toujours une nouvelle connexion pour lui, qui traverse donc la redirection et les écoutes modifiées. Les connexions persistantes ouvertes avant la modification atteignent encore l’ancienne cible après une mise à jour à chaud et ne prouvent rien sur la nouvelle configuration.
@@ -113,6 +113,17 @@ Avant l’enregistrement, l’interface demande au serveur si la modification to
 - activation de « Réseau local uniquement » depuis l’extérieur, ou de « Forcer HTTPS » en HTTP.
 
 En plus de l’avertissement, la confirmation et le retour automatique ci-dessus restent actifs, si bien que les chemins que Gately ne voit pas (par exemple un autre proxy inverse devant) sont aussi protégés. L’API est `GET /api/system/access-path` et `POST /api/system/access-path/check`.
+
+### Série de modifications : plusieurs changements qui ne marchent qu’ensemble {#changeset}
+
+Certaines modifications ne fonctionnent qu’ensemble, par exemple passer à 18081 le port vers lequel le routage par protocole envoie au service web, puis déplacer l’écouteur du service web sur 18081. Si vous n’enregistrez que la première, votre accès actuel est coupé et vous ne pouvez plus faire la seconde. Utilisez alors une série de modifications :
+
+1. Dans l’avertissement avant enregistrement, choisissez « Mettre en attente, appliquer ensemble », ou cliquez sur « Démarrer une série de modifications » dans la carte « Chemin d’accès actuel » de « Paramètres → Contrôle d’accès » ;
+2. Ensuite, les enregistrements de la redirection de ports, du routage par protocole et du service web ne font que mettre à jour la configuration : les pages affichent les nouvelles valeurs, mais les règles et écouteurs en service restent inchangés et votre chemin d’accès actuel reste utilisable. Un bandeau en haut de la page liste les règles et écouteurs en attente, et aucun avertissement n’apparaît avant l’enregistrement pendant ce temps ;
+3. Une fois terminé, cliquez sur « Tout appliquer » dans le bandeau : les modifications en attente s’appliquent d’un coup dans l’ordre d’enregistrement, puis sont confirmées via une nouvelle connexion comme un enregistrement isolé ; sans confirmation, toute la série revient à la configuration d’avant son démarrage ;
+4. Pour y renoncer, cliquez sur « Abandonner » : Gately restaure la configuration d’avant la série et redémarre.
+
+Les paramètres globaux ne font pas partie des séries et s’appliquent toujours immédiatement. Si Gately redémarre pendant une série, il démarre avec la nouvelle configuration et attend la confirmation comme pour un enregistrement isolé. L’API est `POST /api/system/changeset/begin`, `/apply` et `/discard`.
 
 ### Retour en arrière en ligne de commande {#rollback-cli}
 

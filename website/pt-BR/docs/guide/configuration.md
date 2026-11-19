@@ -92,7 +92,7 @@ A altura da área de logs pode ser ajustada: arraste a barra abaixo dela (em tel
 Ao administrar o Gately remotamente por um domínio, alterar o encaminhamento de portas, o roteamento por protocolo, o serviço web ou as configurações globais pode cortar o próprio caminho usado pela interface de administração. Por isso, depois de salvar essas configurações, a interface verifica por uma conexão recém-aberta se ainda alcança o Gately:
 
 - se o acesso funcionar, a confirmação acontece em segundo plano, sem interromper;
-- se não for possível confirmar, aparece uma caixa de diálogo com contagem regressiva; a confirmação ocorre sozinha quando o acesso voltar, ou você pode clicar em "Reverter agora";
+- se não for possível confirmar, aparece uma caixa de diálogo com contagem regressiva que confirma sozinha quando o acesso voltar; "Reverter agora" aparece enquanto o Gately ainda estiver acessível, senão esse pedido também não chega, então espere a contagem ou execute `gately rollback -pending` no servidor;
 - se ainda não houver confirmação quando o tempo acabar, o Gately reinicia e restaura a configuração anterior na inicialização. A versão alterada fica no [Histórico de configuração](/pt-BR/docs/guide/audit). A página recarrega quando o Gately volta e informa quais alterações foram revertidas.
 
 A confirmação usa um WebSocket: o navegador sempre abre uma conexão nova para ele, que passa pelo encaminhamento e pelas escutas alterados. Conexões persistentes abertas antes da alteração continuam chegando ao destino antigo após uma atualização a quente e não provam nada sobre a nova configuração.
@@ -113,6 +113,17 @@ Antes de salvar, a interface pergunta ao servidor se a alteração afeta esse ca
 - ativar "Somente LAN" conectando de fora, ou "Forçar HTTPS" usando HTTP.
 
 Além do aviso, a confirmação e a reversão automática acima continuam valendo, então caminhos que o Gately não enxerga (por exemplo, outro proxy reverso na frente) também ficam protegidos. A API é `GET /api/system/access-path` e `POST /api/system/access-path/check`.
+
+### Alterações em lote: várias mudanças que só funcionam juntas {#changeset}
+
+Algumas alterações só funcionam juntas, por exemplo mudar para 18081 a porta para a qual o roteamento por protocolo envia ao serviço web e depois mover o listener do serviço web para 18081. Se você salvar só a primeira, o acesso atual cai e não dá mais para fazer a segunda. Use as alterações em lote:
+
+1. No aviso antes de salvar, escolha "Deixar em espera e aplicar junto", ou clique em "Iniciar alterações em lote" no cartão "Caminho de acesso atual" em "Configurações → Controle de acesso";
+2. A partir daí, o que for salvo em encaminhamento de portas, roteamento por protocolo e serviço web só atualiza a configuração: as páginas mostram os valores novos, mas as regras e listeners em execução não mudam e o caminho de acesso atual continua funcionando. Um banner no topo da página lista as regras e listeners em espera, e enquanto isso não aparecem avisos antes de salvar;
+3. Ao terminar, clique em "Aplicar tudo" no banner: as alterações em espera são aplicadas de uma vez na ordem em que foram salvas e confirmadas por uma nova conexão como um salvamento individual; se não for possível confirmar, todo o lote volta à configuração de antes do início;
+4. Para desistir, clique em "Descartar alterações": o Gately restaura a configuração de antes do lote e reinicia.
+
+As configurações globais não fazem parte do lote e continuam valendo na hora. Se o Gately reiniciar durante um lote, ele inicia com a configuração nova e aguarda a confirmação como em um salvamento individual. A API é `POST /api/system/changeset/begin`, `/apply` e `/discard`.
 
 ### Reversão pela linha de comando {#rollback-cli}
 
