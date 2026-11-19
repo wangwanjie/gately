@@ -117,6 +117,8 @@ type confirmRecovery struct {
 	timeout    int
 	// errs 为处理过程中的错误
 	errs []string
+	// cliMsgs 为启动时处理遗留命令行回滚请求的结果
+	cliMsgs []string
 }
 
 func confirmStatePath(dir string) string {
@@ -554,6 +556,9 @@ func (a *App) confirmTitle(name string) string {
 func (a *App) startConfirm() {
 	c := &a.confirm
 	rec := c.recovered
+	for _, m := range rec.cliMsgs {
+		a.sysLogs.Add(logbuf.LevelWarn, "system", m)
+	}
 	for _, e := range rec.errs {
 		a.sysLogs.Add(logbuf.LevelError, "system", e)
 	}

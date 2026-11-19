@@ -41,6 +41,9 @@ func main() {
 		case "reset-password", "reset-totp":
 			// 在服务器上重置管理员密码或关闭两步验证，提示按系统语言翻译
 			os.Exit(runReset(os.Args[1], os.Args[2:], os.Stdin, i18n.NewWriterFor(os.Stdout, i18n.FromEnv())))
+		case "rollback":
+			// 管理界面因配置改坏而无法访问时，在服务器上撤销最近的配置保存或回滚待确认的变更
+			os.Exit(runRollback(os.Args[2:], os.Stdin, i18n.NewWriterFor(os.Stdout, i18n.FromEnv())))
 		case "service":
 			// 注册为系统服务（systemd、launchd、Windows 服务），实现开机自启
 			os.Exit(service.Run(os.Args[2:], i18n.NewWriterFor(os.Stdout, i18n.FromEnv())))

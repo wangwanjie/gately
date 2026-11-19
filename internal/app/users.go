@@ -102,6 +102,10 @@ func (a *App) watchAccountReset(ctx context.Context) {
 			if auth.ResetPending(a.opts.ConfigDir) {
 				a.applyAccountReset()
 			}
+			// 命令行 gately rollback 提交的回滚请求
+			if RollbackRequestPending(a.opts.ConfigDir) {
+				a.applyRollbackRequest()
+			}
 		}
 	}
 }

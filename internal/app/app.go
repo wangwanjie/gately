@@ -187,7 +187,10 @@ func New(opts Options) (_ *App, err error) {
 	// 上次运行留下的待确认配置变更：已超时或已决定回滚时，在加载任何配置之前恢复改动前的内容
 	var confirmRec confirmRecovery
 	if !opts.Demo {
+		// 命令行回滚请求先处理：它可能正是要回滚待确认的变更
+		cliMsgs := recoverRollbackRequest(store)
 		confirmRec = recoverPendingConfirm(store, time.Now())
+		confirmRec.cliMsgs = cliMsgs
 	}
 	if opts.ApplyDir != "" {
 		// 声明式配置目录里同样是带密钥的配置文件，与配置目录一样不允许被存储挂载、静态站点或文件服务提供出去
