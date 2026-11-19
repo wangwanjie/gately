@@ -92,7 +92,7 @@ Die Höhe des Protokollbereichs lässt sich anpassen: Ziehen Sie die Leiste daru
 Wenn Sie Gately aus der Ferne über eine Domain verwalten, können Änderungen an Portweiterleitung, Protokoll-Routing, Webdienst oder globalen Einstellungen genau den Weg kappen, über den die Verwaltungsoberfläche läuft. Deshalb prüft die Oberfläche nach dem Speichern dieser Einstellungen über eine neu geöffnete Verbindung, ob Gately noch erreichbar ist:
 
 - Funktioniert der Zugriff, wird still im Hintergrund bestätigt;
-- lässt er sich nicht bestätigen, erscheint ein Dialog mit Countdown; sobald der Zugriff zurückkommt, wird automatisch bestätigt, oder Sie klicken auf „Jetzt zurücksetzen“;
+- lässt er sich nicht bestätigen, erscheint ein Dialog mit Countdown, der automatisch bestätigt, sobald der Zugriff zurückkommt; „Jetzt zurücksetzen“ gibt es, solange Gately noch erreichbar ist, sonst kommt auch diese Anfrage nicht durch – warten Sie den Countdown ab oder führen Sie `gately rollback -pending` auf dem Server aus;
 - ist bei Fristende noch nichts bestätigt, startet Gately neu und stellt beim Start die vorherige Konfiguration wieder her. Die geänderte Fassung bleibt im [Konfigurationsverlauf](/de/docs/guide/audit). Die Seite lädt neu, sobald Gately wieder da ist, und zeigt an, welche Änderungen zurückgesetzt wurden.
 
 Die Bestätigung läuft über einen WebSocket: Der Browser öffnet dafür immer eine neue Verbindung, die also über die geänderte Weiterleitung und die Listener geht. Vor der Änderung geöffnete langlebige Verbindungen erreichen nach einem Hot-Update weiterhin das alte Ziel und beweisen nichts über die neue Konfiguration.
@@ -113,6 +113,17 @@ Vor dem Speichern fragt die Oberfläche den Server, ob die Änderung diesen Weg 
 - „Nur LAN“ einschalten, während Sie von außen verbunden sind, oder „HTTPS erzwingen“ bei HTTP.
 
 Neben der Warnung bleiben Bestätigung und automatische Rücksetzung oben aktiv, sodass auch Wege geschützt sind, die Gately nicht sieht (etwa ein weiterer Reverse-Proxy davor). Die API ist `GET /api/system/access-path` und `POST /api/system/access-path/check`.
+
+### Sammeländerung: mehrere Änderungen, die nur zusammen funktionieren {#changeset}
+
+Manche Änderungen funktionieren nur zusammen, etwa den Port, an den das Protokoll-Routing zum Webdienst weiterleitet, auf 18081 zu ändern und dann den Listener des Webdiensts auf 18081 zu verlegen. Speichern Sie nur die erste, bricht Ihr aktueller Zugriff ab und die zweite ist nicht mehr möglich. Nutzen Sie dafür eine Sammeländerung:
+
+1. Wählen Sie in der Warnung vor dem Speichern „Zurückhalten, später gemeinsam anwenden“ oder klicken Sie in der Karte „Aktueller Zugriffsweg“ unter „Einstellungen → Zugriffskontrolle“ auf „Sammeländerung starten“;
+2. Ab dann schreiben Speichervorgänge bei Portweiterleitung, Protokoll-Routing und Webdienst nur die Konfiguration: Die Seiten zeigen die neuen Werte, laufende Regeln und Listener bleiben aber unverändert und Ihr aktueller Zugriffsweg bleibt nutzbar. Ein Banner oben auf der Seite listet die zurückgehaltenen Regeln und Listener auf, Warnungen vor dem Speichern entfallen in dieser Zeit;
+3. Sind Sie fertig, klicken Sie im Banner auf „Alle anwenden“: Die zurückgehaltenen Änderungen werden auf einmal in Speicherreihenfolge wirksam und wie ein einzelnes Speichern über eine neue Verbindung bestätigt; gelingt das nicht, wird die ganze Sammeländerung auf die Konfiguration von vor ihrem Start zurückgesetzt;
+4. Zum Verwerfen klicken Sie auf „Änderungen verwerfen“: Gately stellt die Konfiguration von vor der Sammeländerung wieder her und startet neu.
+
+Globale Einstellungen gehören nicht zur Sammeländerung und wirken weiterhin sofort. Startet Gately während einer Sammeländerung neu, startet es mit der neuen Konfiguration und wartet wie bei einem einzelnen Speichern auf Bestätigung. Die API ist `POST /api/system/changeset/begin`, `/apply` und `/discard`.
 
 ### Rücksetzung per Befehlszeile {#rollback-cli}
 
