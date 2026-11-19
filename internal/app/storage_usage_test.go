@@ -41,7 +41,10 @@ func TestStorageUsageCategories(t *testing.T) {
 	writeSized(t, filepath.Join(dir, "frp", "frpc"), 60)
 	writeSized(t, filepath.Join(dir, "tailscale", "state"), 4)
 	writeSized(t, filepath.Join(dir, "bin", "frpc"), 1000)
-	writeSized(t, filepath.Join(dir, "filebrowser", "db"), 9)
+	writeSized(t, filepath.Join(dir, "filebrowser", "fb1", "filebrowser.db"), 9)
+	writeSized(t, filepath.Join(dir, "notify", "pending.json"), 6)
+	writeSized(t, filepath.Join(dir, "compose", "app", "compose.yaml"), 8)
+	writeSized(t, filepath.Join(dir, "unknown.dat"), 1)
 	if err := os.Symlink("/", filepath.Join(dir, "rootlink")); err != nil {
 		t.Fatal(err)
 	}
@@ -49,14 +52,16 @@ func TestStorageUsageCategories(t *testing.T) {
 	u := storageUsageOf(context.Background(), dir, filepath.Join(dir, logsDir))
 	items := storageItems(u)
 	want := map[string][2]int64{
-		"config":   {2, 30},
-		"backups":  {1, 5},
-		"audit":    {2, 10},
-		"logs":     {3, 152},
-		"visitors": {1, 40},
-		"history":  {1, 30},
-		"network":  {2, 64},
-		"programs": {1, 1000},
+		"config":      {3, 38},
+		"notify":      {1, 6},
+		"filebrowser": {1, 9},
+		"backups":     {1, 5},
+		"audit":       {2, 10},
+		"logs":        {3, 152},
+		"visitors":    {1, 40},
+		"history":     {1, 30},
+		"network":     {2, 64},
+		"programs":    {1, 1000},
 	}
 	for key, w := range want {
 		it := items[key]
@@ -65,8 +70,8 @@ func TestStorageUsageCategories(t *testing.T) {
 		}
 	}
 	// 符号链接按链接本身计，不跟随到根目录
-	if it := items["other"]; it.Files != 2 || it.Bytes > 1009 {
-		t.Errorf("other 应只含 filebrowser/db 与符号链接本身: %+v", it)
+	if it := items["other"]; it.Files != 2 || it.Bytes > 1001 {
+		t.Errorf("other 应只含 unknown.dat 与符号链接本身: %+v", it)
 	}
 	if u.Truncated {
 		t.Error("不应提前结束")

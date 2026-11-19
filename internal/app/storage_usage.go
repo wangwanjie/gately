@@ -40,7 +40,7 @@ type storageUsage struct {
 }
 
 // storageCategories 为分类顺序，界面按此顺序列出；other 为未归类的内容，config 为顶层的配置文件。
-var storageCategories = []string{"logs", "visitors", "audit", "history", "backups", "guard", "network", "iplists", "certs", "geoip", "programs", "config", "other"}
+var storageCategories = []string{"logs", "visitors", "audit", "history", "backups", "guard", "notify", "network", "iplists", "certs", "geoip", "programs", "filebrowser", "config", "other"}
 
 // storageTopLevel 为配置目录顶层目录名对应的分类。
 var storageTopLevel = map[string]string{
@@ -58,6 +58,12 @@ var storageTopLevel = map[string]string{
 	"certs":       "certs",
 	"geoip":       "geoip",
 	"bin":         "programs",
+	// notify 为通知补推队列（notify/pending.json），渠道长时间不可用时会积压
+	"notify": "notify",
+	// filebrowser 为各 File Browser 实例的数据目录（数据库、缩略图缓存），程序本身在 bin/
+	"filebrowser": "filebrowser",
+	// compose 为 Docker 管理保存的编排项目（compose.yaml 等），属于配置
+	"compose": "config",
 }
 
 // storageClassify 返回配置目录顶层条目 name 的分类。

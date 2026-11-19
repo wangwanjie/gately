@@ -44963,7 +44963,7 @@
     },
     "/api/system/storage": {
       "get": {
-        "description": "回傳設定目錄所在分割區的容量（`disk`，不支援的平台為 null）、設定目錄的總大小與檔案數，以及按用途分類的佔用 `items`：`key` 為分類（logs 執行日誌、visitors 訪客稽核、audit 操作稽核日誌、history 設定歷史、backups 設定備份、guard 防護資料、network 組網資料、iplists IP 清單、certs 憑證、geoip GeoIP 資料庫、programs 託管程式、config 設定檔、other 其他），`paths` 為包含的路徑（設定目錄內為相對路徑；日誌目錄設在設定目錄之外時為絕對路徑，且不計入 `total`）。只統計大小，不跟隨符號連結；檔案過多或超過 10 秒時提前結束，`truncated` 為 true。\n\n所需權限：`system:read`。",
+        "description": "回傳設定目錄所在分割區的容量（`disk`，不支援的平台為 null）、設定目錄的總大小與檔案數，以及按用途分類的佔用 `items`：`key` 為分類（logs 執行日誌、visitors 訪客稽核、audit 操作稽核日誌、history 設定歷史、backups 設定備份、guard 防護資料、notify 通知補推佇列、network 組網資料、iplists IP 清單、certs 憑證、geoip GeoIP 資料庫、programs 託管程式、filebrowser File Browser 資料、config 設定檔（含 Docker 編排專案）、other 其他），`paths` 為包含的路徑（設定目錄內為相對路徑；日誌目錄設在設定目錄之外時為絕對路徑，且不計入 `total`）。只統計大小，不跟隨符號連結；檔案過多或超過 10 秒時提前結束，`truncated` 為 true。\n\n所需權限：`system:read`。",
         "responses": {
           "200": {
             "description": "成功"
