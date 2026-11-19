@@ -214,3 +214,38 @@ func TestAdminCookieForeignPassed(t *testing.T) {
 		t.Fatalf("只应剥离本实例签发的后台 Cookie: %q", v)
 	}
 }
+
+// TestAdminCookieChainedListener 覆盖同一实例的两层站点：443 站点 → 本机 444 监听器 → 管理后台。
+// 第一跳的后端是本实例的 Web 服务监听器，本实例签发的后台 Cookie 要原样交给它，由第二跳判断；
+// 第二跳发往其他后端时照常剥离。
+func TestAdminCookieChainedListener(t *testing.T) {
+	admin, adminGot := cookieEcho(t, "tcp4", "127.0.0.1:0")
+	other, otherGot := cookieEcho(t, "tcp4", "127.0.0.1:0")
+	_, adminPort, _ := net.SplitHostPort(admin.Listener.Addr().String())
+	withAdminListen(t, "[::]:"+adminPort)
+	own := map[string]string{auth.CookieName: "admin-token", "gately_entry": "entry-mark", "gately_login_nonce": "n1"}
+	httpx.SetOwnAdminCookieCheck(func(name, v string) bool { return own[name] == v })
+	t.Cleanup(func() { httpx.SetOwnAdminCookieCheck(nil) })
+
+	inner, _ := startRunner(t, Listener{Sites: []Site{
+		{Enable: true, Key: "admin", Domains: []string{"admin.test"}, Targets: []string{admin.URL}},
+		{Enable: true, Key: "other", Domains: []string{"other.test"}, Targets: []string{other.URL}},
+	}}, nil, nil)
+	outer, _ := startRunner(t, Listener{Sites: []Site{
+		{Enable: true, Key: "admin", Domains: []string{"admin.test"}, Targets: []string{"http://" + inner}},
+		{Enable: true, Key: "other", Domains: []string{"other.test"}, Targets: []string{"http://" + inner}},
+	}}, nil, nil)
+
+	resp, body := get(t, noRedirect(), outer, "admin.test", "/api/session", hdr("Cookie", adminCookieHeader))
+	if v := <-adminGot; !strings.Contains(v, auth.CookieName+"=admin-token") || !strings.Contains(v, "gately_entry=entry-mark") {
+		t.Fatalf("经本实例两层站点到后台时应保留后台 Cookie: %q", v)
+	}
+	if resp.StatusCode != http.StatusOK || body != "logged-in" {
+		t.Fatalf("经两层站点访问后台应保持登录: %d %q", resp.StatusCode, body)
+	}
+
+	get(t, noRedirect(), outer, "other.test", "/", hdr("Cookie", adminCookieHeader))
+	if v := <-otherGot; v != "other=1" {
+		t.Fatalf("第二跳发往其他后端时应剥离本实例的后台 Cookie: %q", v)
+	}
+}

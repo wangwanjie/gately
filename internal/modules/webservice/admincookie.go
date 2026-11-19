@@ -35,17 +35,22 @@ func hasAdminCookie(h http.Header) bool {
 	return false
 }
 
-// stripAdminCookies 在请求发往后端 up 前去掉后台 Cookie，除非后端就是本实例的管理后台。
+// stripAdminCookies 在请求发往后端 up 前去掉后台 Cookie，除非后端就是本实例的管理后台或本实例的另一个 Web 服务监听器。
 // 只剥离本实例签发且仍有效的后台 Cookie（会话、安全入口标记、第三方登录随机数）：后端是另一台 Gately 时
 // （反代到在线演示实例，或外层 Gately 经 frp 回到内网 Gately 的双层部署），浏览器为该域名带的同名 Cookie 是后端签发的，
 // 剥掉会让后端登录后永远 401、开了安全入口时一直被拒、第三方登录回调提示浏览器不匹配；它们对本实例不是凭据，转发不泄露任何东西。
+// 后端是本实例的 Web 服务监听器时（443 站点 → 本机 444 监听器 → 管理后台），请求仍在本进程内，Cookie 原样交给下一跳，
+// 由那一跳按它自己的后端再判断，否则第一跳就剥掉，经过两层站点登录后台会一直 401。
 // 返回请求是否带着后台 Cookie 发往本实例的管理后台。
 func stripAdminCookies(r *http.Request, up *url.URL) bool {
 	if !hasAdminCookie(r.Header) {
 		return false
 	}
-	if upstreamIsAdmin(r.Context(), up) {
+	if upstreamMatches(r.Context(), up, httpx.IsAdminAddr) {
 		return true
+	}
+	if upstreamMatches(r.Context(), up, httpx.IsWebListenAddr) {
+		return false
 	}
 	stripCookieFunc(r, func(c *http.Cookie) bool {
 		return slices.Contains(adminCookies, c.Name) && httpx.OwnAdminCookie(c.Name, c.Value)
@@ -57,6 +62,11 @@ func stripAdminCookies(r *http.Request, up *url.URL) bool {
 // （端口相同；后台监听全部地址时为本机地址，监听具体地址时与之相同，见 httpx.IsAdminAddr）。
 // 解析失败、后台没有登记监听地址（例如只经飞牛网关套接字提供服务）时一律不算。
 func upstreamIsAdmin(ctx context.Context, u *url.URL) bool {
+	return upstreamMatches(ctx, u, httpx.IsAdminAddr)
+}
+
+// upstreamMatches 判断后端地址解析出的全部地址是否都满足 match（端口按协议补全默认值），解析失败时为 false。
+func upstreamMatches(ctx context.Context, u *url.URL, match func(netip.Addr, uint16) bool) bool {
 	if u == nil {
 		return false
 	}
@@ -78,7 +88,7 @@ func upstreamIsAdmin(ctx context.Context, u *url.URL) bool {
 		return false
 	}
 	for _, ip := range ips {
-		if !httpx.IsAdminAddr(ip, uint16(p)) {
+		if !match(ip, uint16(p)) {
 			return false
 		}
 	}

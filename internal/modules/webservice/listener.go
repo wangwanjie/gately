@@ -18,6 +18,7 @@ import (
 	"github.com/quic-go/quic-go/http3"
 
 	"github.com/wangwanjie/gately/internal/acmehttp"
+	"github.com/wangwanjie/gately/internal/httpx"
 	"github.com/wangwanjie/gately/internal/logbuf"
 	"github.com/wangwanjie/gately/internal/openports"
 	"github.com/wangwanjie/gately/internal/visitors"
@@ -498,7 +499,8 @@ func (l *listenerRunner) start(certs CertSource, trusted []string) (err error) {
 		return err
 	}
 	// 监听成功后立即登记为开放端口，启动失败时撤销；停止时由 stop 撤销
-	l.releases = append(l.releases, openports.Hold(ln.Addr()))
+	// 同时登记为本实例的 Web 服务监听：站点后端指向它时后台登录 Cookie 原样交给它（见 admincookie.go）
+	l.releases = append(l.releases, openports.Hold(ln.Addr()), httpx.HoldWebListen(ln.Addr()))
 	defer func() {
 		if err != nil {
 			l.releaseHolds()
@@ -572,7 +574,7 @@ func (l *listenerRunner) start(certs CertSource, trusted []string) (err error) {
 		} else {
 			httpLn = hl
 			l.httpLn = hl
-			l.releases = append(l.releases, openports.Hold(hl.Addr()))
+			l.releases = append(l.releases, openports.Hold(hl.Addr()), httpx.HoldWebListen(hl.Addr()))
 		}
 	}
 	l.startAt = time.Now()
