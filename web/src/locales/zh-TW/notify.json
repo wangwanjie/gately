@@ -115,5 +115,16 @@
   "proxy": "代理",
   "proxyGlobalHelp": "各通道預設使用的代理，通道中可以單獨設定或改為直連。支援 http://、https:// 與 socks5:// 代理；「使用全域更新代理」沿用系統設定中的更新代理。不使用代理時 HTTP 通道遵循 HTTPS_PROXY 等環境變數，郵件直連。",
   "proxyChannelHelp": "用於通知服務直連不通、只能經代理存取的網路。預設跟隨通知設定中的全域代理。",
-  "proxySmtpHelp": "郵件經代理建立 TCP 連線：http(s) 代理使用 CONNECT 方法（代理需允許連線郵件連接埠），socks5 代理由代理解析伺服器網域。"
+  "proxySmtpHelp": "郵件經代理建立 TCP 連線：http(s) 代理使用 CONNECT 方法（代理需允許連線郵件連接埠），socks5 代理由代理解析伺服器網域。",
+  "retries": "失敗重試次數",
+  "retriesHelp": "推送失敗後按 10 秒、30 秒、60 秒的間隔重試，0 為不重試。測試通知只發一次。",
+  "backfillHours": "補推保留時長（小時）",
+  "backfillHoursHelp": "重試用盡仍失敗的通知會保存下來，管道恢復後按原順序補發（正文註明為補推），超過該時長仍未發出則放棄；0 為不補推。每個管道最多積壓 100 則，重啟後繼續補推。",
+  "queued": "待補推",
+  "backfilled": "已補推",
+  "attempts": "共嘗試 {n} 次",
+  "pendingCount": "{n} 則通知推送失敗，等待管道恢復後補推：",
+  "clearPending": "清空",
+  "clearPendingConfirm": "清空全部待補推的通知？清空後不再補發。",
+  "pendingCleared": "已清空待補推的通知"
 }

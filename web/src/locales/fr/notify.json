@@ -115,5 +115,16 @@
   "proxy": "Proxy",
   "proxyGlobalHelp": "Proxy par défaut de tous les canaux ; chaque canal peut définir le sien ou se connecter directement. Proxies http://, https:// et socks5:// pris en charge ; « Utiliser le proxy global de mise à jour » reprend le proxy de mise à jour des paramètres système. Sans proxy, les canaux HTTP suivent HTTPS_PROXY et les variables similaires et l'e-mail se connecte directement.",
   "proxyChannelHelp": "Pour les réseaux où le service de notification n'est joignable que via un proxy. Suit par défaut le proxy global des paramètres de notification.",
-  "proxySmtpHelp": "L'e-mail ouvre sa connexion TCP via le proxy : les proxies http(s) utilisent la méthode CONNECT (le proxy doit autoriser le port de messagerie), les proxies socks5 résolvent le nom du serveur côté proxy."
+  "proxySmtpHelp": "L'e-mail ouvre sa connexion TCP via le proxy : les proxies http(s) utilisent la méthode CONNECT (le proxy doit autoriser le port de messagerie), les proxies socks5 résolvent le nom du serveur côté proxy.",
+  "retries": "Nouvelles tentatives en cas d’échec",
+  "retriesHelp": "Les envois échoués sont retentés après 10, 30 et 60 secondes ; 0 désactive les nouvelles tentatives. Les notifications de test ne sont envoyées qu’une fois.",
+  "backfillHours": "Durée de renvoi (heures)",
+  "backfillHoursHelp": "Les notifications toujours en échec après les nouvelles tentatives sont conservées et renvoyées dans leur ordre d’origine au rétablissement du canal (le texte indique qu’il s’agit d’un renvoi) ; elles sont abandonnées si elles ne sont toujours pas envoyées après cette durée. 0 désactive le renvoi. Jusqu’à 100 par canal sont conservées et le renvoi reprend après un redémarrage.",
+  "queued": "En attente de renvoi",
+  "backfilled": "Renvoyée",
+  "attempts": "{n} tentatives",
+  "pendingCount": "{n} notifications ont échoué et seront renvoyées au rétablissement du canal :",
+  "clearPending": "Vider",
+  "clearPendingConfirm": "Vider toutes les notifications en attente ? Elles ne seront pas renvoyées.",
+  "pendingCleared": "Notifications en attente vidées"
 }

@@ -115,5 +115,16 @@
   "proxy": "Proxy",
   "proxyGlobalHelp": "Standard-Proxy für alle Kanäle; jeder Kanal kann einen eigenen festlegen oder direkt verbinden. Unterstützt http://-, https://- und socks5://-Proxys; „Globalen Update-Proxy verwenden“ übernimmt den Update-Proxy aus den Systemeinstellungen. Ohne Proxy folgen HTTP-Kanäle HTTPS_PROXY und ähnlichen Umgebungsvariablen, E-Mail verbindet direkt.",
   "proxyChannelHelp": "Für Netzwerke, in denen der Benachrichtigungsdienst nur über einen Proxy erreichbar ist. Folgt standardmäßig dem globalen Proxy der Benachrichtigungseinstellungen.",
-  "proxySmtpHelp": "E-Mail baut die TCP-Verbindung über den Proxy auf: http(s)-Proxys nutzen die CONNECT-Methode (der Proxy muss den Mail-Port erlauben), socks5-Proxys lösen den Servernamen auf dem Proxy auf."
+  "proxySmtpHelp": "E-Mail baut die TCP-Verbindung über den Proxy auf: http(s)-Proxys nutzen die CONNECT-Methode (der Proxy muss den Mail-Port erlauben), socks5-Proxys lösen den Servernamen auf dem Proxy auf.",
+  "retries": "Wiederholungen bei Fehler",
+  "retriesHelp": "Fehlgeschlagene Sendungen werden nach 10, 30 und 60 Sekunden wiederholt; 0 schaltet Wiederholungen aus. Testbenachrichtigungen werden nur einmal gesendet.",
+  "backfillHours": "Aufbewahrung für erneutes Senden (Stunden)",
+  "backfillHoursHelp": "Benachrichtigungen, die nach allen Wiederholungen weiter fehlschlagen, werden aufbewahrt und in der ursprünglichen Reihenfolge erneut gesendet, sobald der Kanal wieder erreichbar ist (der Text weist darauf hin); nach Ablauf dieser Dauer werden sie verworfen. 0 schaltet erneutes Senden aus. Pro Kanal werden bis zu 100 aufbewahrt, nach einem Neustart wird weitergemacht.",
+  "queued": "Ausstehend",
+  "backfilled": "Erneut gesendet",
+  "attempts": "{n} Versuche",
+  "pendingCount": "{n} Benachrichtigungen sind fehlgeschlagen und werden erneut gesendet, sobald der Kanal wieder erreichbar ist:",
+  "clearPending": "Löschen",
+  "clearPendingConfirm": "Alle ausstehenden Benachrichtigungen löschen? Sie werden dann nicht mehr gesendet.",
+  "pendingCleared": "Ausstehende Benachrichtigungen gelöscht"
 }

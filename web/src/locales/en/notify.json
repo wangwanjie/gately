@@ -115,5 +115,16 @@
   "proxy": "Proxy",
   "proxyGlobalHelp": "Default proxy for all channels; each channel can set its own or connect directly. Supports http://, https:// and socks5:// proxies; \"Use the global update proxy\" reuses the update proxy from System Settings. Without a proxy, HTTP channels follow HTTPS_PROXY and similar environment variables and email connects directly.",
   "proxyChannelHelp": "For networks where the notification service is only reachable through a proxy. Follows the global proxy in notification settings by default.",
-  "proxySmtpHelp": "Email opens its TCP connection through the proxy: http(s) proxies use the CONNECT method (the proxy must allow the mail port), socks5 proxies resolve the server name on the proxy."
+  "proxySmtpHelp": "Email opens its TCP connection through the proxy: http(s) proxies use the CONNECT method (the proxy must allow the mail port), socks5 proxies resolve the server name on the proxy.",
+  "retries": "Retries on failure",
+  "retriesHelp": "Failed pushes are retried after 10, 30 and 60 seconds; 0 turns retries off. Test notifications are sent only once.",
+  "backfillHours": "Resend window (hours)",
+  "backfillHoursHelp": "Notifications that still fail after all retries are kept and resent in their original order once the channel recovers (the text says it is a resend); they are dropped if still unsent after this many hours. 0 turns resending off. Up to 100 per channel are kept, and resending continues after a restart.",
+  "queued": "Pending resend",
+  "backfilled": "Resent",
+  "attempts": "{n} attempts",
+  "pendingCount": "{n} notifications failed and will be resent when the channel recovers:",
+  "clearPending": "Clear",
+  "clearPendingConfirm": "Clear all pending notifications? They will not be resent.",
+  "pendingCleared": "Pending notifications cleared"
 }
