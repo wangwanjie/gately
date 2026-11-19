@@ -279,5 +279,10 @@
     "progress": "Application de la sauvegarde et redémarrage…",
     "keepAccount": "Conserver le compte administrateur actuel",
     "keepAccountHint": "Si cochée, le compte, les jetons d'API et les réglages de connexion tierce de la sauvegarde sont ignorés : le compte, le mot de passe, la validation en deux étapes, les utilisateurs en lecture seule, les jetons d'API et la connexion tierce à l'interface d'administration restent inchangés, et la sauvegarde peut omettre account.json. Changez d'abord le mot de passe par défaut s'il est encore utilisé."
+  },
+  "confirm": {
+    "label": "Confirmer après enregistrement",
+    "seconds": "s",
+    "help": "Après une modification de la redirection de ports, du routage par protocole, du service web ou des réglages de cette page, l’interface vérifie via une nouvelle connexion qu’elle atteint toujours Gately. Sinon (par exemple si la modification a coupé votre accès), Gately revient à la configuration précédente et redémarre à l’échéance. Les réglages nécessitant un redémarrage sont chronométrés après celui-ci."
   }
 }

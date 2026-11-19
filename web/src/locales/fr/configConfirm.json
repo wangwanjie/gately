@@ -1,0 +1,20 @@
+{
+  "failedTitle": "Impossible de confirmer la nouvelle configuration",
+  "failedDesc": "Après l’enregistrement, une nouvelle connexion n’atteint pas l’interface d’administration : ce changement a peut-être coupé votre accès. La confirmation se fait automatiquement dès que l’accès revient ; sinon, Gately revient à la configuration précédente et redémarre à l’échéance.",
+  "foundTitle": "Modifications de configuration non confirmées",
+  "foundDesc": "Ces modifications ont été enregistrées, mais l’accès n’a pas encore été confirmé. Si vous avez ouvert cette page via la configuration modifiée, conservez-les ; sinon, Gately revient à la configuration précédente et redémarre à l’échéance.",
+  "rollingBackTitle": "Retour en arrière",
+  "rollingBackDesc": "Gately restaure la configuration précédente et redémarre. La page se rechargera ensuite ; ne la fermez pas.",
+  "modules": "Concerne : {modules}",
+  "separator": ", ",
+  "countdown": "s avant le retour automatique",
+  "retrying": "Nouvelle tentative de connexion…",
+  "rollback": "Revenir maintenant",
+  "keep": "Conserver",
+  "confirmFailed": "Échec de la confirmation : une nouvelle connexion n’atteint pas l’interface d’administration",
+  "confirmed": "Nouvelle configuration confirmée",
+  "rolledBackTitle": "Configuration restaurée",
+  "rolledBackTimeout": "Les modifications de {modules} n’ont pas été confirmées à temps et ont été annulées. La version modifiée est conservée dans l’historique de configuration.",
+  "rolledBackManual": "Les modifications de {modules} ont été annulées à votre demande. La version modifiée est conservée dans l’historique de configuration.",
+  "rolledBackBoots": "Les modifications de {modules} n’ont pas été confirmées et Gately a démarré plusieurs fois de suite : elles ont été annulées. La version modifiée est conservée dans l’historique de configuration."
+}

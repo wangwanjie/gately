@@ -279,5 +279,10 @@
     "progress": "Aplicando o backup e reiniciando…",
     "keepAccount": "Manter a conta de administrador atual",
     "keepAccountHint": "Quando marcada, a conta, os tokens de API e as configurações de login de terceiros do backup são ignorados: conta, senha, verificação em duas etapas, usuários somente leitura, tokens de API e o login de terceiros na interface de administração permanecem inalterados, e o backup pode não conter account.json. Altere antes a senha padrão se ainda a usar."
+  },
+  "confirm": {
+    "label": "Confirmar após salvar",
+    "seconds": "s",
+    "help": "Ao alterar o encaminhamento de portas, o roteamento por protocolo, o serviço web ou as configurações desta página, a interface verifica por uma nova conexão se ainda alcança o Gately. Se não alcançar (por exemplo, a alteração cortou o seu acesso), quando o tempo acabar o Gately volta à configuração anterior e reinicia. Configurações que exigem reinício são cronometradas após o reinício."
   }
 }

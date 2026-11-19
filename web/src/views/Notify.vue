@@ -393,7 +393,7 @@ const ruleTemplates = computed(() => [
   { id: 'security', name: t('notify.tpl.security.name'), desc: t('notify.tpl.security.desc'), events: ['auth.failed', 'auth.banned', 'guard.banned', 'login.success', 'login.newip', 'audit.access'], minLevel: 'info', silence: 0 },
   { id: 'perf', name: t('notify.tpl.perf.name'), desc: t('notify.tpl.perf.desc'), events: ['perf.alert', 'perf.recovered'], minLevel: 'info', silence: 0 },
   { id: 'updates', name: t('notify.tpl.updates.name'), desc: t('notify.tpl.updates.desc'), events: ['system.security', 'system.update', 'program.update', 'docker.update'], minLevel: 'info', silence: 0 },
-  { id: 'changes', name: t('notify.tpl.changes.name'), desc: t('notify.tpl.changes.desc'), events: ['audit.change'], minLevel: 'info', silence: 0 },
+  { id: 'changes', name: t('notify.tpl.changes.name'), desc: t('notify.tpl.changes.desc'), events: ['audit.change', 'config.rolledback'], minLevel: 'info', silence: 0 },
 ])
 
 function applyTemplate(tpl: { name: string; events: string[]; minLevel: string; silence: number }) {

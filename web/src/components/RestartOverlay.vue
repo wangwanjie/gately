@@ -46,8 +46,9 @@ function stop() {
   window.clearInterval(ticker)
 }
 
-// start 显示等待层并开始轮询。为避免旧进程尚未退出时误判，须先观察到一次失败或等待满 6 秒才接受成功响应
-function start(text: string) {
+// start 显示等待层并开始轮询。为避免旧进程尚未退出时误判，须先观察到一次失败或等待满 6 秒才接受成功响应。
+// waitMs 为最长等待时间：重启后的配置待确认时，确认不了要等服务端超时回滚、再次重启，需要更久
+function start(text: string, waitMs = 120000) {
   stop()
   title.value = text
   visible.value = true
@@ -60,7 +61,7 @@ function start(text: string) {
     elapsed.value = Math.floor((Date.now() - begin) / 1000)
   }, 1000)
   const poll = async () => {
-    if (Date.now() - begin > 120000) {
+    if (Date.now() - begin > waitMs) {
       timedOut.value = true
       stop()
       return

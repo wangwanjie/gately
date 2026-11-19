@@ -279,5 +279,10 @@
     "progress": "Aplicando la copia y reiniciando…",
     "keepAccount": "Conservar la cuenta de administrador actual",
     "keepAccountHint": "Si se marca, se ignoran la cuenta, los tokens de API y la configuración de inicio de sesión de terceros de la copia: la cuenta, la contraseña, la verificación en dos pasos, los usuarios de solo lectura, los tokens de API y el inicio de sesión de terceros en la interfaz de administración no cambian, y la copia puede omitir account.json. Cambie antes la contraseña predeterminada si aún la usa."
+  },
+  "confirm": {
+    "label": "Confirmar tras guardar",
+    "seconds": "s",
+    "help": "Al cambiar el reenvío de puertos, el enrutamiento por protocolo, el servicio web o los ajustes de esta página, la interfaz comprueba con una conexión nueva que sigue llegando a Gately. Si no puede (por ejemplo, el cambio cortó tu forma de acceso), al agotarse el tiempo Gately vuelve a la configuración anterior y se reinicia. Los ajustes que requieren reinicio se cronometran tras el reinicio."
   }
 }

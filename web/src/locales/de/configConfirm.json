@@ -1,0 +1,20 @@
+{
+  "failedTitle": "Neue Konfiguration kann nicht bestätigt werden",
+  "failedDesc": "Nach dem Speichern erreicht eine neue Verbindung die Verwaltungsoberfläche nicht – diese Änderung hat möglicherweise Ihren Zugriffsweg unterbrochen. Sobald der Zugriff wieder klappt, wird automatisch bestätigt; andernfalls stellt Gately nach Ablauf der Frist die vorherige Konfiguration wieder her und startet neu.",
+  "foundTitle": "Unbestätigte Konfigurationsänderungen",
+  "foundDesc": "Diese Änderungen wurden gespeichert, der Zugriff ist aber noch nicht bestätigt. Wenn Sie diese Seite über die geänderte Konfiguration geöffnet haben, behalten Sie sie; sonst stellt Gately nach Ablauf der Frist die vorherige Konfiguration wieder her und startet neu.",
+  "rollingBackTitle": "Wird zurückgesetzt",
+  "rollingBackDesc": "Gately stellt die vorherige Konfiguration wieder her und startet neu. Die Seite lädt danach automatisch neu; bitte nicht schließen.",
+  "modules": "Betrifft: {modules}",
+  "separator": ", ",
+  "countdown": "s bis zum automatischen Zurücksetzen",
+  "retrying": "Verbindung wird erneut versucht…",
+  "rollback": "Jetzt zurücksetzen",
+  "keep": "Behalten",
+  "confirmFailed": "Bestätigung fehlgeschlagen: Eine neue Verbindung erreicht die Verwaltungsoberfläche nicht",
+  "confirmed": "Neue Konfiguration bestätigt",
+  "rolledBackTitle": "Konfiguration zurückgesetzt",
+  "rolledBackTimeout": "Die Änderungen an {modules} wurden nicht rechtzeitig bestätigt und zurückgesetzt. Die geänderte Fassung liegt im Konfigurationsverlauf.",
+  "rolledBackManual": "Die Änderungen an {modules} wurden wie gewünscht zurückgesetzt. Die geänderte Fassung liegt im Konfigurationsverlauf.",
+  "rolledBackBoots": "Die Änderungen an {modules} wurden nicht bestätigt und Gately ist mehrmals hintereinander gestartet, daher wurden sie zurückgesetzt. Die geänderte Fassung liegt im Konfigurationsverlauf."
+}

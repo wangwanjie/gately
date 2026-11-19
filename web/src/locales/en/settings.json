@@ -279,5 +279,10 @@
     "progress": "Applying backup and restarting…",
     "keepAccount": "Keep the current administrator account",
     "keepAccountHint": "When checked, the account, API tokens and third-party login settings in the backup are ignored: the current account, password, two-step verification, read-only users, API tokens and third-party login to the admin UI stay unchanged, and the backup may omit account.json. Change the default password first if you still use it."
+  },
+  "confirm": {
+    "label": "Confirm after saving",
+    "seconds": "s",
+    "help": "After you change port forwarding, protocol routing, web service or the settings on this page, the admin UI checks over a new connection that it can still reach Gately. If it can't (for example the change cut off how you are connected), Gately rolls back to the previous configuration and restarts when time runs out. Settings that need a restart are timed after the restart."
   }
 }
