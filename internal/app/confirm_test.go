@@ -344,3 +344,46 @@ func TestConfirmRestartRequiredSettings(t *testing.T) {
 		t.Fatalf("重启前不能确认，实际 %s", got)
 	}
 }
+
+// 命令行回滚：运行中的实例取走请求、恢复历史版本并重启；启动时处理遗留的请求
+func TestRollbackRequest(t *testing.T) {
+	a, srv, c := loginApp(t)
+	if code, body := doJSON(t, c, "POST", srv.URL+"/api/portforward/rules", testRule(t, "first")); code != 200 {
+		t.Fatalf("%d %s", code, body)
+	}
+	before, _ := a.store.ReadRaw("portforward")
+	if code, body := doJSON(t, c, "POST", srv.URL+"/api/portforward/rules", testRule(t, "second")); code != 200 {
+		t.Fatalf("%d %s", code, body)
+	}
+	changes := ListConfigChanges(a.store, 5)
+	if len(changes) == 0 || changes[0].Config != "portforward" {
+		t.Fatalf("应列出最近的保存: %+v", changes)
+	}
+	if err := WriteRollbackRequest(a.store.Dir(), RollbackRequest{Config: "portforward", Version: changes[0].Version}); err != nil {
+		t.Fatal(err)
+	}
+	a.applyRollbackRequest()
+	select {
+	case <-a.restartCh:
+	case <-time.After(3 * time.Second):
+		t.Fatal("回滚后应重启")
+	}
+	if cur, _ := a.store.ReadRaw("portforward"); string(cur) != string(before) || RollbackRequestPending(a.store.Dir()) {
+		t.Fatal("应恢复为撤销那次保存之前的内容并取走请求")
+	}
+
+	// 遗留的请求在启动时、加载配置之前处理
+	changes = ListConfigChanges(a.store, 5)
+	if err := WriteRollbackRequest(a.store.Dir(), RollbackRequest{Config: "portforward", Version: changes[0].Version}); err != nil {
+		t.Fatal(err)
+	}
+	want, _ := a.store.ReadVersion("portforward", changes[0].Version)
+	b, err := New(Options{ConfigDir: a.store.Dir(), Modules: []module.Module{portforward.New()}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	b.logger = log.New(io.Discard, "", 0)
+	if cur, _ := b.store.ReadRaw("portforward"); string(cur) != string(want) || len(b.confirm.recovered.cliMsgs) != 1 {
+		t.Fatalf("启动时应处理遗留的回滚请求: %+v", b.confirm.recovered.cliMsgs)
+	}
+}
