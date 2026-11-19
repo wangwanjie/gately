@@ -15,6 +15,8 @@ import (
 	"sync"
 	"syscall"
 	"time"
+
+	"github.com/wangwanjie/gately/internal/openports"
 )
 
 // PathPrefix 是 HTTP-01 验证请求的路径前缀。
@@ -67,6 +69,8 @@ type Provider struct {
 	srv *http.Server
 	// ln 为临时服务的监听，关闭时同步关闭，避免下次签发紧接着监听同一端口时报端口已被占用
 	ln net.Listener
+	// release 撤销临时监听在 openports 中的登记
+	release func()
 	// active 为尚未清理的 token 数量，归零时关闭临时服务
 	active int
 }
@@ -111,6 +115,8 @@ func (p *Provider) Present(domain, token, keyAuth string) error {
 	}
 	srv := p.srv
 	p.ln = ln
+	// 立即登记为开放端口：诱饵端口范围包含验证端口时，不必等入侵防护下一次轮询才把它移出诱饵集合
+	p.release = openports.Hold(ln.Addr())
 	go func() { _ = srv.Serve(ln) }()
 	p.logf("已在 %d 端口临时监听，用于 HTTP-01 验证", port)
 	return nil
@@ -131,7 +137,10 @@ func (p *Provider) CleanUp(domain, token, keyAuth string) error {
 		if p.ln != nil {
 			_ = p.ln.Close()
 		}
-		p.srv, p.ln = nil, nil
+		if p.release != nil {
+			p.release()
+		}
+		p.srv, p.ln, p.release = nil, nil, nil
 	}
 	return nil
 }
