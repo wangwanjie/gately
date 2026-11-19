@@ -4,6 +4,8 @@ O executável `gately` inclui dois subcomandos: `gately ctl` chama, no terminal,
 
 Além disso, `gately reset-password` e `gately reset-totp` atuam diretamente no diretório de configuração local, sem passar pela API, para recuperar a conta de administrador após esquecer a senha ou perder o autenticador; veja [Redefinir a senha e a autenticação em dois fatores](/pt-BR/docs/guide/install#reset).
 
+Quando uma configuração errada deixa a interface de administração inacessível, `gately rollback` também atua no servidor para desfazer um salvamento recente ou reverter a alteração pendente; veja [Reversão pela linha de comando](/pt-BR/docs/guide/configuration#rollback-cli).
+
 `gately service install|uninstall|start|stop|restart|status` registra o Gately como serviço do sistema que inicia com o computador; veja [Iniciar com o sistema](/pt-BR/docs/guide/install#service).
 
 ## Configuração da conexão

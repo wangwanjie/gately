@@ -114,6 +114,19 @@ Gately は、管理画面へのアクセスが自身のどの転送を通って�
 
 警告とは別に、上記の確認と自動ロールバックはそのまま有効なので、Gately から見えない経路（さらに外側の別のリバースプロキシなど）も保護されます。API は `GET /api/system/access-path` と `POST /api/system/access-path/check` です。
 
+### コマンドラインからのロールバック {#rollback-cli}
+
+管理画面にもうアクセスできない場合は、サーバーで `gately rollback` を実行します（Docker では `docker exec -it gately gately rollback`）。未確認の変更と最近の設定保存を一覧表示し、番号を入力して取り消せます。オプションも使えます：
+
+| コマンド | 内容 |
+| --- | --- |
+| `gately rollback -list` | 一覧表示のみで変更しない |
+| `gately rollback -last` | 直近の保存を取り消し、その設定を保存前の内容に戻す |
+| `gately rollback -pending` | 未確認の設定変更を今すぐロールバック |
+| `gately rollback -config portforward -version <バージョン>` | 設定を指定した履歴バージョンに戻す（バージョンは `-list` で確認） |
+
+実行前に `yes` と入力して確認します（スクリプトでは `-y`）。Gately が実行中ならそれが処理して再起動し、実行していなければ設定ファイルを直接書き換えて次回起動時に有効になります。書き換え前の内容も[設定履歴](/ja/docs/guide/audit)に保存されるので、ロールバック自体も取り消せます。設定ディレクトリが既定の場所でない場合は `-c` で指定します。
+
 ## バックアップと復元
 
 「設定」には設定のバックアップと復元があり、Lucky の設定をインポートする入口でもあります。

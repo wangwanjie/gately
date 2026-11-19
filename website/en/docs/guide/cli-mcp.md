@@ -4,6 +4,8 @@ The `gately` executable ships with two subcommands: `gately ctl` calls the manag
 
 In addition, `gately reset-password` and `gately reset-totp` work directly on the local configuration directory without the API, to recover the admin account after a forgotten password or a lost authenticator; see [Reset password and two-factor authentication](/en/docs/guide/install#reset).
 
+When a broken configuration makes the admin UI unreachable, `gately rollback` likewise works on the server to undo a recent config save or roll back the pending change; see [Command-line rollback](/en/docs/guide/configuration#rollback-cli).
+
 `gately service install|uninstall|start|stop|restart|status` registers Gately as a system service that starts at boot; see [Start at boot](/en/docs/guide/install#service).
 
 ## Connection settings

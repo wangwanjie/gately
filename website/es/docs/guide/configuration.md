@@ -114,6 +114,19 @@ Antes de guardar, la interfaz pregunta al servidor si el cambio afecta a ese cam
 
 Además del aviso, la confirmación y la reversión automática de arriba siguen activas, así que también se protegen caminos que Gately no ve (por ejemplo, otro proxy inverso delante). La API es `GET /api/system/access-path` y `POST /api/system/access-path/check`.
 
+### Reversión desde la línea de comandos {#rollback-cli}
+
+Si la interfaz de administración ya no es accesible, ejecuta `gately rollback` en el servidor (Docker: `docker exec -it gately gately rollback`). Enumera el cambio pendiente y los guardados recientes y te deja elegir uno por número para deshacerlo, o puedes usar opciones:
+
+| Comando | Efecto |
+| --- | --- |
+| `gately rollback -list` | Solo enumera, sin cambiar nada |
+| `gately rollback -last` | Deshace el guardado más reciente: devuelve esa configuración a su contenido anterior |
+| `gately rollback -pending` | Revierte ya el cambio de configuración pendiente |
+| `gately rollback -config portforward -version <versión>` | Restaura una configuración a una versión del historial (véase `-list`) |
+
+Se confirma escribiendo `yes`; en scripts añade `-y`. Si Gately se está ejecutando, lo hace él y se reinicia; si no, se reescriben directamente los archivos y se aplica en el próximo arranque. El contenido anterior también queda en el [Historial de configuración](/es/docs/guide/audit), así que la reversión puede deshacerse. Usa `-c` si el directorio de configuración no está en la ubicación por defecto.
+
 ## Copia de seguridad y restauración
 
 «Ajustes» ofrece la copia de seguridad y la restauración de la configuración, y es también el punto de entrada para importar configuraciones de Lucky.

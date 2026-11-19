@@ -114,6 +114,19 @@ Gately는 관리 화면 접속이 자신의 어떤 포워딩을 거치는지 알
 
 경고와 별개로 위의 확인과 자동 롤백은 그대로 적용되므로, Gately가 알 수 없는 경로(예: 바깥쪽의 다른 리버스 프록시)도 보호됩니다. API는 `GET /api/system/access-path`와 `POST /api/system/access-path/check`입니다.
 
+### 명령줄 롤백 {#rollback-cli}
+
+관리 화면에 이미 접속할 수 없다면 서버에서 `gately rollback`을 실행합니다(Docker: `docker exec -it gately gately rollback`). 확인 대기 중인 변경과 최근 설정 저장을 나열하며, 번호를 입력해 취소하거나 옵션을 쓸 수 있습니다:
+
+| 명령 | 동작 |
+| --- | --- |
+| `gately rollback -list` | 나열만 하고 바꾸지 않음 |
+| `gately rollback -last` | 가장 최근 저장을 취소: 그 설정을 저장 이전 내용으로 복원 |
+| `gately rollback -pending` | 확인 대기 중인 설정 변경을 즉시 롤백 |
+| `gately rollback -config portforward -version <버전>` | 설정을 지정한 기록 버전으로 복원(버전은 `-list` 참고) |
+
+실행 전에 `yes`를 입력해 확인합니다(스크립트에서는 `-y`). Gately가 실행 중이면 Gately가 처리하고 재시작하며, 실행 중이 아니면 설정 파일을 직접 다시 써서 다음 시작 때 적용됩니다. 이전 내용도 [설정 기록](/ko/docs/guide/audit)에 보관되므로 롤백 자체도 취소할 수 있습니다. 설정 디렉터리가 기본 위치가 아니면 `-c`로 지정합니다.
+
 ## 백업 및 복원
 
 「설정」에서 설정 백업과 복원을 제공하며 Lucky 설정을 가져오는 진입점도 여기에 있습니다.

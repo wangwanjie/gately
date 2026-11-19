@@ -114,6 +114,19 @@ Vor dem Speichern fragt die Oberfläche den Server, ob die Änderung diesen Weg 
 
 Neben der Warnung bleiben Bestätigung und automatische Rücksetzung oben aktiv, sodass auch Wege geschützt sind, die Gately nicht sieht (etwa ein weiterer Reverse-Proxy davor). Die API ist `GET /api/system/access-path` und `POST /api/system/access-path/check`.
 
+### Rücksetzung per Befehlszeile {#rollback-cli}
+
+Ist die Verwaltungsoberfläche bereits unerreichbar, führen Sie auf dem Server `gately rollback` aus (Docker: `docker exec -it gately gately rollback`). Der Befehl listet die ausstehende Änderung und die letzten Speichervorgänge auf und lässt Sie per Nummer einen rückgängig machen, oder Sie nutzen Optionen:
+
+| Befehl | Wirkung |
+| --- | --- |
+| `gately rollback -list` | Nur auflisten, nichts ändern |
+| `gately rollback -last` | Letztes Speichern rückgängig machen: die Konfiguration erhält ihren Inhalt von davor zurück |
+| `gately rollback -pending` | Ausstehende Konfigurationsänderung sofort zurücksetzen |
+| `gately rollback -config portforward -version <Version>` | Eine Konfiguration auf eine Verlaufsversion zurücksetzen (siehe `-list`) |
+
+Bestätigt wird durch Eingabe von `yes`; in Skripten `-y` anhängen. Läuft Gately, übernimmt es die Rücksetzung und startet neu; sonst werden die Konfigurationsdateien direkt umgeschrieben und gelten ab dem nächsten Start. Der vorherige Inhalt landet ebenfalls im [Konfigurationsverlauf](/de/docs/guide/audit), die Rücksetzung lässt sich also selbst rückgängig machen. Mit `-c` geben Sie ein nicht standardmäßiges Konfigurationsverzeichnis an.
+
 ## Sicherung und Wiederherstellung
 
 Unter „Einstellungen“ finden Sie Konfigurationssicherung und -wiederherstellung; dort liegt auch der Einstieg für den Import von Lucky-Konfigurationen.

@@ -114,6 +114,19 @@ Avant l’enregistrement, l’interface demande au serveur si la modification to
 
 En plus de l’avertissement, la confirmation et le retour automatique ci-dessus restent actifs, si bien que les chemins que Gately ne voit pas (par exemple un autre proxy inverse devant) sont aussi protégés. L’API est `GET /api/system/access-path` et `POST /api/system/access-path/check`.
 
+### Retour en arrière en ligne de commande {#rollback-cli}
+
+Si l’interface d’administration est déjà inaccessible, lancez `gately rollback` sur le serveur (Docker : `docker exec -it gately gately rollback`). La commande liste la modification en attente et les enregistrements récents et vous laisse en choisir un par son numéro pour l’annuler, ou utiliser des options :
+
+| Commande | Effet |
+| --- | --- |
+| `gately rollback -list` | Liste seulement, sans rien modifier |
+| `gately rollback -last` | Annule le dernier enregistrement : ramène cette configuration à son contenu d’avant |
+| `gately rollback -pending` | Annule tout de suite la modification de configuration en attente |
+| `gately rollback -config portforward -version <version>` | Restaure une configuration à une version d’historique (voir `-list`) |
+
+Vous confirmez en tapant `yes` ; ajoutez `-y` dans les scripts. Si Gately tourne, il s’en charge et redémarre ; sinon les fichiers de configuration sont réécrits directement et pris en compte au prochain démarrage. Le contenu précédent est aussi conservé dans l’[historique de configuration](/fr/docs/guide/audit), si bien que le retour en arrière peut lui-même être annulé. Utilisez `-c` si le répertoire de configuration n’est pas à l’emplacement par défaut.
+
 ## Sauvegarde et restauration
 
 « Paramètres » propose la sauvegarde et la restauration de la configuration, et sert aussi de point d'entrée pour importer des configurations Lucky.
