@@ -861,6 +861,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | GET | `/api/notify/event-types` | `notify:read` | Tipos de evento que podem ser assinados |
 | GET | `/api/notify/history` | `notify:read` | Registros de entrega recentes |
 | POST | `/api/notify/channels/{key}/test` | `notify:write` | Enviar notificação de teste ao canal |
+| GET | `/api/notify/pending` | `notify:read` | Notificações pendentes |
+| DELETE | `/api/notify/pending` | `notify:write` | Limpar notificações pendentes |
 
 ## Desempenho
 
@@ -1929,9 +1931,12 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 
 | Campo | Tipo |
 | --- | --- |
+| `attempts` | integer |
+| `backfill` | boolean |
 | `channel` | string |
 | `error` | string |
 | `ok` | boolean |
+| `queued` | boolean |
 | `rule` | string |
 | `time` | Hora (RFC 3339) |
 | `title` | string |
@@ -1954,15 +1959,33 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 
 | Campo | Tipo |
 | --- | --- |
+| `backfillHours` | integer |
 | `proxy` | string |
+| `retries` | integer |
 | `serverName` | string |
+
+### notify.pendingView
+
+| Campo | Tipo |
+| --- | --- |
+| `attempts` | integer |
+| `channel` | string |
+| `error` | string |
+| `id` | string |
+| `nextTry` | Hora (RFC 3339) |
+| `queued` | Hora (RFC 3339) |
+| `rule` | string |
+| `title` | string |
+| `type` | string |
 
 ### notify.settingsView
 
 | Campo | Tipo |
 | --- | --- |
+| `backfillHours` | integer |
 | `hostname` | string |
 | `proxy` | string |
+| `retries` | integer |
 | `serverName` | string |
 
 ### perf.AlertState

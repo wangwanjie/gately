@@ -861,6 +861,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/notify/event-types` | `notify:read` | 구독 가능한 이벤트 유형 |
 | GET | `/api/notify/history` | `notify:read` | 최근 전달 기록 |
 | POST | `/api/notify/channels/{key}/test` | `notify:write` | 채널로 테스트 알림 전송 |
+| GET | `/api/notify/pending` | `notify:read` | 재전송 대기 알림 |
+| DELETE | `/api/notify/pending` | `notify:write` | 재전송 대기 알림 비우기 |
 
 ## 성능 모니터링
 
@@ -1929,9 +1931,12 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 
 | 필드 | 타입 |
 | --- | --- |
+| `attempts` | integer |
+| `backfill` | boolean |
 | `channel` | string |
 | `error` | string |
 | `ok` | boolean |
+| `queued` | boolean |
 | `rule` | string |
 | `time` | 시간 (RFC 3339) |
 | `title` | string |
@@ -1954,15 +1959,33 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 
 | 필드 | 타입 |
 | --- | --- |
+| `backfillHours` | integer |
 | `proxy` | string |
+| `retries` | integer |
 | `serverName` | string |
+
+### notify.pendingView
+
+| 필드 | 타입 |
+| --- | --- |
+| `attempts` | integer |
+| `channel` | string |
+| `error` | string |
+| `id` | string |
+| `nextTry` | 시간 (RFC 3339) |
+| `queued` | 시간 (RFC 3339) |
+| `rule` | string |
+| `title` | string |
+| `type` | string |
 
 ### notify.settingsView
 
 | 필드 | 타입 |
 | --- | --- |
+| `backfillHours` | integer |
 | `hostname` | string |
 | `proxy` | string |
+| `retries` | integer |
 | `serverName` | string |
 
 ### perf.AlertState

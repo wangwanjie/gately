@@ -861,6 +861,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/notify/event-types` | `notify:read` | Типы событий, на которые можно подписаться |
 | GET | `/api/notify/history` | `notify:read` | Последние записи доставки |
 | POST | `/api/notify/channels/{key}/test` | `notify:write` | Отправить тестовое уведомление в канал |
+| GET | `/api/notify/pending` | `notify:read` | Ожидающие уведомления |
+| DELETE | `/api/notify/pending` | `notify:write` | Очистить ожидающие уведомления |
 
 ## Производительность
 
@@ -1929,9 +1931,12 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 
 | Поле | Тип |
 | --- | --- |
+| `attempts` | integer |
+| `backfill` | boolean |
 | `channel` | string |
 | `error` | string |
 | `ok` | boolean |
+| `queued` | boolean |
 | `rule` | string |
 | `time` | Время (RFC 3339) |
 | `title` | string |
@@ -1954,15 +1959,33 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 
 | Поле | Тип |
 | --- | --- |
+| `backfillHours` | integer |
 | `proxy` | string |
+| `retries` | integer |
 | `serverName` | string |
+
+### notify.pendingView
+
+| Поле | Тип |
+| --- | --- |
+| `attempts` | integer |
+| `channel` | string |
+| `error` | string |
+| `id` | string |
+| `nextTry` | Время (RFC 3339) |
+| `queued` | Время (RFC 3339) |
+| `rule` | string |
+| `title` | string |
+| `type` | string |
 
 ### notify.settingsView
 
 | Поле | Тип |
 | --- | --- |
+| `backfillHours` | integer |
 | `hostname` | string |
 | `proxy` | string |
+| `retries` | integer |
 | `serverName` | string |
 
 ### perf.AlertState

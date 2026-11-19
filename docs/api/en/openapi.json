@@ -2121,6 +2121,12 @@
       },
       "notify.Record": {
         "properties": {
+          "attempts": {
+            "type": "integer"
+          },
+          "backfill": {
+            "type": "boolean"
+          },
           "channel": {
             "type": "string"
           },
@@ -2128,6 +2134,9 @@
             "type": "string"
           },
           "ok": {
+            "type": "boolean"
+          },
+          "queued": {
             "type": "boolean"
           },
           "rule": {
@@ -2183,8 +2192,14 @@
       },
       "notify.Settings": {
         "properties": {
+          "backfillHours": {
+            "type": "integer"
+          },
           "proxy": {
             "type": "string"
+          },
+          "retries": {
+            "type": "integer"
           },
           "serverName": {
             "type": "string"
@@ -2192,13 +2207,53 @@
         },
         "type": "object"
       },
+      "notify.pendingView": {
+        "properties": {
+          "attempts": {
+            "type": "integer"
+          },
+          "channel": {
+            "type": "string"
+          },
+          "error": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "nextTry": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "queued": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "rule": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "notify.settingsView": {
         "properties": {
+          "backfillHours": {
+            "type": "integer"
+          },
           "hostname": {
             "type": "string"
           },
           "proxy": {
             "type": "string"
+          },
+          "retries": {
+            "type": "integer"
           },
           "serverName": {
             "type": "string"
@@ -33660,6 +33715,116 @@
           }
         ],
         "summary": "List all sources of module logs",
+        "tags": [
+          "Notification center"
+        ],
+        "x-required-scope": "notify:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/notify/pending": {
+      "delete": {
+        "description": "Required permission: `notify:write`.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Clear pending notifications",
+        "tags": [
+          "Notification center"
+        ],
+        "x-required-scope": "notify:write",
+        "x-token-allowed": true
+      },
+      "get": {
+        "description": "Required permission: `notify:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/notify.pendingView"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Pending notifications",
         "tags": [
           "Notification center"
         ],

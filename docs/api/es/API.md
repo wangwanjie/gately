@@ -861,6 +861,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | GET | `/api/notify/event-types` | `notify:read` | Tipos de evento a los que se puede suscribir |
 | GET | `/api/notify/history` | `notify:read` | Registros de entrega recientes |
 | POST | `/api/notify/channels/{key}/test` | `notify:write` | Enviar una notificación de prueba al canal |
+| GET | `/api/notify/pending` | `notify:read` | Notificaciones pendientes |
+| DELETE | `/api/notify/pending` | `notify:write` | Borrar notificaciones pendientes |
 
 ## Rendimiento
 
@@ -1929,9 +1931,12 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 
 | Campo | Tipo |
 | --- | --- |
+| `attempts` | integer |
+| `backfill` | boolean |
 | `channel` | string |
 | `error` | string |
 | `ok` | boolean |
+| `queued` | boolean |
 | `rule` | string |
 | `time` | Hora (RFC 3339) |
 | `title` | string |
@@ -1954,15 +1959,33 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 
 | Campo | Tipo |
 | --- | --- |
+| `backfillHours` | integer |
 | `proxy` | string |
+| `retries` | integer |
 | `serverName` | string |
+
+### notify.pendingView
+
+| Campo | Tipo |
+| --- | --- |
+| `attempts` | integer |
+| `channel` | string |
+| `error` | string |
+| `id` | string |
+| `nextTry` | Hora (RFC 3339) |
+| `queued` | Hora (RFC 3339) |
+| `rule` | string |
+| `title` | string |
+| `type` | string |
 
 ### notify.settingsView
 
 | Campo | Tipo |
 | --- | --- |
+| `backfillHours` | integer |
 | `hostname` | string |
 | `proxy` | string |
+| `retries` | integer |
 | `serverName` | string |
 
 ### perf.AlertState

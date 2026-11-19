@@ -861,6 +861,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | GET | `/api/notify/event-types` | `notify:read` | Types d'événements auxquels s'abonner |
 | GET | `/api/notify/history` | `notify:read` | Dernières livraisons |
 | POST | `/api/notify/channels/{key}/test` | `notify:write` | Envoyer une notification de test au canal |
+| GET | `/api/notify/pending` | `notify:read` | Notifications en attente |
+| DELETE | `/api/notify/pending` | `notify:write` | Vider les notifications en attente |
 
 ## Performances
 
@@ -1929,9 +1931,12 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 
 | Champ | Type |
 | --- | --- |
+| `attempts` | integer |
+| `backfill` | boolean |
 | `channel` | string |
 | `error` | string |
 | `ok` | boolean |
+| `queued` | boolean |
 | `rule` | string |
 | `time` | Heure (RFC 3339) |
 | `title` | string |
@@ -1954,15 +1959,33 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 
 | Champ | Type |
 | --- | --- |
+| `backfillHours` | integer |
 | `proxy` | string |
+| `retries` | integer |
 | `serverName` | string |
+
+### notify.pendingView
+
+| Champ | Type |
+| --- | --- |
+| `attempts` | integer |
+| `channel` | string |
+| `error` | string |
+| `id` | string |
+| `nextTry` | Heure (RFC 3339) |
+| `queued` | Heure (RFC 3339) |
+| `rule` | string |
+| `title` | string |
+| `type` | string |
 
 ### notify.settingsView
 
 | Champ | Type |
 | --- | --- |
+| `backfillHours` | integer |
 | `hostname` | string |
 | `proxy` | string |
+| `retries` | integer |
 | `serverName` | string |
 
 ### perf.AlertState

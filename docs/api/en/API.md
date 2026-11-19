@@ -861,6 +861,8 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | GET | `/api/notify/event-types` | `notify:read` | Event types that can be subscribed to |
 | GET | `/api/notify/history` | `notify:read` | Recent delivery records |
 | POST | `/api/notify/channels/{key}/test` | `notify:write` | Send a test notification to a channel |
+| GET | `/api/notify/pending` | `notify:read` | Pending notifications |
+| DELETE | `/api/notify/pending` | `notify:write` | Clear pending notifications |
 
 ## Performance
 
@@ -1929,9 +1931,12 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 
 | Field | Type |
 | --- | --- |
+| `attempts` | integer |
+| `backfill` | boolean |
 | `channel` | string |
 | `error` | string |
 | `ok` | boolean |
+| `queued` | boolean |
 | `rule` | string |
 | `time` | Time (RFC 3339) |
 | `title` | string |
@@ -1954,15 +1959,33 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 
 | Field | Type |
 | --- | --- |
+| `backfillHours` | integer |
 | `proxy` | string |
+| `retries` | integer |
 | `serverName` | string |
+
+### notify.pendingView
+
+| Field | Type |
+| --- | --- |
+| `attempts` | integer |
+| `channel` | string |
+| `error` | string |
+| `id` | string |
+| `nextTry` | Time (RFC 3339) |
+| `queued` | Time (RFC 3339) |
+| `rule` | string |
+| `title` | string |
+| `type` | string |
 
 ### notify.settingsView
 
 | Field | Type |
 | --- | --- |
+| `backfillHours` | integer |
 | `hostname` | string |
 | `proxy` | string |
+| `retries` | integer |
 | `serverName` | string |
 
 ### perf.AlertState
