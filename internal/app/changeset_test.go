@@ -263,6 +263,29 @@ func TestListenProblem(t *testing.T) {
 	}
 }
 
+// 批量修改期间手动回滚（管理界面或 gately rollback）：结束暂缓，启动时按手动回滚恢复并提示
+func TestChangesetManualRollbackDuringHold(t *testing.T) {
+	t.Cleanup(applyhold.Drop)
+	a, srv, c := loginApp(t)
+	if code, _ := doJSON(t, c, "POST", srv.URL+"/api/system/changeset/begin", nil); code != 200 {
+		t.Fatal("开始批量修改失败")
+	}
+	if code, body := doConfirmJSON(t, c, "POST", srv.URL+"/api/portforward/rules", testRule(t, "staged")); code != 200 {
+		t.Fatalf("%d %s", code, body)
+	}
+	if code, body := doJSON(t, c, "POST", srv.URL+"/api/system/confirm/rollback", nil); code != 200 {
+		t.Fatalf("%d %s", code, body)
+	}
+	<-a.restartCh
+	if applyhold.Active() {
+		t.Fatal("手动回滚后应结束暂缓，不再暂存之后的保存")
+	}
+	rec := recoverPendingConfirm(a.store, time.Now())
+	if rec.reason != "manual" {
+		t.Fatalf("批量修改期间手动回滚应按 manual 提示，实际 %q", rec.reason)
+	}
+}
+
 // 生效进行中到达的确认请求可能经由尚未切换的旧路径（排在后面的规则还没生效，热更新也不断开已有连接），
 // 不能据此确认：返回 applying 让页面重试，生效完成后到达的请求才能确认
 func TestChangesetConfirmDuringApply(t *testing.T) {
