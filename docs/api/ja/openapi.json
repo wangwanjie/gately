@@ -44963,7 +44963,7 @@
     },
     "/api/system/storage": {
       "get": {
-        "description": "設定ディレクトリがあるパーティションの容量（`disk`、未対応のプラットフォームでは null）、設定ディレクトリの合計サイズとファイル数、用途別の使用量 `items` を返します。`key` は分類（logs 実行ログ、visitors 訪問者監査、audit 操作監査ログ、history 設定履歴、backups 設定バックアップ、guard 防御データ、network ネットワークデータ、iplists IP リスト、certs 証明書、geoip GeoIP データベース、programs 管理プログラム、config 設定ファイル、other その他）、`paths` は含まれるパス（設定ディレクトリ内は相対パス。ログディレクトリが設定ディレクトリ外にある場合は絶対パスで、`total` には含まれません）。サイズのみを集計し、シンボリックリンクはたどりません。ファイルが多すぎるか 10 秒を超えると早めに終了し、`truncated` が true になります。\n\n必要な権限: `system:read`。",
+        "description": "設定ディレクトリがあるパーティションの容量（`disk`、未対応のプラットフォームでは null）、設定ディレクトリの合計サイズとファイル数、用途別の使用量 `items` を返します。`key` は分類（logs 実行ログ、visitors 訪問者監査、audit 操作監査ログ、history 設定履歴、backups 設定バックアップ、guard 防御データ、notify 通知の再送キュー、network ネットワークデータ、iplists IP リスト、certs 証明書、geoip GeoIP データベース、programs 管理プログラム、filebrowser File Browser データ、config 設定ファイル（Docker Compose プロジェクトを含む）、other その他）、`paths` は含まれるパス（設定ディレクトリ内は相対パス。ログディレクトリが設定ディレクトリ外にある場合は絶対パスで、`total` には含まれません）。サイズのみを集計し、シンボリックリンクはたどりません。ファイルが多すぎるか 10 秒を超えると早めに終了し、`truncated` が true になります。\n\n必要な権限: `system:read`。",
         "responses": {
           "200": {
             "description": "成功"

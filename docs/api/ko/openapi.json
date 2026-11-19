@@ -44963,7 +44963,7 @@
     },
     "/api/system/storage": {
       "get": {
-        "description": "설정 디렉터리가 있는 파티션의 용량(`disk`, 지원하지 않는 플랫폼에서는 null), 설정 디렉터리의 전체 크기와 파일 수, 용도별 사용량 `items`를 반환합니다. `key`는 분류(logs 실행 로그, visitors 방문자 감사, audit 작업 감사 로그, history 설정 기록, backups 설정 백업, guard 보호 데이터, network 네트워크 데이터, iplists IP 목록, certs 인증서, geoip GeoIP 데이터베이스, programs 관리 프로그램, config 설정 파일, other 기타)이고, `paths`는 포함된 경로입니다(설정 디렉터리 안은 상대 경로, 로그 디렉터리가 설정 디렉터리 밖에 있으면 절대 경로이며 `total`에 포함되지 않음). 크기만 집계하고 심볼릭 링크는 따라가지 않습니다. 파일이 너무 많거나 10초를 넘으면 일찍 끝나며 `truncated`가 true입니다.\n\n필요한 권한: `system:read`.",
+        "description": "설정 디렉터리가 있는 파티션의 용량(`disk`, 지원하지 않는 플랫폼에서는 null), 설정 디렉터리의 전체 크기와 파일 수, 용도별 사용량 `items`를 반환합니다. `key`는 분류(logs 실행 로그, visitors 방문자 감사, audit 작업 감사 로그, history 설정 기록, backups 설정 백업, guard 보호 데이터, notify 알림 재전송 대기열, network 네트워크 데이터, iplists IP 목록, certs 인증서, geoip GeoIP 데이터베이스, programs 관리 프로그램, filebrowser File Browser 데이터, config 설정 파일(Docker Compose 프로젝트 포함), other 기타)이고, `paths`는 포함된 경로입니다(설정 디렉터리 안은 상대 경로, 로그 디렉터리가 설정 디렉터리 밖에 있으면 절대 경로이며 `total`에 포함되지 않음). 크기만 집계하고 심볼릭 링크는 따라가지 않습니다. 파일이 너무 많거나 10초를 넘으면 일찍 끝나며 `truncated`가 true입니다.\n\n필요한 권한: `system:read`.",
         "responses": {
           "200": {
             "description": "성공"
