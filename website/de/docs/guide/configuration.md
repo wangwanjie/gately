@@ -87,6 +87,20 @@ Die Höhe des Protokollbereichs lässt sich anpassen: Ziehen Sie die Leiste daru
 - Meldungen werden in der Oberflächensprache exportiert; auch Nur-Lese-Konten und API-Tokens mit reiner Leseberechtigung können exportieren, und Passwörter und Tokens in Adressen werden wie bei der Anzeige ausgeblendet;
 - Die API ist `GET /api/logs/export` und `GET /api/<Modul>/logs/export`, mit `format` gleich `csv` oder `jsonl` und den übrigen Filterparametern wie beim Anzeigen der Protokolle; die API für die Quellenliste ist `GET /api/logs/sources` und `GET /api/<Modul>/logs/sources`.
 
+## Bestätigung nach dem Speichern und automatische Rücksetzung {#confirm}
+
+Wenn Sie Gately aus der Ferne über eine Domain verwalten, können Änderungen an Portweiterleitung, Protokoll-Routing, Webdienst oder globalen Einstellungen genau den Weg kappen, über den die Verwaltungsoberfläche läuft. Deshalb prüft die Oberfläche nach dem Speichern dieser Einstellungen über eine neu geöffnete Verbindung, ob Gately noch erreichbar ist:
+
+- Funktioniert der Zugriff, wird still im Hintergrund bestätigt;
+- lässt er sich nicht bestätigen, erscheint ein Dialog mit Countdown; sobald der Zugriff zurückkommt, wird automatisch bestätigt, oder Sie klicken auf „Jetzt zurücksetzen“;
+- ist bei Fristende noch nichts bestätigt, startet Gately neu und stellt beim Start die vorherige Konfiguration wieder her. Die geänderte Fassung bleibt im [Konfigurationsverlauf](/de/docs/guide/audit). Die Seite lädt neu, sobald Gately wieder da ist, und zeigt an, welche Änderungen zurückgesetzt wurden.
+
+Die Bestätigung läuft über einen WebSocket: Der Browser öffnet dafür immer eine neue Verbindung, die also über die geänderte Weiterleitung und die Listener geht. Vor der Änderung geöffnete langlebige Verbindungen erreichen nach einem Hot-Update weiterhin das alte Ziel und beweisen nichts über die neue Konfiguration.
+
+Einstellungen, die erst nach einem Neustart wirken (Listen-Adressen der Oberfläche, Modulschalter), werden beim Neustart aus der Verwaltungsoberfläche erfasst, und die Frist beginnt nach dem Neustart. Startet Gately 3-mal hintereinander ohne Bestätigung (etwa weil die neue Konfiguration den Betrieb verhindert), wird ebenfalls zurückgesetzt. Öffnen Sie die Oberfläche unter einer neuen Adresse, während eine Änderung aussteht, fragt ein Dialog „Behalten“ oder „Jetzt zurücksetzen“.
+
+Die Frist stellen Sie unter „Einstellungen → Zugriffskontrolle → Konsolen-Listener → Nach dem Speichern bestätigen“ ein (30–600 Sekunden, Standard 90) oder schalten die Funktion ab. Sie gilt nur für Speichervorgänge in der Verwaltungsoberfläche; Änderungen per API-Token und Skript sind nicht betroffen. Die API ist `GET /api/system/confirm`.
+
 ## Sicherung und Wiederherstellung
 
 Unter „Einstellungen“ finden Sie Konfigurationssicherung und -wiederherstellung; dort liegt auch der Einstieg für den Import von Lucky-Konfigurationen.

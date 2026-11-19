@@ -146,6 +146,7 @@ WAF 攔截和上游狀態變動可能頻繁發生，建議為這類規則設定 
 | `login.newip` | 管理後台：新位址登入 | 警告 | 管理後台登入成功且來源位址此前從未登入成功過，附帶 `ip`、`user` 欄位。密碼、Passkey、第三方登入與飛牛統一閘道登入都會檢查；第一次登入只建立基線、不通知；IPv6 依 /64 網段合併；最多記錄 200 個來源，超出時淘汰最久未出現的 |
 | `audit.change` | 管理後台：設定變更 | 資訊 | 管理後台中的任意變更操作，附帶 `actor`、`ip`、`method`、`path` 欄位，見[稽核與設定歷史](/zh-TW/docs/guide/audit) |
 | `audit.access` | 管理後台：存取敏感內容 | 警告 | 下載備份、診斷包、憑證私鑰或開啟終端機等，欄位同上 |
+| `config.rolledback` | 管理後台：設定已自動回滾 | 警告 | 儲存連接埠轉發、協定分流、Web 服務或全域設定後未在時限內確認存取正常（或手動回滾、連續啟動多次），Gately 已重新啟動並還原修改前的設定，見[儲存後確認與自動回滾](/zh-TW/docs/guide/configuration#confirm) |
 | `perf.alert` | 效能監控：觸發告警 | 警告或錯誤 | 效能告警規則的條件持續滿足到設定時長，等級取規則設定，附帶 `rule`、`metric`、`target`、`value`、`condition` 欄位，見[效能監控](/zh-TW/docs/modules/perf) |
 | `perf.recovered` | 效能監控：告警恢復 | 資訊 | 已觸發的效能告警條件解除，欄位同上 |
 | `system.update` | Gately：發現新版本 | 資訊 | 自動或手動檢查更新發現新版本，附帶 `current`、`latest`、`url` 欄位，同一版本只通知一次，見[自動檢查更新](/zh-TW/docs/guide/install#update-check) |
