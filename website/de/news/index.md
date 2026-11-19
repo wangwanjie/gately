@@ -7,9 +7,13 @@ description: Release-Ankündigungen und Versionshinweise zu jeder Gately-Version
 
 Unten stehen die Ankündigungen zu wichtigen Releases. Alle Änderungen und Downloads jeder Version finden Sie unter [GitHub Releases](https://github.com/wangwanjie/gately/releases).
 
+## [v0.6.8.4](/de/news/v0.6.8.4)
+
+19. November 2026 · Sicherheitskorrektur: Schlüssel von Benachrichtigungskanälen konnten in Zustellfehlern erscheinen; Änderungen an Portweiterleitung, Protokoll-Routing, Web-Diensten und globalen Einstellungen werden erst nach Bestätigung durch eine neue Verbindung wirksam, andernfalls automatisch zurückgesetzt; fehlgeschlagene Benachrichtigungen werden wiederholt und nach Erholung des Kanals nachgesendet; Zertifikate können das fnOS-Systemzertifikat nutzen; die Systemeinstellungen zeigen die Speicherbelegung; behebt, dass Köderports des Einbruchschutzes den Verwaltungsport belegten und Gately beim Neustart beendeten.
+
 ## [v0.6.8.2](/de/news/v0.6.8.2)
 
- · Port Knocking unterstützt einen eigenen Schlüssel pro Person; Portweiterleitung und Protokoll-Routing können Quellen vom Limit pro Quelle ausnehmen; beim Proxy zu einem anderen Gately entfernt Gately die eigenen Anmelde- und Sicherheitseinstieg-Cookies des Backends nicht mehr, das behebt auch das 421 aus v0.6.8.1 hinter einem Reverse-Proxy; Navigationspanels lassen sich per Drag-and-drop sortieren und gruppieren; Reverse-Proxys teilen sich den Backend-Verbindungspool, bei tausend Sites halbiert sich der Speicherbedarf.
+18. November 2026 · Port Knocking unterstützt einen eigenen Schlüssel pro Person; Portweiterleitung und Protokoll-Routing können Quellen vom Limit pro Quelle ausnehmen; beim Proxy zu einem anderen Gately entfernt Gately die eigenen Anmelde- und Sicherheitseinstieg-Cookies des Backends nicht mehr, das behebt auch das 421 aus v0.6.8.1 hinter einem Reverse-Proxy; Navigationspanels lassen sich per Drag-and-drop sortieren und gruppieren; Reverse-Proxys teilen sich den Backend-Verbindungspool, bei tausend Sites halbiert sich der Speicherbedarf.
 
 ## [v0.6.8.1](/de/news/v0.6.8.1)
 

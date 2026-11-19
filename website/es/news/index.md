@@ -7,9 +7,13 @@ description: Anuncios y notas de cada versión de Gately.
 
 A continuación se listan los anuncios de las versiones principales. Consulta [GitHub Releases](https://github.com/wangwanjie/gately/releases) para ver todos los cambios y las descargas de cada versión.
 
+## [v0.6.8.4](/es/news/v0.6.8.4)
+
+19 de noviembre de 2026 · Corrección de seguridad: las claves de los canales de notificación podían aparecer en los errores de entrega; los cambios en reenvío de puertos, enrutamiento por protocolo, servicios web y ajustes globales solo se mantienen si una conexión nueva los confirma y, si no, se revierten automáticamente; las notificaciones fallidas se reintentan y se reenvían cuando el canal se recupera; los certificados pueden usar el certificado del sistema fnOS; los ajustes del sistema muestran el uso de almacenamiento; corrige que los puertos trampa de la prevención de intrusiones ocuparan el puerto de administración y Gately se cerrara al reiniciar.
+
 ## [v0.6.8.2](/es/news/v0.6.8.2)
 
- · El port knocking admite una clave por persona; el reenvío de puertos y el enrutamiento por protocolo pueden eximir orígenes del límite por origen; al hacer proxy a otro Gately ya no se eliminan las cookies de inicio de sesión y de entrada segura del propio backend, lo que también corrige el 421 de la v0.6.8.1 detrás de un proxy inverso; los paneles de navegación se ordenan arrastrando y admiten grupos; los proxies inversos comparten el pool de conexiones del backend y con mil sitios la memoria se reduce a la mitad.
+18 de noviembre de 2026 · El port knocking admite una clave por persona; el reenvío de puertos y el enrutamiento por protocolo pueden eximir orígenes del límite por origen; al hacer proxy a otro Gately ya no se eliminan las cookies de inicio de sesión y de entrada segura del propio backend, lo que también corrige el 421 de la v0.6.8.1 detrás de un proxy inverso; los paneles de navegación se ordenan arrastrando y admiten grupos; los proxies inversos comparten el pool de conexiones del backend y con mil sitios la memoria se reduce a la mitad.
 
 ## [v0.6.8.1](/es/news/v0.6.8.1)
 

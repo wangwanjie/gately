@@ -7,9 +7,13 @@ description: Anúncios e notas de cada versão do Gately.
 
 Abaixo estão os anúncios das versões principais. Veja as [GitHub Releases](https://github.com/wangwanjie/gately/releases) para as mudanças completas e os downloads de cada versão.
 
+## [v0.6.8.4](/pt-BR/news/v0.6.8.4)
+
+19 de novembro de 2026 · Correção de segurança: as chaves dos canais de notificação podiam aparecer nos erros de entrega; alterações em redirecionamento de portas, roteamento por protocolo, serviços Web e configurações globais só permanecem quando uma nova conexão as confirma e, caso contrário, são revertidas automaticamente; notificações com falha são repetidas e reenviadas quando o canal se recupera; os certificados podem usar o certificado do sistema fnOS; as configurações do sistema mostram o uso de armazenamento; corrige as portas armadilha da prevenção de intrusão que ocupavam a porta de administração e faziam o Gately encerrar ao reiniciar.
+
 ## [v0.6.8.2](/pt-BR/news/v0.6.8.2)
 
- · O port knocking aceita uma chave por pessoa; o encaminhamento de portas e o roteamento por protocolo podem isentar origens do limite por origem; ao fazer proxy para outro Gately, os cookies de login e de entrada segura do próprio backend deixam de ser removidos, o que também corrige o 421 da v0.6.8.1 atrás de um proxy reverso; os painéis de navegação são ordenados por arrastar e soltar e aceitam grupos; os proxies reversos compartilham o pool de conexões do backend e, com mil sites, a memória cai pela metade.
+18 de novembro de 2026 · O port knocking aceita uma chave por pessoa; o encaminhamento de portas e o roteamento por protocolo podem isentar origens do limite por origem; ao fazer proxy para outro Gately, os cookies de login e de entrada segura do próprio backend deixam de ser removidos, o que também corrige o 421 da v0.6.8.1 atrás de um proxy reverso; os painéis de navegação são ordenados por arrastar e soltar e aceitam grupos; os proxies reversos compartilham o pool de conexões do backend e, com mil sites, a memória cai pela metade.
 
 ## [v0.6.8.1](/pt-BR/news/v0.6.8.1)
 
