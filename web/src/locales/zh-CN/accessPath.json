@@ -1,0 +1,34 @@
+{
+  "missing": "（已删除）",
+  "defaultSite": "默认站点",
+  "hop": {
+    "client": "访客 {addr}",
+    "local": "本机 {addr}",
+    "gateway": "飞牛统一网关",
+    "portforward": "端口转发「{name}」",
+    "protoroute": "协议分流「{name}」",
+    "route": " › 路由「{route}」",
+    "webservice": "Web 服务「{name}」",
+    "site": " › 站点「{site}」",
+    "admin": "管理界面 {listen}",
+    "adminHttps": "管理界面 {listen}（HTTPS）"
+  },
+  "risk": {
+    "edit": "修改{hop}的转发相关设置",
+    "delete": "删除{hop}",
+    "disable": "停用{hop}",
+    "moduleOff": "关闭「{module}」功能，{hop}会随之停止",
+    "siteMove": "把{hop}移到其他监听",
+    "adminListen": "修改当前使用的管理界面监听地址（重启后生效）",
+    "lanOnly": "开启「仅允许内网访问」，而你当前来自外网",
+    "forceHTTPS": "开启强制 HTTPS，而你当前经 HTTP 访问，跳转后的 HTTPS 地址可能无法经当前路径访问"
+  },
+  "dialogTitle": "这次修改会影响你当前的访问路径",
+  "current": "当前访问路径：",
+  "noteConfirm": "仍要保存时，保存后会用新连接确认能否访问；{seconds} 秒内无法确认将自动回滚到修改前的配置。",
+  "noteNoConfirm": "「保存后确认」已关闭：保存后若断开，只能登录服务器用 gately rollback 恢复。",
+  "continue": "仍要保存",
+  "cancelled": "已取消保存",
+  "cardTitle": "当前访问路径",
+  "cardHelp": "你现在访问管理界面经过的 Gately 转发。修改其中的规则、监听或站点时，保存前会先提醒；外层的 frp、Cloudflare 隧道等本机程序显示为「本机」。"
+}

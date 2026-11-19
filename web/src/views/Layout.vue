@@ -86,6 +86,8 @@
     <ForcePasswordDialog v-if="role === 'admin' && passwordIssue" :issue="passwordIssue" :username="username" @done="afterPasswordFixed" />
     <!-- 保存可能切断访问路径的配置后，确认不了时倒计时提示，超时服务端自动回滚 -->
     <ConfigConfirmDialog v-if="role === 'admin'" />
+    <!-- 保存前提醒：修改会影响当前访问管理界面经过的转发 -->
+    <AccessRiskDialog v-if="role === 'admin'" />
   </div>
 </template>
 
@@ -96,6 +98,7 @@ import UpdateBanner from '../components/UpdateBanner.vue'
 import SecurityBanner from '../components/SecurityBanner.vue'
 import ForcePasswordDialog from '../components/ForcePasswordDialog.vue'
 import ConfigConfirmDialog from '../components/ConfigConfirmDialog.vue'
+import AccessRiskDialog from '../components/AccessRiskDialog.vue'
 import { loadConfirmStatus } from '../configConfirm'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'

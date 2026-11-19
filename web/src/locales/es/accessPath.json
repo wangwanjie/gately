@@ -1,0 +1,34 @@
+{
+  "missing": " (eliminado)",
+  "defaultSite": "Sitio por defecto",
+  "hop": {
+    "client": "Visitante {addr}",
+    "local": "Este equipo {addr}",
+    "gateway": "Pasarela de fnOS",
+    "portforward": "Reenvío de puertos «{name}»",
+    "protoroute": "Enrutamiento por protocolo «{name}»",
+    "route": " › ruta «{route}»",
+    "webservice": "Servicio web «{name}»",
+    "site": " › sitio «{site}»",
+    "admin": "Interfaz de administración {listen}",
+    "adminHttps": "Interfaz de administración {listen} (HTTPS)"
+  },
+  "risk": {
+    "edit": "Cambia ajustes de reenvío de {hop}",
+    "delete": "Elimina {hop}",
+    "disable": "Desactiva {hop}",
+    "moduleOff": "Desactiva {module}, lo que detiene {hop}",
+    "siteMove": "Mueve {hop} a otro listener",
+    "adminListen": "Cambia la dirección de escucha de la interfaz que estás usando (tras reiniciar)",
+    "lanOnly": "Activa el acceso solo desde la LAN mientras te conectas desde fuera",
+    "forceHTTPS": "Activa Forzar HTTPS mientras usas HTTP; la dirección HTTPS a la que redirige puede no ser accesible por tu camino actual"
+  },
+  "dialogTitle": "Este cambio afecta a tu forma de acceso",
+  "current": "Camino de acceso actual:",
+  "noteConfirm": "Si guardas igualmente, la interfaz comprobará con una conexión nueva que sigue llegando a Gately; si no se confirma en {seconds} segundos, se restaurará la configuración anterior.",
+  "noteNoConfirm": "Confirmar tras guardar está desactivado: si pierdes el acceso al guardar, solo podrás recuperarlo con gately rollback en el servidor.",
+  "continue": "Guardar igualmente",
+  "cancelled": "Guardado cancelado",
+  "cardTitle": "Camino de acceso actual",
+  "cardHelp": "El reenvío de Gately por el que pasa tu conexión a esta interfaz. Se te avisará antes de guardar cambios en estas reglas, listeners o sitios; los programas externos de este equipo, como frp o Cloudflare Tunnel, aparecen como «Este equipo»."
+}

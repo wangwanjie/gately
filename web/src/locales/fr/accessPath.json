@@ -1,0 +1,34 @@
+{
+  "missing": " (supprimé)",
+  "defaultSite": "Site par défaut",
+  "hop": {
+    "client": "Visiteur {addr}",
+    "local": "Cette machine {addr}",
+    "gateway": "Passerelle fnOS",
+    "portforward": "Redirection de ports « {name} »",
+    "protoroute": "Routage par protocole « {name} »",
+    "route": " › route « {route} »",
+    "webservice": "Service web « {name} »",
+    "site": " › site « {site} »",
+    "admin": "Interface d’administration {listen}",
+    "adminHttps": "Interface d’administration {listen} (HTTPS)"
+  },
+  "risk": {
+    "edit": "Modifie les réglages de redirection de {hop}",
+    "delete": "Supprime {hop}",
+    "disable": "Désactive {hop}",
+    "moduleOff": "Désactive {module}, ce qui arrête {hop}",
+    "siteMove": "Déplace {hop} vers un autre écouteur",
+    "adminListen": "Modifie l’adresse d’écoute de l’interface que vous utilisez (après redémarrage)",
+    "lanOnly": "Active l’accès réservé au réseau local alors que vous vous connectez depuis l’extérieur",
+    "forceHTTPS": "Active Forcer HTTPS alors que vous êtes en HTTP ; l’adresse HTTPS de redirection peut ne pas être joignable par votre chemin actuel"
+  },
+  "dialogTitle": "Cette modification touche votre chemin d’accès",
+  "current": "Chemin d’accès actuel :",
+  "noteConfirm": "Si vous enregistrez quand même, l’interface vérifiera via une nouvelle connexion qu’elle atteint toujours Gately ; sans confirmation dans les {seconds} secondes, la configuration précédente sera restaurée.",
+  "noteNoConfirm": "La confirmation après enregistrement est désactivée : si vous perdez l’accès, seul gately rollback sur le serveur permettra de revenir en arrière.",
+  "continue": "Enregistrer quand même",
+  "cancelled": "Enregistrement annulé",
+  "cardTitle": "Chemin d’accès actuel",
+  "cardHelp": "Les redirections Gately par lesquelles passe votre connexion à cette interface. Vous êtes averti avant d’enregistrer une modification de ces règles, écouteurs ou sites ; les programmes externes de cette machine, comme frp ou Cloudflare Tunnel, apparaissent comme « Cette machine »."
+}
