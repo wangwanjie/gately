@@ -203,11 +203,13 @@
       "history": "설정 기록",
       "backups": "설정 백업",
       "guard": "보호 데이터",
+      "notify": "알림 재전송 대기열",
       "network": "네트워크 데이터",
       "iplists": "IP 목록",
       "certs": "인증서",
       "geoip": "GeoIP 데이터베이스",
       "programs": "관리 프로그램",
+      "filebrowser": "File Browser 데이터",
       "config": "설정 파일",
       "other": "기타"
     }

@@ -203,11 +203,13 @@
       "history": "配置历史",
       "backups": "配置备份",
       "guard": "防护数据",
+      "notify": "通知补推队列",
       "network": "组网数据",
       "iplists": "IP 列表",
       "certs": "证书",
       "geoip": "GeoIP 数据库",
       "programs": "托管程序",
+      "filebrowser": "File Browser 数据",
       "config": "配置文件",
       "other": "其他"
     }

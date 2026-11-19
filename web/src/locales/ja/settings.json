@@ -203,11 +203,13 @@
       "history": "設定履歴",
       "backups": "設定バックアップ",
       "guard": "防御データ",
+      "notify": "通知の再送キュー",
       "network": "ネットワークデータ",
       "iplists": "IP リスト",
       "certs": "証明書",
       "geoip": "GeoIP データベース",
       "programs": "管理プログラム",
+      "filebrowser": "File Browser データ",
       "config": "設定ファイル",
       "other": "その他"
     }

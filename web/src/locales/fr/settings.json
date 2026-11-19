@@ -203,11 +203,13 @@
       "history": "Historique de configuration",
       "backups": "Sauvegardes de configuration",
       "guard": "Données de protection",
+      "notify": "File de renvoi des notifications",
       "network": "Données de réseau overlay",
       "iplists": "Listes d'IP",
       "certs": "Certificats",
       "geoip": "Base GeoIP",
       "programs": "Programmes gérés",
+      "filebrowser": "Données File Browser",
       "config": "Fichiers de configuration",
       "other": "Autres"
     }
