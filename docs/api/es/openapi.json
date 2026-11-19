@@ -43584,6 +43584,98 @@
         "x-token-allowed": true
       }
     },
+    "/api/system/access-path": {
+      "get": {
+        "description": "Solo sesiones iniciadas. Identifica el reenvío de Gately por el que pasó esta petición, de fuera hacia dentro en `hops`: `kind` es `client` (visitante, `addr` es la dirección), `local` (un navegador o un programa como frp o Cloudflare Tunnel en este equipo), `gateway` (pasarela de fnOS), `portforward`, `protoroute`, `webservice` (`rule`/`name` son la regla o el listener, `route` la ruta coincidente del enrutamiento por protocolo, `site`/`siteName` el sitio del servicio web, `listen` la dirección local en la que se aceptó ese salto, `missing` indica que ya no está en la configuración) y `admin` (la interfaz de administración, `listen` es su dirección de escucha, `https` indica HTTPS). El reenvío de puertos y el enrutamiento por protocolo solo registran saltos cuyo destino es este equipo; el servicio web solo añade información firmada del camino cuando hace de proxy hacia la interfaz de esta instancia con la cookie de sesión de administración, y los valores falsificados se rechazan.\n\n**Solo disponible para sesiones de inicio de sesión; los tokens de API no pueden acceder a este endpoint.**",
+        "responses": {
+          "200": {
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parámetros de solicitud incorrectos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token no válido, caducado o sin sesión iniciada"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Al token le falta el permiso necesario"
+          }
+        },
+        "summary": "Ver el camino de acceso actual",
+        "tags": [
+          "Sistema"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/access-path/check": {
+      "post": {
+        "description": "Solo sesiones iniciadas; no cambia nada. Cuerpo: `method` y `path` de la petición de escritura que se va a enviar, `body` su cuerpo. Devuelve `path` (como la consulta) y `risks`: `kind` es `edit` (cambia ajustes de reenvío de una regla, listener o sitio del camino, `fields` los enumera, los del sitio con el prefijo `site.`; nombre, grupo y nota no cuentan), `delete`, `disable`, `moduleOff` (desactiva un módulo del camino, `module` es su ID), `siteMove` (mueve un sitio del camino a otro listener), `adminListen` (cambia la dirección de escucha de la interfaz en uso), `lanOnly` (activa solo LAN desde fuera) o `forceHTTPS` (activa Forzar HTTPS mientras se usa HTTP); `hop` es el índice del salto afectado en `hops` (-1 si no corresponde a un salto).\n\n**Solo disponible para sesiones de inicio de sesión; los tokens de API no pueden acceder a este endpoint.**",
+        "responses": {
+          "200": {
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parámetros de solicitud incorrectos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token no válido, caducado o sin sesión iniciada"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Al token le falta el permiso necesario"
+          }
+        },
+        "summary": "Comprobar si un cambio afecta al camino de acceso actual",
+        "tags": [
+          "Sistema"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
     "/api/system/backup": {
       "get": {
         "description": "La copia de seguridad contiene todas las claves.\n\n**Solo disponible para sesiones de inicio de sesión; los tokens de API no pueden acceder a este endpoint.**",

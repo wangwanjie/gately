@@ -285,7 +285,9 @@ func skipped(method, path string) bool {
 	}
 	// 网络诊断、自检、Passkey 注册参数下发、导航面板预览与 Sun-Panel 配置转换都只是读取或计算，不改变配置
 	switch path {
-	case "/api/system/selfcheck", "/api/account/passkeys/begin", "/api/webservice/panels/preview", "/api/webservice/panels/sunpanel":
+	case "/api/system/selfcheck", "/api/account/passkeys/begin", "/api/webservice/panels/preview", "/api/webservice/panels/sunpanel",
+		// 保存前判断修改会不会影响当前访问路径，只读取
+		"/api/system/access-path/check":
 		return true
 	}
 	return strings.HasPrefix(path, "/api/nettools/")

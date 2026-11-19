@@ -43584,6 +43584,98 @@
         "x-token-allowed": true
       }
     },
+    "/api/system/access-path": {
+      "get": {
+        "description": "로그인 세션만 사용할 수 있습니다. 이 요청이 거친 Gately 포워딩을 바깥쪽부터 `hops`에 나열합니다: `kind`는 `client`(방문자, `addr`는 주소), `local`(이 기기의 브라우저 또는 frp, Cloudflare 터널 등 프로그램), `gateway`(fnOS 통합 게이트웨이), `portforward`, `protoroute`, `webservice`(`rule`/`name`은 규칙 또는 수신, `route`는 프로토콜 라우팅에서 일치한 라우트, `site`/`siteName`은 웹 서비스 사이트, `listen`은 이 홉이 연결을 받은 로컬 주소, `missing`은 설정에서 더 이상 찾을 수 없음), `admin`(관리 화면, `listen`은 수신 주소, `https`는 HTTPS 경유)입니다. 포트 포워딩과 프로토콜 라우팅은 대상이 이 기기일 때만 기록하며, 웹 서비스는 관리자 로그인 쿠키를 가지고 이 인스턴스의 관리 화면으로 프록시할 때만 서명된 경로 정보를 붙입니다. 외부 위조는 무효입니다.\n\n**로그인 세션에서만 사용할 수 있으며, API 토큰으로는 이 엔드포인트에 접근할 수 없습니다.**",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "summary": "현재 접속 경로 보기",
+        "tags": [
+          "시스템"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/access-path/check": {
+      "post": {
+        "description": "로그인 세션만 사용할 수 있으며 설정을 바꾸지 않습니다. 요청 본문: `method`, `path`는 보내려는 쓰기 요청, `body`는 그 요청 본문입니다. `path`(조회 API와 같음)와 `risks`를 반환합니다: `kind`는 `edit`(경로 위 규칙, 수신, 사이트의 포워딩 관련 설정 변경, `fields`에 항목 나열, 사이트 항목은 `site.` 접두사. 이름, 그룹, 메모는 제외), `delete`, `disable`, `moduleOff`(경로 위 모듈을 끔, `module`은 모듈 ID), `siteMove`(경로 위 사이트를 다른 수신으로 이동), `adminListen`(사용 중인 관리 화면 수신 주소 변경), `lanOnly`(외부에서 내부망 전용을 켬), `forceHTTPS`(HTTP로 접속 중에 HTTPS 강제를 켬) 중 하나이며, `hop`은 `hops`에서 영향을 받는 홉의 순번입니다(특정 홉과 무관하면 -1).\n\n**로그인 세션에서만 사용할 수 있으며, API 토큰으로는 이 엔드포인트에 접근할 수 없습니다.**",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "summary": "변경이 현재 접속 경로에 영향을 주는지 확인",
+        "tags": [
+          "시스템"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
     "/api/system/backup": {
       "get": {
         "description": "백업에는 모든 키가 포함됩니다.\n\n**로그인 세션에서만 사용할 수 있으며, API 토큰으로는 이 엔드포인트에 접근할 수 없습니다.**",

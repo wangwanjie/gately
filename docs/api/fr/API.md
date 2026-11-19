@@ -968,6 +968,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | GET | `/api/system/confirm` | Session connectée uniquement | Voir la modification de configuration en attente |
 | GET | `/api/system/confirm/connect` | Session connectée uniquement | Confirmer la modification de configuration |
 | POST | `/api/system/confirm/rollback` | Session connectée uniquement | Annuler maintenant la modification de configuration en attente |
+| GET | `/api/system/access-path` | Session connectée uniquement | Voir le chemin d’accès actuel |
+| POST | `/api/system/access-path/check` | Session connectée uniquement | Vérifier si une modification touche le chemin d’accès actuel |
 | POST | `/api/system/selfcheck` | Session connectée uniquement | Autodiagnostic du réseau et de la configuration |
 | GET | `/api/system/onboarding` | Session connectée uniquement | État de la prise en main du premier démarrage |
 | POST | `/api/system/onboarding/dismiss` | Session connectée uniquement | Terminer ou fermer la prise en main du premier démarrage |

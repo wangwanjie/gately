@@ -43584,6 +43584,98 @@
         "x-token-allowed": true
       }
     },
+    "/api/system/access-path": {
+      "get": {
+        "description": "Sessions connectées uniquement. Identifie les redirections Gately traversées par cette requête, de l’extérieur vers l’intérieur dans `hops` : `kind` vaut `client` (visiteur, `addr` est l’adresse), `local` (un navigateur ou un programme comme frp ou Cloudflare Tunnel sur cette machine), `gateway` (passerelle fnOS), `portforward`, `protoroute`, `webservice` (`rule`/`name` désignent la règle ou l’écouteur, `route` la route du routage par protocole qui correspond, `site`/`siteName` le site du service web, `listen` l’adresse locale où ce saut a accepté la connexion, `missing` indique qu’il n’existe plus dans la configuration) et `admin` (l’interface d’administration, `listen` est son adresse d’écoute, `https` indique HTTPS). La redirection de ports et le routage par protocole n’enregistrent que les sauts dont la cible est cette machine ; le service web n’ajoute des informations de chemin signées que lorsqu’il relaie vers l’interface de cette instance avec le cookie de session d’administration, et les valeurs falsifiées sont rejetées.\n\n**Disponible uniquement pour les sessions de connexion ; les jetons d'API ne peuvent pas accéder à ce point d'accès.**",
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "summary": "Voir le chemin d’accès actuel",
+        "tags": [
+          "Système"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/access-path/check": {
+      "post": {
+        "description": "Sessions connectées uniquement ; ne modifie rien. Corps : `method` et `path` de la requête d’écriture sur le point d’être envoyée, `body` son corps. Renvoie `path` (comme la consultation) et `risks` : `kind` vaut `edit` (modifie des réglages de redirection d’une règle, d’un écouteur ou d’un site du chemin, `fields` les liste, ceux du site préfixés par `site.` ; nom, groupe et remarque ne comptent pas), `delete`, `disable`, `moduleOff` (désactive un module du chemin, `module` est son ID), `siteMove` (déplace un site du chemin vers un autre écouteur), `adminListen` (modifie l’adresse d’écoute de l’interface utilisée), `lanOnly` (accès réservé au réseau local activé depuis l’extérieur) ou `forceHTTPS` (Forcer HTTPS activé en HTTP) ; `hop` est l’indice du saut concerné dans `hops` (-1 s’il ne vise pas un saut).\n\n**Disponible uniquement pour les sessions de connexion ; les jetons d'API ne peuvent pas accéder à ce point d'accès.**",
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "summary": "Vérifier si une modification touche le chemin d’accès actuel",
+        "tags": [
+          "Système"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
     "/api/system/backup": {
       "get": {
         "description": "La sauvegarde contient toutes les clés.\n\n**Disponible uniquement pour les sessions de connexion ; les jetons d'API ne peuvent pas accéder à ce point d'accès.**",

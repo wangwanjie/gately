@@ -43584,6 +43584,98 @@
         "x-token-allowed": true
       }
     },
+    "/api/system/access-path": {
+      "get": {
+        "description": "Nur für Anmeldesitzungen. Ermittelt die Gately-Weiterleitungen, die diese Anfrage durchlaufen hat, von außen nach innen in `hops`: `kind` ist `client` (Besucher, `addr` die Adresse), `local` (ein Browser oder ein Programm wie frp oder Cloudflare Tunnel auf diesem Rechner), `gateway` (fnOS-Gateway), `portforward`, `protoroute`, `webservice` (`rule`/`name` sind Regel oder Listener, `route` die passende Route des Protokoll-Routings, `site`/`siteName` die Site des Webdiensts, `listen` die lokale Adresse, an der dieser Sprung die Verbindung angenommen hat, `missing` bedeutet, dass er nicht mehr in der Konfiguration steht) und `admin` (die Verwaltungsoberfläche, `listen` ist ihre Listen-Adresse, `https` bedeutet über HTTPS). Portweiterleitung und Protokoll-Routing erfassen nur Sprünge, deren Ziel dieser Rechner ist; der Webdienst fügt nur dann signierte Weginformationen hinzu, wenn er mit dem Admin-Anmelde-Cookie an die Verwaltungsoberfläche dieser Instanz weiterleitet, gefälschte Werte werden abgewiesen.\n\n**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "summary": "Aktuellen Zugriffsweg anzeigen",
+        "tags": [
+          "System"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/access-path/check": {
+      "post": {
+        "description": "Nur für Anmeldesitzungen; ändert nichts. Body: `method` und `path` der gleich gesendeten Schreibanfrage, `body` deren Body. Liefert `path` (wie die Abfrage) und `risks`: `kind` ist `edit` (ändert Weiterleitungseinstellungen einer Regel, eines Listeners oder einer Site auf dem Weg, `fields` nennt sie, Site-Felder mit Präfix `site.`; Name, Gruppe und Notiz zählen nicht), `delete`, `disable`, `moduleOff` (schaltet ein Modul auf dem Weg ab, `module` ist seine ID), `siteMove` (verschiebt eine Site auf dem Weg in einen anderen Listener), `adminListen` (ändert die genutzte Listen-Adresse der Oberfläche), `lanOnly` („nur LAN“ von außerhalb aktiviert) oder `forceHTTPS` („HTTPS erzwingen“ bei HTTP aktiviert); `hop` ist der Index des betroffenen Sprungs in `hops` (-1, wenn kein bestimmter Sprung).\n\n**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "summary": "Prüfen, ob eine Änderung den aktuellen Zugriffsweg betrifft",
+        "tags": [
+          "System"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
     "/api/system/backup": {
       "get": {
         "description": "Das Backup enthält alle Schlüssel.\n\n**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",

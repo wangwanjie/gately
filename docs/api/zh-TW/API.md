@@ -968,6 +968,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/system/confirm` | 僅登入工作階段 | 查看待確認的設定變更 |
 | GET | `/api/system/confirm/connect` | 僅登入工作階段 | 確認設定變更 |
 | POST | `/api/system/confirm/rollback` | 僅登入工作階段 | 立即回滾待確認的設定變更 |
+| GET | `/api/system/access-path` | 僅登入工作階段 | 查看目前存取路徑 |
+| POST | `/api/system/access-path/check` | 僅登入工作階段 | 檢查修改是否影響目前存取路徑 |
 | POST | `/api/system/selfcheck` | 僅登入工作階段 | 網路與設定自我檢查 |
 | GET | `/api/system/onboarding` | 僅登入工作階段 | 首次啟動引導狀態 |
 | POST | `/api/system/onboarding/dismiss` | 僅登入工作階段 | 完成或關閉首次啟動引導 |

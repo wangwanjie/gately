@@ -43584,6 +43584,98 @@
         "x-token-allowed": true
       }
     },
+    "/api/system/access-path": {
+      "get": {
+        "description": "Login sessions only. Identifies the Gately forwarding this request went through, listed from outside in under `hops`: `kind` is `client` (visitor, `addr` is the address), `local` (a browser or a program such as frp or Cloudflare Tunnel on this machine), `gateway` (fnOS gateway), `portforward`, `protoroute`, `webservice` (`rule`/`name` are the rule or listener, `route` is the matched protocol routing route, `site`/`siteName` the web service site, `listen` the local address the hop accepted on, `missing` means it can no longer be found in the config) and `admin` (the admin UI, `listen` is its listen address, `https` means over HTTPS). Port forwarding and protocol routing only record hops whose target is this machine; the web service only adds signed path information when it proxies to this instance's admin UI with the admin login cookie, and forged values are rejected.\n\n**Available only to login sessions; API tokens cannot access this endpoint.**",
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "summary": "View the current access path",
+        "tags": [
+          "System"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/access-path/check": {
+      "post": {
+        "description": "Login sessions only; changes nothing. Body: `method` and `path` of the write request about to be sent, `body` its request body. Returns `path` (as in the view endpoint) and `risks`: `kind` is `edit` (changes forwarding settings of a rule, listener or site on the path, `fields` lists them, site fields prefixed with `site.`; name, group and remark don't count), `delete`, `disable`, `moduleOff` (turns off a module on the path, `module` is its ID), `siteMove` (moves a site on the path to another listener), `adminListen` (changes the admin UI listen address in use), `lanOnly` (LAN-only turned on from outside the LAN) or `forceHTTPS` (Force HTTPS turned on while on HTTP); `hop` is the index of the affected hop in `hops` (-1 when not tied to one hop).\n\n**Available only to login sessions; API tokens cannot access this endpoint.**",
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "summary": "Check whether a change affects the current access path",
+        "tags": [
+          "System"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
     "/api/system/backup": {
       "get": {
         "description": "The backup contains all secrets.\n\n**Available only to login sessions; API tokens cannot access this endpoint.**",

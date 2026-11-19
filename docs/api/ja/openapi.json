@@ -43584,6 +43584,98 @@
         "x-token-allowed": true
       }
     },
+    "/api/system/access-path": {
+      "get": {
+        "description": "ログインセッションのみ利用可能。このリクエストが通った Gately の転送を、外側から順に `hops` に示します：`kind` は `client`（訪問者、`addr` はアドレス）、`local`（このマシンのブラウザー、または frp・Cloudflare Tunnel などのプログラム）、`gateway`（fnOS 統合ゲートウェイ）、`portforward`、`protoroute`、`webservice`（`rule`/`name` はルールまたは待ち受け、`route` はプロトコル振り分けで一致したルート、`site`/`siteName` は Web サービスのサイト、`listen` はこのホップが受け付けたローカルアドレス、`missing` は設定から見つからないこと）、`admin`（管理画面、`listen` は待ち受けアドレス、`https` は HTTPS 経由）。ポート転送とプロトコル振り分けは宛先がこのマシンの場合のみ記録し、Web サービスは管理ログイン Cookie 付きでこのインスタンスの管理画面に中継する場合のみ署名付きの経路情報を付けます。外部からの偽造は無効です。\n\n**ログインセッションでのみ利用できます。API トークンではこのエンドポイントにアクセスできません。**",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "summary": "現在のアクセス経路を表示",
+        "tags": [
+          "システム"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
+    "/api/system/access-path/check": {
+      "post": {
+        "description": "ログインセッションのみ利用可能で、設定は変更しません。リクエスト本文：`method`、`path` は送信しようとしている書き込みリクエスト、`body` はその本文。`path`（表示 API と同じ）と `risks` を返します：`kind` は `edit`（経路上のルール・待ち受け・サイトの転送に関わる設定の変更、`fields` に項目、サイトの項目には `site.` 接頭辞。名前・グループ・備考は含まない）、`delete`、`disable`、`moduleOff`（経路上のモジュールをオフ、`module` はモジュール ID）、`siteMove`（経路上のサイトを別の待ち受けへ移動）、`adminListen`（使用中の管理画面の待ち受けアドレスを変更）、`lanOnly`（外部から LAN のみ許可をオン）、`forceHTTPS`（HTTP 経由で HTTPS 強制をオン）のいずれか。`hop` は `hops` 内で影響を受けるホップの番号（特定のホップに対応しない場合は -1）。\n\n**ログインセッションでのみ利用できます。API トークンではこのエンドポイントにアクセスできません。**",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "summary": "変更が現在のアクセス経路に影響するか確認",
+        "tags": [
+          "システム"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
     "/api/system/backup": {
       "get": {
         "description": "バックアップにはすべてのシークレットが含まれます。\n\n**ログインセッションでのみ利用できます。API トークンではこのエンドポイントにアクセスできません。**",
