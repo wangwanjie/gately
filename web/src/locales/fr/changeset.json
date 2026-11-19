@@ -10,5 +10,9 @@
   "apply": "Tout appliquer",
   "discard": "Abandonner",
   "discardConfirm": "Gately va restaurer la configuration d’avant la série et redémarrer ; les modifications faites depuis sont abandonnées (elles restent dans l’historique de configuration).",
-  "applied": "Tout est appliqué ({n} éléments), vérification de l’accès"
+  "applied": "Tout est appliqué ({n} éléments), vérification de l’accès",
+  "checkTitle": "Ces écouteurs échoueront au démarrage",
+  "checkDesc": "Ces adresses d’écoute sont inutilisables sur cette machine (adresse non locale, ou refusée par le système). Une fois appliqué, l’accès qui passe par elles échoue et, sans confirmation, toute la série est annulée. macOS ne configure que 127.0.0.1 par défaut ; pour utiliser 127.0.0.2 ou similaire, lancez d’abord sudo ifconfig lo0 alias 127.0.0.2.",
+  "checkItem": "{item} — l’adresse d’écoute {addr} est indisponible ({error})",
+  "checkContinue": "Tout appliquer quand même"
 }

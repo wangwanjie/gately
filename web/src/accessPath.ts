@@ -25,6 +25,8 @@ export interface PathRisk {
   hop: number
   module?: string
   fields?: string[]
+  addr?: string
+  error?: string
 }
 
 export interface AccessCheck {
@@ -81,6 +83,8 @@ export function riskText(r: PathRisk, path: AccessPath): string {
       return t('accessPath.risk.lanOnly')
     case 'forceHTTPS':
       return t('accessPath.risk.forceHTTPS')
+    case 'listenUnavailable':
+      return t('accessPath.risk.listenUnavailable', { hop, addr: r.addr ?? '', error: r.error ?? '' })
   }
   return r.kind
 }

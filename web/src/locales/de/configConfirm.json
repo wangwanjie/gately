@@ -18,5 +18,7 @@
   "rolledBackManual": "Die Änderungen an {modules} wurden wie gewünscht zurückgesetzt. Die geänderte Fassung liegt im Konfigurationsverlauf.",
   "rolledBackBoots": "Die Änderungen an {modules} wurden nicht bestätigt und Gately ist mehrmals hintereinander gestartet, daher wurden sie zurückgesetzt. Die geänderte Fassung liegt im Konfigurationsverlauf.",
   "unreachable": "Gately ist gerade nicht erreichbar, daher kommt auch „Jetzt zurücksetzen“ nicht durch; warten Sie auf die automatische Rücksetzung nach Ablauf des Countdowns oder führen Sie auf dem Server aus:",
-  "rollbackUnreachable": "Gately ist nicht erreichbar, sofortiges Zurücksetzen nicht möglich: Warten Sie auf die automatische Rücksetzung nach dem Countdown oder führen Sie gately rollback -pending auf dem Server aus"
+  "rollbackUnreachable": "Gately ist nicht erreichbar, sofortiges Zurücksetzen nicht möglich: Warten Sie auf die automatische Rücksetzung nach dem Countdown oder führen Sie gately rollback -pending auf dem Server aus",
+  "errorsTitle": "Fehler seit dem Anwenden:",
+  "rolledBackErrors": "Fehler vor der Rücksetzung:"
 }

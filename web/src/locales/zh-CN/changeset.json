@@ -10,5 +10,9 @@
   "apply": "全部生效",
   "discard": "放弃修改",
   "discardConfirm": "将恢复开始批量修改前的配置并重启 Gately，期间的修改都会丢弃（保存在配置历史中）。",
-  "applied": "已全部生效（{n} 项），正在确认能否访问"
+  "applied": "已全部生效（{n} 项），正在确认能否访问",
+  "checkTitle": "以下监听生效后会启动失败",
+  "checkDesc": "这些监听地址在本机不可用（不是本机地址，或系统不允许使用）。全部生效后经过它们的访问会失败，确认不了时整批回滚。macOS 默认只配置了 127.0.0.1，要用 127.0.0.2 等地址需先运行 sudo ifconfig lo0 alias 127.0.0.2。",
+  "checkItem": "{item} — 监听地址 {addr} 不可用（{error}）",
+  "checkContinue": "仍要全部生效"
 }

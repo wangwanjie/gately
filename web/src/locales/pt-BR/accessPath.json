@@ -21,7 +21,8 @@
     "siteMove": "Move {hop} para outro listener",
     "adminListen": "Altera o endereço de escuta da interface que você está usando (após reiniciar)",
     "lanOnly": "Ativa o acesso somente pela LAN enquanto você se conecta de fora",
-    "forceHTTPS": "Ativa Forçar HTTPS enquanto você usa HTTP; o endereço HTTPS do redirecionamento pode não ser alcançável pelo seu caminho atual"
+    "forceHTTPS": "Ativa Forçar HTTPS enquanto você usa HTTP; o endereço HTTPS do redirecionamento pode não ser alcançável pelo seu caminho atual",
+    "listenUnavailable": "{hop} escutaria em {addr}, que não pode ser usado nesta máquina, então vai falhar ao iniciar ({error})"
   },
   "dialogTitle": "Esta alteração afeta o seu caminho de acesso",
   "current": "Caminho de acesso atual:",

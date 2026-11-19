@@ -10,5 +10,9 @@
   "apply": "Apply all",
   "discard": "Discard changes",
   "discardConfirm": "Gately will restore the configuration from before the batch started and restart; the changes made since then are dropped (they stay in Config History).",
-  "applied": "All applied ({n} items), checking access"
+  "applied": "All applied ({n} items), checking access",
+  "checkTitle": "These listeners will fail to start",
+  "checkDesc": "These listen addresses can't be used on this machine (not a local address, or the system refuses it). After applying, access through them fails, and if it can't be confirmed the whole batch is rolled back. macOS only configures 127.0.0.1 by default; to use 127.0.0.2 and similar run sudo ifconfig lo0 alias 127.0.0.2 first.",
+  "checkItem": "{item} — listen address {addr} is unavailable ({error})",
+  "checkContinue": "Apply all anyway"
 }

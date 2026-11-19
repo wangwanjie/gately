@@ -18,5 +18,7 @@
   "rolledBackManual": "Los cambios en {modules} se revirtieron como pediste. La versión modificada se conserva en el Historial de configuración.",
   "rolledBackBoots": "Los cambios en {modules} no se confirmaron y Gately se inició varias veces seguidas, así que se revirtieron. La versión modificada se conserva en el Historial de configuración.",
   "unreachable": "Ahora mismo no se llega a Gately, así que «Revertir ahora» tampoco puede enviarse; espera a la reversión automática al terminar la cuenta atrás o ejecuta en el servidor:",
-  "rollbackUnreachable": "No se llega a Gately y no puede revertirse ahora: espera a la reversión automática al terminar la cuenta atrás o ejecuta gately rollback -pending en el servidor"
+  "rollbackUnreachable": "No se llega a Gately y no puede revertirse ahora: espera a la reversión automática al terminar la cuenta atrás o ejecuta gately rollback -pending en el servidor",
+  "errorsTitle": "Errores desde que se aplicó el cambio:",
+  "rolledBackErrors": "Errores antes de la reversión:"
 }

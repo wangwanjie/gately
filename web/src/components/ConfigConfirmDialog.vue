@@ -19,6 +19,13 @@
         <span class="num">{{ remaining }}</span>
         <span class="muted">{{ t('configConfirm.countdown') }}</span>
       </div>
+      <!-- 修改生效后模块报告的错误（例如监听启动失败），确认不了时往往就是原因 -->
+      <div v-if="state.phase !== 'rollingBack' && state.errors.length" class="errors" data-test="config-confirm-errors">
+        <div class="errors-title">{{ t('configConfirm.errorsTitle') }}</div>
+        <ul>
+          <li v-for="(e, i) in state.errors" :key="i">{{ e }}</li>
+        </ul>
+      </div>
       <p v-if="state.phase === 'failed'" class="muted retrying">{{ t('configConfirm.retrying') }}</p>
       <!-- 连不上服务端时“立即回滚”同样发不出去：说明只能等自动回滚，或在服务器上用命令行回滚 -->
       <p v-if="state.phase !== 'rollingBack' && !state.reachable" class="unreachable" data-test="config-confirm-unreachable">
@@ -33,7 +40,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, h, onBeforeUnmount, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Loader2, TriangleAlert } from 'lucide-vue-next'
@@ -118,7 +125,12 @@ watch(
       return
     }
     const key = rb.reason === 'manual' ? 'configConfirm.rolledBackManual' : rb.reason === 'boots' ? 'configConfirm.rolledBackBoots' : 'configConfirm.rolledBackTimeout'
-    ElMessageBox.alert(t(key, { modules: namesOf(rb.configs) }), t('configConfirm.rolledBackTitle'), { type: 'warning' }).catch(() => undefined)
+    const text = t(key, { modules: namesOf(rb.configs) })
+    // 回滚前出现的错误（例如监听启动失败）一并列出，说明为什么没能确认
+    const message = rb.errors?.length
+      ? h('div', [h('p', text), h('p', { class: 'rb-errors-title' }, t('configConfirm.rolledBackErrors')), h('ul', { class: 'rb-errors' }, rb.errors.map((e) => h('li', e)))])
+      : text
+    ElMessageBox.alert(message, t('configConfirm.rolledBackTitle'), { type: 'warning' }).catch(() => undefined)
     state.rolledBack = null
   },
   { immediate: true },
@@ -152,6 +164,24 @@ watch(
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   color: var(--el-color-warning);
+}
+.errors {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 6px;
+  text-align: left;
+  font-size: 13px;
+  line-height: 1.6;
+  background: var(--el-color-danger-light-9);
+  color: var(--el-color-danger);
+}
+.errors-title {
+  font-weight: 600;
+}
+.errors ul {
+  margin: 4px 0 0;
+  padding-left: 18px;
+  word-break: break-all;
 }
 .unreachable {
   margin: 0;

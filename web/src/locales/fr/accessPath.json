@@ -21,7 +21,8 @@
     "siteMove": "Déplace {hop} vers un autre écouteur",
     "adminListen": "Modifie l’adresse d’écoute de l’interface que vous utilisez (après redémarrage)",
     "lanOnly": "Active l’accès réservé au réseau local alors que vous vous connectez depuis l’extérieur",
-    "forceHTTPS": "Active Forcer HTTPS alors que vous êtes en HTTP ; l’adresse HTTPS de redirection peut ne pas être joignable par votre chemin actuel"
+    "forceHTTPS": "Active Forcer HTTPS alors que vous êtes en HTTP ; l’adresse HTTPS de redirection peut ne pas être joignable par votre chemin actuel",
+    "listenUnavailable": "{hop} écouterait sur {addr}, inutilisable sur cette machine : il échouera au démarrage ({error})"
   },
   "dialogTitle": "Cette modification touche votre chemin d’accès",
   "current": "Chemin d’accès actuel :",

@@ -21,7 +21,8 @@
     "siteMove": "Moves {hop} to another listener",
     "adminListen": "Changes the admin UI listen address you are using (after a restart)",
     "lanOnly": "Turns on \"LAN access only\" while you are connecting from outside the LAN",
-    "forceHTTPS": "Turns on Force HTTPS while you are on HTTP; the HTTPS address it redirects to may not be reachable through your current path"
+    "forceHTTPS": "Turns on Force HTTPS while you are on HTTP; the HTTPS address it redirects to may not be reachable through your current path",
+    "listenUnavailable": "{hop} would listen on {addr}, which can't be used on this machine, so it will fail to start ({error})"
   },
   "dialogTitle": "This change affects how you are connected",
   "current": "Current access path:",

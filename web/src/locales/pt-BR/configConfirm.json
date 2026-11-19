@@ -18,5 +18,7 @@
   "rolledBackManual": "As alterações em {modules} foram revertidas como você pediu. A versão alterada fica no Histórico de configuração.",
   "rolledBackBoots": "As alterações em {modules} não foram confirmadas e o Gately iniciou várias vezes seguidas, então foram revertidas. A versão alterada fica no Histórico de configuração.",
   "unreachable": "No momento o Gately está inacessível, então \"Reverter agora\" também não chega; espere a reversão automática ao fim da contagem ou execute no servidor:",
-  "rollbackUnreachable": "O Gately está inacessível, não dá para reverter agora: espere a reversão automática ao fim da contagem ou execute gately rollback -pending no servidor"
+  "rollbackUnreachable": "O Gately está inacessível, não dá para reverter agora: espere a reversão automática ao fim da contagem ou execute gately rollback -pending no servidor",
+  "errorsTitle": "Erros desde que a alteração entrou em vigor:",
+  "rolledBackErrors": "Erros antes da reversão:"
 }

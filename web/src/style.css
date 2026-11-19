@@ -458,3 +458,16 @@ html.theme-vt *::after {
     margin-left: 4px;
   }
 }
+
+/* 配置确认与批量修改的提示框中列出的错误（消息框挂在 body 下，不受组件内样式作用） */
+.rb-errors-title {
+  margin: 10px 0 4px;
+  font-weight: 600;
+}
+.rb-errors,
+.hold-problems {
+  margin: 4px 0 0;
+  padding-left: 18px;
+  line-height: 1.6;
+  word-break: break-all;
+}

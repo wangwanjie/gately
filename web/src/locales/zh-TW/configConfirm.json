@@ -18,5 +18,7 @@
   "rolledBackManual": "{modules}的修改已依你的要求回滾到修改前的設定。修改後的版本保存在「設定歷史」中。",
   "rolledBackBoots": "{modules}的修改未確認且 Gately 連續啟動多次，已回滾到修改前的設定。修改後的版本保存在「設定歷史」中。",
   "unreachable": "目前連不上 Gately，「立即回滾」也送不出去，只能等倒數結束自動回滾；也可以在伺服器上執行",
-  "rollbackUnreachable": "連不上 Gately，無法立即回滾：請等倒數結束自動回滾，或在伺服器上執行 gately rollback -pending"
+  "rollbackUnreachable": "連不上 Gately，無法立即回滾：請等倒數結束自動回滾，或在伺服器上執行 gately rollback -pending",
+  "errorsTitle": "生效後出現的錯誤：",
+  "rolledBackErrors": "回滾前出現的錯誤："
 }
