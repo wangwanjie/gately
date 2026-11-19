@@ -617,7 +617,24 @@ func (f *firewall) warnDynamicLocked(s Settings) {
 	}
 }
 
-// portSets 计算扫描检测视为开放的端口与实际生效的诱饵端口（去掉正在监听的端口）。
+// protectedPorts 返回诱饵端口绝不能包含的端口：正在监听（含宽限）的端口，以及各模块在 openports 登记的端口。
+// 登记的端口此刻不一定在监听（EasyTier、frps 重启的空档，进程还没起来，Gately 刚重启宽限表为空），
+// 落进诱饵集合会让重连的正常访客被当成扫描封禁，或让用户态诱饵占住端口导致模块重新监听失败。
+func protectedPorts(listening map[int]bool, extra []openports.Range) func(int) bool {
+	return func(p int) bool {
+		if listening[p] {
+			return true
+		}
+		for _, r := range extra {
+			if r.Lo <= p && p <= r.Hi {
+				return true
+			}
+		}
+		return false
+	}
+}
+
+// portSets 计算扫描检测视为开放的端口与实际生效的诱饵端口（去掉正在监听与模块登记的端口）。
 // 开放端口还包括各模块登记的临时端口（如 FTP 被动端口范围），见 openports。
 func portSets(s Settings, listening map[int]bool) (open, trap []portRange, skipped []int) {
 	for p := range listening {
@@ -631,7 +648,9 @@ func portSets(s Settings, listening map[int]bool) (open, trap []portRange, skipp
 	}
 	open = mergePorts(open)
 	traps, _ := parsePorts(s.Trap.Ports)
-	trap, skipped = subtractPorts(traps, listening)
+	// skipped 只列正在监听的端口（界面与自检提示“正在被监听，已排除”）；模块登记的端口可能是很大的范围，静默排除
+	_, skipped = subtractPorts(traps, listening)
+	trap, _ = subtractPortsFunc(traps, protectedPorts(listening, extra))
 	if skipped == nil {
 		skipped = []int{}
 	}

@@ -78,10 +78,15 @@ func countPorts(list []portRange) int {
 
 // subtractPorts 从范围中去掉指定的端口，返回剩余范围与被去掉的端口。
 func subtractPorts(list []portRange, remove map[int]bool) (rest []portRange, removed []int) {
+	return subtractPortsFunc(list, func(p int) bool { return remove[p] })
+}
+
+// subtractPortsFunc 从范围中去掉 remove 返回 true 的端口，返回剩余范围与被去掉的端口。
+func subtractPortsFunc(list []portRange, remove func(int) bool) (rest []portRange, removed []int) {
 	for _, p := range list {
 		start := p.lo
 		for port := p.lo; port <= p.hi; port++ {
-			if !remove[port] {
+			if !remove(port) {
 				continue
 			}
 			removed = append(removed, port)
