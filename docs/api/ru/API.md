@@ -368,6 +368,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/ssl/certs/{key}/download` | `ssl:write` | Скачать сертификат и закрытый ключ |
 | POST | `/api/ssl/certs/{key}/deploy` | `ssl:write` | Развернуть сертификат сейчас |
 | GET | `/api/ssl/deploy-targets` | `ssl:read` | Список доступных целей развёртывания |
+| GET | `/api/ssl/fnos-certs` | `ssl:read` | Список системных сертификатов fnOS |
 | GET | `/api/ssl/providers` | `ssl:read` | Список поддерживаемых провайдеров DNS-проверки |
 | GET | `/api/ssl/settings` | `ssl:read` | Чтение глобальных настроек сертификатов |
 | PUT | `/api/ssl/settings` | `ssl:write` | Сохранить глобальные настройки сертификатов |
@@ -2218,6 +2219,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `certPem` | string |
 | `deploys` | Массив из `ssl.Deploy` |
 | `enable` | boolean |
+| `fnosDomain` | string |
 | `group` | string |
 | `issuedProfile` | string |
 | `issuerPem` | string |

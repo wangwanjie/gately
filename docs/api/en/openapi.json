@@ -2869,6 +2869,9 @@
           "enable": {
             "type": "boolean"
           },
+          "fnosDomain": {
+            "type": "string"
+          },
           "group": {
             "type": "string"
           },
@@ -40195,6 +40198,57 @@
           }
         ],
         "summary": "List available deployment targets",
+        "tags": [
+          "SSL certificate"
+        ],
+        "x-required-scope": "ssl:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/ssl/fnos-certs": {
+      "get": {
+        "description": "Reads the system certificates registered by fnOS (`/usr/trim/etc/network_cert_all.conf`) for the certificate source `fnos`. `available` is false when this is not fnOS or the file is not mounted into the container; each item in `certs` has `domain`, `san`, `notAfter` (expiry) and `used` (fnOS itself uses it); file paths are not returned. `error` gives the reason when the file cannot be parsed.\n\nRequired permission: `ssl:read`.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List fnOS system certificates",
         "tags": [
           "SSL certificate"
         ],

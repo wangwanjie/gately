@@ -368,6 +368,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | GET | `/api/ssl/certs/{key}/download` | `ssl:write` | Baixar certificado e chave privada |
 | POST | `/api/ssl/certs/{key}/deploy` | `ssl:write` | Implantar um certificado agora |
 | GET | `/api/ssl/deploy-targets` | `ssl:read` | Listar destinos de implantação disponíveis |
+| GET | `/api/ssl/fnos-certs` | `ssl:read` | Listar certificados do sistema fnOS |
 | GET | `/api/ssl/providers` | `ssl:read` | Listar provedores de validação DNS suportados |
 | GET | `/api/ssl/settings` | `ssl:read` | Ler configurações globais de certificados |
 | PUT | `/api/ssl/settings` | `ssl:write` | Salvar configurações globais de certificados |
@@ -2218,6 +2219,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `certPem` | string |
 | `deploys` | Array de `ssl.Deploy` |
 | `enable` | boolean |
+| `fnosDomain` | string |
 | `group` | string |
 | `issuedProfile` | string |
 | `issuerPem` | string |

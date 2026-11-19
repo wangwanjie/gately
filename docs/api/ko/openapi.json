@@ -2869,6 +2869,9 @@
           "enable": {
             "type": "boolean"
           },
+          "fnosDomain": {
+            "type": "string"
+          },
           "group": {
             "type": "string"
           },
@@ -40195,6 +40198,57 @@
           }
         ],
         "summary": "선택 가능한 배포 대상 목록",
+        "tags": [
+          "SSL 인증서"
+        ],
+        "x-required-scope": "ssl:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/ssl/fnos-certs": {
+      "get": {
+        "description": "fnOS에 등록된 시스템 인증서(`/usr/trim/etc/network_cert_all.conf`)를 읽어 인증서 출처 `fnos` 선택에 사용합니다. fnOS가 아니거나 컨테이너에 파일이 마운트되지 않았으면 `available`이 false입니다. `certs`의 각 항목은 `domain`, `san`, `notAfter`(만료 시각), `used`(fnOS 자체가 사용 중)를 포함하며 파일 경로는 반환하지 않습니다. 파일을 해석할 수 없으면 `error`에 이유가 들어갑니다.\n\n필요한 권한: `ssl:read`.",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "fnOS 시스템 인증서 목록",
         "tags": [
           "SSL 인증서"
         ],

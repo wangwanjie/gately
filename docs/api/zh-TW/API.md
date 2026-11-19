@@ -368,6 +368,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/ssl/certs/{key}/download` | `ssl:write` | 下載憑證與私鑰 |
 | POST | `/api/ssl/certs/{key}/deploy` | `ssl:write` | 立即部署憑證 |
 | GET | `/api/ssl/deploy-targets` | `ssl:read` | 列出可選的部署目標 |
+| GET | `/api/ssl/fnos-certs` | `ssl:read` | 列出飛牛系統憑證 |
 | GET | `/api/ssl/providers` | `ssl:read` | 列出支援的 DNS 驗證服務商 |
 | GET | `/api/ssl/settings` | `ssl:read` | 讀取憑證全域設定 |
 | PUT | `/api/ssl/settings` | `ssl:write` | 儲存憑證全域設定 |
@@ -2218,6 +2219,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `certPem` | string |
 | `deploys` | 陣列 of `ssl.Deploy` |
 | `enable` | boolean |
+| `fnosDomain` | string |
 | `group` | string |
 | `issuedProfile` | string |
 | `issuerPem` | string |

@@ -2869,6 +2869,9 @@
           "enable": {
             "type": "boolean"
           },
+          "fnosDomain": {
+            "type": "string"
+          },
           "group": {
             "type": "string"
           },
@@ -40195,6 +40198,57 @@
           }
         ],
         "summary": "選択できるデプロイ先を一覧表示",
+        "tags": [
+          "SSL 証明書"
+        ],
+        "x-required-scope": "ssl:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/ssl/fnos-certs": {
+      "get": {
+        "description": "fnOS に登録されたシステム証明書（`/usr/trim/etc/network_cert_all.conf`）を読み取り、証明書ソース `fnos` の選択に使います。fnOS でない場合やコンテナにファイルがマウントされていない場合 `available` は false。`certs` の各項目は `domain`、`san`、`notAfter`（有効期限）、`used`（fnOS 自身が使用中）を含み、ファイルパスは返しません。ファイルを解析できない場合は `error` に理由が入ります。\n\n必要な権限: `ssl:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "fnOS のシステム証明書を一覧表示",
         "tags": [
           "SSL 証明書"
         ],

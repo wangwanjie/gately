@@ -368,6 +368,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | GET | `/api/ssl/certs/{key}/download` | `ssl:write` | Download certificate and private key |
 | POST | `/api/ssl/certs/{key}/deploy` | `ssl:write` | Deploy a certificate now |
 | GET | `/api/ssl/deploy-targets` | `ssl:read` | List available deployment targets |
+| GET | `/api/ssl/fnos-certs` | `ssl:read` | List fnOS system certificates |
 | GET | `/api/ssl/providers` | `ssl:read` | List supported DNS validation providers |
 | GET | `/api/ssl/settings` | `ssl:read` | Read certificate global settings |
 | PUT | `/api/ssl/settings` | `ssl:write` | Save certificate global settings |
@@ -2218,6 +2219,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `certPem` | string |
 | `deploys` | Array of `ssl.Deploy` |
 | `enable` | boolean |
+| `fnosDomain` | string |
 | `group` | string |
 | `issuedProfile` | string |
 | `issuerPem` | string |

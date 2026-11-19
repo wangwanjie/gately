@@ -368,6 +368,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | GET | `/api/ssl/certs/{key}/download` | `ssl:write` | Descargar certificado y clave privada |
 | POST | `/api/ssl/certs/{key}/deploy` | `ssl:write` | Desplegar un certificado ahora |
 | GET | `/api/ssl/deploy-targets` | `ssl:read` | Listar destinos de despliegue disponibles |
+| GET | `/api/ssl/fnos-certs` | `ssl:read` | Listar certificados del sistema fnOS |
 | GET | `/api/ssl/providers` | `ssl:read` | Listar los proveedores compatibles con validación DNS |
 | GET | `/api/ssl/settings` | `ssl:read` | Leer los ajustes globales de certificados |
 | PUT | `/api/ssl/settings` | `ssl:write` | Guardar los ajustes globales de certificados |
@@ -2218,6 +2219,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `certPem` | string |
 | `deploys` | Lista de `ssl.Deploy` |
 | `enable` | boolean |
+| `fnosDomain` | string |
 | `group` | string |
 | `issuedProfile` | string |
 | `issuerPem` | string |

@@ -23,6 +23,8 @@ const (
 	SourceACME   = "acme"
 	SourceUpload = "upload"
 	SourceFile   = "file"
+	// SourceFnOS 读取飞牛 fnOS 系统证书（按域名查找当前文件，跟随系统续期）
+	SourceFnOS = "fnos"
 )
 
 // 预置 CA，自定义时使用 DirectoryURL
@@ -112,6 +114,8 @@ type Cert struct {
 	// CertFile / KeyFile 为文件来源的路径，定期重新读取
 	CertFile string `json:"certFile"`
 	KeyFile  string `json:"keyFile"`
+	// FnOSDomain 为飞牛系统证书来源的证书域名（飞牛证书列表中的域名）
+	FnOSDomain string `json:"fnosDomain,omitempty"`
 
 	// 证书内容（PEM）。CertPEM 为包含中间证书的完整链
 	CertPEM   string `json:"certPem"`
@@ -228,6 +232,11 @@ func (c *Cert) Validate(settings Settings) error {
 	case SourceFile:
 		if !filepath.IsAbs(c.CertFile) || !filepath.IsAbs(c.KeyFile) {
 			return errors.New("证书与私钥路径需为绝对路径")
+		}
+	case SourceFnOS:
+		c.FnOSDomain = strings.TrimSpace(c.FnOSDomain)
+		if c.FnOSDomain == "" {
+			return errors.New("请选择飞牛系统证书")
 		}
 	default:
 		return fmt.Errorf("未知的证书来源 %q", c.Source)

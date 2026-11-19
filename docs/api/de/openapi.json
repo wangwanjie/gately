@@ -2869,6 +2869,9 @@
           "enable": {
             "type": "boolean"
           },
+          "fnosDomain": {
+            "type": "string"
+          },
           "group": {
             "type": "string"
           },
@@ -40195,6 +40198,57 @@
           }
         ],
         "summary": "Verfügbare Bereitstellungsziele auflisten",
+        "tags": [
+          "SSL-Zertifikate"
+        ],
+        "x-required-scope": "ssl:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/ssl/fnos-certs": {
+      "get": {
+        "description": "Liest die von fnOS registrierten Systemzertifikate (`/usr/trim/etc/network_cert_all.conf`) für die Zertifikatsquelle `fnos`. `available` ist false, wenn es kein fnOS ist oder die Datei nicht in den Container eingebunden ist; jeder Eintrag in `certs` enthält `domain`, `san`, `notAfter` (Ablauf) und `used` (von fnOS selbst verwendet); Dateipfade werden nicht zurückgegeben. `error` nennt den Grund, wenn die Datei nicht gelesen werden kann.\n\nErforderliche Berechtigung: `ssl:read`.",
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "fnOS-Systemzertifikate auflisten",
         "tags": [
           "SSL-Zertifikate"
         ],

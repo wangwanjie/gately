@@ -368,6 +368,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/ssl/certs/{key}/download` | `ssl:write` | 証明書と秘密鍵をダウンロード |
 | POST | `/api/ssl/certs/{key}/deploy` | `ssl:write` | 証明書を今すぐデプロイ |
 | GET | `/api/ssl/deploy-targets` | `ssl:read` | 選択できるデプロイ先を一覧表示 |
+| GET | `/api/ssl/fnos-certs` | `ssl:read` | fnOS のシステム証明書を一覧表示 |
 | GET | `/api/ssl/providers` | `ssl:read` | 対応する DNS 検証プロバイダーを一覧表示 |
 | GET | `/api/ssl/settings` | `ssl:read` | 証明書のグローバル設定を読み取り |
 | PUT | `/api/ssl/settings` | `ssl:write` | 証明書のグローバル設定を保存 |
@@ -2218,6 +2219,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `certPem` | string |
 | `deploys` | 配列 of `ssl.Deploy` |
 | `enable` | boolean |
+| `fnosDomain` | string |
 | `group` | string |
 | `issuedProfile` | string |
 | `issuerPem` | string |

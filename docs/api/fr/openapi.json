@@ -2869,6 +2869,9 @@
           "enable": {
             "type": "boolean"
           },
+          "fnosDomain": {
+            "type": "string"
+          },
           "group": {
             "type": "string"
           },
@@ -40195,6 +40198,57 @@
           }
         ],
         "summary": "Lister les cibles de déploiement disponibles",
+        "tags": [
+          "Certificat SSL"
+        ],
+        "x-required-scope": "ssl:read",
+        "x-token-allowed": true
+      }
+    },
+    "/api/ssl/fnos-certs": {
+      "get": {
+        "description": "Lit les certificats système enregistrés par fnOS (`/usr/trim/etc/network_cert_all.conf`) pour la source de certificat `fnos`. `available` vaut false si ce n’est pas fnOS ou si le fichier n’est pas monté dans le conteneur ; chaque élément de `certs` contient `domain`, `san`, `notAfter` (expiration) et `used` (utilisé par fnOS) ; les chemins de fichier ne sont pas renvoyés. `error` donne la raison si le fichier ne peut pas être analysé.\n\nPermission requise : `ssl:read`.",
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Lister les certificats système de fnOS",
         "tags": [
           "Certificat SSL"
         ],

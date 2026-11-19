@@ -116,6 +116,7 @@ var apiCatalog = map[string]epDoc{
 	"POST /api/webservice/import/nginx":                  {Summary: "导入 nginx 配置", Desc: "请求体 `{config, apply, enable}`。`config` 为 nginx 配置文本，推荐 `nginx -T` 的完整输出；`apply` 为 false 时只返回转换预览。站点按监听端口合并到已有监听或新建监听，已存在的域名会跳过；`enable` 为 false 时导入为停用状态。", Body: true},
 	"POST /api/webservice/iplists/{key}/refresh":         {Summary: "立即刷新订阅 IP 列表", Desc: "忽略刷新间隔与失败退避，同步下载并返回列表状态；内容无法识别时保留原列表。"},
 	"GET /api/ssl/deploy-targets":                        {Summary: "列出可选的部署目标", Desc: "返回 Web 终端中的 SSH 连接（`trusted` 表示已记录主机密钥）与本机 Docker 容器名称。"},
+	"GET /api/ssl/fnos-certs":                            {Summary: "列出飞牛系统证书", Desc: "读取飞牛 fnOS 登记的系统证书（`/usr/trim/etc/network_cert_all.conf`），供证书来源 `fnos` 选择。`available` 为 false 表示不是飞牛系统或容器未挂载该文件；`certs` 每项含 `domain`、`san`、`notAfter`（到期时间）与 `used`（飞牛自身正在使用），不返回文件路径；登记文件无法解析时 `error` 为原因。"},
 	"GET /api/ssl/providers":                             {Summary: "列出支持的 DNS 验证服务商"},
 	"GET /api/ssl/settings":                              {Summary: "读取证书全局设置"},
 	"PUT /api/ssl/settings":                              {Summary: "保存证书全局设置", Body: true},
