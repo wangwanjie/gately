@@ -123,6 +123,8 @@ Algumas alterações só funcionam juntas, por exemplo mudar para 18081 a porta 
 3. Ao terminar, clique em "Aplicar tudo" no banner: as alterações em espera são aplicadas de uma vez na ordem em que foram salvas e confirmadas por uma nova conexão como um salvamento individual; se não for possível confirmar, todo o lote volta à configuração de antes do início;
 4. Para desistir, clique em "Descartar alterações": o Gately restaura a configuração de antes do lote e reinicia.
 
+Antes de "Aplicar tudo", o Gately verifica se os endereços de escuta das regras e listeners em espera podem ser usados nesta máquina e, se não puderem, lista-os com o motivo do sistema para você decidir; o aviso antes de salvar também aponta um novo endereço de escuta inutilizável. Se a alteração não puder ser confirmada ou tiver sido revertida, a caixa de diálogo e o aviso de reversão listam os erros informados pelos módulos nesse meio-tempo, como um listener que não inicia. Observe que o macOS só configura 127.0.0.1 por padrão; para usar 127.0.0.2 ou outro endereço de loopback, execute antes `sudo ifconfig lo0 alias 127.0.0.2`. No Linux toda a faixa 127.0.0.0/8 funciona diretamente.
+
 As configurações globais não fazem parte do lote e continuam valendo na hora. Se o Gately reiniciar durante um lote, ele inicia com a configuração nova e aguarda a confirmação como em um salvamento individual. A API é `POST /api/system/changeset/begin`, `/apply` e `/discard`.
 
 ### Reversão pela linha de comando {#rollback-cli}

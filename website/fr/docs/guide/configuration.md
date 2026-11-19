@@ -123,6 +123,8 @@ Certaines modifications ne fonctionnent qu’ensemble, par exemple passer à 180
 3. Une fois terminé, cliquez sur « Tout appliquer » dans le bandeau : les modifications en attente s’appliquent d’un coup dans l’ordre d’enregistrement, puis sont confirmées via une nouvelle connexion comme un enregistrement isolé ; sans confirmation, toute la série revient à la configuration d’avant son démarrage ;
 4. Pour y renoncer, cliquez sur « Abandonner » : Gately restaure la configuration d’avant la série et redémarre.
 
+Avant « Tout appliquer », Gately vérifie que les adresses d’écoute des règles et écouteurs en attente sont utilisables sur cette machine et, sinon, les liste avec la raison donnée par le système pour que vous décidiez ; l’avertissement avant enregistrement signale lui aussi une nouvelle adresse d’écoute inutilisable. Si la modification ne peut pas être confirmée ou a été annulée, la boîte de dialogue et l’avis de retour en arrière listent les erreurs signalées par les modules entre-temps, par exemple un écouteur qui ne démarre pas. Notez que macOS ne configure que 127.0.0.1 par défaut ; pour utiliser 127.0.0.2 ou une autre adresse de bouclage, lancez d’abord `sudo ifconfig lo0 alias 127.0.0.2`. Sous Linux, toute la plage 127.0.0.0/8 fonctionne telle quelle.
+
 Les paramètres globaux ne font pas partie des séries et s’appliquent toujours immédiatement. Si Gately redémarre pendant une série, il démarre avec la nouvelle configuration et attend la confirmation comme pour un enregistrement isolé. L’API est `POST /api/system/changeset/begin`, `/apply` et `/discard`.
 
 ### Retour en arrière en ligne de commande {#rollback-cli}
