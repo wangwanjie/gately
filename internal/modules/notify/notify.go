@@ -515,7 +515,28 @@ func (m *Module) process(e events.Event, async bool) {
 func (m *Module) sendOnce(ch Channel, msg Message) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 45*time.Second)
 	defer cancel()
-	return m.sender(ctx, ch, msg)
+	return redactSecretErr(ch, m.sender(ctx, ch, msg))
+}
+
+// redactSecretErr 把错误信息中的渠道密钥替换为 ***。Telegram Bot Token、Bark 设备 Key、Server酱 SendKey 等
+// 放在请求地址里，连接失败时 *url.Error 会带出完整地址；错误信息会进入模块日志、投递记录、待补推队列
+// （GET /pending 与 notify/pending.json），只读账号与只有读权限的令牌也能看到。
+func redactSecretErr(ch Channel, err error) error {
+	if err == nil || ch.Secret == "" {
+		return err
+	}
+	text := err.Error()
+	out := text
+	// 地址中的密钥可能经过路径或查询参数转义
+	for _, s := range []string{ch.Secret, url.PathEscape(ch.Secret), url.QueryEscape(ch.Secret)} {
+		if s != "" {
+			out = strings.ReplaceAll(out, s, "***")
+		}
+	}
+	if out == text {
+		return err
+	}
+	return errors.New(out)
 }
 
 // deliver 投递一条消息：失败时按设置重试，重试用尽仍失败则排队等渠道恢复后补推。
