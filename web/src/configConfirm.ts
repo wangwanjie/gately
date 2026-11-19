@@ -173,6 +173,14 @@ function scheduleCheck(deadline: number) {
 
 // handleResult 处理一次确认的结果，返回是否结束等待
 function handleResult(status: string): boolean {
+  // 弹窗已出现（确认不了或打开页面时发现待确认的变更）后再得到“没有待确认的变更”：变更已不在了，
+  // 通常是服务端到时回滚并重启后访问恢复，也可能在别的页面确认了。不能当作确认成功，刷新页面看结果（回滚时会提示原因）
+  if (status === 'none' && (confirmState.phase === 'failed' || confirmState.phase === 'found')) {
+    confirmState.phase = 'rollingBack'
+    sessionStorage.setItem(WATCH_KEY, '1')
+    location.reload()
+    return true
+  }
   switch (status) {
     case 'confirmed':
     case 'none':
