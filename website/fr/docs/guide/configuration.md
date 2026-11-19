@@ -30,6 +30,8 @@ Toute la configuration réside dans le dossier de configuration, avec un fichier
 `ssl.json` contient les clés privées des certificats. Avant de le valider dans un gestionnaire de versions, assurez-vous que le dépôt est privé, ou ajoutez le fichier à votre liste d'exclusion.
 :::
 
+**Paramètres → Réseau et exécution → Utilisation du stockage** affiche la capacité de la partition contenant le répertoire de configuration, la taille totale du répertoire de configuration et l'utilisation par usage : journaux d'exécution, audit des visiteurs, journal d'audit des opérations, historique de configuration, sauvegardes de configuration, données de protection, données de réseau overlay, listes d'IP, certificats, base GeoIP, programmes gérés (`bin/`), fichiers de configuration et autres, pour savoir ce qui remplit le disque. Seules les tailles sont comptées et les liens symboliques ne sont pas suivis ; un **Répertoire des journaux** situé hors du répertoire de configuration est listé à part et n'est pas compté dans sa taille. Le comptage a lieu à l'ouverture de l'onglet ; cliquez sur **Actualiser** pour recompter.
+
 ## Configuration déclarative
 
 Avec `-apply <dossier>`, chaque démarrage copie les fichiers `<nom>.json` de ce dossier par-dessus le dossier de configuration ; les fichiers au contenu identique ne sont pas réécrits. C'est pratique pour distribuer la configuration depuis un dépôt git, un ConfigMap Kubernetes ou un script de déploiement.

@@ -30,6 +30,8 @@ Die gesamte Konfiguration liegt im Konfigurationsverzeichnis, mit einer einfache
 `ssl.json` enthält private Zertifikatsschlüssel. Stellen Sie vor dem Einchecken in die Versionsverwaltung sicher, dass das Repository privat ist, oder nehmen Sie die Datei in Ihre Ignore-Liste auf.
 :::
 
+**Einstellungen → Netzwerk & Laufzeit → Speicherbelegung** zeigt die Kapazität der Partition mit dem Konfigurationsverzeichnis, die Gesamtgröße des Konfigurationsverzeichnisses und die Belegung nach Zweck: Laufzeitprotokolle, Besucher-Audit, Audit-Protokoll der Vorgänge, Konfigurationsverlauf, Konfigurationssicherungen, Schutzdaten, Overlay-Netzwerkdaten, IP-Listen, Zertifikate, GeoIP-Datenbank, verwaltete Programme (`bin/`), Konfigurationsdateien und Sonstiges, damit Sie sehen, was den Datenträger füllt. Es werden nur Größen gezählt, symbolischen Links wird nicht gefolgt; ein **Protokollverzeichnis** außerhalb des Konfigurationsverzeichnisses wird separat aufgeführt und nicht zu dessen Größe gezählt. Gezählt wird beim Öffnen des Tabs; **Aktualisieren** zählt erneut.
+
 ## Deklarative Konfiguration
 
 Mit `-apply <Verzeichnis>` kopiert Gately bei jedem Start die Dateien `<Name>.json` aus diesem Verzeichnis in das Konfigurationsverzeichnis; Dateien mit identischem Inhalt werden nicht neu geschrieben. So lässt sich die Konfiguration zentral aus einem Git-Repository, einer Kubernetes-ConfigMap oder einem Deployment-Skript ausrollen.

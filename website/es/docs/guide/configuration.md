@@ -30,6 +30,8 @@ Toda la configuración vive en el directorio de configuración, con un archivo d
 `ssl.json` contiene claves privadas de certificados. Antes de subirlo al control de versiones, asegúrate de que el repositorio sea privado o añade el archivo a tu lista de ignorados.
 :::
 
+**Ajustes → Red y ejecución → Uso de almacenamiento** muestra la capacidad de la partición que contiene el directorio de configuración, el tamaño total del directorio de configuración y el uso por finalidad: registros de ejecución, auditoría de visitantes, registro de auditoría de operaciones, historial de configuración, copias de configuración, datos de protección, datos de red superpuesta, listas de IP, certificados, base de datos GeoIP, programas gestionados (`bin/`), archivos de configuración y otros, para saber qué está llenando el disco. Solo se cuentan tamaños y no se siguen enlaces simbólicos; un **Directorio de registros** fuera del directorio de configuración se lista aparte y no cuenta en su tamaño. Se cuenta al abrir la pestaña; pulse **Actualizar** para volver a contar.
+
 ## Configuración declarativa
 
 Con `-apply <directorio>`, en cada arranque los archivos `<nombre>.json` de ese directorio se copian sobre el directorio de configuración; los archivos con contenido idéntico no se reescriben. Es útil para distribuir la configuración desde un repositorio git, un ConfigMap de Kubernetes o un script de despliegue.

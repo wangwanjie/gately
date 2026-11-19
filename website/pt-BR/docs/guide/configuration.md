@@ -30,6 +30,8 @@ Toda a configuração fica no diretório de configuração, com um arquivo de te
 O `ssl.json` contém chaves privadas de certificados. Antes de versioná-lo, confirme que o repositório é privado ou adicione o arquivo à lista de ignorados.
 :::
 
+**Configurações → Rede e execução → Uso de armazenamento** mostra a capacidade da partição que contém o diretório de configuração, o tamanho total do diretório de configuração e o uso por finalidade: logs de execução, auditoria de visitantes, log de auditoria de operações, histórico de configuração, backups de configuração, dados de proteção, dados de rede overlay, listas de IP, certificados, banco GeoIP, programas gerenciados (`bin/`), arquivos de configuração e outros, para saber o que está enchendo o disco. Só tamanhos são contados e links simbólicos não são seguidos; um **Diretório de logs** fora do diretório de configuração aparece à parte e não conta no tamanho dele. A contagem é feita ao abrir a aba; clique em **Atualizar** para contar de novo.
+
 ## Configuração declarativa
 
 Com `-apply <diretório>`, a cada inicialização os arquivos `<nome>.json` desse diretório são copiados por cima dos do diretório de configuração; arquivos com conteúdo idêntico não são reescritos. Isso é útil para distribuir a configuração de forma centralizada a partir de um repositório git, de um ConfigMap do Kubernetes ou de scripts de implantação.
