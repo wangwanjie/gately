@@ -99,6 +99,10 @@ func (m *Module) refreshTrap() {
 // userTrapPortsLocked 计算用户态诱饵要监听的端口：配置的诱饵端口去掉正在监听（含宽限，不含诱饵自己的监听）
 // 与模块登记的端口，最多 maxUserTrapPorts 个。调用方需持有 m.mu。
 func (m *Module) userTrapPortsLocked(s Settings) []int {
+	if !openports.Ready() {
+		// Gately 正在启动模块，端口登记还不完整（见 openports.BeginStartup）
+		return nil
+	}
 	ranges, _ := parsePorts(s.Trap.Ports)
 	extra, _ := openports.All()
 	rest, _ := subtractPortsFunc(ranges, protectedPorts(m.fw.trapListening(), extra))

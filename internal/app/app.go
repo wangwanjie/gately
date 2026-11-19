@@ -517,6 +517,9 @@ func (a *App) run(parent context.Context) error {
 	// 有防火墙时内核诱饵规则则会拦下访问管理界面的连接
 	openports.SetPorts(adminPortsOwner, adminPorts(a.settingsSnapshot()))
 	defer openports.Clear(adminPortsOwner)
+	// 模块启动期间不启用诱饵端口：各模块此时陆续登记端口，入侵防护等全部启动后再按完整的登记计算
+	openports.BeginStartup()
+	defer openports.EndStartup()
 	var disabled []string
 	for _, e := range a.modules {
 		if !e.enabled {
@@ -532,6 +535,7 @@ func (a *App) run(parent context.Context) error {
 			e.logs.Add(logbuf.LevelError, "", "模块启动失败: "+err.Error())
 		}
 	}
+	openports.EndStartup()
 	if len(disabled) > 0 {
 		a.sysLogs.Add(logbuf.LevelInfo, "", "以下功能模块已关闭，未启动："+strings.Join(disabled, "、"))
 	}

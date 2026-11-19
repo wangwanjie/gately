@@ -196,3 +196,34 @@ func TestHoldHostPort(t *testing.T) {
 		}
 	}
 }
+
+// 启动期间 Ready 为 false；EndStartup 恢复并发出变化通知，重复调用不再通知
+func TestStartupGate(t *testing.T) {
+	if !Ready() {
+		t.Fatal("没有调用 BeginStartup 时应为就绪")
+	}
+	BeginStartup()
+	if Ready() {
+		t.Fatal("启动期间不应就绪")
+	}
+	// 清掉之前的通知，只看 EndStartup 发出的
+	select {
+	case <-Notify():
+	default:
+	}
+	EndStartup()
+	if !Ready() {
+		t.Fatal("EndStartup 之后应就绪")
+	}
+	select {
+	case <-Notify():
+	default:
+		t.Fatal("EndStartup 应发出变化通知")
+	}
+	EndStartup()
+	select {
+	case <-Notify():
+		t.Fatal("重复的 EndStartup 不应再通知")
+	default:
+	}
+}

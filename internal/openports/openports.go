@@ -9,6 +9,7 @@ import (
 	"sort"
 	"strings"
 	"sync"
+	"sync/atomic"
 )
 
 // Range 是一段端口范围，Lo 与 Hi 均包含。
@@ -32,6 +33,28 @@ var (
 	// wake 在登记内容变化时收到一个信号（容量为 1，多次变化合并为一次），入侵防护据此立即刷新开放端口集合
 	wake = make(chan struct{}, 1)
 )
+
+// starting 为 true 表示 Gately 正在启动模块：各模块还没登记各自的端口，见 BeginStartup
+var starting atomic.Bool
+
+// BeginStartup 在启动各模块之前调用：入侵防护启动得比其他模块早，那时 frps、EasyTier、FTP 等还没登记端口，
+// 按不完整的登记计算出的诱饵端口可能包含它们，用户态诱饵会抢先占住端口让模块启动失败，内核诱饵会把重连的客户端当成扫描封禁。
+// 启动期间（Ready 为 false）入侵防护不启用诱饵端口，EndStartup 之后按完整的登记计算。
+func BeginStartup() {
+	starting.Store(true)
+}
+
+// EndStartup 在各模块启动之后调用，并通知入侵防护重新计算（见 Notify）。
+func EndStartup() {
+	if starting.Swap(false) {
+		signal()
+	}
+}
+
+// Ready 表示各模块的端口已登记完毕，可以据此启用诱饵端口。没有调用 BeginStartup 时（例如测试）始终为 true。
+func Ready() bool {
+	return !starting.Load()
+}
 
 // Notify 返回登记内容变化的通知通道。多次变化合并为一个信号，使用方收到后重新读取 All。
 func Notify() <-chan struct{} {
