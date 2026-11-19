@@ -1,0 +1,34 @@
+{
+  "missing": " (deleted)",
+  "defaultSite": "Default site",
+  "hop": {
+    "client": "Visitor {addr}",
+    "local": "This machine {addr}",
+    "gateway": "fnOS gateway",
+    "portforward": "Port forwarding \"{name}\"",
+    "protoroute": "Protocol routing \"{name}\"",
+    "route": " › route \"{route}\"",
+    "webservice": "Web service \"{name}\"",
+    "site": " › site \"{site}\"",
+    "admin": "Admin UI {listen}",
+    "adminHttps": "Admin UI {listen} (HTTPS)"
+  },
+  "risk": {
+    "edit": "Changes forwarding settings of {hop}",
+    "delete": "Deletes {hop}",
+    "disable": "Disables {hop}",
+    "moduleOff": "Turns off {module}, which stops {hop}",
+    "siteMove": "Moves {hop} to another listener",
+    "adminListen": "Changes the admin UI listen address you are using (after a restart)",
+    "lanOnly": "Turns on \"LAN access only\" while you are connecting from outside the LAN",
+    "forceHTTPS": "Turns on Force HTTPS while you are on HTTP; the HTTPS address it redirects to may not be reachable through your current path"
+  },
+  "dialogTitle": "This change affects how you are connected",
+  "current": "Current access path:",
+  "noteConfirm": "If you save anyway, the admin UI checks over a new connection that it can still reach Gately; if that can't be confirmed within {seconds} seconds, the previous configuration is restored automatically.",
+  "noteNoConfirm": "Confirm after saving is off: if you lose access after saving, the only way back is gately rollback on the server.",
+  "continue": "Save anyway",
+  "cancelled": "Save canceled",
+  "cardTitle": "Current access path",
+  "cardHelp": "The Gately forwarding your connection to this admin UI passes through. You are warned before saving changes to these rules, listeners or sites; outer programs on this machine such as frp or Cloudflare Tunnel show as \"This machine\"."
+}

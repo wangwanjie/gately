@@ -1,0 +1,34 @@
+{
+  "missing": " (gelöscht)",
+  "defaultSite": "Standard-Site",
+  "hop": {
+    "client": "Besucher {addr}",
+    "local": "Dieser Rechner {addr}",
+    "gateway": "fnOS-Gateway",
+    "portforward": "Portweiterleitung „{name}“",
+    "protoroute": "Protokoll-Routing „{name}“",
+    "route": " › Route „{route}“",
+    "webservice": "Webdienst „{name}“",
+    "site": " › Site „{site}“",
+    "admin": "Verwaltungsoberfläche {listen}",
+    "adminHttps": "Verwaltungsoberfläche {listen} (HTTPS)"
+  },
+  "risk": {
+    "edit": "Ändert Weiterleitungseinstellungen von {hop}",
+    "delete": "Löscht {hop}",
+    "disable": "Deaktiviert {hop}",
+    "moduleOff": "Schaltet {module} ab und stoppt damit {hop}",
+    "siteMove": "Verschiebt {hop} in einen anderen Listener",
+    "adminListen": "Ändert die Listen-Adresse der Oberfläche, die Sie gerade nutzen (nach einem Neustart)",
+    "lanOnly": "Aktiviert „nur LAN“, während Sie von außerhalb verbunden sind",
+    "forceHTTPS": "Aktiviert „HTTPS erzwingen“, während Sie HTTP nutzen; die HTTPS-Adresse der Umleitung ist über Ihren aktuellen Weg eventuell nicht erreichbar"
+  },
+  "dialogTitle": "Diese Änderung betrifft Ihren Zugriffsweg",
+  "current": "Aktueller Zugriffsweg:",
+  "noteConfirm": "Speichern Sie trotzdem, prüft die Oberfläche über eine neue Verbindung, ob Gately erreichbar bleibt; ohne Bestätigung innerhalb von {seconds} Sekunden wird die vorherige Konfiguration wiederhergestellt.",
+  "noteNoConfirm": "„Nach dem Speichern bestätigen“ ist aus: Verlieren Sie nach dem Speichern den Zugriff, hilft nur gately rollback auf dem Server.",
+  "continue": "Trotzdem speichern",
+  "cancelled": "Speichern abgebrochen",
+  "cardTitle": "Aktueller Zugriffsweg",
+  "cardHelp": "Die Gately-Weiterleitungen, über die Ihre Verbindung zu dieser Oberfläche läuft. Vor dem Speichern von Änderungen an diesen Regeln, Listenern oder Sites werden Sie gewarnt; äußere Programme auf diesem Rechner wie frp oder Cloudflare Tunnel erscheinen als „Dieser Rechner“."
+}

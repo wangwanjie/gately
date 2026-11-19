@@ -51,13 +51,18 @@ function pathOf(url: string): string {
   return url.split('?')[0]
 }
 
-// confirmHeaderFor 判断请求是否需要带确认请求头：三个模块的写请求、保存全局设置与重启
-export function confirmHeaderFor(method: string, url: string): boolean {
-  if (method === 'GET' || method === 'HEAD' || !confirmState.enabled) {
+// isProtectedWrite 判断写请求是否可能影响访问路径：三个模块的写请求、保存全局设置与重启
+export function isProtectedWrite(method: string, url: string): boolean {
+  if (method === 'GET' || method === 'HEAD') {
     return false
   }
   const p = pathOf(url)
   return CONFIRM_MODULES.test(p) || (method === 'PUT' && p === '/api/system/settings') || (method === 'POST' && p === '/api/system/restart')
+}
+
+// confirmHeaderFor 判断请求是否需要带确认请求头：受保护的写请求，且确认未关闭
+export function confirmHeaderFor(method: string, url: string): boolean {
+  return confirmState.enabled && isProtectedWrite(method, url)
 }
 
 // afterConfirmWrite 在带确认请求头的请求结束后调用：ok 为收到响应（含校验失败），network 为连接中断或代理返回 502~504。

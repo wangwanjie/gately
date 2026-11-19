@@ -1,0 +1,34 @@
+{
+  "missing": " (excluído)",
+  "defaultSite": "Site padrão",
+  "hop": {
+    "client": "Visitante {addr}",
+    "local": "Esta máquina {addr}",
+    "gateway": "Gateway do fnOS",
+    "portforward": "Encaminhamento de portas \"{name}\"",
+    "protoroute": "Roteamento por protocolo \"{name}\"",
+    "route": " › rota \"{route}\"",
+    "webservice": "Serviço web \"{name}\"",
+    "site": " › site \"{site}\"",
+    "admin": "Interface de administração {listen}",
+    "adminHttps": "Interface de administração {listen} (HTTPS)"
+  },
+  "risk": {
+    "edit": "Altera configurações de encaminhamento de {hop}",
+    "delete": "Exclui {hop}",
+    "disable": "Desativa {hop}",
+    "moduleOff": "Desliga {module}, o que interrompe {hop}",
+    "siteMove": "Move {hop} para outro listener",
+    "adminListen": "Altera o endereço de escuta da interface que você está usando (após reiniciar)",
+    "lanOnly": "Ativa o acesso somente pela LAN enquanto você se conecta de fora",
+    "forceHTTPS": "Ativa Forçar HTTPS enquanto você usa HTTP; o endereço HTTPS do redirecionamento pode não ser alcançável pelo seu caminho atual"
+  },
+  "dialogTitle": "Esta alteração afeta o seu caminho de acesso",
+  "current": "Caminho de acesso atual:",
+  "noteConfirm": "Se salvar mesmo assim, a interface verificará por uma nova conexão se ainda alcança o Gately; sem confirmação em {seconds} segundos, a configuração anterior será restaurada.",
+  "noteNoConfirm": "Confirmar após salvar está desativado: se perder o acesso ao salvar, só será possível voltar com gately rollback no servidor.",
+  "continue": "Salvar mesmo assim",
+  "cancelled": "Salvamento cancelado",
+  "cardTitle": "Caminho de acesso atual",
+  "cardHelp": "Os encaminhamentos do Gately pelos quais passa sua conexão com esta interface. Você será avisado antes de salvar alterações nessas regras, listeners ou sites; programas externos desta máquina, como frp ou Cloudflare Tunnel, aparecem como \"Esta máquina\"."
+}

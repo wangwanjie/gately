@@ -1,0 +1,34 @@
+{
+  "missing": " (삭제됨)",
+  "defaultSite": "기본 사이트",
+  "hop": {
+    "client": "방문자 {addr}",
+    "local": "이 기기 {addr}",
+    "gateway": "fnOS 통합 게이트웨이",
+    "portforward": "포트 포워딩 \"{name}\"",
+    "protoroute": "프로토콜 라우팅 \"{name}\"",
+    "route": " › 라우트 \"{route}\"",
+    "webservice": "웹 서비스 \"{name}\"",
+    "site": " › 사이트 \"{site}\"",
+    "admin": "관리 화면 {listen}",
+    "adminHttps": "관리 화면 {listen} (HTTPS)"
+  },
+  "risk": {
+    "edit": "{hop}의 포워딩 관련 설정을 변경합니다",
+    "delete": "{hop}을(를) 삭제합니다",
+    "disable": "{hop}을(를) 끕니다",
+    "moduleOff": "\"{module}\" 기능을 꺼서 {hop}도 멈춥니다",
+    "siteMove": "{hop}을(를) 다른 수신으로 옮깁니다",
+    "adminListen": "사용 중인 관리 화면 수신 주소를 변경합니다(재시작 후 적용)",
+    "lanOnly": "내부망 전용 접근을 켜지만 지금은 외부에서 접속 중입니다",
+    "forceHTTPS": "HTTPS 강제를 켜지만 지금은 HTTP로 접속 중입니다. 리디렉션되는 HTTPS 주소에 현재 경로로 접속하지 못할 수 있습니다"
+  },
+  "dialogTitle": "이 변경은 현재 접속 경로에 영향을 줍니다",
+  "current": "현재 접속 경로:",
+  "noteConfirm": "그래도 저장하면 저장 후 새 연결로 접속 가능 여부를 확인하며, {seconds}초 안에 확인되지 않으면 변경 전 설정으로 자동 롤백합니다.",
+  "noteNoConfirm": "\"저장 후 확인\"이 꺼져 있습니다. 저장 후 연결이 끊기면 서버에서 gately rollback으로만 복구할 수 있습니다.",
+  "continue": "그래도 저장",
+  "cancelled": "저장을 취소했습니다",
+  "cardTitle": "현재 접속 경로",
+  "cardHelp": "지금 이 관리 화면에 접속할 때 거치는 Gately 포워딩입니다. 여기에 포함된 규칙, 수신, 사이트를 변경하면 저장 전에 알려 줍니다. 바깥쪽의 frp, Cloudflare 터널 등 이 기기의 프로그램은 \"이 기기\"로 표시됩니다."
+}

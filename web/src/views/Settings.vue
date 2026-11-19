@@ -200,6 +200,17 @@
       <!-- ============ 访问控制 ============ -->
       <el-tab-pane name="access">
         <template #label><span class="tab-label"><ShieldCheck :size="15" />{{ t('settings.tabs.access') }}</span></template>
+        <!-- 当前访问路径：修改其中经过的转发、监听或站点时，保存前会提醒 -->
+        <div v-if="accessPath" class="g-card" data-test="access-path-card">
+          <div class="g-card-head">
+            <div class="g-card-title"><Route :size="16" />{{ t('accessPath.cardTitle') }}</div>
+            <el-button text size="small" :icon="RefreshCw" @click="loadAccessPath">{{ t('common.refresh') }}</el-button>
+          </div>
+          <div class="g-card-body">
+            <AccessPathChain :path="accessPath" />
+            <div class="form-help">{{ t('accessPath.cardHelp') }}</div>
+          </div>
+        </div>
         <div v-if="form" class="g-card">
           <div class="g-card-head">
             <div class="g-card-title"><Network :size="16" />{{ t('settings.listen.title') }}</div>
@@ -597,7 +608,9 @@ import {
   LockKeyhole,
   LogOut,
   Network,
+  RefreshCw,
   RotateCw,
+  Route,
   Settings2,
   ShieldCheck,
   Smartphone,
@@ -626,6 +639,8 @@ import { useFormLayout } from '../composables/useIsMobile'
 import { locales } from '../i18n/locales'
 import { moduleEnabled, navByModule, navGroups } from '../nav'
 import { confirmState } from '../configConfirm'
+import AccessPathChain from '../components/AccessPathChain.vue'
+import type { AccessPath } from '../accessPath'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -1403,7 +1418,18 @@ async function confirmRestart() {
   }
 }
 
+// 当前访问路径：读取失败（例如只读账号）时不显示
+const accessPath = ref<AccessPath>()
+async function loadAccessPath() {
+  try {
+    accessPath.value = await api.get<AccessPath>('/api/system/access-path')
+  } catch {
+    accessPath.value = undefined
+  }
+}
+
 onMounted(async () => {
+  loadAccessPath()
   loadTOTP()
   loadInfo()
   loadSettings()

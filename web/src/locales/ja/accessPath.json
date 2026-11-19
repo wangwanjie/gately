@@ -1,0 +1,34 @@
+{
+  "missing": "（削除済み）",
+  "defaultSite": "既定のサイト",
+  "hop": {
+    "client": "訪問者 {addr}",
+    "local": "このマシン {addr}",
+    "gateway": "fnOS 統合ゲートウェイ",
+    "portforward": "ポート転送「{name}」",
+    "protoroute": "プロトコル振り分け「{name}」",
+    "route": " › ルート「{route}」",
+    "webservice": "Web サービス「{name}」",
+    "site": " › サイト「{site}」",
+    "admin": "管理画面 {listen}",
+    "adminHttps": "管理画面 {listen}（HTTPS）"
+  },
+  "risk": {
+    "edit": "{hop}の転送に関わる設定を変更します",
+    "delete": "{hop}を削除します",
+    "disable": "{hop}を無効にします",
+    "moduleOff": "「{module}」をオフにし、{hop}も停止します",
+    "siteMove": "{hop}を別の待ち受けに移動します",
+    "adminListen": "使用中の管理画面の待ち受けアドレスを変更します（再起動後に有効）",
+    "lanOnly": "LAN からのアクセスのみ許可しますが、現在は外部からアクセスしています",
+    "forceHTTPS": "HTTPS を強制しますが、現在は HTTP でアクセスしています。リダイレクト先の HTTPS アドレスには現在の経路で届かない可能性があります"
+  },
+  "dialogTitle": "この変更は現在のアクセス経路に影響します",
+  "current": "現在のアクセス経路：",
+  "noteConfirm": "それでも保存すると、保存後に新しい接続でアクセスできるか確認します。{seconds} 秒以内に確認できなければ変更前の設定に自動で戻します。",
+  "noteNoConfirm": "「保存後の確認」はオフです。保存後に切断された場合、サーバーで gately rollback を実行して戻すしかありません。",
+  "continue": "それでも保存",
+  "cancelled": "保存を取り消しました",
+  "cardTitle": "現在のアクセス経路",
+  "cardHelp": "この管理画面へのアクセスが通っている Gately の転送です。ここに含まれるルール・待ち受け・サイトを変更すると、保存前に警告します。外側の frp や Cloudflare Tunnel など、このマシン上のプログラムは「このマシン」と表示されます。"
+}

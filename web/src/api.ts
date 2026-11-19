@@ -1,7 +1,8 @@
 // 管理 API 封装：会话通过 HttpOnly Cookie 维持，401 时跳转登录页。
 import router from './router'
 import { i18n, t } from './i18n'
-import { afterConfirmWrite, confirmHeaderFor } from './configConfirm'
+import { afterConfirmWrite, confirmHeaderFor, isProtectedWrite } from './configConfirm'
+import { askRisk, checkAccess } from './accessPath'
 
 export class ApiError extends Error {
   constructor(
@@ -22,8 +23,15 @@ async function request<T>(method: string, url: string, body?: unknown): Promise<
     ;(init.headers as Record<string, string>)['Content-Type'] = 'application/json'
     init.body = JSON.stringify(body)
   }
-  // 修改端口转发、协议分流、Web 服务与全局设置可能切断当前访问路径：带上确认请求头，保存后经新连接确认，
-  // 确认不了时服务端到时自动回滚（见 configConfirm.ts）
+  // 修改端口转发、协议分流、Web 服务与全局设置可能切断当前访问路径：保存前请服务端判断是否影响当前访问，
+  // 有影响时先让用户确认（见 accessPath.ts）；重启与上传文件不检查
+  if (isProtectedWrite(method, url) && !url.startsWith('/api/system/restart') && !(body instanceof FormData)) {
+    const check = await checkAccess(method, url, body)
+    if (check && check.risks.length > 0 && !(await askRisk(check))) {
+      throw new ApiError(t('accessPath.cancelled'), 0)
+    }
+  }
+  // 带上确认请求头，保存后经新连接确认，确认不了时服务端到时自动回滚（见 configConfirm.ts）
   const needConfirm = confirmHeaderFor(method, url)
   if (needConfirm) {
     ;(init.headers as Record<string, string>)['X-Gately-Confirm'] = '1'
