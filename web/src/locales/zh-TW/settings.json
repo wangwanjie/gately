@@ -203,11 +203,13 @@
       "history": "設定歷史",
       "backups": "設定備份",
       "guard": "防護資料",
+      "notify": "通知補推佇列",
       "network": "組網資料",
       "iplists": "IP 清單",
       "certs": "憑證",
       "geoip": "GeoIP 資料庫",
       "programs": "託管程式",
+      "filebrowser": "File Browser 資料",
       "config": "設定檔",
       "other": "其他"
     }
