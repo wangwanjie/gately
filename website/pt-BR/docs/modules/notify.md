@@ -11,6 +11,17 @@ A Central de notificações assina o barramento interno de eventos do Gately e, 
 
 Um único envio expira em 45 segundos.
 
+## Tentativas e reenvio {#retry}
+
+Envios podem falhar quando a rede está instável. A central de notificações tenta de novo automaticamente e reenvia quando o canal se recupera; os dois ajustes ficam em "Configurações de notificação" no cabeçalho da página:
+
+- **Tentativas em caso de falha**: 3 por padrão, 10, 30 e 60 segundos após a falha (a partir da quarta, a cada 60 segundos), até 10; 0 desativa. Passe o cursor sobre o resultado de um registro com novas tentativas em "Envios recentes" para ver quantas foram feitas.
+- **Prazo de reenvio**: 24 horas por padrão, até 168; 0 desativa o reenvio. Uma notificação que continua falhando após as tentativas aparece como "Aguardando reenvio" e é salva em `notify/pending.json` no diretório de configuração, então sobrevive a reinícios. Depois o Gately reenvia por canal: primeiro a mensagem mais antiga; se falhar, espera 1 minuto e dobra a espera a cada falha, até 15 minutos; se der certo, envia em ordem o restante pendente daquele canal. Quando uma nova notificação naquele canal é enviada com sucesso, o reenvio começa na hora. A mensagem reenviada termina com "Reenvio: a primeira entrega falhou e foi enviada de novo após o canal se recuperar", o horário no texto continua sendo o do evento e os reenvios bem-sucedidos aparecem como "Reenviada".
+- São guardadas até 100 mensagens por canal; acima disso, as mais antigas são descartadas. As que passam do prazo ou cujo canal foi excluído ou desativado são descartadas e deixam um registro de falha em "Envios recentes". Enquanto houver mensagens pendentes, a quantidade e os canais aparecem acima de "Envios recentes", com "Limpar" para descartar todas.
+- Notificações de teste são enviadas uma única vez, sem novas tentativas nem reenvio.
+
+API: `GET /api/notify/pending` lista as notificações pendentes e `DELETE /api/notify/pending` as limpa; os campos de configuração são `retries` e `backfillHours`, com valores padrão quando ausentes.
+
 ## Idioma das notificações
 
 O conteúdo das notificações e os logs usam o idioma do servidor definido em "Configurações do sistema". Quando o idioma do servidor é "Seguir o sistema", o Gately usa o idioma indicado pela variável de ambiente `GATELY_LANG` e depois por `LANG`. Serviços no Docker, fnOS e OpenWrt normalmente não definem nenhuma das duas; nesse caso vale o idioma da interface que o administrador usou no último login ou na última troca pela barra superior, e o inglês é usado quando não há nenhum. Logins de contas somente leitura não alteram esse idioma. A "Origem" de uma notificação é traduzida quando é um nome gerado pelo programa (como "Administração"); nomes de tarefas e outros nomes digitados pelo usuário são mantidos como estão.

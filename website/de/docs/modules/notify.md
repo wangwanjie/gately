@@ -11,6 +11,17 @@ Die Benachrichtigungszentrale abonniert den internen Ereignisbus von Gately und 
 
 Eine einzelne Zustellung läuft nach 45 Sekunden in ein Timeout.
 
+## Wiederholungen und erneutes Senden {#retry}
+
+Bei instabilem Netz kann ein Versand fehlschlagen. Die Benachrichtigungszentrale wiederholt automatisch und sendet erneut, sobald der Kanal wieder erreichbar ist; beides wird unter „Benachrichtigungseinstellungen“ in der Kopfzeile eingestellt:
+
+- **Wiederholungen bei Fehler**: standardmäßig 3, jeweils 10, 30 und 60 Sekunden nach einem Fehler (ab der vierten alle 60 Sekunden), höchstens 10; 0 schaltet sie aus. Wer in „Letzte Zustellungen“ mit der Maus über das Ergebnis eines wiederholten Eintrags fährt, sieht die Zahl der Versuche.
+- **Aufbewahrung für erneutes Senden**: standardmäßig 24 Stunden, höchstens 168; 0 schaltet es aus. Eine Benachrichtigung, die nach allen Wiederholungen weiter fehlschlägt, wird als „Ausstehend“ angezeigt und in `notify/pending.json` im Konfigurationsverzeichnis gespeichert, übersteht also einen Neustart. Danach sendet Gately pro Kanal erneut: zuerst die älteste Nachricht; bei einem Fehler wartet es 1 Minute und verdoppelt die Wartezeit nach jedem Fehler bis 15 Minuten; bei Erfolg folgen die übrigen ausstehenden Nachrichten dieses Kanals der Reihe nach. Geht auf dem Kanal eine neue Benachrichtigung durch, beginnt das erneute Senden sofort. Erneut gesendete Nachrichten enden mit „Erneut gesendet: Der erste Versand ist fehlgeschlagen, nach Wiederherstellung des Kanals erneut gesendet“, die Zeit im Text bleibt die des Ereignisses, erfolgreiche Wiederholungen erscheinen als „Erneut gesendet“.
+- Pro Kanal werden bis zu 100 Nachrichten aufbewahrt, darüber hinaus wird die älteste verworfen. Nachrichten nach Ablauf der Dauer oder deren Kanal gelöscht oder deaktiviert wurde, werden verworfen und hinterlassen einen fehlgeschlagenen Eintrag in „Letzte Zustellungen“. Solange Nachrichten warten, stehen ihre Anzahl und Kanäle über „Letzte Zustellungen“, mit „Löschen“ werden alle verworfen.
+- Testbenachrichtigungen werden einmal gesendet, ohne Wiederholung und ohne erneutes Senden.
+
+API: `GET /api/notify/pending` listet ausstehende Benachrichtigungen, `DELETE /api/notify/pending` löscht sie; die Einstellungsfelder heißen `retries` und `backfillHours`, ohne Angabe gelten die Standardwerte.
+
 ## Sprache der Benachrichtigungen
 
 Benachrichtigungen und Logs verwenden die Serversprache aus den „Systemeinstellungen“. Steht die Serversprache auf „Systemeinstellung folgen“, nimmt Gately die Sprache aus der Umgebungsvariable `GATELY_LANG`, danach aus `LANG`. Dienste unter Docker, fnOS und OpenWrt setzen meist keine der beiden Variablen; dann gilt die Oberflächensprache, die der Administrator bei der letzten Anmeldung oder beim letzten Umschalten in der oberen Leiste verwendet hat, und fehlt auch diese, Englisch. Anmeldungen mit Nur-Lese-Konten ändern diese Sprache nicht. Die „Quelle“ einer Benachrichtigung wird übersetzt, wenn es sich um einen vom Programm erzeugten Namen handelt (etwa „Verwaltungsoberfläche“); Aufgabennamen und andere vom Benutzer eingegebene Namen bleiben unverändert.

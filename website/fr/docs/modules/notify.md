@@ -11,6 +11,17 @@ Le Centre de notifications s'abonne au bus d'événements interne de Gately et, 
 
 Un envoi unique expire après 45 secondes.
 
+## Nouvelles tentatives et renvoi {#retry}
+
+Un envoi peut échouer si le réseau est instable. Le centre de notifications réessaie automatiquement et renvoie au rétablissement du canal ; les deux se règlent dans « Paramètres de notification » dans l’en-tête de la page :
+
+- **Nouvelles tentatives en cas d’échec** : 3 par défaut, 10, 30 et 60 secondes après un échec (au-delà de la troisième, toutes les 60 secondes), jusqu’à 10 ; 0 les désactive. Survolez le résultat d’une entrée retentée dans « Envois récents » pour voir le nombre de tentatives.
+- **Durée de renvoi** : 24 heures par défaut, jusqu’à 168 ; 0 désactive le renvoi. Une notification toujours en échec après les nouvelles tentatives s’affiche « En attente de renvoi » et est enregistrée dans `notify/pending.json` du répertoire de configuration, elle survit donc à un redémarrage. Gately renvoie ensuite canal par canal : le message le plus ancien d’abord ; en cas d’échec il attend 1 minute et double l’attente après chaque échec, jusqu’à 15 minutes ; en cas de succès il envoie dans l’ordre le reste en attente pour ce canal. Dès qu’une nouvelle notification passe sur ce canal, le renvoi démarre immédiatement. Le message renvoyé se termine par « Renvoi : le premier envoi a échoué, renvoyé après le rétablissement du canal », l’heure du texte reste celle de l’événement, et les renvois réussis s’affichent « Renvoyée ».
+- Jusqu’à 100 messages sont conservés par canal, les plus anciens étant abandonnés au-delà. Ceux qui dépassent la durée ou dont le canal a été supprimé ou désactivé sont abandonnés et laissent une entrée en échec dans « Envois récents ». Tant que des messages attendent, leur nombre et leurs canaux s’affichent au-dessus de « Envois récents », avec « Vider » pour tout abandonner.
+- Les notifications de test sont envoyées une seule fois, sans nouvelle tentative ni renvoi.
+
+API : `GET /api/notify/pending` liste les notifications en attente et `DELETE /api/notify/pending` les vide ; les champs des paramètres sont `retries` et `backfillHours`, avec les valeurs par défaut s’ils sont absents.
+
 ## Langue des notifications
 
 Le contenu des notifications et les journaux utilisent la langue du serveur définie dans « Paramètres système ». Lorsque la langue du serveur est « Suivre le système », Gately utilise la langue indiquée par la variable d'environnement `GATELY_LANG`, puis par `LANG`. Les services sous Docker, fnOS et OpenWrt ne définissent généralement aucune de ces deux variables ; la langue suit alors celle de l'interface utilisée par l'administrateur lors de sa dernière connexion ou de son dernier changement dans la barre supérieure, et l'anglais est utilisé à défaut. Les connexions des comptes en lecture seule ne modifient pas cette langue. La « Source » d'une notification est traduite lorsqu'il s'agit d'un nom généré par le programme (comme « Interface d'administration ») ; les noms de tâches et autres noms saisis par l'utilisateur restent tels quels.
