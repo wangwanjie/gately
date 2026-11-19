@@ -187,6 +187,31 @@
     "autoUpdateCheck": "Automatische Update-Prüfung",
     "autoUpdateCheckHelp": "Ruft alle 12 Stunden GitHub ab, sucht nach neuen Gately-Versionen und Sicherheitshinweisen und prüft installierte verwaltete Programme; Ergebnisse erscheinen oben auf der Seite und werden gemäß den Regeln der Benachrichtigungen gesendet. Die Anfragen sind anonym und übertragen keine Informationen."
   },
+  "storageUsage": {
+    "title": "Speicherbelegung",
+    "configDir": "Konfigurationsverzeichnis",
+    "disk": "Datenträgerkapazität",
+    "diskText": "{used} von {total} belegt, {free} frei",
+    "configTotal": "Größe des Konfigurationsverzeichnisses",
+    "files": "{n} Datei(en)",
+    "truncated": "Zu viele Dateien oder die Zählung dauerte zu lange; nur der bisher gezählte Teil wird angezeigt.",
+    "help": "Belegung des Konfigurationsverzeichnisses (und eines separat festgelegten Protokollverzeichnisses) nach Zweck. Es werden nur Größen gezählt, symbolischen Links wird nicht gefolgt; ein Protokollverzeichnis außerhalb des Konfigurationsverzeichnisses zählt nicht zu dessen Größe.",
+    "cat": {
+      "logs": "Laufzeitprotokolle",
+      "visitors": "Besucher-Audit",
+      "audit": "Audit-Protokoll der Vorgänge",
+      "history": "Konfigurationsverlauf",
+      "backups": "Konfigurationssicherungen",
+      "guard": "Schutzdaten",
+      "network": "Overlay-Netzwerkdaten",
+      "iplists": "IP-Listen",
+      "certs": "Zertifikate",
+      "geoip": "GeoIP-Datenbank",
+      "programs": "Verwaltete Programme",
+      "config": "Konfigurationsdateien",
+      "other": "Sonstiges"
+    }
+  },
   "runtime": {
     "title": "Laufzeitparameter",
     "logLevel": "Protokollstufe",

@@ -187,6 +187,31 @@
     "autoUpdateCheck": "자동 업데이트 확인",
     "autoUpdateCheckHelp": "12시간마다 GitHub 에 접속해 Gately 새 버전과 보안 공지를 확인하고, 설치된 관리 프로그램도 확인합니다. 발견하면 페이지 상단에 표시하고 알림 센터 규칙에 따라 알림을 보냅니다. 요청은 익명이며 어떤 정보도 올리지 않습니다."
   },
+  "storageUsage": {
+    "title": "저장소 사용량",
+    "configDir": "설정 디렉터리",
+    "disk": "디스크 용량",
+    "diskText": "사용 {used} / 전체 {total}, 남음 {free}",
+    "configTotal": "설정 디렉터리 사용량",
+    "files": "파일 {n}개",
+    "truncated": "파일이 너무 많거나 집계 시간이 초과되어 집계된 부분만 표시합니다.",
+    "help": "설정 디렉터리(및 별도로 지정한 로그 디렉터리)의 사용량을 용도별로 집계합니다. 크기만 집계하며 심볼릭 링크는 따라가지 않습니다. 설정 디렉터리 밖의 로그 디렉터리는 설정 디렉터리 사용량에 포함되지 않습니다.",
+    "cat": {
+      "logs": "실행 로그",
+      "visitors": "방문자 감사",
+      "audit": "작업 감사 로그",
+      "history": "설정 기록",
+      "backups": "설정 백업",
+      "guard": "보호 데이터",
+      "network": "네트워크 데이터",
+      "iplists": "IP 목록",
+      "certs": "인증서",
+      "geoip": "GeoIP 데이터베이스",
+      "programs": "관리 프로그램",
+      "config": "설정 파일",
+      "other": "기타"
+    }
+  },
   "runtime": {
     "title": "실행 매개변수",
     "logLevel": "로그 레벨",
