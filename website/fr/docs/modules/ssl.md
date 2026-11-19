@@ -11,8 +11,18 @@ Lorsque plusieurs certificats couvrent le même domaine, celui qui expire le plu
 - Certificats génériques (joker) et EAB (par exemple ZeroSSL) ;
 - **Certificats de courte durée et certificats d'adresse IP** : avec le profil de courte durée de Let's Encrypt (validité d'environ 6 jours), des certificats peuvent être émis pour des adresses IP publiques ;
 - Import d'un certificat existant, ou lecture depuis des fichiers ;
+- **Certificats système fnOS** : utiliser un certificat demandé ou importé dans fnOS et suivre ses renouvellements ;
 - Mappage vers un répertoire : après un changement de certificat, les fichiers sont écrits dans le répertoire indiqué et un script est exécuté, afin que les autres services puissent se recharger ;
 - Déploiement automatique : après un changement de certificat, il est copié vers plusieurs répertoires locaux, envoyé par SSH vers d'autres hôtes avec exécution d'une commande, ou les conteneurs Docker qui l'utilisent sont redémarrés.
+
+## Certificats système fnOS {#fnos}
+
+Quand Gately tourne sur fnOS, choisissez « Certificat système fnOS » comme source puis un certificat de Paramètres → Sécurité → Certificats de fnOS. fnOS enregistre ses certificats dans `/usr/trim/etc/network_cert_all.conf` et place chaque renouvellement dans un nouveau dossier : Gately recherche donc les fichiers actuels par domaine toutes les 30 minutes, charge le certificat quand il change et exécute le mappage et le déploiement automatique comme d'habitude. La chaîne complète (fullchain) est utilisée quand fnOS en enregistre une.
+
+- **Application fnOS (fpk)** : tourne en root et lit directement les fichiers, sans être gênée par les ACL que fnOS active par défaut ; rien d'autre à configurer ;
+- **Docker** : montez les deux chemins en lecture seule aux mêmes chemins dans le conteneur, par exemple ajoutez `/usr/trim/etc/network_cert_all.conf:/usr/trim/etc/network_cert_all.conf:ro` et `/usr/trim/var/trim_connect/ssls:/usr/trim/var/trim_connect/ssls:ro` aux `volumes` de compose. Les fichiers appartiennent à root avec le mode 0660 : le conteneur doit tourner en root (par défaut avec l'image officielle).
+
+L'option est masquée quand Gately n'est pas sur fnOS ou que les fichiers ne sont pas montés. Si le certificat est supprimé dans fnOS, Gately garde le dernier certificat chargé et affiche l'erreur dans son état.
 
 ## Validation DNS-01
 

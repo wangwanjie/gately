@@ -11,8 +11,18 @@ When several certificates cover the same domain, the one that expires last is us
 - Wildcard certificates and EAB (for example ZeroSSL);
 - **Short-lived and IP address certificates**: choose the Let's Encrypt short-lived profile (valid for about 6 days) to issue certificates for public IP addresses;
 - Upload an existing certificate, or read it from files;
+- **fnOS system certificates**: use a certificate requested or imported in fnOS and follow its renewals;
 - Map to a directory: after a certificate changes, the files are written to the specified directory and a script runs, so other services can reload;
 - Auto deploy: after a certificate changes, copy it to several local directories, push it to other hosts over SSH and run a command, or restart the Docker containers that use it.
+
+## fnOS system certificates {#fnos}
+
+When Gately runs on fnOS, choose "fnOS system certificate" as the certificate source and pick a certificate from fnOS Settings → Security → Certificates. fnOS registers its certificates in `/usr/trim/etc/network_cert_all.conf` and puts each renewal in a new directory, so Gately looks up the current files by domain every 30 minutes, loads the certificate when it changes, and runs mapping and automatic deployment as usual. The full chain is used when fnOS registers one.
+
+- **fnOS app (fpk)**: runs as root and reads the certificate files directly, unaffected by the ACLs fnOS enables by default; nothing else to set up;
+- **Docker**: mount both paths read-only at the same paths in the container, for example add `/usr/trim/etc/network_cert_all.conf:/usr/trim/etc/network_cert_all.conf:ro` and `/usr/trim/var/trim_connect/ssls:/usr/trim/var/trim_connect/ssls:ro` to `volumes` in compose. The certificate files belong to root with mode 0660, so the container must run as root (the default for the official image).
+
+The option is hidden when Gately is not on fnOS or the files are not mounted. If the certificate is deleted in fnOS, Gately keeps the last loaded certificate and shows the error in its status.
 
 ## DNS-01 validation
 

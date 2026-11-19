@@ -11,8 +11,18 @@ Cuando varios certificados cubren el mismo dominio, se usa el que vence más tar
 - Certificados comodín y EAB (por ejemplo, ZeroSSL);
 - **Certificados de corta duración y para direcciones IP**: con el perfil de corta duración de Let's Encrypt (validez de unos 6 días) se pueden emitir certificados para direcciones IP públicas;
 - Subida de un certificado existente o lectura desde archivos;
+- **Certificados del sistema fnOS**: usar un certificado solicitado o importado en fnOS y seguir sus renovaciones;
 - Exportación a un directorio: cuando cambia un certificado, los archivos se escriben en el directorio indicado y se ejecuta un script, para que otros servicios puedan recargarlo;
 - Despliegue automático: cuando cambia un certificado, se copia a varios directorios locales, se envía por SSH a otros hosts y se ejecuta un comando, o se reinician los contenedores Docker que lo usan.
+
+## Certificados del sistema fnOS {#fnos}
+
+Cuando Gately se ejecuta en fnOS, elija «Certificado del sistema fnOS» como origen y seleccione un certificado de Ajustes → Seguridad → Certificados de fnOS. fnOS registra sus certificados en `/usr/trim/etc/network_cert_all.conf` y guarda cada renovación en un directorio nuevo, así que Gately busca los archivos actuales por dominio cada 30 minutos, carga el certificado cuando cambia y ejecuta la asignación y el despliegue automático como siempre. Si fnOS registra la cadena completa (fullchain), se usa esa.
+
+- **Aplicación de fnOS (fpk)**: se ejecuta como root y lee los archivos directamente, sin verse afectada por las ACL que fnOS activa por defecto; no requiere más configuración;
+- **Docker**: monte ambas rutas en solo lectura en las mismas rutas del contenedor, por ejemplo añada `/usr/trim/etc/network_cert_all.conf:/usr/trim/etc/network_cert_all.conf:ro` y `/usr/trim/var/trim_connect/ssls:/usr/trim/var/trim_connect/ssls:ro` a `volumes` en compose. Los archivos pertenecen a root con modo 0660, por lo que el contenedor debe ejecutarse como root (lo predeterminado en la imagen oficial).
+
+La opción no aparece si Gately no está en fnOS o los archivos no están montados. Si el certificado se elimina en fnOS, Gately conserva el último certificado cargado y muestra el error en su estado.
 
 ## Validación DNS-01
 
