@@ -166,6 +166,10 @@ func (a *App) handleHoldApply(w http.ResponseWriter, r *http.Request) {
 		defer c.writeMu.Unlock()
 		time.Sleep(holdApplyDelay)
 		n := applyhold.Release()
+		// 全部生效完成：此前到达的确认请求可能经由还没切换的旧路径，不能据此确认（见 confirmPending）
+		c.mu.Lock()
+		c.effective = time.Now()
+		c.mu.Unlock()
 		if res.Confirm {
 			a.sysLogs.Add(logbuf.LevelInfo, "system", fmt.Sprintf("批量修改已全部生效（%d 项），%d 秒内未在管理界面确认访问正常将整批回滚", n, res.Timeout))
 		} else {

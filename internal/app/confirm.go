@@ -67,6 +67,8 @@ const (
 	confirmRollingBack = "rollingBack"
 	// confirmHold 表示处于批量修改中，修改尚未生效，无需确认
 	confirmHold = "hold"
+	// confirmApplying 表示确认请求在修改生效完成之前就已到达，可能经由尚未切换的旧路径，不能据此确认，页面应重试
+	confirmApplying = "applying"
 )
 
 // pendingConfirm 是一次待确认的配置变更，可能包含多次保存：同一配置只记录第一次保存前的内容。
@@ -113,6 +115,10 @@ type confirmState struct {
 	// writeMu 串行化带确认请求头的保存：保存前读取原内容、保存后比较，期间不能插入另一次受保护的保存。
 	// 确认接口也先取得它，等进行中的保存登记完待确认变更：响应先于登记写出，浏览器可能抢先发起确认
 	writeMu sync.Mutex
+	// effective 为最近一次修改生效完成的时间（受保护的保存登记完毕、批量修改全部生效），由 mu 保护。
+	// 在它之前到达的确认请求可能经由尚未切换的旧路径（批量生效时排在后面的规则还没切换，热更新又不断开已有连接），
+	// 不能据此确认
+	effective time.Time
 	// recovered 为启动时对上次遗留状态的处理结果，Run 中写日志、发通知
 	recovered confirmRecovery
 }
@@ -375,6 +381,10 @@ func (a *App) beginConfirm(changed map[string]*string) {
 		return
 	}
 	c.tx = p
+	if !hold {
+		// 保存已生效（模块在处理保存请求时已重启或热更新），此前到达的确认请求不算数
+		c.effective = time.Now()
+	}
 	a.armConfirmTimerLocked()
 	if fresh && !p.Hold {
 		a.sysLogs.Add(logbuf.LevelInfo, "system", fmt.Sprintf("配置变更（%s）待确认：%d 秒内未在管理界面确认访问正常将自动回滚", a.confirmTitles(p.names()), timeout))
@@ -423,10 +433,11 @@ func (a *App) confirmExpired(id string) {
 	a.scheduleRestart()
 }
 
-// confirmPending 确认待确认的变更，返回 confirmConfirmed、confirmNone、confirmWaitRestart 或 confirmRollingBack。
-func (a *App) confirmPending() (string, error) {
+// confirmPending 确认待确认的变更，返回 confirmConfirmed、confirmNone、confirmWaitRestart、confirmRollingBack
+// 或 confirmApplying。arrived 为确认请求到达的时间：早于修改生效完成的请求可能经由旧路径，不能确认。
+func (a *App) confirmPending(arrived time.Time) (string, error) {
 	c := &a.confirm
-	// 等进行中的受保护保存登记完毕
+	// 等进行中的受保护保存登记完毕、批量修改全部生效
 	c.writeMu.Lock()
 	c.writeMu.Unlock()
 	c.mu.Lock()
@@ -441,6 +452,8 @@ func (a *App) confirmPending() (string, error) {
 		return confirmWaitRestart, nil
 	case p.Hold:
 		return confirmHold, nil
+	case arrived.Before(c.effective):
+		return confirmApplying, nil
 	}
 	// 状态文件留着会在下次启动时回滚，删除失败就不能算确认
 	if err := removePendingConfirm(a.store.Dir()); err != nil {
@@ -704,6 +717,8 @@ func (a *App) handleConfirmStatus(w http.ResponseWriter, r *http.Request) {
 // handleConfirmSocket 经新建立的 WebSocket 连接确认待确认的变更：结果以一条 JSON 消息 {"status": ...} 返回后关闭连接。
 // 只接受 WebSocket：普通请求可能经由修改前就建立的长连接到达，不能证明修改后的访问路径可用。
 func (a *App) handleConfirmSocket(w http.ResponseWriter, r *http.Request) {
+	// 到达时间在等待进行中的保存或生效之前记下，见 confirmPending
+	arrived := time.Now()
 	ws, err := websocket.Accept(w, r, nil)
 	if err != nil {
 		return
@@ -711,7 +726,7 @@ func (a *App) handleConfirmSocket(w http.ResponseWriter, r *http.Request) {
 	defer ws.CloseNow()
 	ctx, cancel := context.WithTimeout(r.Context(), confirmSocketTimeout)
 	defer cancel()
-	status, err := a.confirmPending()
+	status, err := a.confirmPending(arrived)
 	msg := map[string]string{"status": status}
 	if err != nil {
 		msg = map[string]string{"status": "error", "error": err.Error()}

@@ -262,3 +262,42 @@ func TestListenProblem(t *testing.T) {
 		t.Error("非本机地址应不可用")
 	}
 }
+
+// 生效进行中到达的确认请求可能经由尚未切换的旧路径（排在后面的规则还没生效，热更新也不断开已有连接），
+// 不能据此确认：返回 applying 让页面重试，生效完成后到达的请求才能确认
+func TestChangesetConfirmDuringApply(t *testing.T) {
+	t.Cleanup(applyhold.Drop)
+	_, srv, c := loginApp(t)
+	if code, _ := doJSON(t, c, "POST", srv.URL+"/api/system/changeset/begin", nil); code != 200 {
+		t.Fatal("开始批量修改失败")
+	}
+	if code, body := doConfirmJSON(t, c, "POST", srv.URL+"/api/portforward/rules", testRule(t, "staged")); code != 200 {
+		t.Fatalf("%d %s", code, body)
+	}
+	// 模拟一项生效很慢（例如监听器停止时等待进行中的请求）
+	entered, unblock := make(chan struct{}), make(chan struct{})
+	applyhold.Defer("test", "slow", func() {
+		close(entered)
+		<-unblock
+	})
+	if code, body := doJSON(t, c, "POST", srv.URL+"/api/system/changeset/apply", nil); code != 200 {
+		t.Fatalf("%d %s", code, body)
+	}
+	<-entered
+	got := make(chan string, 1)
+	go func() {
+		got <- confirmViaSocket(t, c, srv.URL)
+	}()
+	// 让确认请求先到达并等在生效之后
+	time.Sleep(200 * time.Millisecond)
+	close(unblock)
+	if s := <-got; s != confirmApplying {
+		t.Fatalf("生效进行中到达的确认请求不能确认，应返回 applying，实际 %s", s)
+	}
+	if v := confirmStatus(t, c, srv.URL); v.Pending == nil {
+		t.Fatal("待确认的变更不应被生效完成前到达的请求确认")
+	}
+	if s := confirmViaSocket(t, c, srv.URL); s != confirmConfirmed {
+		t.Fatalf("生效完成后应能确认: %s", s)
+	}
+}

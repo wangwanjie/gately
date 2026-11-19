@@ -212,8 +212,17 @@ async function runCheck() {
     await sleep(400)
     // 先静默确认两次：访问正常时用户不会看到任何提示
     let finished = false
+    let applying = 0
     for (let i = 0; i < 2 && !finished; i++) {
-      finished = handleResult(await socketConfirm())
+      const status = await socketConfirm()
+      // applying：确认请求在修改生效完成前就到达（批量修改还在逐项生效），稍后经新连接重试，不计入静默确认次数
+      if (status === 'applying' && applying < 20) {
+        applying++
+        i--
+        await sleep(500)
+        continue
+      }
+      finished = handleResult(status)
     }
     if (finished) {
       continue
