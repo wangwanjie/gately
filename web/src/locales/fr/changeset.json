@@ -1,0 +1,14 @@
+{
+  "begin": "Démarrer une série de modifications",
+  "started": "Série de modifications démarrée : les modifications suivantes sont mises en attente",
+  "help": "Pour des modifications qui ne fonctionnent qu’ensemble (par exemple le port vers lequel le routage par protocole envoie au service web et le port d’écoute du service web), démarrez d’abord une série de modifications : les enregistrements de la redirection de ports, du routage par protocole et du service web ne font que mettre à jour la configuration, le chemin d’accès actuel reste utilisable, puis vous cliquez sur « Tout appliquer » en haut de la page.",
+  "bannerTitle": "Série de modifications : enregistrées, pas encore appliquées",
+  "bannerDesc": "Ces {n} éléments seront appliqués ensemble quand vous cliquerez sur « Tout appliquer » ; d’ici là, le chemin d’accès actuel reste utilisable. Les modifications des paramètres globaux s’appliquent toujours immédiatement.",
+  "bannerEmpty": "Les modifications de la redirection de ports, du routage par protocole et du service web sont enregistrées mais en attente ; cliquez sur « Tout appliquer » quand vous avez terminé.",
+  "item": "{module} : {name}",
+  "deleted": "supprimé ({key})",
+  "apply": "Tout appliquer",
+  "discard": "Abandonner",
+  "discardConfirm": "Gately va restaurer la configuration d’avant la série et redémarrer ; les modifications faites depuis sont abandonnées (elles restent dans l’historique de configuration).",
+  "applied": "Tout est appliqué ({n} éléments), vérification de l’accès"
+}

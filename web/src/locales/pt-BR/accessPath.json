@@ -30,5 +30,7 @@
   "continue": "Salvar mesmo assim",
   "cancelled": "Salvamento cancelado",
   "cardTitle": "Caminho de acesso atual",
-  "cardHelp": "Os encaminhamentos do Gately pelos quais passa sua conexão com esta interface. Você será avisado antes de salvar alterações nessas regras, listeners ou sites; programas externos desta máquina, como frp ou Cloudflare Tunnel, aparecem como \"Esta máquina\"."
+  "cardHelp": "Os encaminhamentos do Gately pelos quais passa sua conexão com esta interface. Você será avisado antes de salvar alterações nessas regras, listeners ou sites; programas externos desta máquina, como frp ou Cloudflare Tunnel, aparecem como \"Esta máquina\".",
+  "hold": "Deixar em espera e aplicar junto",
+  "holdNote": "Se esta é uma alteração intencional em várias etapas (em seguida você vai alterar outra coisa para combinar), escolha \"Deixar em espera e aplicar junto\": esta alteração é salva sem ser aplicada, seu acesso atual não é afetado e, ao terminar, você clica em \"Aplicar tudo\" no topo da página."
 }

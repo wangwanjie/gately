@@ -30,5 +30,7 @@
   "continue": "Guardar igualmente",
   "cancelled": "Guardado cancelado",
   "cardTitle": "Camino de acceso actual",
-  "cardHelp": "El reenvío de Gately por el que pasa tu conexión a esta interfaz. Se te avisará antes de guardar cambios en estas reglas, listeners o sitios; los programas externos de este equipo, como frp o Cloudflare Tunnel, aparecen como «Este equipo»."
+  "cardHelp": "El reenvío de Gately por el que pasa tu conexión a esta interfaz. Se te avisará antes de guardar cambios en estas reglas, listeners o sitios; los programas externos de este equipo, como frp o Cloudflare Tunnel, aparecen como «Este equipo».",
+  "hold": "Guardar en espera y aplicar luego",
+  "holdNote": "Si es un cambio intencionado en varios pasos (después cambiarás otra cosa a juego), elige «Guardar en espera y aplicar luego»: este cambio se guarda sin aplicarse, tu acceso actual no se ve afectado y, al terminar, pulsas «Aplicar todo» arriba en la página."
 }

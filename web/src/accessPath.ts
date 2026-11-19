@@ -85,17 +85,20 @@ export function riskText(r: PathRisk, path: AccessPath): string {
   return r.kind
 }
 
+// RiskAnswer 为提醒弹窗的选择：取消、仍要保存（立即生效），或开始批量修改后保存（暂缓生效，稍后与其他修改一起生效）
+export type RiskAnswer = 'cancel' | 'save' | 'hold'
+
 // riskPrompt 为保存前的提醒弹窗状态，由 AccessRiskDialog 显示
 export const riskPrompt = reactive({
   visible: false,
   check: null as AccessCheck | null,
-  resolve: null as ((ok: boolean) => void) | null,
+  resolve: null as ((answer: RiskAnswer) => void) | null,
 })
 
-// askRisk 显示提醒并等待用户选择：继续保存返回 true
-export function askRisk(check: AccessCheck): Promise<boolean> {
+// askRisk 显示提醒并等待用户选择
+export function askRisk(check: AccessCheck): Promise<RiskAnswer> {
   // 同时只有一个提醒：前一个未答复的按取消处理
-  riskPrompt.resolve?.(false)
+  riskPrompt.resolve?.('cancel')
   return new Promise((resolve) => {
     riskPrompt.check = check
     riskPrompt.resolve = resolve
@@ -103,11 +106,11 @@ export function askRisk(check: AccessCheck): Promise<boolean> {
   })
 }
 
-export function answerRisk(ok: boolean) {
+export function answerRisk(answer: RiskAnswer) {
   const r = riskPrompt.resolve
   riskPrompt.resolve = null
   riskPrompt.visible = false
-  r?.(ok)
+  r?.(answer)
 }
 
 // checkAccess 请服务端判断写请求是否影响当前访问路径；检查本身失败时不拦保存（第一层的确认与回滚仍然生效）
