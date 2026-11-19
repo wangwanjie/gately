@@ -555,6 +555,11 @@ func (m *Module) deliver(rule string, ch Channel, msg Message) error {
 		if attempts > retries {
 			break
 		}
+		// 渠道已有等待补推的消息（之前的重试已用尽，渠道仍不可用）：不再逐条等待重试，直接排在后面，
+		// 由补推协程按退避统一重试；否则事件多时每条消息各占一个协程等几分钟
+		if backfill > 0 && m.pend.has(ch.Key) {
+			break
+		}
 		d := retryDelay(attempts)
 		m.log.Warnf("经渠道 %s 推送「%s」失败（第 %d 次），%s 后重试: %v", ch.Name, msg.Title, attempts, d, err)
 		if !m.sleep(stop, d) {
