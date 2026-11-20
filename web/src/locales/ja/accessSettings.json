@@ -12,7 +12,7 @@
   "guardManaged": "現在 {count} 件のブロックがあります。ブロックは侵入防御でまとめて管理され、ポート転送や STUN などにも適用されます。",
   "openGuard": "侵入防御でブロックを管理",
   "permanent": "永久",
-  "geoTitle": "GeoIP データベース（国別フィルタ）",
+  "geoTitle": "GeoIP データベース（国別フィルタ・IP の所在地）",
   "geoLoaded": "読み込み済み: {type}、ビルド日時 {buildTime}、{size} MB",
   "remove": "削除",
   "geoNotImported": "未インポート。MaxMind GeoLite2 / DB-IP などの .mmdb 形式の国別・都市別データベースに対応しています（.mmdb.gz、.tar.gz 圧縮ファイルも可）",
@@ -20,5 +20,8 @@
   "mmdbUrlPlaceholder": "または .mmdb のダウンロード URL を入力",
   "geoImported": "GeoIP データベースをインポートしました",
   "geoDownloaded": "GeoIP データベースをダウンロードして読み込みました",
-  "geoProxy": "ダウンロード用プロキシ"
+  "geoProxy": "ダウンロード用プロキシ",
+  "geoCountryOnly": "国別データベースのため、IP の所在地は国のみ表示されます。都市別データベース（DB-IP City Lite など）をインポートすると地域と都市まで表示されます",
+  "ipGeo": "IP の所在地を表示",
+  "ipGeoHelp": "訪問者監査、ブロックリスト、リアルタイム接続、ログなど IP を表示する場所に国・地域・都市を表示します。このブラウザーにのみ適用されます"
 }

@@ -16,6 +16,7 @@
         <!-- 只渲染当前页，被扫描时封禁可能积累到数千条 -->
         <div v-for="b in banPager.rows.value" :key="b.key" class="row">
           <span class="mono key">{{ b.key }}</span>
+          <IpGeo :ip="b.key" />
           <el-tag size="small" :type="b.manual ? 'info' : 'warning'">{{ b.reason }}</el-tag>
           <span class="meta">{{ b.permanent ? t('accessSettings.permanent') : t('accessSettings.until', { time: new Date(b.until).toLocaleString() }) }}</span>
           <el-button text size="small" @click="unban(b.key)">{{ t('accessSettings.unban') }}</el-button>
@@ -40,6 +41,7 @@
           <el-button text size="small" type="danger" @click="removeGeo">{{ t('accessSettings.remove') }}</el-button>
         </div>
         <div v-else class="meta">{{ t('accessSettings.geoNotImported') }}</div>
+        <div v-if="geo.loaded && !geo.city" class="meta">{{ t('accessSettings.geoCountryOnly') }}</div>
         <div class="row">
           <el-upload :show-file-list="false" :http-request="upload" accept=".mmdb,.gz,.tgz">
             <el-button size="small" :icon="Upload" :loading="busy">{{ t('accessSettings.uploadMmdb') }}</el-button>
@@ -56,6 +58,12 @@
         </div>
       </div>
     </el-form-item>
+    <el-form-item :label="t('accessSettings.ipGeo')">
+      <div class="rows">
+        <el-switch v-model="ipGeoEnabled" />
+        <div class="form-help block">{{ t('accessSettings.ipGeoHelp') }}</div>
+      </div>
+    </el-form-item>
   </div>
 </template>
 
@@ -68,6 +76,8 @@ import { api } from '../api'
 import { moduleEnabled } from '../nav'
 import ProxyInput from './ProxyInput.vue'
 import ListPager from './ListPager.vue'
+import IpGeo from './IpGeo.vue'
+import { ipGeoEnabled, resetIpGeo } from '../composables/useIpGeo'
 import { usePager } from '../composables/usePager'
 
 interface Ban {
@@ -82,6 +92,8 @@ interface GeoInfo {
   type?: string
   buildTime?: string
   size: number
+  // city 为城市库，可显示到省和城市
+  city?: boolean
 }
 
 const { t } = useI18n()
@@ -134,6 +146,7 @@ async function upload(opt: { file: File }) {
     const fd = new FormData()
     fd.append('file', opt.file, opt.file.name)
     geo.value = await api.post<GeoInfo>('/api/webservice/geoip/upload', fd)
+    resetIpGeo()
     ElMessage.success(t('accessSettings.geoImported'))
   } catch (e) {
     ElMessage.error((e as Error).message)
@@ -146,6 +159,7 @@ async function download() {
   busy.value = true
   try {
     geo.value = await api.post<GeoInfo>('/api/webservice/geoip/download', { url: geoUrl.value, proxy: geoProxy.value.trim() })
+    resetIpGeo()
     ElMessage.success(t('accessSettings.geoDownloaded'))
   } catch (e) {
     ElMessage.error((e as Error).message)
@@ -157,6 +171,7 @@ async function download() {
 async function removeGeo() {
   try {
     geo.value = await api.del<GeoInfo>('/api/webservice/geoip')
+    resetIpGeo()
   } catch (e) {
     ElMessage.error((e as Error).message)
   }

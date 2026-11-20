@@ -12,7 +12,7 @@
   "guardManaged": "{count} Sperren aktiv. Sperren werden im Einbruchschutz verwaltet und gelten auch für Portweiterleitung, STUN und andere Dienste.",
   "openGuard": "Sperren im Einbruchschutz verwalten",
   "permanent": "Dauerhaft",
-  "geoTitle": "GeoIP-Datenbank (Länderfilter)",
+  "geoTitle": "GeoIP-Datenbank (Länderfilter, IP-Standort)",
   "geoLoaded": "Geladen: {type}, erstellt am {buildTime}, {size} MB",
   "remove": "Entfernen",
   "geoNotImported": "Nicht importiert. Unterstützt .mmdb-Länder- oder Städtedatenbanken wie MaxMind GeoLite2 und DB-IP, auch als .mmdb.gz- oder .tar.gz-Archiv",
@@ -20,5 +20,8 @@
   "mmdbUrlPlaceholder": "Oder eine .mmdb-Download-URL eingeben",
   "geoImported": "GeoIP-Datenbank importiert",
   "geoDownloaded": "GeoIP-Datenbank heruntergeladen und geladen",
-  "geoProxy": "Download-Proxy"
+  "geoProxy": "Download-Proxy",
+  "geoCountryOnly": "Dies ist eine Länderdatenbank, IP-Standorte zeigen daher nur das Land. Importieren Sie eine Städtedatenbank (z. B. DB-IP City Lite), um Region und Stadt anzuzeigen",
+  "ipGeo": "IP-Standort anzeigen",
+  "ipGeoHelp": "Zeigt Land, Region und Stadt neben IP-Adressen in Besucherprüfung, Sperrlisten, aktiven Verbindungen, Protokollen usw. Gilt nur für diesen Browser"
 }

@@ -1171,6 +1171,9 @@
             "format": "date-time",
             "type": "string"
           },
+          "city": {
+            "type": "boolean"
+          },
           "loaded": {
             "type": "boolean"
           },
@@ -25773,6 +25776,47 @@
           "Servicio FTP"
         ],
         "x-required-scope": "webdav:write,ftp:write,smb:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/geoip/lookup": {
+      "get": {
+        "description": "Consulta las direcciones en la base GeoIP importada en el servicio Web. `ip` es una dirección (repetible o separada por comas, hasta 200 por consulta; admite puerto o longitud de prefijo y se consulta la dirección que contiene); `lang` es el idioma de la interfaz (como `zh-CN` o `en`), que decide el idioma de los nombres de región y ciudad, con el inglés como alternativa si la base no lo tiene. Devuelve `loaded` (si hay una base importada), `city` (si es una base de ciudades) e `items`, indexado por la dirección consultada, con `country` (código de país, `LAN` para direcciones privadas y locales), `region` (estado, provincia u otra división de primer nivel) y `city`. Una base de países solo da `country`; las direcciones que no están en la base no aparecen. Cualquier identidad con sesión iniciada y cualquier token de API pueden llamarla.\n\nCualquier token de API válido puede acceder; no se requiere un permiso específico.",
+        "responses": {
+          "200": {
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parámetros de solicitud incorrectos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token no válido, caducado o sin sesión iniciada"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Consultar la ubicación de direcciones IP",
+        "tags": [
+          "Sistema"
+        ],
+        "x-required-scope": "",
         "x-token-allowed": true
       }
     },

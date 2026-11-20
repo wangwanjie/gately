@@ -12,7 +12,7 @@
   "guardManaged": "{count} bloqueios em vigor. Eles são gerenciados pela Prevenção de intrusão e também valem para encaminhamento de portas, STUN e outros serviços.",
   "openGuard": "Gerenciar bloqueios na Prevenção de intrusão",
   "permanent": "Permanente",
-  "geoTitle": "Banco de dados GeoIP (filtro por país)",
+  "geoTitle": "Banco de dados GeoIP (filtro por país, localização de IP)",
   "geoLoaded": "Carregado: {type}, gerado em {buildTime}, {size} MB",
   "remove": "Remover",
   "geoNotImported": "Não importado. Suporta bancos .mmdb de países ou cidades como MaxMind GeoLite2 e DB-IP, também como arquivos .mmdb.gz ou .tar.gz",
@@ -20,5 +20,8 @@
   "mmdbUrlPlaceholder": "Ou informe a URL de download de um .mmdb",
   "geoImported": "Banco de dados GeoIP importado",
   "geoDownloaded": "Banco de dados GeoIP baixado e carregado",
-  "geoProxy": "Proxy de download"
+  "geoProxy": "Proxy de download",
+  "geoCountryOnly": "Este é um banco de países, então a localização de IP mostra só o país. Importe um banco de cidades (como DB-IP City Lite) para mostrar a região e a cidade",
+  "ipGeo": "Mostrar localização de IP",
+  "ipGeoHelp": "Mostra o país, a região e a cidade ao lado dos endereços IP na auditoria de visitantes, listas de bloqueio, conexões ativas, logs e outros. Vale só para este navegador"
 }

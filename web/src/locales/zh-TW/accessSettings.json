@@ -12,7 +12,7 @@
   "guardManaged": "目前有 {count} 筆封鎖。封鎖由入侵防護統一管理，同樣對連接埠轉發、STUN 等服務生效。",
   "openGuard": "前往入侵防護管理封鎖",
   "permanent": "永久",
-  "geoTitle": "GeoIP 資料庫（國家篩選）",
+  "geoTitle": "GeoIP 資料庫（國家過濾、IP 歸屬地）",
   "geoLoaded": "已載入：{type}，建置於 {buildTime}，{size} MB",
   "remove": "移除",
   "geoNotImported": "尚未匯入。支援 MaxMind GeoLite2 / DB-IP 等 .mmdb 國家庫或城市庫，也可以是 .mmdb.gz 或 .tar.gz 壓縮檔",
@@ -20,5 +20,8 @@
   "mmdbUrlPlaceholder": "或填寫 .mmdb 下載網址",
   "geoImported": "GeoIP 資料庫已匯入",
   "geoDownloaded": "GeoIP 資料庫已下載並載入",
-  "geoProxy": "下載代理"
+  "geoProxy": "下載代理",
+  "geoCountryOnly": "目前為國家庫，IP 歸屬地只顯示國家；匯入城市庫（如 DB-IP City Lite）可顯示到省和城市",
+  "ipGeo": "顯示 IP 歸屬地",
+  "ipGeoHelp": "在訪客稽核、封鎖清單、即時連線、日誌等顯示 IP 的地方標出國家、省和城市；只對目前瀏覽器生效"
 }

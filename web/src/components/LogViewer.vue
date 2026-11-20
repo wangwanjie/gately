@@ -142,6 +142,7 @@
             >
               {{ fieldLabel(f.key) }}={{ fieldValue(f.key, f.value) }}
             </span>
+            <IpGeo v-if="e.fields?.ip" :ip="e.fields.ip" hide-lan class="geo" />
           </div>
           <div v-if="!entries.length" class="empty">{{ active ? t('components.logViewer.noMatch') : t('components.logViewer.empty') }}</div>
         </div>
@@ -179,6 +180,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } 
 import { useI18n } from 'vue-i18n'
 import { ElMessage, useZIndex } from 'element-plus'
 import { ArrowDownToLine, CircleHelp, Download, Filter, Maximize2, Minimize2, RotateCcw, Search, SearchX, Trash2 } from 'lucide-vue-next'
+import IpGeo from './IpGeo.vue'
 import { api, ApiError, type LogEntry } from '../api'
 import { usePolling } from '../composables/usePolling'
 import { useScrollLock } from '../composables/useScrollLock'
@@ -1046,6 +1048,9 @@ onMounted(async () => {
 .src:hover,
 .field:hover {
   text-decoration: underline;
+}
+.geo {
+  margin-left: 8px;
 }
 .field {
   margin-left: 8px;

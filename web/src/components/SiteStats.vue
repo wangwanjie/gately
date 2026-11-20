@@ -60,12 +60,14 @@
       <div class="tops">
         <div>
           <div class="chart-title">{{ t('siteStats.topIps') }}</div>
-          <div v-for="ip in data.topIps" :key="ip.key" class="top"><span class="mono">{{ ip.key }}</span><span>{{ ip.count }}</span></div>
+          <div v-for="ip in data.topIps" :key="ip.key" class="top">
+            <span class="top-ip"><span class="mono">{{ ip.key }}</span><IpGeo :ip="ip.key" /></span><span>{{ ip.count }}</span>
+          </div>
           <div v-if="!data.topIps.length" class="meta">{{ t('siteStats.noData') }}</div>
         </div>
         <div>
           <div class="chart-title">{{ t('siteStats.topCountries') }}</div>
-          <div v-for="c in data.topCountries" :key="c.key" class="top"><span>{{ c.key }}</span><span>{{ c.count }}</span></div>
+          <div v-for="c in data.topCountries" :key="c.key" class="top"><span :title="c.key">{{ countryName(c.key, locale) }}</span><span>{{ c.count }}</span></div>
           <div v-if="!data.topCountries.length" class="meta">{{ t('siteStats.noDataGeo') }}</div>
         </div>
       </div>
@@ -80,6 +82,8 @@ import { ElMessage } from 'element-plus'
 import { api } from '../api'
 import Sparkline from './Sparkline.vue'
 import StatusBadge from './StatusBadge.vue'
+import IpGeo from './IpGeo.vue'
+import { countryName } from '../ipGeo'
 import { useFormLayout } from '../composables/useIsMobile'
 import { usePolling } from '../composables/usePolling'
 
@@ -95,7 +99,7 @@ interface View {
   blocked?: Record<string, number>
 }
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const { isMobile } = useFormLayout()
 const visible = ref(false)
 const title = ref('')
@@ -220,6 +224,12 @@ defineExpose({ open })
   justify-content: space-between;
   font-size: 13px;
   padding: 2px 0;
+}
+.top-ip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
 }
 .blocked {
   display: flex;

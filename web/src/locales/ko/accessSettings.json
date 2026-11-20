@@ -12,7 +12,7 @@
   "guardManaged": "현재 {count}건의 차단이 있습니다. 차단은 침입 방지에서 통합 관리되며 포트 포워딩, STUN 등에도 적용됩니다.",
   "openGuard": "침입 방지에서 차단 관리",
   "permanent": "영구",
-  "geoTitle": "GeoIP 데이터베이스 (국가 필터)",
+  "geoTitle": "GeoIP 데이터베이스(국가 필터, IP 위치)",
   "geoLoaded": "로드됨: {type}, 빌드 {buildTime}, {size} MB",
   "remove": "제거",
   "geoNotImported": "가져오지 않았습니다. MaxMind GeoLite2 / DB-IP 등의 .mmdb 국가 또는 도시 데이터베이스를 지원하며 .mmdb.gz, .tar.gz 압축 파일도 가능합니다",
@@ -20,5 +20,8 @@
   "mmdbUrlPlaceholder": "또는 .mmdb 다운로드 주소 입력",
   "geoImported": "GeoIP 데이터베이스를 가져왔습니다",
   "geoDownloaded": "GeoIP 데이터베이스를 다운로드하여 로드했습니다",
-  "geoProxy": "다운로드 프록시"
+  "geoProxy": "다운로드 프록시",
+  "geoCountryOnly": "국가 데이터베이스이므로 IP 위치는 국가만 표시됩니다. 도시 데이터베이스(DB-IP City Lite 등)를 가져오면 지역과 도시까지 표시됩니다",
+  "ipGeo": "IP 위치 표시",
+  "ipGeoHelp": "방문자 감사, 차단 목록, 실시간 연결, 로그 등 IP가 표시되는 곳에 국가, 지역, 도시를 표시합니다. 이 브라우저에만 적용됩니다"
 }

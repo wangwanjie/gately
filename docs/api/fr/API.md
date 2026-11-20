@@ -984,6 +984,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | POST | `/api/system/onboarding/scenes` | Session connectée uniquement | Enregistrer les usages choisis |
 | POST | `/api/system/onboarding/done` | Session connectée uniquement | Marquer un élément de Bien démarrer comme fait |
 | POST | `/api/system/probe` | Session connectée uniquement | Tester si une adresse de backend est joignable |
+| GET | `/api/geoip/lookup` | Tout jeton valide | Rechercher la localisation d'adresses IP |
 | GET | `/api/openapi.json` | Tout jeton valide | Obtenir la description OpenAPI de cette API |
 
 ## Import de configuration
@@ -1530,6 +1531,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | Champ | Type |
 | --- | --- |
 | `buildTime` | Heure (RFC 3339) |
+| `city` | boolean |
 | `loaded` | boolean |
 | `size` | integer |
 | `type` | string |

@@ -69,6 +69,7 @@
           <div v-for="g in status.grants" :key="g.addr + g.rule" class="grant">
             <div class="grant-main">
               <span class="mono grant-addr">{{ g.addr }}</span>
+              <IpGeo :ip="g.addr" />
               <el-tag size="small" effect="plain">{{ g.ruleName || g.rule }}</el-tag>
               <el-tag v-if="g.source === 'web'" size="small" type="success" effect="plain" data-test="grant-web">{{ t('knock.grants.web') }}</el-tag>
               <el-tag v-else-if="g.identity" size="small" type="primary" effect="plain" class="ident-tag" data-test="grant-identity"><UserRound :size="12" />{{ g.identity }}</el-tag>
@@ -343,6 +344,7 @@ import { api, errorText } from '../api'
 import { secretOf } from '../secrets'
 import SecretInput from '../components/SecretInput.vue'
 import PageHeader from '../components/PageHeader.vue'
+import IpGeo from '../components/IpGeo.vue'
 import EntityCard from '../components/EntityCard.vue'
 import GroupedList from '../components/GroupedList.vue'
 import GroupInput from '../components/GroupInput.vue'

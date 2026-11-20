@@ -1171,6 +1171,9 @@
             "format": "date-time",
             "type": "string"
           },
+          "city": {
+            "type": "boolean"
+          },
           "loaded": {
             "type": "boolean"
           },
@@ -25773,6 +25776,47 @@
           "Serviço FTP"
         ],
         "x-required-scope": "webdav:write,ftp:write,smb:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/geoip/lookup": {
+      "get": {
+        "description": "Consulta os endereços no banco GeoIP importado no serviço Web. `ip` é um endereço (pode repetir ou separar por vírgulas, até 200 por consulta; aceita porta ou comprimento de prefixo e consulta o endereço contido); `lang` é o idioma da interface (como `zh-CN` ou `en`), que define o idioma dos nomes de região e cidade, com o inglês como alternativa quando o banco não o tem. Retorna `loaded` (se há um banco importado), `city` (se é um banco de cidades) e `items`, indexado pelo endereço consultado, com `country` (código do país, `LAN` para endereços privados e locais), `region` (estado, província ou outra divisão de primeiro nível) e `city`. Um banco de países só traz `country`; endereços fora do banco não aparecem. Qualquer identidade conectada e qualquer token de API podem chamá-la.\n\nQualquer token de API válido pode acessar; nenhuma permissão específica é necessária.",
+        "responses": {
+          "200": {
+            "description": "Sucesso"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parâmetros da requisição inválidos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token inválido, expirado ou sem login"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Consultar a localização de endereços IP",
+        "tags": [
+          "Sistema"
+        ],
+        "x-required-scope": "",
         "x-token-allowed": true
       }
     },

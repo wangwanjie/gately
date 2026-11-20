@@ -984,6 +984,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/system/onboarding/scenes` | ログインセッションのみ | 選んだ用途を記録 |
 | POST | `/api/system/onboarding/done` | ログインセッションのみ | 「はじめに」チェックリストの項目を完了にする |
 | POST | `/api/system/probe` | ログインセッションのみ | バックエンドのアドレスに到達できるか試す |
+| GET | `/api/geoip/lookup` | 任意の有効なトークン | IP アドレスの所在地を一括照会 |
 | GET | `/api/openapi.json` | 任意の有効なトークン | この API の OpenAPI 定義を取得 |
 
 ## 設定のインポート
@@ -1530,6 +1531,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | フィールド | 型 |
 | --- | --- |
 | `buildTime` | 時刻 (RFC 3339) |
+| `city` | boolean |
 | `loaded` | boolean |
 | `size` | integer |
 | `type` | string |

@@ -395,6 +395,16 @@ A site's "Country filter" has three modes: off, allow only, and deny. Enter two-
 - Private network addresses are always allowed;
 - In "Deny" mode, addresses whose country cannot be found in the database are allowed.
 
+### IP location {#ip-geo}
+
+With a GeoIP database imported, the admin UI shows where an IP address is located wherever it lists addresses: visitor audit, top source IPs in site statistics, live connections, ban lists (including intrusion protection), module logs, active IPs in the network topology (hidden while masking is on), the operation audit, and addresses allowed by port knocking.
+
+- A country database shows the country only; a city database (such as DB-IP City Lite or MaxMind GeoLite2-City) also shows the region and city. Names follow the UI language and fall back to English when the database has no name in that language. The DB-IP city database has English names only;
+- Private and local addresses are marked "LAN" without a database; logs leave them unmarked;
+- Lookups use the database on this machine only, so visitor addresses are never sent to a third party;
+- Turn it off under "Global settings → Show IP location"; the setting applies to the current browser only;
+- Regions and cities come from public address databases. IPv6 and mobile network addresses are often placed where the carrier registered them, so treat them as a hint.
+
 ## Path backends
 
 For a reverse proxy site, send requests under a path prefix to other backends, like nginx `location /api/ { proxy_pass ...; }`. Add them under "Path backends" on the "Basic" page of the site editor.
@@ -691,7 +701,7 @@ All numbers come from this instance's in-memory counters: they reset on restart,
 The "Visitor audit" tab at the top of the sidebar page "Web → Web Services" (`#/web/visitors`) summarizes access to all sites by visitor address: who visited which sites and paths, when, under which identity, and how often they were blocked. Every site is counted, including the default site and requests that match no site, regardless of whether the site has access logging enabled; with [trusted proxies](#real-ip) configured, the real visitor address is recorded.
 
 - **Summary and trend**: pick the range in the page header (today, 7 days, 30 days, the whole retention period). The cards show visitors (and new visitors), requests, blocked requests and their share, visitors that passed site authentication, visitors currently banned and scanner-like addresses; click a card to filter by it, click again to clear. In the daily bar chart the bar height is the request count and the red part is blocked requests; click or hover a day to see its visitors, requests and blocks.
-- **List**: each visitor shows the country code (with a GeoIP database imported; private and local addresses show "LAN"), requests and blocks in the range, the most visited sites, identities, first and last visit, and the last request (status, method, path, domain and User-Agent). Search by address, identity, site, domain, path or User-Agent; filter by "With blocked requests", "Authenticated", "Administrators", "Banned", "Scanner-like" and site; sort by last visit, most requests, most blocked or first visit. Sites with the same name on two listeners carry the listener name.
+- **List**: each visitor shows its [location](#ip-geo) (private and local addresses show "LAN"), requests and blocks in the range, the most visited sites, identities, first and last visit, and the last request (status, method, path, domain and User-Agent). Search by address, identity, site, domain, path or User-Agent; filter by "With blocked requests", "Authenticated", "Administrators", "Banned", "Scanner-like" and site; sort by last visit, most requests, most blocked or first visit. Sites with the same name on two listeners carry the listener name.
 - **Identity**: after site authentication succeeds (web login, basic auth, shared users, third-party login, forward auth) the user name is recorded; requests carrying this instance's admin console session are recorded as "admin". Failed password attempts and blocked requests record no identity.
 - **Scanner-like**: addresses that were only blocked or only hit unmatched sites and never authenticated.
 - **Details**: click a row to open the visitor: first and last visit, total requests, blocked requests, bytes sent, connections closed (444), a daily request chart over the retention period, status distribution and block reasons (ban, IP list, country filter, rate limit, WAF), sites visited, most requested paths (up to 10), identities and User-Agents. From here you can ban or unban (IPv6 is banned by /64), view the access log for this address, or delete the visitor's record.

@@ -12,7 +12,7 @@
   "guardManaged": "当前有 {count} 条封禁。封禁由入侵防护统一管理，同样对端口转发、STUN 等服务生效。",
   "openGuard": "前往入侵防护管理封禁",
   "permanent": "永久",
-  "geoTitle": "GeoIP 数据库（国家过滤）",
+  "geoTitle": "GeoIP 数据库（国家过滤、IP 归属地）",
   "geoLoaded": "已加载：{type}，构建于 {buildTime}，{size} MB",
   "remove": "移除",
   "geoNotImported": "未导入。支持 MaxMind GeoLite2 / DB-IP 等 .mmdb 国家库或城市库，也可以是 .mmdb.gz 或 .tar.gz 压缩包",
@@ -20,5 +20,8 @@
   "mmdbUrlPlaceholder": "或填写 .mmdb 下载地址",
   "geoImported": "GeoIP 数据库已导入",
   "geoDownloaded": "GeoIP 数据库已下载并加载",
-  "geoProxy": "下载代理"
+  "geoProxy": "下载代理",
+  "geoCountryOnly": "当前为国家库，IP 归属地只显示国家；导入城市库（如 DB-IP City Lite）可显示到省和城市",
+  "ipGeo": "显示 IP 归属地",
+  "ipGeoHelp": "在访客审计、封禁列表、实时连接、日志等显示 IP 的地方标出国家、省和城市；只对当前浏览器生效"
 }

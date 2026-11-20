@@ -11,6 +11,7 @@
           <el-table-column :label="t('siteConns.source')" min-width="160">
             <template #default="{ row }">
               <div class="mono">{{ hostPort(row) }}</div>
+              <IpGeo :ip="row.ip" />
               <div v-if="row.peer" class="meta mono" :title="t('siteConns.peerHelp')">{{ t('siteConns.via', { peer: row.peer }) }}</div>
             </template>
           </el-table-column>
@@ -55,6 +56,7 @@
           <el-table-column :label="t('siteConns.source')" min-width="160">
             <template #default="{ row }">
               <div class="mono">{{ hostPort(row) }}</div>
+              <IpGeo :ip="row.ip" />
               <div v-if="row.peer" class="meta mono">{{ t('siteConns.via', { peer: row.peer }) }}</div>
             </template>
           </el-table-column>
@@ -119,6 +121,7 @@ import { ElMessage } from 'element-plus'
 import { Search, ShieldBan, Unplug } from 'lucide-vue-next'
 import { api, formatBytes } from '../api'
 import { useFormLayout } from '../composables/useIsMobile'
+import IpGeo from './IpGeo.vue'
 
 // Conn 对应 GET /api/webservice/connections 返回的一条进行中或已结束的请求
 interface Conn {

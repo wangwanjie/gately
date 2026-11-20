@@ -12,7 +12,7 @@
   "guardManaged": "{count} bans in effect. Bans are managed by Intrusion Prevention and also apply to port forwarding, STUN and other services.",
   "openGuard": "Manage bans in Intrusion Prevention",
   "permanent": "Permanent",
-  "geoTitle": "GeoIP database (country filtering)",
+  "geoTitle": "GeoIP database (country filtering, IP location)",
   "geoLoaded": "Loaded: {type}, built on {buildTime}, {size} MB",
   "remove": "Remove",
   "geoNotImported": "Not imported. Supports .mmdb country or city databases such as MaxMind GeoLite2 and DB-IP, also as .mmdb.gz or .tar.gz archives",
@@ -20,5 +20,8 @@
   "mmdbUrlPlaceholder": "Or enter a .mmdb download URL",
   "geoImported": "GeoIP database imported",
   "geoDownloaded": "GeoIP database downloaded and loaded",
-  "geoProxy": "Download proxy"
+  "geoProxy": "Download proxy",
+  "geoCountryOnly": "This is a country database, so IP locations show the country only. Import a city database (such as DB-IP City Lite) to show the region and city",
+  "ipGeo": "Show IP location",
+  "ipGeoHelp": "Shows the country, region and city next to IP addresses in visitor audit, ban lists, live connections, logs and more. Applies to this browser only"
 }

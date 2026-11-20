@@ -1,4 +1,5 @@
-// Package geoip 读取 MaxMind 格式（GeoLite2 / DB-IP 等）的国家或城市库，按 IP 查询国家代码。
+// Package geoip 读取 MaxMind 格式（GeoLite2 / DB-IP 等）的国家或城市库，按 IP 查询国家代码，
+// 城市库还可查到省（州）与城市名称。
 package geoip
 
 import (
@@ -31,6 +32,8 @@ type Info struct {
 	// BuildTime 为数据库构建时间
 	BuildTime time.Time `json:"buildTime,omitzero"`
 	Size      int64     `json:"size,omitempty"`
+	// City 表示是城市库（数据库类型含 City），可查到省（州）与城市
+	City bool `json:"city,omitempty"`
 }
 
 // DB 是线程安全的国家查询库。零值可用，未加载时查询均返回未知。
@@ -92,7 +95,93 @@ func (d *DB) Info() Info {
 		return Info{}
 	}
 	m := d.r.Metadata
-	return Info{Loaded: true, Type: m.DatabaseType, BuildTime: time.Unix(int64(m.BuildEpoch), 0), Size: d.size}
+	return Info{Loaded: true, Type: m.DatabaseType, BuildTime: time.Unix(int64(m.BuildEpoch), 0), Size: d.size,
+		City: strings.Contains(strings.ToLower(m.DatabaseType), "city")}
+}
+
+// Location 是一个地址的归属地。国家库只有 Country；城市库还有 Region（省、州等一级行政区）与 City。
+type Location struct {
+	Country string `json:"country,omitempty"`
+	Region  string `json:"region,omitempty"`
+	City    string `json:"city,omitempty"`
+}
+
+// names 是库中按语言索引的名称，例如 {"en": "Guangdong", "zh-CN": "广东"}。
+type names map[string]string
+
+// pick 按语言取名称：先取 lang，再取 en，都没有时取任意一个（按键排序保证结果稳定）。
+func (n names) pick(lang string) string {
+	if v := n[lang]; v != "" {
+		return v
+	}
+	if v := n["en"]; v != "" {
+		return v
+	}
+	best := ""
+	for k, v := range n {
+		if v != "" && (best == "" || k < best) {
+			best = k
+		}
+	}
+	return n[best]
+}
+
+type cityRecord struct {
+	record
+	Subdivisions []struct {
+		Names names `maxminddb:"names"`
+	} `maxminddb:"subdivisions"`
+	City struct {
+		Names names `maxminddb:"names"`
+	} `maxminddb:"city"`
+}
+
+// dbLang 把界面语言映射为库中名称使用的语言代码（GeoLite2 / DB-IP 提供 de、en、es、fr、ja、pt-BR、ru、zh-CN）；
+// 繁体中文没有单独的名称，使用简体，其他语言回退到英文。
+func dbLang(lang string) string {
+	switch lang {
+	case "zh-CN", "zh-TW", "zh":
+		return "zh-CN"
+	case "pt-BR", "pt":
+		return "pt-BR"
+	case "de", "es", "fr", "ja", "ru":
+		return lang
+	}
+	return "en"
+}
+
+// cityShi 是中文城市名的「市」后缀。用字符字面量书写，避免被当作待翻译的文案提取。
+const cityShi = '市'
+
+// Lookup 返回 IP 的归属地，名称使用 lang 对应的语言（没有时回退到英文）。未加载或未收录时返回零值。
+// 一级行政区与城市名称相同时（例如直辖市「北京市 / 北京」）只保留 Region。
+func (d *DB) Lookup(addr netip.Addr, lang string) Location {
+	d.mu.RLock()
+	defer d.mu.RUnlock()
+	if d.r == nil {
+		return Location{}
+	}
+	res := d.r.Lookup(addr.Unmap())
+	if !res.Found() {
+		return Location{}
+	}
+	var rec cityRecord
+	if res.Decode(&rec) != nil {
+		return Location{}
+	}
+	code := rec.Country.ISOCode
+	if code == "" {
+		code = rec.Registered.ISOCode
+	}
+	lang = dbLang(lang)
+	loc := Location{Country: strings.ToUpper(code), City: rec.City.Names.pick(lang)}
+	if len(rec.Subdivisions) > 0 {
+		loc.Region = rec.Subdivisions[0].Names.pick(lang)
+	}
+	if strings.TrimSuffix(loc.City, string(cityShi)) == strings.TrimSuffix(loc.Region, string(cityShi)) {
+		loc.City = ""
+	}
+	return loc
 }
 
 // Country 返回 IP 所属国家的 ISO 代码（大写）。未加载或未收录时返回空串。

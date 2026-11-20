@@ -1171,6 +1171,9 @@
             "format": "date-time",
             "type": "string"
           },
+          "city": {
+            "type": "boolean"
+          },
           "loaded": {
             "type": "boolean"
           },
@@ -25773,6 +25776,47 @@
           "Service FTP"
         ],
         "x-required-scope": "webdav:write,ftp:write,smb:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/geoip/lookup": {
+      "get": {
+        "description": "Recherche les adresses dans la base GeoIP importée dans le service Web. `ip` est une adresse (répétable ou séparée par des virgules, 200 au plus par requête ; un port ou une longueur de préfixe est accepté et l'adresse qu'il contient est recherchée) ; `lang` est la langue de l'interface (comme `zh-CN` ou `en`), qui choisit la langue des noms de région et de ville, avec repli sur l'anglais si la base ne la contient pas. Renvoie `loaded` (si une base est importée), `city` (s'il s'agit d'une base de villes) et `items`, indexé par l'adresse demandée, avec `country` (code pays, `LAN` pour les adresses privées et locales), `region` (État, province ou autre division de premier niveau) et `city`. Une base de pays ne donne que `country` ; les adresses absentes de la base n'apparaissent pas. Toute identité connectée et tout jeton d'API peuvent l'appeler.\n\nTout jeton d'API valide peut y accéder, sans permission spécifique.",
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Rechercher la localisation d'adresses IP",
+        "tags": [
+          "Système"
+        ],
+        "x-required-scope": "",
         "x-token-allowed": true
       }
     },
