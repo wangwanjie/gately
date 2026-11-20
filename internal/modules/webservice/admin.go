@@ -97,7 +97,7 @@ func (m *Module) loadGeoIP(w http.ResponseWriter) {
 }
 
 func (m *Module) handleGeoIPUpload(w http.ResponseWriter, r *http.Request) {
-	r.Body = http.MaxBytesReader(w, r.Body, 129<<20)
+	r.Body = http.MaxBytesReader(w, r.Body, 257<<20)
 	f, _, err := r.FormFile("file")
 	if err != nil {
 		httpx.Error(w, http.StatusBadRequest, "请上传 .mmdb 文件")

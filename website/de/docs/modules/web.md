@@ -390,7 +390,7 @@ Die Sperrliste wird mit dem [Einbruchschutz](/de/docs/modules/guard) geteilt: Is
 
 Der „Länderfilter“ einer Site hat drei Modi: aus, nur erlauben und verweigern. Geben Sie zweistellige ISO-Ländercodes kommagetrennt ein, etwa `CN, HK, US`. Bei Aktivierung ist mindestens ein Land erforderlich.
 
-- Die Filterung hängt von einer GeoIP-Datenbank ab, die Sie zuerst unter „Globale Einstellungen → GeoIP-Datenbank“ importieren müssen: Laden Sie eine `.mmdb`-Datei hoch oder geben Sie eine Download-URL ein („Download-Proxy“ verwendet standardmäßig den globalen Update-Proxy und verbindet direkt, solange keiner gesetzt ist). MaxMind GeoLite2, DB-IP und andere Länder- oder Städte-Datenbanken werden unterstützt; die Upload-Grenze beträgt 129 MB;
+- Die Filterung hängt von einer GeoIP-Datenbank ab, die Sie zuerst unter „Globale Einstellungen → GeoIP-Datenbank“ importieren müssen: Laden Sie eine `.mmdb`-Datei hoch (auch als `.mmdb.gz` oder als `.tar.gz`-Archiv von MaxMind) oder geben Sie eine Download-URL ein („Download-Proxy“ verwendet standardmäßig den globalen Update-Proxy und verbindet direkt, solange keiner gesetzt ist). MaxMind GeoLite2, DB-IP und andere Länder- oder Städte-Datenbanken werden unterstützt; die Upload-Grenze beträgt 257 MB, entpackt darf die Datenbank bis zu 256 MB groß sein;
 - Ist keine Datenbank geladen, hat die Filterung keine Wirkung (alle Besucher passieren) und die Oberfläche zeigt einen Hinweis;
 - Adressen privater Netze sind immer erlaubt;
 - Im Modus „Verweigern“ werden Adressen erlaubt, deren Land sich in der Datenbank nicht finden lässt.

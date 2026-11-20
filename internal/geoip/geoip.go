@@ -2,6 +2,9 @@
 package geoip
 
 import (
+	"archive/tar"
+	"bufio"
+	"compress/gzip"
 	"errors"
 	"fmt"
 	"io"
@@ -18,8 +21,8 @@ import (
 	"github.com/wangwanjie/gately/internal/outbound"
 )
 
-// maxDBSize 限制下载或上传的数据库大小，城市库约 70MB。
-const maxDBSize = 128 << 20
+// maxDBSize 限制下载或上传的数据库（解压后）大小：GeoLite2 城市库约 50MB，DB-IP 城市库约 130MB。
+const maxDBSize = 256 << 20
 
 // Info 描述已加载的数据库。
 type Info struct {
@@ -120,9 +123,40 @@ func IsLocal(a netip.Addr) bool {
 	return a.IsLoopback() || a.IsPrivate() || a.IsLinkLocalUnicast() || a.IsUnspecified()
 }
 
-// Save 把数据库内容原子写入 path 并校验可读，返回写入的字节数。
-// 校验失败时不会覆盖已有文件。
+// unpack 识别压缩格式：gzip（DB-IP 提供的 .mmdb.gz）解压，tar（MaxMind 官方的 .tar.gz）取出其中的 .mmdb 文件，
+// 其他内容原样返回。
+func unpack(r io.Reader) (io.Reader, error) {
+	br := bufio.NewReader(r)
+	if head, _ := br.Peek(2); len(head) == 2 && head[0] == 0x1f && head[1] == 0x8b {
+		zr, err := gzip.NewReader(br)
+		if err != nil {
+			return nil, errors.New("gzip 压缩包损坏")
+		}
+		br = bufio.NewReaderSize(zr, 1024)
+	}
+	// tar 头的第 257 字节起为 "ustar"
+	if head, _ := br.Peek(262); len(head) == 262 && string(head[257:262]) == "ustar" {
+		tr := tar.NewReader(br)
+		for {
+			h, err := tr.Next()
+			if err != nil {
+				return nil, errors.New("压缩包中没有 .mmdb 文件")
+			}
+			if h.Typeflag == tar.TypeReg && strings.HasSuffix(strings.ToLower(h.Name), ".mmdb") {
+				return tr, nil
+			}
+		}
+	}
+	return br, nil
+}
+
+// Save 把数据库内容原子写入 path 并校验可读，返回写入的字节数。内容可以是 .mmdb，
+// 也可以是 gzip 压缩的 .mmdb.gz 或含 .mmdb 的 .tar.gz。校验失败时不会覆盖已有文件。
 func Save(path string, r io.Reader) (int64, error) {
+	r, err := unpack(r)
+	if err != nil {
+		return 0, err
+	}
 	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
 		return 0, err
 	}

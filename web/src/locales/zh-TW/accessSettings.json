@@ -15,7 +15,7 @@
   "geoTitle": "GeoIP 資料庫（國家篩選）",
   "geoLoaded": "已載入：{type}，建置於 {buildTime}，{size} MB",
   "remove": "移除",
-  "geoNotImported": "尚未匯入。支援 MaxMind GeoLite2 / DB-IP 等 .mmdb 國家庫或城市庫",
+  "geoNotImported": "尚未匯入。支援 MaxMind GeoLite2 / DB-IP 等 .mmdb 國家庫或城市庫，也可以是 .mmdb.gz 或 .tar.gz 壓縮檔",
   "uploadMmdb": "上傳 .mmdb",
   "mmdbUrlPlaceholder": "或填寫 .mmdb 下載網址",
   "geoImported": "GeoIP 資料庫已匯入",

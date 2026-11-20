@@ -15,7 +15,7 @@
   "geoTitle": "Base de datos GeoIP (filtrado por país)",
   "geoLoaded": "Cargada: {type}, compilada el {buildTime}, {size} MB",
   "remove": "Quitar",
-  "geoNotImported": "No importada. Admite bases de datos .mmdb de país o ciudad como MaxMind GeoLite2 y DB-IP",
+  "geoNotImported": "No importada. Admite bases de datos .mmdb de países o ciudades como MaxMind GeoLite2 y DB-IP, también como archivos .mmdb.gz o .tar.gz",
   "uploadMmdb": "Subir .mmdb",
   "mmdbUrlPlaceholder": "O introduce una URL de descarga de .mmdb",
   "geoImported": "Base de datos GeoIP importada",

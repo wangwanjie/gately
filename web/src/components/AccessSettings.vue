@@ -41,7 +41,7 @@
         </div>
         <div v-else class="meta">{{ t('accessSettings.geoNotImported') }}</div>
         <div class="row">
-          <el-upload :show-file-list="false" :http-request="upload" accept=".mmdb">
+          <el-upload :show-file-list="false" :http-request="upload" accept=".mmdb,.gz,.tgz">
             <el-button size="small" :icon="Upload" :loading="busy">{{ t('accessSettings.uploadMmdb') }}</el-button>
           </el-upload>
         </div>
