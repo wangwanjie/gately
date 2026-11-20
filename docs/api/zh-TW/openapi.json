@@ -4757,6 +4757,12 @@
           "ssoDomain": {
             "type": "string"
           },
+          "ssoDomains": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
           "trustedProxies": {
             "items": {
               "type": "string"
@@ -5729,6 +5735,12 @@
           },
           "ssoDomain": {
             "type": "string"
+          },
+          "ssoDomains": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
           }
         },
         "type": "object"
@@ -5756,8 +5768,11 @@
             },
             "type": "array"
           },
-          "ssoDomain": {
-            "type": "string"
+          "ssoDomains": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
           }
         },
         "type": "object"
@@ -54276,7 +54291,7 @@
     },
     "/api/webservice/users": {
       "get": {
-        "description": "回傳共用使用者（密碼與 TOTP 金鑰已遮罩）、`ssoDomain`、`selfServicePassword`、OIDC 身分提供者設定（用戶端金鑰已遮罩），以及可以使用共用使用者的站點清單 `sites`：`listener`、`site` 識別站點，`sharedUsers` 為是否使用共用使用者，`otherAuth` 表示站點還有本機使用者或第三方登入身分，`forwardAuth` 表示站點使用轉發認證。中斷連線的站點與停用的預設站點不列出。\n\n所需權限：`webservice:read`。",
+        "description": "回傳共用使用者（密碼與 TOTP 金鑰已遮罩）、`ssoDomains`、`selfServicePassword`、OIDC 身分提供者設定（用戶端金鑰已遮罩），以及可以使用共用使用者的站點清單 `sites`：`listener`、`site` 識別站點，`sharedUsers` 為是否使用共用使用者，`otherAuth` 表示站點還有本機使用者或第三方登入身分，`forwardAuth` 表示站點使用轉發認證。中斷連線的站點與停用的預設站點不列出。\n\n所需權限：`webservice:read`。",
         "responses": {
           "200": {
             "content": {
@@ -54332,7 +54347,7 @@
         "x-token-allowed": true
       },
       "put": {
-        "description": "請求主體 `{\"authUsers\": [], \"ssoDomain\": \"\", \"selfServicePassword\": false, \"oidc\": {}, \"sites\": [{\"listener\": \"l1\", \"site\": \"s1\", \"sharedUsers\": true}]}`，欄位含義同全域設定，只修改這幾項，全域設定的其他項保持不變；遮罩預留位置表示保留原密碼或金鑰。`sites` 只需列出要修改的站點：啟用時站點若未開啟驗證會同時開啟網頁驗證；站點只透過共用使用者驗證時，取消需同時帶 `\"disableAuth\": true`，站點的網頁驗證與基本驗證會一起關閉、變為無需登入即可存取，未帶時拒絕；使用轉發認證的站點不能啟用。任一項校驗失敗時不儲存任何修改。\n\n所需權限：`webservice:write`。",
+        "description": "請求主體 `{\"authUsers\": [], \"ssoDomains\": [\"example.com\", \"example.org\"], \"selfServicePassword\": false, \"oidc\": {}, \"sites\": [{\"listener\": \"l1\", \"site\": \"s1\", \"sharedUsers\": true}]}`，欄位含義同全域設定，只修改這幾項，全域設定的其他項保持不變；遮罩預留位置表示保留原密碼或金鑰。`ssoDomains` 中的網域不能互相包含（如 example.com 與 a.example.com），每個網域內的站點各自通用登入狀態與 Passkey；早期版本的單一欄位 `ssoDomain` 仍然接受，併入清單。`sites` 只需列出要修改的站點：啟用時站點若未開啟驗證會同時開啟網頁驗證；站點只透過共用使用者驗證時，取消需同時帶 `\"disableAuth\": true`，站點的網頁驗證與基本驗證會一起關閉、變為無需登入即可存取，未帶時拒絕；使用轉發認證的站點不能啟用。任一項校驗失敗時不儲存任何修改。\n\n所需權限：`webservice:write`。",
         "requestBody": {
           "content": {
             "application/json": {

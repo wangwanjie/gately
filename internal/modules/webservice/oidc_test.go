@@ -66,7 +66,7 @@ func newOIDCFixture(t *testing.T, issuerHost, ssoDomain string) *oidcFixture {
 		t.Fatal(err)
 	}
 	f.users = users
-	r.auth.shared.set(users, ssoDomain)
+	r.auth.shared.set(users, ssoList(ssoDomain))
 	f.host = issuerHost
 	if issuerHost == "" {
 		f.host = addr
@@ -551,7 +551,7 @@ func TestOIDCRefreshAndRevocation(t *testing.T) {
 	pending := f.code(authorizeQuery("gitea", oidcTestRedirect), cookie)
 	users := append([]AuthUser{}, f.users...)
 	users[0].Password = "$2a$10$" + strings.Repeat("a", 53)
-	f.r.auth.shared.set(users, "")
+	f.r.auth.shared.set(users, nil)
 	if st, _ := f.token(url.Values{"grant_type": {"authorization_code"}, "code": {pending}, "redirect_uri": {oidcTestRedirect}}, "gitea", oidcTestSecret); st != 400 {
 		t.Fatal("修改密码后授权码应失效")
 	}
@@ -562,7 +562,7 @@ func TestOIDCRefreshAndRevocation(t *testing.T) {
 		t.Fatal("修改密码后签发者上的会话应失效")
 	}
 	// 删除客户端后 Access Token 不能再查询用户信息
-	f.r.auth.shared.set(f.users, "")
+	f.r.auth.shared.set(f.users, nil)
 	set := f.set
 	set.Clients = set.Clients[1:]
 	_ = f.r.auth.oidc.set(set)
@@ -818,7 +818,7 @@ func TestOIDCAccessTokenRevocation(t *testing.T) {
 	}
 	users := append([]AuthUser{}, f.users...)
 	users[0].Password = "$2a$10$" + strings.Repeat("b", 53)
-	f.r.auth.shared.set(users, "")
+	f.r.auth.shared.set(users, nil)
 	resp, _ := f.do("GET", oidcUserinfoPath, nil, map[string]string{"Authorization": "Bearer " + access})
 	if resp.StatusCode != http.StatusUnauthorized || !strings.Contains(resp.Header.Get("WWW-Authenticate"), "invalid_token") {
 		t.Fatalf("修改密码后 Access Token 应失效: %d", resp.StatusCode)
@@ -960,7 +960,7 @@ func TestOIDCSubjectStable(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	f.r.auth.shared.set(renamed, "")
+	f.r.auth.shared.set(renamed, nil)
 	if got := sub("alice-renamed", "alice-pw"); got != before {
 		t.Fatalf("改名后 sub 应保持不变: %v → %v", before, got)
 	}
@@ -969,7 +969,7 @@ func TestOIDCSubjectStable(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	f.r.auth.shared.set(again, "")
+	f.r.auth.shared.set(again, nil)
 	if got := sub("alice", "alice-pw"); got == before {
 		t.Fatal("删除后同名新建的用户不应继承原用户的 sub")
 	}

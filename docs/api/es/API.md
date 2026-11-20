@@ -3014,6 +3014,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `realPortHeader` | string |
 | `selfServicePassword` | boolean |
 | `ssoDomain` | string |
+| `ssoDomains` | Lista de string |
 | `trustedProxies` | Lista de string |
 
 ### webservice.ShareLink
@@ -3372,6 +3373,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `selfServicePassword` | boolean |
 | `sites` | Lista de `webservice.SiteSharedUsers` |
 | `ssoDomain` | string |
+| `ssoDomains` | Lista de string |
 
 ### webservice.UsersView
 
@@ -3382,7 +3384,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `passkeyLogin` | boolean |
 | `selfServicePassword` | boolean |
 | `sites` | Lista de `webservice.UserSite` |
-| `ssoDomain` | string |
+| `ssoDomains` | Lista de string |
 
 ### webservice.banRequest
 

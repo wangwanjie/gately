@@ -82,14 +82,14 @@ func useSharedUsers(t *testing.T, a *authenticator, users []AuthUser) {
 		t.Fatal(err)
 	}
 	var mu sync.Mutex
-	a.shared.set(users, "")
+	a.shared.set(users, nil)
 	a.changeShared = func(u AuthUser, hash string) error {
 		mu.Lock()
 		defer mu.Unlock()
 		for i := range users {
 			if users[i].ID == u.ID && users[i].Password == u.Password {
 				users[i].Password = hash
-				a.shared.set(users, "")
+				a.shared.set(users, nil)
 				return nil
 			}
 		}
@@ -279,7 +279,7 @@ func TestChangeSharedPassword(t *testing.T) {
 	}
 	users, _ := normalizeAuthUsers([]AuthUser{{Name: "alice", Password: "old-password"}}, nil)
 	m.cfg.Settings.AuthUsers = users
-	m.auth.shared.set(users, "")
+	m.auth.shared.set(users, nil)
 	u := users[0]
 	if err := m.changeSharedPassword(u, "$2a$new"); err != nil {
 		t.Fatal(err)

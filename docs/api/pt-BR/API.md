@@ -3014,6 +3014,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `realPortHeader` | string |
 | `selfServicePassword` | boolean |
 | `ssoDomain` | string |
+| `ssoDomains` | Array de string |
 | `trustedProxies` | Array de string |
 
 ### webservice.ShareLink
@@ -3372,6 +3373,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `selfServicePassword` | boolean |
 | `sites` | Array de `webservice.SiteSharedUsers` |
 | `ssoDomain` | string |
+| `ssoDomains` | Array de string |
 
 ### webservice.UsersView
 
@@ -3382,7 +3384,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `passkeyLogin` | boolean |
 | `selfServicePassword` | boolean |
 | `sites` | Array de `webservice.UserSite` |
-| `ssoDomain` | string |
+| `ssoDomains` | Array de string |
 
 ### webservice.banRequest
 

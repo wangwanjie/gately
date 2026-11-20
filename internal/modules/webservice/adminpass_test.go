@@ -104,7 +104,7 @@ func adminPassListener(backendURL string) Listener {
 func startAdminPass(t *testing.T, ssoDomain string, backendURL string) (string, *listenerRunner) {
 	t.Helper()
 	addr, r := startRunner(t, adminPassListener(backendURL), nil, nil)
-	r.auth.shared.set(nil, ssoDomain)
+	r.auth.shared.set(nil, ssoList(ssoDomain))
 	r.auth.adminPass.Store(true)
 	return addr, r
 }
@@ -197,11 +197,11 @@ func TestAdminPassNoIssue(t *testing.T) {
 		t.Fatal("HTTP 请求不应签发桥接凭据")
 	}
 	r.auth.adminPass.Store(true)
-	r.auth.shared.set(nil, "")
+	r.auth.shared.set(nil, nil)
 	if resp, _ := get(t, noRedirect(), addr, "admin.example.test", "/", admin); bridgeCookie(resp) != nil {
 		t.Fatal("没有配置单点登录域时不应签发凭据")
 	}
-	r.auth.shared.set(nil, "example.test")
+	r.auth.shared.set(nil, []string{"example.test"})
 	if resp, _ := get(t, noRedirect(), addr, "admin.example.test", "/", admin); bridgeCookie(resp) == nil {
 		t.Fatal("条件齐备时应签发凭据")
 	}
@@ -386,7 +386,7 @@ func TestAnyAdminPass(t *testing.T) {
 func BenchmarkAdminPassIdleRequest(b *testing.B) {
 	a := newAuthenticator("s")
 	a.adminPass.Store(true)
-	a.shared.set(nil, "example.test")
+	a.shared.set(nil, []string{"example.test"})
 	r := httptest.NewRequest("GET", "http://basic.example.test/", nil)
 	w := httptest.NewRecorder()
 	site := Site{AdminPass: true, BasicAuth: true}

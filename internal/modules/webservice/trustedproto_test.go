@@ -122,7 +122,7 @@ func TestOIDCViaTrustedProxy(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	r.auth.shared.set(users, "")
+	r.auth.shared.set(users, nil)
 	set := OIDCSettings{Enable: true, Issuer: "https://auth.test", Clients: []OIDCClient{{ID: "gitea", Secret: oidcTestSecret, RedirectURIs: []string{oidcTestRedirect}}}}
 	if err := normalizeOIDC(&set, OIDCSettings{}); err != nil {
 		t.Fatal(err)

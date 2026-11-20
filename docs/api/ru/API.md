@@ -3014,6 +3014,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `realPortHeader` | string |
 | `selfServicePassword` | boolean |
 | `ssoDomain` | string |
+| `ssoDomains` | Массив из string |
 | `trustedProxies` | Массив из string |
 
 ### webservice.ShareLink
@@ -3372,6 +3373,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `selfServicePassword` | boolean |
 | `sites` | Массив из `webservice.SiteSharedUsers` |
 | `ssoDomain` | string |
+| `ssoDomains` | Массив из string |
 
 ### webservice.UsersView
 
@@ -3382,7 +3384,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `passkeyLogin` | boolean |
 | `selfServicePassword` | boolean |
 | `sites` | Массив из `webservice.UserSite` |
-| `ssoDomain` | string |
+| `ssoDomains` | Массив из string |
 
 ### webservice.banRequest
 

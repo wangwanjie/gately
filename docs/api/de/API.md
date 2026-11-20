@@ -3014,6 +3014,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `realPortHeader` | string |
 | `selfServicePassword` | boolean |
 | `ssoDomain` | string |
+| `ssoDomains` | Array von string |
 | `trustedProxies` | Array von string |
 
 ### webservice.ShareLink
@@ -3372,6 +3373,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `selfServicePassword` | boolean |
 | `sites` | Array von `webservice.SiteSharedUsers` |
 | `ssoDomain` | string |
+| `ssoDomains` | Array von string |
 
 ### webservice.UsersView
 
@@ -3382,7 +3384,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `passkeyLogin` | boolean |
 | `selfServicePassword` | boolean |
 | `sites` | Array von `webservice.UserSite` |
-| `ssoDomain` | string |
+| `ssoDomains` | Array von string |
 
 ### webservice.banRequest
 

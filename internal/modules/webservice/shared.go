@@ -52,8 +52,8 @@ type sharedEnv struct {
 	byID map[string]string
 	// byCred 为 Passkey 凭据 ID 到用户名的索引，供 Passkey 登录按凭据查找用户
 	byCred map[string]string
-	// domain 为单点登录 Cookie 域，空表示每个站点单独登录
-	domain string
+	// domains 为单点登录 Cookie 域，为空表示每个站点单独登录；各域互不嵌套，站点按所在的域各自通用登录态
+	domains []string
 }
 
 type sharedStore struct {
@@ -61,7 +61,7 @@ type sharedStore struct {
 	env sharedEnv
 }
 
-func (s *sharedStore) set(users []AuthUser, domain string) {
+func (s *sharedStore) set(users []AuthUser, domains []string) {
 	m := make(map[string]AuthUser, len(users))
 	ids := make(map[string]string, len(users))
 	creds := map[string]string{}
@@ -74,8 +74,14 @@ func (s *sharedStore) set(users []AuthUser, domain string) {
 			creds[c.ID] = u.Name
 		}
 	}
+	var ds []string
+	for _, d := range domains {
+		if d = strings.ToLower(strings.Trim(d, ". ")); d != "" {
+			ds = append(ds, d)
+		}
+	}
 	s.mu.Lock()
-	s.env = sharedEnv{users: m, byID: ids, byCred: creds, domain: strings.ToLower(strings.Trim(domain, ". "))}
+	s.env = sharedEnv{users: m, byID: ids, byCred: creds, domains: ds}
 	s.mu.Unlock()
 }
 
@@ -127,15 +133,16 @@ func ensureAuthUserIDs(users []AuthUser) bool {
 	return changed
 }
 
-// ssoFor 返回 host 可使用的单点登录 Cookie 域；host 不在该域下时返回空。
+// ssoFor 返回 host 所在的单点登录 Cookie 域；host 不在任何单点登录域下时返回空。
+// 保存时已拒绝互相嵌套的域，手工编辑配置留下嵌套时取最长（最具体）的那个。
 func (e sharedEnv) ssoFor(host string) string {
-	if e.domain == "" {
-		return ""
+	best := ""
+	for _, d := range e.domains {
+		if (host == d || strings.HasSuffix(host, "."+d)) && len(d) > len(best) {
+			best = d
+		}
 	}
-	if host == e.domain || strings.HasSuffix(host, "."+e.domain) {
-		return e.domain
-	}
-	return ""
+	return best
 }
 
 // checkPassword 校验共享用户的密码（常量时间比较用户名，未命中时也做一次哈希比较，避免通过耗时探测用户名）。
@@ -203,7 +210,8 @@ func (a *authenticator) issueSharedSession(w http.ResponseWriter, r *http.Reques
 	sess := siteSession{User: u.Name, Shared: true, Cred: a.sharedCred(u)}
 	c := &http.Cookie{Path: "/", Expires: time.Now().Add(sessionTTL), HttpOnly: true, Secure: requestIsHTTPS(r), SameSite: http.SameSiteLaxMode}
 	if domain := a.shared.get().ssoFor(host); domain != "" {
-		sess.Scope = "sso"
+		// 单点登录会话记下所属的域，只在该域下的站点有效
+		sess.Host, sess.Scope = domain, "sso"
 		c.Name, c.Domain = ssoCookie, domain
 	} else {
 		sess.Host, sess.Scope = host, s.scope
@@ -222,7 +230,9 @@ func (a *authenticator) validShared(r *http.Request, s Site, sess *siteSession) 
 	}
 	host := hostOnly(r.Host)
 	if sess.Scope == "sso" {
-		return env.ssoFor(host) != ""
+		d := env.ssoFor(host)
+		// 早期版本的单点登录会话没有记录所属的域（Host 为空），只能有一个单点登录域，沿用原规则
+		return d != "" && (sess.Host == "" || sess.Host == d)
 	}
 	return sess.Host == host && sess.Scope == s.scope
 }
@@ -351,6 +361,43 @@ func maskAuthUsers(users []AuthUser) []AuthUser {
 		out[i] = u
 	}
 	return out
+}
+
+// maxSSODomains 为单点登录域的数量上限。
+const maxSSODomains = 32
+
+// normalizeSSODomains 校验并整理单点登录域列表：逐个校验、去掉空项与重复项，拒绝互相嵌套的域
+// （同一站点只能属于一个单点登录域，否则登录态与 Passkey 的归属不确定）。
+func normalizeSSODomains(list []string) ([]string, error) {
+	out := []string{}
+	for _, raw := range list {
+		d, err := validateSSODomain(raw)
+		if err != nil {
+			return nil, err
+		}
+		if d == "" || slices.Contains(out, d) {
+			continue
+		}
+		for _, o := range out {
+			if strings.HasSuffix(d, "."+o) || strings.HasSuffix(o, "."+d) {
+				return nil, fmt.Errorf("单点登录域 %s 与 %s 互相包含，同一站点只能属于一个单点登录域", o, d)
+			}
+		}
+		out = append(out, d)
+	}
+	if len(out) > maxSSODomains {
+		return nil, fmt.Errorf("单点登录域最多 %d 个", maxSSODomains)
+	}
+	return out, nil
+}
+
+// mergeSSODomain 把早期版本的单个单点登录域并入列表（放在最前），用于读取旧配置与兼容旧接口请求。
+func mergeSSODomain(list []string, legacy string) []string {
+	legacy = strings.ToLower(strings.Trim(strings.TrimSpace(legacy), "."))
+	if legacy == "" || slices.Contains(list, legacy) {
+		return list
+	}
+	return append([]string{legacy}, list...)
 }
 
 // validateSSODomain 校验单点登录域：必须是至少两段的域名。

@@ -116,6 +116,11 @@ func (m *Module) Init(env module.Env) error {
 			return err
 		}
 	}
+	// 早期版本只有一个单点登录域：并入列表，只改内存，下次保存时写入新字段
+	if st := &m.cfg.Settings; st.SSODomain != "" {
+		st.SSODomains = mergeSSODomain(st.SSODomains, st.SSODomain)
+		st.SSODomain = ""
+	}
 	// 老配置中的共享用户没有 ID：加载时补生成并立即保存，保证 OIDC 的 sub 从此保持稳定
 	if ensureAuthUserIDs(m.cfg.Settings.AuthUsers) {
 		if err := m.saveLocked(); err != nil {
@@ -144,7 +149,7 @@ func (m *Module) Init(env module.Env) error {
 		}
 		m.realIP.set(from, headers, port)
 	}
-	m.auth.shared.set(m.cfg.Settings.AuthUsers, m.cfg.Settings.SSODomain)
+	m.auth.shared.set(m.cfg.Settings.AuthUsers, m.cfg.Settings.SSODomains)
 	m.refreshAdminPass()
 	// 手工编辑配置填入过短的认证标记密钥时不启用，避免弱密钥被猜出后伪造标记
 	if k := m.cfg.Settings.AuthMarkerKey; k != "" && len(k) < minAuthMarkerKey {
@@ -592,7 +597,9 @@ func oauthSecrets(providers []OAuthProvider) map[string]string {
 // 外层同名字段优先于内嵌 Settings 的字段解码。
 type settingsPut struct {
 	Settings
-	AuthUsers           *[]AuthUser   `json:"authUsers"`
+	AuthUsers  *[]AuthUser `json:"authUsers"`
+	SSODomains *[]string   `json:"ssoDomains"`
+	// SSODomain 为早期版本的单个单点登录域，仍然接受：空字符串表示清空，否则替换为只有这一个域
 	SSODomain           *string       `json:"ssoDomain"`
 	SelfServicePassword *bool         `json:"selfServicePassword"`
 	PasskeyLogin        *bool         `json:"passkeyLogin"`
@@ -662,7 +669,8 @@ func (m *Module) handlePutSettings(w http.ResponseWriter, r *http.Request) {
 	}
 	s.TrustedProxies = cleanList(s.TrustedProxies)
 	// 省略的认证用户相关字段沿用原值（原值已规范化），提供的字段照常校验
-	s.AuthUsers, s.SSODomain, s.SelfServicePassword, s.OIDC = old.AuthUsers, old.SSODomain, old.SelfServicePassword, old.OIDC
+	s.AuthUsers, s.SSODomains, s.SelfServicePassword, s.OIDC = old.AuthUsers, old.SSODomains, old.SelfServicePassword, old.OIDC
+	s.SSODomain = ""
 	s.PasskeyLogin = old.PasskeyLogin
 	if put.SelfServicePassword != nil {
 		s.SelfServicePassword = *put.SelfServicePassword
@@ -678,13 +686,20 @@ func (m *Module) handlePutSettings(w http.ResponseWriter, r *http.Request) {
 		}
 		s.AuthUsers = users
 	}
-	if put.SSODomain != nil {
-		d, err := validateSSODomain(*put.SSODomain)
+	if put.SSODomains != nil || put.SSODomain != nil {
+		var list []string
+		if put.SSODomains != nil {
+			list = *put.SSODomains
+		}
+		if put.SSODomain != nil {
+			list = mergeSSODomain(list, *put.SSODomain)
+		}
+		ds, err := normalizeSSODomains(list)
 		if err != nil {
 			httpx.Error(w, http.StatusBadRequest, "%v", err)
 			return
 		}
-		s.SSODomain = d
+		s.SSODomains = ds
 	}
 	if put.OIDC != nil {
 		o := *put.OIDC
@@ -758,7 +773,7 @@ func (m *Module) changeSharedPassword(u AuthUser, hash string) error {
 		m.cfg.Settings.AuthUsers = old
 		return fmt.Errorf("保存失败: %v", err)
 	}
-	m.auth.shared.set(users, m.cfg.Settings.SSODomain)
+	m.auth.shared.set(users, m.cfg.Settings.SSODomains)
 	return nil
 }
 
@@ -789,7 +804,7 @@ func (m *Module) saveSharedPasskeys(userID string, mutate func(all []AuthUser, i
 		m.cfg.Settings.AuthUsers = old
 		return fmt.Errorf("保存失败: %v", err)
 	}
-	m.auth.shared.set(users, m.cfg.Settings.SSODomain)
+	m.auth.shared.set(users, m.cfg.Settings.SSODomains)
 	return nil
 }
 

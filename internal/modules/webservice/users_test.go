@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"net/http/httptest"
+	"slices"
 	"strings"
 	"testing"
 
@@ -129,7 +130,7 @@ func TestPutSettingsKeepsUsers(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	m.cfg.Settings.AuthUsers, m.cfg.Settings.SSODomain, m.cfg.Settings.SelfServicePassword = users, "example.com", true
+	m.cfg.Settings.AuthUsers, m.cfg.Settings.SSODomains, m.cfg.Settings.SelfServicePassword = users, []string{"example.com", "example.org"}, true
 	put := func(body string) int {
 		rec := httptest.NewRecorder()
 		r := httptest.NewRequest("PUT", "/settings", strings.NewReader(body))
@@ -141,7 +142,7 @@ func TestPutSettingsKeepsUsers(t *testing.T) {
 		t.Fatalf("保存失败: %d", code)
 	}
 	s := m.cfg.Settings
-	if len(s.AuthUsers) != 1 || s.AuthUsers[0].Password != users[0].Password || s.SSODomain != "example.com" || !s.SelfServicePassword {
+	if len(s.AuthUsers) != 1 || s.AuthUsers[0].Password != users[0].Password || !slices.Equal(s.SSODomains, []string{"example.com", "example.org"}) || !s.SelfServicePassword {
 		t.Fatalf("省略的认证用户设置应保留: %+v", s)
 	}
 	if s.AutoBanSeconds != 60 || len(s.TrustedProxies) != 1 {
@@ -150,10 +151,26 @@ func TestPutSettingsKeepsUsers(t *testing.T) {
 	if _, ok := m.auth.shared.get().checkPassword("alice", "alice-pw"); !ok {
 		t.Fatal("保留的共享用户应继续生效")
 	}
+	if code := put(`{"enable":true,"ssoDomains":["A.example.net.","example.io","example.io"]}`); code != 200 {
+		t.Fatalf("保存失败: %d", code)
+	}
+	if s := m.cfg.Settings; !slices.Equal(s.SSODomains, []string{"a.example.net", "example.io"}) {
+		t.Fatalf("单点登录域应规范化并去重: %v", s.SSODomains)
+	}
+	if code := put(`{"enable":true,"ssoDomains":["example.net","a.example.net"]}`); code != 400 {
+		t.Fatalf("互相嵌套的单点登录域应被拒绝: %d", code)
+	}
+	// 早期版本的单个字段仍然接受：空字符串清空单点登录域
 	if code := put(`{"enable":true,"authUsers":[],"ssoDomain":"","selfServicePassword":false}`); code != 200 {
 		t.Fatalf("保存失败: %d", code)
 	}
-	if s := m.cfg.Settings; len(s.AuthUsers) != 0 || s.SSODomain != "" || s.SelfServicePassword {
+	if s := m.cfg.Settings; len(s.AuthUsers) != 0 || len(s.SSODomains) != 0 || s.SSODomain != "" || s.SelfServicePassword {
 		t.Fatalf("显式提供的字段应照常修改: %+v", s)
+	}
+	if code := put(`{"enable":true,"ssoDomain":"legacy.example"}`); code != 200 {
+		t.Fatalf("保存失败: %d", code)
+	}
+	if s := m.cfg.Settings; !slices.Equal(s.SSODomains, []string{"legacy.example"}) || s.SSODomain != "" {
+		t.Fatalf("旧字段应转为列表: %v %q", s.SSODomains, s.SSODomain)
 	}
 }

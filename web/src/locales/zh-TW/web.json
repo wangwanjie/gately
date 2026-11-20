@@ -212,7 +212,7 @@
   "sharedUsers": "共用使用者",
   "sharedUsersHelp": "可在多個站點共用的登入帳號，可為每個使用者啟用 TOTP 二次驗證；站點在「網頁認證」中勾選「使用共用使用者」後生效，可取代 Authelia 等外部認證",
   "ssoDomain": "單一登入網域",
-  "ssoDomainHelp": "例如 example.com：共用使用者在該網域及其子網域的任一站點登入後，其他站點無需再登入；留空則每個站點單獨登入",
+  "ssoDomainHelp": "可填多個，用逗號或空格分隔，例如 example.com, example.org：共用使用者在某個網域及其子網域的任一站點登入後，該網域內的其他站點無需再登入，Passkey 也在該網域內通用；各網域彼此獨立，不能互相包含。留空則每個站點單獨登入",
   "selfServicePassword": "自助修改密碼",
   "selfServicePasswordHelp": "開啟後，共用使用者可在開啟「使用共用使用者」的站點造訪 {site}，或在 OIDC 簽發者網域造訪 {oidc}，輸入目前密碼（及動態驗證碼）後修改自己的密碼；登入頁也會顯示入口。修改後該使用者在各站點的登入立即失效，已簽發的 OIDC 重新整理權杖與 Access Token 同時作廢",
   "oidcDivider": "OIDC 身分提供者",

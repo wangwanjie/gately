@@ -4757,6 +4757,12 @@
           "ssoDomain": {
             "type": "string"
           },
+          "ssoDomains": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
           "trustedProxies": {
             "items": {
               "type": "string"
@@ -5729,6 +5735,12 @@
           },
           "ssoDomain": {
             "type": "string"
+          },
+          "ssoDomains": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
           }
         },
         "type": "object"
@@ -5756,8 +5768,11 @@
             },
             "type": "array"
           },
-          "ssoDomain": {
-            "type": "string"
+          "ssoDomains": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
           }
         },
         "type": "object"
@@ -54276,7 +54291,7 @@
     },
     "/api/webservice/users": {
       "get": {
-        "description": "Retorna os usuários compartilhados (senhas e segredos TOTP mascarados), `ssoDomain`, `selfServicePassword`, as configurações do provedor de identidade OIDC (segredos de cliente mascarados) e `sites`, os sites que podem usar usuários compartilhados: `listener` e `site` identificam o site, `sharedUsers` indica se ele usa usuários compartilhados, `otherAuth` que o site também tem usuários locais ou identidades de login de terceiros e `forwardAuth` que usa autenticação delegada. Sites que encerram a conexão e sites padrão desativados não são listados.\n\nPermissão necessária: `webservice:read`.",
+        "description": "Retorna os usuários compartilhados (senhas e segredos TOTP mascarados), `ssoDomains`, `selfServicePassword`, as configurações do provedor de identidade OIDC (segredos de cliente mascarados) e `sites`, os sites que podem usar usuários compartilhados: `listener` e `site` identificam o site, `sharedUsers` indica se ele usa usuários compartilhados, `otherAuth` que o site também tem usuários locais ou identidades de login de terceiros e `forwardAuth` que usa autenticação delegada. Sites que encerram a conexão e sites padrão desativados não são listados.\n\nPermissão necessária: `webservice:read`.",
         "responses": {
           "200": {
             "content": {
@@ -54332,7 +54347,7 @@
         "x-token-allowed": true
       },
       "put": {
-        "description": "Corpo da requisição `{\"authUsers\": [], \"ssoDomain\": \"\", \"selfServicePassword\": false, \"oidc\": {}, \"sites\": [{\"listener\": \"l1\", \"site\": \"s1\", \"sharedUsers\": true}]}`. Os campos têm o mesmo significado das configurações globais; só estes são alterados e as demais configurações globais ficam como estão; o marcador mascarado mantém a senha ou o segredo atual. `sites` lista apenas os sites a alterar: ativar em um site sem autenticação também ativa a autenticação web; desativar em um site que autentica apenas com usuários compartilhados exige `\"disableAuth\": true`, que também desativa a autenticação web e básica dele e deixa de exigir login, caso contrário é recusado; sites com autenticação delegada não podem ser ativados. Se algo falhar na validação, nada é salvo.\n\nPermissão necessária: `webservice:write`.",
+        "description": "Corpo da requisição `{\"authUsers\": [], \"ssoDomains\": [\"example.com\", \"example.org\"], \"selfServicePassword\": false, \"oidc\": {}, \"sites\": [{\"listener\": \"l1\", \"site\": \"s1\", \"sharedUsers\": true}]}`. Os campos têm o mesmo significado das configurações globais; só estes são alterados e as demais configurações globais ficam como estão; o marcador mascarado mantém a senha ou o segredo atual. Os domínios de `ssoDomains` não podem conter um ao outro (como example.com e a.example.com); os sites de cada domínio compartilham o login e as Passkeys dentro desse domínio; o campo único `ssoDomain` de versões anteriores ainda é aceito e incluído na lista. `sites` lista apenas os sites a alterar: ativar em um site sem autenticação também ativa a autenticação web; desativar em um site que autentica apenas com usuários compartilhados exige `\"disableAuth\": true`, que também desativa a autenticação web e básica dele e deixa de exigir login, caso contrário é recusado; sites com autenticação delegada não podem ser ativados. Se algo falhar na validação, nada é salvo.\n\nPermissão necessária: `webservice:write`.",
         "requestBody": {
           "content": {
             "application/json": {

@@ -153,20 +153,20 @@ func TestTrustedBasicInvalidation(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	a.shared.set(users, "")
+	a.shared.set(users, nil)
 	a.rememberBasic(site, "carol", "pw", true)
 	if !a.trustedBasic(req("carol", "pw"), site) {
 		t.Fatal("共享用户验证过的凭据应被信任")
 	}
 	withTOTP := []AuthUser{users[0]}
 	withTOTP[0].TOTPSecret = "JBSWY3DPEHPK3PXP"
-	a.shared.set(withTOTP, "")
+	a.shared.set(withTOTP, nil)
 	if a.trustedBasic(req("carol", "pw"), site) {
 		t.Fatal("共享用户启用 TOTP 后不应再信任基本认证凭据")
 	}
 	noShared := site
 	noShared.SharedUsers = false
-	a.shared.set(users, "")
+	a.shared.set(users, nil)
 	if a.trustedBasic(req("carol", "pw"), noShared) {
 		t.Fatal("站点关闭共享用户后不应信任共享用户凭据")
 	}

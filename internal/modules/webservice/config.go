@@ -269,8 +269,11 @@ type Settings struct {
 	AutoBanSeconds int `json:"autoBanSeconds"`
 	// AuthUsers 为可在多个站点共用的认证用户，站点开启“使用共享用户”后生效
 	AuthUsers []AuthUser `json:"authUsers"`
-	// SSODomain 为共享用户登录态的 Cookie 域（如 example.com），设置后该域及其子域名下的站点登录一次即可通用
-	SSODomain string `json:"ssoDomain"`
+	// SSODomains 为共享用户登录态的 Cookie 域（如 example.com、example.org），设置后每个域及其子域名下的站点
+	// 登录一次即可在该域内通用；各域互不嵌套，不同域之间的登录态与 Passkey 相互独立
+	SSODomains []string `json:"ssoDomains"`
+	// SSODomain 为早期版本的单个单点登录域，加载时并入 SSODomains 并清空，下次保存时从文件中去掉
+	SSODomain string `json:"ssoDomain,omitempty"`
 	// OIDC 为内置的 OIDC 身份提供方，把共享用户提供给支持 OpenID Connect 的应用登录
 	OIDC OIDCSettings `json:"oidc"`
 	// SelfServicePassword 为 true 时共享用户可在开启“使用共享用户”的站点与 OIDC 签发者域名上自助修改密码（认证路径下的 /password）

@@ -3014,6 +3014,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `realPortHeader` | string |
 | `selfServicePassword` | boolean |
 | `ssoDomain` | string |
+| `ssoDomains` | Tableau de string |
 | `trustedProxies` | Tableau de string |
 
 ### webservice.ShareLink
@@ -3372,6 +3373,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `selfServicePassword` | boolean |
 | `sites` | Tableau de `webservice.SiteSharedUsers` |
 | `ssoDomain` | string |
+| `ssoDomains` | Tableau de string |
 
 ### webservice.UsersView
 
@@ -3382,7 +3384,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `passkeyLogin` | boolean |
 | `selfServicePassword` | boolean |
 | `sites` | Tableau de `webservice.UserSite` |
-| `ssoDomain` | string |
+| `ssoDomains` | Tableau de string |
 
 ### webservice.banRequest
 

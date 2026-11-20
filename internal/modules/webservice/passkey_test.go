@@ -50,7 +50,7 @@ func newPKEnv(t *testing.T, users []AuthUser, sso string) *pkEnv {
 		t.Fatal(err)
 	}
 	e.users = norm
-	e.a.shared.set(e.users, sso)
+	e.a.shared.set(e.users, ssoList(sso))
 	e.a.passkeyOn.Store(true)
 	e.a.savePasskeys = func(id string, mutate func(all []AuthUser, i int) ([]webauthn.Credential, error)) error {
 		e.mu.Lock()
@@ -70,7 +70,7 @@ func newPKEnv(t *testing.T, users []AuthUser, sso string) *pkEnv {
 			next[i].Passkeys = list
 			e.users = next
 			e.saves++
-			e.a.shared.set(e.users, e.sso)
+			e.a.shared.set(e.users, ssoList(e.sso))
 			return nil
 		}
 		return errPasswordChanged
@@ -379,7 +379,7 @@ func TestPasskeySSODomain(t *testing.T) {
 	}
 	// 单点登录域调整后，旧凭据 RP ID 不再匹配
 	e.sso = "other.test"
-	e.a.shared.set(e.users, e.sso)
+	e.a.shared.set(e.users, ssoList(e.sso))
 	if resp, _ := e.login("a.example.test", key); resp.StatusCode != 401 {
 		t.Fatalf("单点登录域变化后旧凭据应失效: %d", resp.StatusCode)
 	}
@@ -435,7 +435,7 @@ func TestPasskeyManageLifecycle(t *testing.T) {
 	// 修改密码后令牌失效（凭据指纹变化）
 	e.mu.Lock()
 	e.users[0].Password = "$2a$04$" + strings.Repeat("a", 53)
-	e.a.shared.set(e.users, "")
+	e.a.shared.set(e.users, nil)
 	e.mu.Unlock()
 	if resp, _ := e.post("a.test", "/manage/begin", "http://a.test", map[string]string{"token": tok}); resp.StatusCode != 401 {
 		t.Fatalf("改密后令牌应失效: %d", resp.StatusCode)
@@ -590,7 +590,7 @@ func pkModule(t *testing.T) *Module {
 	}
 	m.cfg.Settings.AuthUsers = users
 	m.cfg.Settings.PasskeyLogin = true
-	m.auth.shared.set(users, "")
+	m.auth.shared.set(users, nil)
 	m.auth.passkeyOn.Store(true)
 	return m
 }
@@ -725,7 +725,7 @@ func TestPasskeyOnOIDCIssuerLogin(t *testing.T) {
 				next := append([]AuthUser{}, f.users...)
 				next[i].Passkeys = list
 				f.users = next
-				f.r.auth.shared.set(next, "")
+				f.r.auth.shared.set(next, nil)
 				return nil
 			}
 		}
@@ -824,7 +824,7 @@ func TestPasskeyChallengeBoundToHostSameRP(t *testing.T) {
 func TestPasskeyPersistRejectsStaleCounter(t *testing.T) {
 	e := newPKEnv(t, []AuthUser{pkAlice}, "")
 	e.users[0].Passkeys = []webauthn.Credential{{ID: "c", RPID: "a.test", SignCount: 5}}
-	e.a.shared.set(e.users, "")
+	e.a.shared.set(e.users, nil)
 	u := e.users[0]
 	if err := e.a.persistPasskeyUse(u, webauthn.Credential{ID: "c", SignCount: 6}); err != nil {
 		t.Fatal(err)

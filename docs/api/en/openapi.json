@@ -4757,6 +4757,12 @@
           "ssoDomain": {
             "type": "string"
           },
+          "ssoDomains": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
           "trustedProxies": {
             "items": {
               "type": "string"
@@ -5729,6 +5735,12 @@
           },
           "ssoDomain": {
             "type": "string"
+          },
+          "ssoDomains": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
           }
         },
         "type": "object"
@@ -5756,8 +5768,11 @@
             },
             "type": "array"
           },
-          "ssoDomain": {
-            "type": "string"
+          "ssoDomains": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
           }
         },
         "type": "object"
@@ -54276,7 +54291,7 @@
     },
     "/api/webservice/users": {
       "get": {
-        "description": "Returns shared users (passwords and TOTP secrets masked), `ssoDomain`, `selfServicePassword`, the OIDC identity provider settings (client secrets masked), and `sites`, the sites that can use shared users: `listener` and `site` identify a site, `sharedUsers` tells whether it uses shared users, `otherAuth` means the site also has local users or third-party sign-in identities, and `forwardAuth` means it uses forward auth. Sites that close the connection and disabled default sites are not listed.\n\nRequired permission: `webservice:read`.",
+        "description": "Returns shared users (passwords and TOTP secrets masked), `ssoDomains`, `selfServicePassword`, the OIDC identity provider settings (client secrets masked), and `sites`, the sites that can use shared users: `listener` and `site` identify a site, `sharedUsers` tells whether it uses shared users, `otherAuth` means the site also has local users or third-party sign-in identities, and `forwardAuth` means it uses forward auth. Sites that close the connection and disabled default sites are not listed.\n\nRequired permission: `webservice:read`.",
         "responses": {
           "200": {
             "content": {
@@ -54332,7 +54347,7 @@
         "x-token-allowed": true
       },
       "put": {
-        "description": "Request body `{\"authUsers\": [], \"ssoDomain\": \"\", \"selfServicePassword\": false, \"oidc\": {}, \"sites\": [{\"listener\": \"l1\", \"site\": \"s1\", \"sharedUsers\": true}]}`. Fields mean the same as in the global settings; only these are changed and the other global settings stay as they are; the masked placeholder keeps the existing password or secret. `sites` lists only the sites to change: enabling shared users on a site without authentication also turns on web auth; clearing a site that authenticates only with shared users requires `\"disableAuth\": true`, which also turns off its web auth and basic auth so it no longer requires signing in, and is rejected otherwise; sites using forward auth cannot be enabled. If anything fails validation, nothing is saved.\n\nRequired permission: `webservice:write`.",
+        "description": "Request body `{\"authUsers\": [], \"ssoDomains\": [\"example.com\", \"example.org\"], \"selfServicePassword\": false, \"oidc\": {}, \"sites\": [{\"listener\": \"l1\", \"site\": \"s1\", \"sharedUsers\": true}]}`. Fields mean the same as in the global settings; only these are changed and the other global settings stay as they are; the masked placeholder keeps the existing password or secret. Domains in `ssoDomains` cannot contain one another (such as example.com and a.example.com); sites in each domain share sign-in and Passkeys within that domain; the single `ssoDomain` field of earlier versions is still accepted and merged into the list. `sites` lists only the sites to change: enabling shared users on a site without authentication also turns on web auth; clearing a site that authenticates only with shared users requires `\"disableAuth\": true`, which also turns off its web auth and basic auth so it no longer requires signing in, and is rejected otherwise; sites using forward auth cannot be enabled. If anything fails validation, nothing is saved.\n\nRequired permission: `webservice:write`.",
         "requestBody": {
           "content": {
             "application/json": {
