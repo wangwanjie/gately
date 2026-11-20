@@ -1079,7 +1079,7 @@ interface WebSettings {
   oauthProviders: OAuthProvider[]
   autoBanSeconds: number
   authUsers: AuthUser[]
-  ssoDomain: string
+  ssoDomains: string[] | null
   oidc: OIDCSettings
   // selfServicePassword 为是否允许共享用户自助修改密码
   selfServicePassword: boolean
@@ -2131,7 +2131,7 @@ function openSite(l: ListenerView, row?: SiteRow, copy = false) {
   void nextTick(() => siteForm.value?.clearValidate())
   fetchSettings()
     .then((s) => {
-      ssoDomainSet.value = !!s.ssoDomain
+      ssoDomainSet.value = !!s.ssoDomains?.length
     })
     .catch(() => {
       ssoDomainSet.value = true
@@ -2314,13 +2314,13 @@ async function fetchSettings() {
     Omit<WebSettings, 'oauthProviders' | 'authUsers' | 'oidc'> & { oauthProviders: OAuthProvider[] | null; authUsers: AuthUser[] | null; oidc?: Partial<OIDCSettings> | null }
   >('/api/webservice/settings')
   moduleEnabled.value = s.enable
-  return { ...s, oauthProviders: s.oauthProviders ?? [], authUsers: fromAPI(s.authUsers), ssoDomain: s.ssoDomain ?? '', oidc: oidcFromAPI(s.oidc), selfServicePassword: !!s.selfServicePassword }
+  return { ...s, oauthProviders: s.oauthProviders ?? [], authUsers: fromAPI(s.authUsers), ssoDomains: s.ssoDomains ?? [], oidc: oidcFromAPI(s.oidc), selfServicePassword: !!s.selfServicePassword }
 }
 
 // settingsBody 生成全局设置的请求体：共享用户、单点登录域、自助改密与 OIDC 由认证用户页维护，
 // 这里不提交，后端对省略的字段保留原值，避免对话框里的旧数据覆盖认证用户页刚保存的修改
 function settingsBody(s: WebSettings) {
-  const { authUsers: _u, ssoDomain: _d, selfServicePassword: _p, oidc: _o, ...rest } = s
+  const { authUsers: _u, ssoDomains: _d, selfServicePassword: _p, oidc: _o, ...rest } = s
   return rest
 }
 

@@ -14,7 +14,7 @@
           <SharedUsers v-model="form.authUsers" />
           <el-form :model="form" label-width="130px" :label-position="labelPosition" class="sub-form" @submit.prevent>
             <el-form-item :label="t('web.ssoDomain')">
-              <el-input v-model="form.ssoDomain" class="w-260" placeholder="example.com" />
+              <ListInput v-model="form.ssoDomains" :split="splitCommasOrSpaces" separator=", " class="w-420 mono" placeholder="example.com, example.org" data-test="sso-domains" />
               <div class="form-help">{{ t('web.ssoDomainHelp') }}</div>
             </el-form-item>
             <el-form-item :label="t('web.selfServicePassword')">
@@ -119,6 +119,8 @@ import { useCollapsed } from '../composables/useCollapsed'
 import { buildSections } from '../groupSort'
 import SaveBar from '../components/SaveBar.vue'
 import SharedUsers from '../components/SharedUsers.vue'
+import ListInput from '../components/ListInput.vue'
+import { splitCommasOrSpaces } from '../composables/useListText'
 import OIDCProvider from '../components/OIDCProvider.vue'
 import { useFormLayout } from '../composables/useIsMobile'
 import { type AuthUser, fromAPI, toAPI } from '../sharedUsers'
@@ -153,7 +155,7 @@ interface UserSite {
 
 interface UsersReply {
   authUsers: AuthUser[] | null
-  ssoDomain: string
+  ssoDomains: string[] | null
   selfServicePassword: boolean
   passkeyLogin: boolean
   oidc: Partial<OIDCSettings> | null
@@ -162,7 +164,7 @@ interface UsersReply {
 
 interface UsersForm {
   authUsers: AuthUser[]
-  ssoDomain: string
+  ssoDomains: string[]
   selfServicePassword: boolean
   passkeyLogin: boolean
   oidc: OIDCSettings
@@ -280,7 +282,7 @@ function snapshot(): string {
     return ''
   }
   const f = form.value
-  return JSON.stringify({ users: toAPI(f.authUsers), sso: f.ssoDomain.trim(), self: f.selfServicePassword, passkey: f.passkeyLogin, oidc: oidcToAPI(f.oidc), sites: changedSites() })
+  return JSON.stringify({ users: toAPI(f.authUsers), sso: f.ssoDomains, self: f.selfServicePassword, passkey: f.passkeyLogin, oidc: oidcToAPI(f.oidc), sites: changedSites() })
 }
 
 const dirty = computed(() => !!form.value && snapshot() !== savedJSON.value)
@@ -289,7 +291,7 @@ function apply(r: UsersReply) {
   lastReply = r
   form.value = {
     authUsers: fromAPI(r.authUsers),
-    ssoDomain: r.ssoDomain ?? '',
+    ssoDomains: r.ssoDomains ?? [],
     selfServicePassword: !!r.selfServicePassword,
     passkeyLogin: !!r.passkeyLogin,
     oidc: oidcFromAPI(r.oidc),
@@ -335,7 +337,7 @@ async function save() {
   }
   saving.value = true
   try {
-    const body = { authUsers: toAPI(f.authUsers), ssoDomain: f.ssoDomain.trim(), selfServicePassword: f.selfServicePassword, passkeyLogin: f.passkeyLogin, oidc: oidcToAPI(f.oidc), sites: changedSites() }
+    const body = { authUsers: toAPI(f.authUsers), ssoDomains: f.ssoDomains, selfServicePassword: f.selfServicePassword, passkeyLogin: f.passkeyLogin, oidc: oidcToAPI(f.oidc), sites: changedSites() }
     apply(await api.put<UsersReply>('/api/webservice/users', body))
     ElMessage.success(t('common.saved'))
   } catch (e) {
@@ -377,6 +379,10 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', onBeforeUnload)
 }
 .w-260 {
   width: 260px;
+  max-width: 100%;
+}
+.w-420 {
+  width: 420px;
   max-width: 100%;
 }
 .notice {

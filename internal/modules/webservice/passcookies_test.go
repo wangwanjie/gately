@@ -25,7 +25,7 @@ func TestPassAuthCookiesToBackendGately(t *testing.T) {
 	lanAddr, lan := startRunner(t, Listener{Sites: []Site{
 		{Enable: true, Key: "lan", Domains: []string{"*.sso.test"}, Targets: []string{app.URL}, WebAuth: true, SharedUsers: true},
 	}}, nil, nil)
-	lan.auth.shared.set(users, "sso.test")
+	lan.auth.shared.set(users, []string{"sso.test"})
 	// 公网 Gately：两个入口都反代到内网 Gately，只有 pass.sso.test 转发登录 Cookie
 	vpsAddr, _ := startRunner(t, Listener{Sites: []Site{
 		{Enable: true, Key: "pass", Domains: []string{"pass.sso.test"}, Targets: []string{"http://" + lanAddr}, PassAuthCookies: true},

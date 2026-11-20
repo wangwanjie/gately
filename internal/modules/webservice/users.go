@@ -18,7 +18,7 @@ import (
 // UsersSettings 为共享用户与 OIDC 身份提供方相关的设置，字段含义同 Settings 中的同名字段。
 type UsersSettings struct {
 	AuthUsers           []AuthUser `json:"authUsers"`
-	SSODomain           string     `json:"ssoDomain"`
+	SSODomains          []string   `json:"ssoDomains"`
 	SelfServicePassword bool       `json:"selfServicePassword"`
 	// PasskeyLogin 为是否允许共享用户注册 Passkey 并用它登录
 	PasskeyLogin bool         `json:"passkeyLogin"`
@@ -72,6 +72,8 @@ type SiteSharedUsers struct {
 type UsersRequest struct {
 	UsersSettings
 	Sites []SiteSharedUsers `json:"sites"`
+	// SSODomain 为早期版本的单个单点登录域，仍然接受，与 ssoDomains 合并
+	SSODomain string `json:"ssoDomain,omitempty"`
 }
 
 func (m *Module) registerUsers(r module.Router) {
@@ -92,7 +94,7 @@ func (m *Module) usersViewLocked() UsersView {
 	v := UsersView{
 		UsersSettings: UsersSettings{
 			AuthUsers:           maskAuthUsers(s.AuthUsers),
-			SSODomain:           s.SSODomain,
+			SSODomains:          s.SSODomains,
 			SelfServicePassword: s.SelfServicePassword,
 			PasskeyLogin:        s.PasskeyLogin,
 			OIDC:                maskOIDC(s.OIDC),
@@ -176,7 +178,7 @@ func normalizeUsersSettings(s *UsersSettings, old Settings) error {
 		return err
 	}
 	s.AuthUsers = users
-	if s.SSODomain, err = validateSSODomain(s.SSODomain); err != nil {
+	if s.SSODomains, err = normalizeSSODomains(s.SSODomains); err != nil {
 		return err
 	}
 	return normalizeOIDC(&s.OIDC, old.OIDC)
@@ -184,7 +186,7 @@ func normalizeUsersSettings(s *UsersSettings, old Settings) error {
 
 // applyUsersLocked 让已保存的共享用户、单点登录、自助改密与 OIDC 设置生效。
 func (m *Module) applyUsersLocked(s Settings) {
-	m.auth.shared.set(s.AuthUsers, s.SSODomain)
+	m.auth.shared.set(s.AuthUsers, s.SSODomains)
 	m.auth.selfAuth.Store(s.SelfServicePassword)
 	m.auth.passkeyOn.Store(s.PasskeyLogin)
 	if err := m.auth.oidc.set(s.OIDC); err != nil {
@@ -203,6 +205,7 @@ func (m *Module) handlePutUsers(w http.ResponseWriter, r *http.Request) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	old := m.cfg.Settings
+	req.SSODomains = mergeSSODomain(req.SSODomains, req.SSODomain)
 	if err := normalizeUsersSettings(&req.UsersSettings, old); err != nil {
 		httpx.Error(w, http.StatusBadRequest, "%v", err)
 		return
@@ -249,7 +252,7 @@ func (m *Module) handlePutUsers(w http.ResponseWriter, r *http.Request) {
 	}
 	s := old
 	s.AuthUsers = req.AuthUsers
-	s.SSODomain = req.SSODomain
+	s.SSODomains, s.SSODomain = req.SSODomains, ""
 	s.SelfServicePassword = req.SelfServicePassword
 	s.PasskeyLogin = req.PasskeyLogin
 	s.OIDC = req.OIDC
@@ -297,7 +300,7 @@ func (m *Module) handleDeleteUserPasskey(w http.ResponseWriter, r *http.Request)
 		httpx.Error(w, http.StatusInternalServerError, "保存失败: %v", err)
 		return
 	}
-	m.auth.shared.set(users, m.cfg.Settings.SSODomain)
+	m.auth.shared.set(users, m.cfg.Settings.SSODomains)
 	m.logs.Logger("").Warnf("管理员删除了共享用户 %s 的一个 Passkey", old[i].Name)
 	httpx.OK(w, m.usersViewLocked())
 }

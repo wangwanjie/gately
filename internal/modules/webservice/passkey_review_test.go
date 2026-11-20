@@ -26,7 +26,7 @@ func TestPasskeyExactDomainOnly(t *testing.T) {
 	}
 	addr, r := startRunner(t, l, nil, nil)
 	users, _ := normalizeAuthUsers([]AuthUser{pkAlice}, nil)
-	r.auth.shared.set(users, "sso.test")
+	r.auth.shared.set(users, []string{"sso.test"})
 	r.auth.passkeyOn.Store(true)
 	try := func(host string) int {
 		req, _ := http.NewRequest("POST", "http://"+addr+authPath+passkeyPath+"/login/begin", strings.NewReader("{}"))

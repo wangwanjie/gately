@@ -4757,6 +4757,12 @@
           "ssoDomain": {
             "type": "string"
           },
+          "ssoDomains": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
           "trustedProxies": {
             "items": {
               "type": "string"
@@ -5729,6 +5735,12 @@
           },
           "ssoDomain": {
             "type": "string"
+          },
+          "ssoDomains": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
           }
         },
         "type": "object"
@@ -5756,8 +5768,11 @@
             },
             "type": "array"
           },
-          "ssoDomain": {
-            "type": "string"
+          "ssoDomains": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
           }
         },
         "type": "object"
@@ -54276,7 +54291,7 @@
     },
     "/api/webservice/users": {
       "get": {
-        "description": "Liefert die gemeinsamen Benutzer (Passwörter und TOTP-Geheimnisse maskiert), `ssoDomain`, `selfServicePassword`, die Einstellungen des OIDC-Identitätsanbieters (Client-Geheimnisse maskiert) sowie `sites`, die Sites, die gemeinsame Benutzer verwenden können: `listener` und `site` identifizieren die Site, `sharedUsers` gibt an, ob sie gemeinsame Benutzer verwendet, `otherAuth`, dass sie zusätzlich lokale Benutzer oder Identitäten aus Drittanbieter-Anmeldungen hat, und `forwardAuth`, dass sie Forward-Auth verwendet. Sites, die die Verbindung trennen, und deaktivierte Standard-Sites werden nicht aufgeführt.\n\nErforderliche Berechtigung: `webservice:read`.",
+        "description": "Liefert die gemeinsamen Benutzer (Passwörter und TOTP-Geheimnisse maskiert), `ssoDomains`, `selfServicePassword`, die Einstellungen des OIDC-Identitätsanbieters (Client-Geheimnisse maskiert) sowie `sites`, die Sites, die gemeinsame Benutzer verwenden können: `listener` und `site` identifizieren die Site, `sharedUsers` gibt an, ob sie gemeinsame Benutzer verwendet, `otherAuth`, dass sie zusätzlich lokale Benutzer oder Identitäten aus Drittanbieter-Anmeldungen hat, und `forwardAuth`, dass sie Forward-Auth verwendet. Sites, die die Verbindung trennen, und deaktivierte Standard-Sites werden nicht aufgeführt.\n\nErforderliche Berechtigung: `webservice:read`.",
         "responses": {
           "200": {
             "content": {
@@ -54332,7 +54347,7 @@
         "x-token-allowed": true
       },
       "put": {
-        "description": "Request-Body `{\"authUsers\": [], \"ssoDomain\": \"\", \"selfServicePassword\": false, \"oidc\": {}, \"sites\": [{\"listener\": \"l1\", \"site\": \"s1\", \"sharedUsers\": true}]}`. Die Felder bedeuten dasselbe wie in den globalen Einstellungen; nur diese werden geändert, die übrigen globalen Einstellungen bleiben unverändert; der maskierte Platzhalter behält das bisherige Passwort bzw. Geheimnis. `sites` enthält nur die zu ändernden Sites: Beim Einschalten für eine Site ohne Authentifizierung wird auch Web-Auth eingeschaltet; das Abschalten für eine Site, die nur über gemeinsame Benutzer authentifiziert, erfordert `\"disableAuth\": true`, wodurch auch ihre Web-Auth und Basic-Auth ausgeschaltet werden und sie keine Anmeldung mehr verlangt, sonst wird es abgelehnt; Sites mit Forward-Auth können nicht eingeschaltet werden. Schlägt eine Prüfung fehl, wird nichts gespeichert.\n\nErforderliche Berechtigung: `webservice:write`.",
+        "description": "Request-Body `{\"authUsers\": [], \"ssoDomains\": [\"example.com\", \"example.org\"], \"selfServicePassword\": false, \"oidc\": {}, \"sites\": [{\"listener\": \"l1\", \"site\": \"s1\", \"sharedUsers\": true}]}`. Die Felder bedeuten dasselbe wie in den globalen Einstellungen; nur diese werden geändert, die übrigen globalen Einstellungen bleiben unverändert; der maskierte Platzhalter behält das bisherige Passwort bzw. Geheimnis. Die Domains in `ssoDomains` dürfen sich nicht enthalten (etwa example.com und a.example.com); Sites einer Domain teilen Anmeldung und Passkeys innerhalb dieser Domain; das einzelne Feld `ssoDomain` früherer Versionen wird weiterhin akzeptiert und in die Liste übernommen. `sites` enthält nur die zu ändernden Sites: Beim Einschalten für eine Site ohne Authentifizierung wird auch Web-Auth eingeschaltet; das Abschalten für eine Site, die nur über gemeinsame Benutzer authentifiziert, erfordert `\"disableAuth\": true`, wodurch auch ihre Web-Auth und Basic-Auth ausgeschaltet werden und sie keine Anmeldung mehr verlangt, sonst wird es abgelehnt; Sites mit Forward-Auth können nicht eingeschaltet werden. Schlägt eine Prüfung fehl, wird nichts gespeichert.\n\nErforderliche Berechtigung: `webservice:write`.",
         "requestBody": {
           "content": {
             "application/json": {

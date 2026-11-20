@@ -4757,6 +4757,12 @@
           "ssoDomain": {
             "type": "string"
           },
+          "ssoDomains": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
           "trustedProxies": {
             "items": {
               "type": "string"
@@ -5729,6 +5735,12 @@
           },
           "ssoDomain": {
             "type": "string"
+          },
+          "ssoDomains": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
           }
         },
         "type": "object"
@@ -5756,8 +5768,11 @@
             },
             "type": "array"
           },
-          "ssoDomain": {
-            "type": "string"
+          "ssoDomains": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
           }
         },
         "type": "object"
@@ -54276,7 +54291,7 @@
     },
     "/api/webservice/users": {
       "get": {
-        "description": "返回共享用户（密码与 TOTP 密钥脱敏）、`ssoDomain`、`selfServicePassword`、OIDC 身份提供方设置（客户端密钥脱敏），以及可以使用共享用户的站点列表 `sites`：`listener`、`site` 标识站点，`sharedUsers` 为是否使用共享用户，`otherAuth` 表示站点还有本地用户或第三方登录身份，`forwardAuth` 表示站点使用转发认证。断开连接的站点与停用的默认站点不列出。\n\n所需权限：`webservice:read`。",
+        "description": "返回共享用户（密码与 TOTP 密钥脱敏）、单点登录域列表 `ssoDomains`、`selfServicePassword`、OIDC 身份提供方设置（客户端密钥脱敏），以及可以使用共享用户的站点列表 `sites`：`listener`、`site` 标识站点，`sharedUsers` 为是否使用共享用户，`otherAuth` 表示站点还有本地用户或第三方登录身份，`forwardAuth` 表示站点使用转发认证。断开连接的站点与停用的默认站点不列出。\n\n所需权限：`webservice:read`。",
         "responses": {
           "200": {
             "content": {
@@ -54332,7 +54347,7 @@
         "x-token-allowed": true
       },
       "put": {
-        "description": "请求体 `{\"authUsers\": [], \"ssoDomain\": \"\", \"selfServicePassword\": false, \"oidc\": {}, \"sites\": [{\"listener\": \"l1\", \"site\": \"s1\", \"sharedUsers\": true}]}`，字段含义同全局设置，只修改这几项，全局设置的其他项保持不变；脱敏占位符表示保留原密码或密钥。`sites` 只需列出要修改的站点：启用时站点若未开启认证会同时开启网页认证；站点只通过共享用户认证时，取消需同时带 `\"disableAuth\": true`，站点的网页认证与基本认证会一起关闭、变为无需登录即可访问，未带时拒绝；使用转发认证的站点不能启用。任一项校验失败时不保存任何修改。\n\n所需权限：`webservice:write`。",
+        "description": "请求体 `{\"authUsers\": [], \"ssoDomains\": [\"example.com\", \"example.org\"], \"selfServicePassword\": false, \"oidc\": {}, \"sites\": [{\"listener\": \"l1\", \"site\": \"s1\", \"sharedUsers\": true}]}`，字段含义同全局设置，只修改这几项，全局设置的其他项保持不变；脱敏占位符表示保留原密码或密钥。`ssoDomains` 中的域不能互相包含（如 example.com 与 a.example.com），每个域内的站点各自通用登录态与 Passkey；早期版本的单个字段 `ssoDomain` 仍然接受，并入列表。`sites` 只需列出要修改的站点：启用时站点若未开启认证会同时开启网页认证；站点只通过共享用户认证时，取消需同时带 `\"disableAuth\": true`，站点的网页认证与基本认证会一起关闭、变为无需登录即可访问，未带时拒绝；使用转发认证的站点不能启用。任一项校验失败时不保存任何修改。\n\n所需权限：`webservice:write`。",
         "requestBody": {
           "content": {
             "application/json": {

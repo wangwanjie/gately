@@ -4757,6 +4757,12 @@
           "ssoDomain": {
             "type": "string"
           },
+          "ssoDomains": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
           "trustedProxies": {
             "items": {
               "type": "string"
@@ -5729,6 +5735,12 @@
           },
           "ssoDomain": {
             "type": "string"
+          },
+          "ssoDomains": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
           }
         },
         "type": "object"
@@ -5756,8 +5768,11 @@
             },
             "type": "array"
           },
-          "ssoDomain": {
-            "type": "string"
+          "ssoDomains": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
           }
         },
         "type": "object"
@@ -54276,7 +54291,7 @@
     },
     "/api/webservice/users": {
       "get": {
-        "description": "Renvoie les utilisateurs partagés (mots de passe et secrets TOTP masqués), `ssoDomain`, `selfServicePassword`, les paramètres du fournisseur d'identité OIDC (secrets client masqués) et `sites`, les sites pouvant utiliser les utilisateurs partagés : `listener` et `site` identifient le site, `sharedUsers` indique s'il utilise les utilisateurs partagés, `otherAuth` qu'il a aussi des utilisateurs locaux ou des identités de connexion tierces, et `forwardAuth` qu'il utilise l'authentification déléguée. Les sites qui coupent la connexion et les sites par défaut désactivés ne sont pas listés.\n\nPermission requise : `webservice:read`.",
+        "description": "Renvoie les utilisateurs partagés (mots de passe et secrets TOTP masqués), `ssoDomains`, `selfServicePassword`, les paramètres du fournisseur d'identité OIDC (secrets client masqués) et `sites`, les sites pouvant utiliser les utilisateurs partagés : `listener` et `site` identifient le site, `sharedUsers` indique s'il utilise les utilisateurs partagés, `otherAuth` qu'il a aussi des utilisateurs locaux ou des identités de connexion tierces, et `forwardAuth` qu'il utilise l'authentification déléguée. Les sites qui coupent la connexion et les sites par défaut désactivés ne sont pas listés.\n\nPermission requise : `webservice:read`.",
         "responses": {
           "200": {
             "content": {
@@ -54332,7 +54347,7 @@
         "x-token-allowed": true
       },
       "put": {
-        "description": "Corps de la requête `{\"authUsers\": [], \"ssoDomain\": \"\", \"selfServicePassword\": false, \"oidc\": {}, \"sites\": [{\"listener\": \"l1\", \"site\": \"s1\", \"sharedUsers\": true}]}`. Les champs ont le même sens que dans les paramètres globaux ; seuls ceux-ci sont modifiés et les autres paramètres globaux restent inchangés ; l'espace réservé masqué conserve le mot de passe ou le secret existant. `sites` ne liste que les sites à modifier : l'activer sur un site sans authentification active aussi l'auth Web ; le désactiver sur un site qui ne s'authentifie qu'avec les utilisateurs partagés exige `\"disableAuth\": true`, qui désactive aussi son auth Web et son auth Basic pour qu'il ne demande plus de connexion, sinon la demande est refusée ; les sites en authentification déléguée ne peuvent pas être activés. Si un élément échoue à la validation, rien n'est enregistré.\n\nPermission requise : `webservice:write`.",
+        "description": "Corps de la requête `{\"authUsers\": [], \"ssoDomains\": [\"example.com\", \"example.org\"], \"selfServicePassword\": false, \"oidc\": {}, \"sites\": [{\"listener\": \"l1\", \"site\": \"s1\", \"sharedUsers\": true}]}`. Les champs ont le même sens que dans les paramètres globaux ; seuls ceux-ci sont modifiés et les autres paramètres globaux restent inchangés ; l'espace réservé masqué conserve le mot de passe ou le secret existant. Les domaines de `ssoDomains` ne peuvent pas se contenir (comme example.com et a.example.com) ; les sites de chaque domaine partagent la connexion et les Passkeys au sein de ce domaine ; le champ unique `ssoDomain` des versions précédentes est toujours accepté et ajouté à la liste. `sites` ne liste que les sites à modifier : l'activer sur un site sans authentification active aussi l'auth Web ; le désactiver sur un site qui ne s'authentifie qu'avec les utilisateurs partagés exige `\"disableAuth\": true`, qui désactive aussi son auth Web et son auth Basic pour qu'il ne demande plus de connexion, sinon la demande est refusée ; les sites en authentification déléguée ne peuvent pas être activés. Si un élément échoue à la validation, rien n'est enregistré.\n\nPermission requise : `webservice:write`.",
         "requestBody": {
           "content": {
             "application/json": {

@@ -262,7 +262,7 @@ func TestIdentityHeadersSharedUsers(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	rn.auth.shared.set(users, "")
+	rn.auth.shared.set(users, nil)
 	h := rn.route("fx.test")
 	cookieFor := func(issue func(w http.ResponseWriter, r *http.Request)) string {
 		rec := httptest.NewRecorder()
@@ -303,7 +303,7 @@ func TestIdentityHeadersSharedUsers(t *testing.T) {
 	}
 	// 修改共享用户的信息后，已登录的会话立即传新值；清空的信息不再传
 	users[0].Email, users[0].DisplayName, users[0].Groups = "alice@new.example.com", "", []string{"ops"}
-	rn.auth.shared.set(users, "")
+	rn.auth.shared.set(users, nil)
 	if _, body := get(t, noRedirect(), addr, "fx.test", "/", forgedIdentity(map[string]string{"Cookie": alice})); body != "Remote-Email=alice@new.example.com|Remote-Groups=ops|Remote-User=alice" {
 		t.Fatalf("修改信息后得到 %q", body)
 	}

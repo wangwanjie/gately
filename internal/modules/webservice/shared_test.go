@@ -53,7 +53,7 @@ func TestSharedUsersTOTPAndSSO(t *testing.T) {
 		{Enable: true, Key: "c", Domains: []string{"c.other.test"}, Targets: []string{backend.URL}, WebAuth: true, SharedUsers: true},
 	}}
 	addr, r := startRunner(t, l, nil, nil)
-	r.auth.shared.set(users, "sso.test")
+	r.auth.shared.set(users, []string{"sso.test"})
 	noFollow := noRedirect()
 	browser := map[string]string{"User-Agent": "Mozilla/5.0", "Accept": "text/html"}
 
@@ -156,7 +156,7 @@ func TestSharedUsersTOTPAndSSO(t *testing.T) {
 	if users2[0].Password != users[0].Password {
 		t.Fatal("密码占位符应保留原哈希")
 	}
-	r.auth.shared.set(users2, "sso.test")
+	r.auth.shared.set(users2, []string{"sso.test"})
 	if code, _ := visit("a.sso.test", sso); code != 302 {
 		t.Fatalf("凭据变化后旧会话应失效: %d", code)
 	}
@@ -190,4 +190,12 @@ func TestSharedUsersTOTPAndSSO(t *testing.T) {
 	if _, err := validateSSODomain("localhost"); err == nil {
 		t.Fatal("单段域名不能作为单点登录域")
 	}
+}
+
+// ssoList 把测试里的单个单点登录域转成列表，空字符串表示不设置。
+func ssoList(d string) []string {
+	if d == "" {
+		return nil
+	}
+	return []string{d}
 }
