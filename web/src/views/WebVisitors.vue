@@ -87,7 +87,8 @@
             <template #default="{ row }">
               <div class="ip-line">
                 <span class="mono ip">{{ row.ip }}</span>
-                <span v-if="row.country" class="cc" :title="countryTitle(row.country)">{{ countryText(row.country) }}</span>
+                <IpGeo v-if="ipGeoEnabled" :ip="row.ip" />
+                <span v-else-if="row.country" class="cc" :title="countryTitle(row.country)">{{ countryText(row.country) }}</span>
               </div>
               <div class="tags">
                 <el-tag v-if="row.banned" size="small" type="danger" effect="dark">{{ t('visitors.banned') }}</el-tag>
@@ -146,7 +147,8 @@
           <button v-for="row in items" :key="row.ip" type="button" class="v-card" @click="openDetail(row.ip)">
             <div class="vc-top">
               <span class="mono ip">{{ row.ip }}</span>
-              <span v-if="row.country" class="cc">{{ countryText(row.country) }}</span>
+              <IpGeo v-if="ipGeoEnabled" :ip="row.ip" />
+              <span v-else-if="row.country" class="cc">{{ countryText(row.country) }}</span>
               <el-tag v-if="row.banned" size="small" type="danger" effect="dark">{{ t('visitors.banned') }}</el-tag>
               <el-tag v-if="row.noise" size="small" type="info" effect="plain">{{ t('visitors.noise') }}</el-tag>
               <span class="vc-time">{{ ago(row.last) }}</span>
@@ -198,7 +200,8 @@
           <div class="d-title">
             <span class="mono d-ip">{{ detailIP }}</span>
             <el-button text size="small" :icon="Copy" :title="t('common.copy')" :aria-label="t('common.copy')" @click="copyText(detailIP)" />
-            <span v-if="detail?.country" class="cc">{{ countryText(detail.country) }}</span>
+            <IpGeo v-if="ipGeoEnabled && detailIP" :ip="detailIP" />
+            <span v-else-if="detail?.country" class="cc">{{ countryText(detail.country) }}</span>
             <el-tag v-if="detail?.banned" size="small" type="danger" effect="dark">{{ t('visitors.banned') }}</el-tag>
             <el-tag v-if="detail?.noiseOnly" size="small" type="info" effect="plain">{{ t('visitors.noise') }}</el-tag>
           </div>
@@ -401,6 +404,8 @@ import PageHeader from '../components/PageHeader.vue'
 import LoadError from '../components/LoadError.vue'
 import SiteLogDialog from '../components/SiteLogDialog.vue'
 import DayBars from '../components/VisitorDayBars.vue'
+import IpGeo from '../components/IpGeo.vue'
+import { ipGeoEnabled } from '../composables/useIpGeo'
 import { api, errorText, formatBytes } from '../api'
 import { isReadonly } from '../nav'
 import { useFormLayout } from '../composables/useIsMobile'
@@ -942,6 +947,7 @@ button.tile:focus-visible {
 }
 .ip-line {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 6px;
   min-width: 0;

@@ -984,6 +984,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | POST | `/api/system/onboarding/scenes` | Login sessions only | Record the chosen usage scenes |
 | POST | `/api/system/onboarding/done` | Login sessions only | Mark a Getting started checklist item as done |
 | POST | `/api/system/probe` | Login sessions only | Test whether a backend address is reachable |
+| GET | `/api/geoip/lookup` | Any valid token | Look up the location of IP addresses |
 | GET | `/api/openapi.json` | Any valid token | Get the OpenAPI description of this API |
 
 ## Configuration import
@@ -1530,6 +1531,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | Field | Type |
 | --- | --- |
 | `buildTime` | Time (RFC 3339) |
+| `city` | boolean |
 | `loaded` | boolean |
 | `size` | integer |
 | `type` | string |

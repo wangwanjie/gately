@@ -43,6 +43,7 @@ func TestRequiredAndMatch(t *testing.T) {
 		{"POST", "/api/import/lucky", "import:write"},
 		{"GET", "/api/session", Any},
 		{"GET", "/api/openapi.json", Any},
+		{"GET", "/api/geoip/lookup", Any},
 		// 会返回敏感内容或建立交互通道的 GET 按写权限处理
 		{"GET", "/api/ssl/certs/abc/download", "ssl:write"},
 		{"GET", "/api/webterminal/connections/abc/ws", "webterminal:write"},

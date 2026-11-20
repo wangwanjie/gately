@@ -984,6 +984,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/system/onboarding/scenes` | Только сессия входа | Сохранить выбранные сценарии использования |
 | POST | `/api/system/onboarding/done` | Только сессия входа | Отметить пункт «С чего начать» выполненным |
 | POST | `/api/system/probe` | Только сессия входа | Проверить доступность адреса бэкенда |
+| GET | `/api/geoip/lookup` | Любой действующий токен | Определить местоположение IP-адресов |
 | GET | `/api/openapi.json` | Любой действующий токен | Получить описание OpenAPI этого API |
 
 ## Импорт конфигурации
@@ -1530,6 +1531,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | Поле | Тип |
 | --- | --- |
 | `buildTime` | Время (RFC 3339) |
+| `city` | boolean |
 | `loaded` | boolean |
 | `size` | integer |
 | `type` | string |

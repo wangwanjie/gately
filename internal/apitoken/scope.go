@@ -108,7 +108,7 @@ func Required(method, path string) string {
 		level = LevelRead
 	}
 	switch path {
-	case "/api/session", "/api/openapi.json":
+	case "/api/session", "/api/openapi.json", "/api/geoip/lookup":
 		return Any
 	case "/api/status", "/api/system/info", "/api/system/update", "/api/system/update/state":
 		return DomainStatus + ":" + LevelRead

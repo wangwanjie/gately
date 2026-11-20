@@ -1171,6 +1171,9 @@
             "format": "date-time",
             "type": "string"
           },
+          "city": {
+            "type": "boolean"
+          },
           "loaded": {
             "type": "boolean"
           },
@@ -25773,6 +25776,47 @@
           "FTP 服務"
         ],
         "x-required-scope": "webdav:write,ftp:write,smb:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/geoip/lookup": {
+      "get": {
+        "description": "依 Web 服務中匯入的 GeoIP 資料庫查詢。參數 `ip` 為位址（可重複，也可用逗號分隔，一次最多 200 個；可帶連接埠或前綴長度，依其中的位址查詢），`lang` 為介面語言（如 `zh-CN`、`en`），決定省市名稱的語言，庫中沒有該語言時用英文。回傳 `loaded`（是否已匯入資料庫）、`city`（是否為城市庫）與 `items`：依查詢時的位址索引的 `country`（國家代碼，內網與本機位址為 `LAN`）、`region`（省、州等一級行政區）、`city`（城市），國家庫只有 `country`，庫中未收錄的位址不出現。所有已登入身分與 API 權杖皆可呼叫。\n\n任何有效的 API 權杖皆可存取，無需特定權限。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "請求參數錯誤"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "權杖無效、已過期或未登入"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "批次查詢 IP 歸屬地",
+        "tags": [
+          "系統"
+        ],
+        "x-required-scope": "",
         "x-token-allowed": true
       }
     },

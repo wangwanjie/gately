@@ -984,6 +984,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | POST | `/api/system/onboarding/scenes` | Nur Anmeldesitzung | Gewählte Einsatzzwecke speichern |
 | POST | `/api/system/onboarding/done` | Nur Anmeldesitzung | Punkt der Checkliste „Erste Schritte“ als erledigt markieren |
 | POST | `/api/system/probe` | Nur Anmeldesitzung | Testen, ob eine Backend-Adresse erreichbar ist |
+| GET | `/api/geoip/lookup` | Beliebiges gültiges Token | Standort von IP-Adressen abfragen |
 | GET | `/api/openapi.json` | Beliebiges gültiges Token | OpenAPI-Beschreibung dieser API abrufen |
 
 ## Konfigurationsimport
@@ -1530,6 +1531,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | Feld | Typ |
 | --- | --- |
 | `buildTime` | Zeit (RFC 3339) |
+| `city` | boolean |
 | `loaded` | boolean |
 | `size` | integer |
 | `type` | string |

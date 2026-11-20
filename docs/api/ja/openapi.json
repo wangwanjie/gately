@@ -1171,6 +1171,9 @@
             "format": "date-time",
             "type": "string"
           },
+          "city": {
+            "type": "boolean"
+          },
           "loaded": {
             "type": "boolean"
           },
@@ -25773,6 +25776,47 @@
           "FTP サービス"
         ],
         "x-required-scope": "webdav:write,ftp:write,smb:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/geoip/lookup": {
+      "get": {
+        "description": "Web サービスでインポートした GeoIP データベースで照会します。`ip` はアドレス（繰り返し指定またはカンマ区切り、1 回最大 200 個。ポートやプレフィックス長を含めてもよく、その中のアドレスで照会）、`lang` は UI の言語（`zh-CN`、`en` など）で、地域と都市名の言語を決め、データベースにその言語がなければ英語を使います。`loaded`（データベースをインポート済みか）、`city`（都市別データベースか）と `items` を返します。`items` は照会時のアドレスをキーとし、`country`（国コード。プライベートとローカルのアドレスは `LAN`）、`region`（州・省などの第一級行政区）、`city`（都市）を含みます。国別データベースでは `country` のみで、データベースにないアドレスは含まれません。ログイン済みのすべての ID と API トークンが呼び出せます。\n\n有効な API トークンであれば、特定の権限なしでアクセスできます。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "IP アドレスの所在地を一括照会",
+        "tags": [
+          "システム"
+        ],
+        "x-required-scope": "",
         "x-token-allowed": true
       }
     },

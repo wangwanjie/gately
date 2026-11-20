@@ -984,6 +984,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/system/onboarding/scenes` | 仅登录会话 | 记录选择的使用场景 |
 | POST | `/api/system/onboarding/done` | 仅登录会话 | 把「开始使用」清单项标记为完成 |
 | POST | `/api/system/probe` | 仅登录会话 | 测试后端地址是否可达 |
+| GET | `/api/geoip/lookup` | 任意有效令牌 | 批量查询 IP 归属地 |
 | GET | `/api/openapi.json` | 任意有效令牌 | 获取本 API 的 OpenAPI 描述 |
 
 ## 配置导入
@@ -1530,6 +1531,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 字段 | 类型 |
 | --- | --- |
 | `buildTime` | 时间 (RFC 3339) |
+| `city` | boolean |
 | `loaded` | boolean |
 | `size` | integer |
 | `type` | string |

@@ -12,7 +12,7 @@
   "guardManaged": "{count} bannissements en vigueur. Ils sont gérés par la prévention d'intrusion et s'appliquent aussi à la redirection de ports, à STUN et aux autres services.",
   "openGuard": "Gérer les bannissements dans la prévention d'intrusion",
   "permanent": "Permanent",
-  "geoTitle": "Base GeoIP (filtrage par pays)",
+  "geoTitle": "Base GeoIP (filtrage par pays, localisation des IP)",
   "geoLoaded": "Chargée : {type}, construite le {buildTime}, {size} Mo",
   "remove": "Retirer",
   "geoNotImported": "Non importée. Prend en charge les bases .mmdb de pays ou de villes comme MaxMind GeoLite2 et DB-IP, y compris en archive .mmdb.gz ou .tar.gz",
@@ -20,5 +20,8 @@
   "mmdbUrlPlaceholder": "Ou saisissez l'URL de téléchargement d'un .mmdb",
   "geoImported": "Base GeoIP importée",
   "geoDownloaded": "Base GeoIP téléchargée et chargée",
-  "geoProxy": "Proxy de téléchargement"
+  "geoProxy": "Proxy de téléchargement",
+  "geoCountryOnly": "Il s’agit d’une base de pays : la localisation des IP n’affiche que le pays. Importez une base de villes (comme DB-IP City Lite) pour afficher la région et la ville",
+  "ipGeo": "Afficher la localisation des IP",
+  "ipGeoHelp": "Affiche le pays, la région et la ville à côté des adresses IP dans l’audit des visiteurs, les listes de bannissement, les connexions en cours, les journaux, etc. S’applique à ce navigateur uniquement"
 }

@@ -984,6 +984,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | POST | `/api/system/onboarding/scenes` | Somente sessão de login | Registrar os cenários de uso escolhidos |
 | POST | `/api/system/onboarding/done` | Somente sessão de login | Marcar um item de Primeiros passos como concluído |
 | POST | `/api/system/probe` | Somente sessão de login | Testar se um endereço de backend está acessível |
+| GET | `/api/geoip/lookup` | Qualquer token válido | Consultar a localização de endereços IP |
 | GET | `/api/openapi.json` | Qualquer token válido | Obter a descrição OpenAPI desta API |
 
 ## Importação de configuração
@@ -1530,6 +1531,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | Campo | Tipo |
 | --- | --- |
 | `buildTime` | Hora (RFC 3339) |
+| `city` | boolean |
 | `loaded` | boolean |
 | `size` | integer |
 | `type` | string |

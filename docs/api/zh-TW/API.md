@@ -984,6 +984,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/system/onboarding/scenes` | 僅登入工作階段 | 記錄選擇的使用場景 |
 | POST | `/api/system/onboarding/done` | 僅登入工作階段 | 把「開始使用」清單項標記為完成 |
 | POST | `/api/system/probe` | 僅登入工作階段 | 測試後端位址是否可連線 |
+| GET | `/api/geoip/lookup` | 任意有效權杖 | 批次查詢 IP 歸屬地 |
 | GET | `/api/openapi.json` | 任意有效權杖 | 取得本 API 的 OpenAPI 描述 |
 
 ## 設定匯入
@@ -1530,6 +1531,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 欄位 | 類型 |
 | --- | --- |
 | `buildTime` | 時間 (RFC 3339) |
+| `city` | boolean |
 | `loaded` | boolean |
 | `size` | integer |
 | `type` | string |

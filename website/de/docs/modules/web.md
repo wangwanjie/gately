@@ -395,6 +395,16 @@ Der „Länderfilter“ einer Site hat drei Modi: aus, nur erlauben und verweige
 - Adressen privater Netze sind immer erlaubt;
 - Im Modus „Verweigern“ werden Adressen erlaubt, deren Land sich in der Datenbank nicht finden lässt.
 
+### IP-Standort {#ip-geo}
+
+Mit importierter GeoIP-Datenbank zeigt die Verwaltungsoberfläche überall, wo IP-Adressen aufgelistet werden, deren Standort: Besucherprüfung, häufigste Quell-IPs in der Site-Statistik, aktive Verbindungen, Sperrlisten (auch im Einbruchschutz), Modulprotokolle, aktive IPs in der Netzwerktopologie (bei aktivierter Maskierung ausgeblendet), Betriebsprüfung und per Port-Knocking freigegebene Adressen.
+
+- Eine Länderdatenbank zeigt nur das Land, eine Städtedatenbank (z. B. DB-IP City Lite oder MaxMind GeoLite2-City) zusätzlich Region und Stadt. Namen folgen der Oberflächensprache; fehlt diese in der Datenbank, wird Englisch verwendet. Die DB-IP-Städtedatenbank enthält nur englische Namen;
+- Private und lokale Adressen werden ohne Datenbank als „LAN“ markiert, in Protokollen nicht;
+- Abfragen nutzen ausschließlich die auf diesem Gerät importierte Datenbank, Besucheradressen gehen an keinen Dritten;
+- Abschalten unter „Globale Einstellungen → IP-Standort anzeigen“; die Einstellung gilt nur für den aktuellen Browser;
+- Region und Stadt stammen aus öffentlichen Adressdatenbanken. IPv6- und Mobilfunkadressen werden oft dem Registrierungsort des Providers zugeordnet, betrachten Sie sie daher als Anhaltspunkt.
+
 ## Backends pro Pfad
 
 Leiten Sie bei einer Reverse-Proxy-Site Anfragen unter einem Pfadpräfix an andere Backends weiter, wie nginx `location /api/ { proxy_pass ...; }`. Fügen Sie sie unter „Backends pro Pfad“ auf der Seite „Allgemein“ des Site-Editors hinzu.
@@ -691,7 +701,7 @@ Alle Zahlen stammen aus den Zählern dieser Instanz im Arbeitsspeicher: Sie begi
 Der Tab „Besucherprüfung“ oben auf der Seite „Web → Web-Dienste“ in der Seitenleiste (`#/web/visitors`) fasst die Zugriffe auf alle Sites nach Besucheradresse zusammen: wer wann welche Sites und Pfade mit welcher Identität aufgerufen hat und wie oft er blockiert wurde. Erfasst werden alle Sites einschließlich der Standard-Site und Anfragen ohne passende Site, unabhängig davon, ob das Zugriffsprotokoll der Site aktiviert ist; mit [vertrauenswürdigen Proxys](#real-ip) wird die echte Besucheradresse erfasst.
 
 - **Übersicht und Verlauf**: Den Zeitraum wählen Sie im Seitenkopf (heute, 7 Tage, 30 Tage, gesamter Aufbewahrungszeitraum). Die Karten zeigen Besucher (davon neu), Anfragen, Blockierungen und ihren Anteil, an einer Site angemeldete Besucher, derzeit gesperrte Besucher und scannerartige Adressen; ein Klick auf eine Karte filtert danach, ein weiterer hebt den Filter auf. Im Tagesdiagramm ist die Balkenhöhe die Anzahl der Anfragen, der rote Teil die Blockierungen; Klicken oder Zeigen auf einen Tag zeigt dessen Besucher, Anfragen und Blockierungen.
-- **Liste**: Jeder Besucher zeigt den Ländercode (mit importierter GeoIP-Datenbank; private und lokale Adressen zeigen „LAN“), Anfragen und Blockierungen im Zeitraum, die meistbesuchten Sites, Identitäten, ersten und letzten Besuch sowie die letzte Anfrage (Status, Methode, Pfad, Domain und User-Agent). Suche nach Adresse, Identität, Site, Domain, Pfad oder User-Agent; Filter „Mit Blockierungen“, „Angemeldet“, „Administratoren“, „Gesperrt“, „Scannerartig“ und nach Site; Sortierung nach letztem Besuch, meisten Anfragen, meisten Blockierungen oder erstem Besuch. Gleichnamige Sites auf zwei Listenern tragen den Listener-Namen.
+- **Liste**: Jeder Besucher zeigt seinen [Standort](#ip-geo) (private und lokale Adressen zeigen „LAN“), Anfragen und Blockierungen im Zeitraum, die meistbesuchten Sites, Identitäten, ersten und letzten Besuch sowie die letzte Anfrage (Status, Methode, Pfad, Domain und User-Agent). Suche nach Adresse, Identität, Site, Domain, Pfad oder User-Agent; Filter „Mit Blockierungen“, „Angemeldet“, „Administratoren“, „Gesperrt“, „Scannerartig“ und nach Site; Sortierung nach letztem Besuch, meisten Anfragen, meisten Blockierungen oder erstem Besuch. Gleichnamige Sites auf zwei Listenern tragen den Listener-Namen.
 - **Identität**: Nach erfolgreicher Site-Anmeldung (Web-Anmeldung, Basic Auth, gemeinsame Benutzer, Drittanbieter-Anmeldung, Forward Auth) wird der Benutzername erfasst; Anfragen mit einer Sitzung der Verwaltungsoberfläche dieser Instanz werden als „admin“ erfasst. Fehlgeschlagene Passwortversuche und blockierte Anfragen erfassen keine Identität.
 - **Scannerartig**: Adressen, die nur blockiert wurden oder nur nicht zugeordnete Sites aufgerufen und sich nie angemeldet haben.
 - **Details**: Ein Klick auf eine Zeile öffnet den Besucher: erster und letzter Besuch, Anfragen gesamt, Blockierungen, gesendete Bytes, getrennte Verbindungen (444), Tagesdiagramm über den Aufbewahrungszeitraum, Statusverteilung und Blockierungsgründe (Sperre, IP-Liste, Länderfilter, Ratenbegrenzung, WAF), besuchte Sites, häufigste Pfade (bis zu 10), Identitäten und User-Agents. Von hier aus können Sie sperren oder entsperren (IPv6 nach /64), das Zugriffsprotokoll dieser Adresse öffnen oder den Eintrag löschen.

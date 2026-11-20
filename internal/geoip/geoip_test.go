@@ -88,6 +88,100 @@ func TestIsLocal(t *testing.T) {
 	}
 }
 
+// buildCityDB 生成城市库：1.0.0.0/24 有中英文省市，2.0.0.0/24 为直辖市（省市同名），3.0.0.0/24 只有英文名称。
+func buildCityDB(t *testing.T) []byte {
+	t.Helper()
+	w, err := mmdbwriter.New(mmdbwriter.Options{DatabaseType: "Test-City", RecordSize: 24})
+	if err != nil {
+		t.Fatal(err)
+	}
+	nm := func(kv ...string) mmdbtype.Map {
+		m := mmdbtype.Map{}
+		for i := 0; i+1 < len(kv); i += 2 {
+			m[mmdbtype.String(kv[i])] = mmdbtype.String(kv[i+1])
+		}
+		return mmdbtype.Map{"names": m}
+	}
+	rec := func(cc string, sub, city mmdbtype.Map) mmdbtype.Map {
+		return mmdbtype.Map{
+			"country":      mmdbtype.Map{"iso_code": mmdbtype.String(cc)},
+			"subdivisions": mmdbtype.Slice{sub},
+			"city":         city,
+		}
+	}
+	data := map[string]mmdbtype.Map{
+		"1.0.0.0/24": rec("CN", nm("en", "Guangdong", "zh-CN", "广东"), nm("en", "Guangzhou", "zh-CN", "广州")),
+		"2.0.0.0/24": rec("CN", nm("en", "Beijing", "zh-CN", "北京市"), nm("en", "Beijing", "zh-CN", "北京")),
+		"3.0.0.0/24": rec("GB", nm("en", "England"), nm("en", "London")),
+	}
+	for cidr, v := range data {
+		_, n, _ := net.ParseCIDR(cidr)
+		if err := w.Insert(n, v); err != nil {
+			t.Fatal(err)
+		}
+	}
+	var buf bytes.Buffer
+	if _, err := w.WriteTo(&buf); err != nil {
+		t.Fatal(err)
+	}
+	return buf.Bytes()
+}
+
+func TestLookupCity(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "c.mmdb")
+	if _, err := Save(path, bytes.NewReader(buildCityDB(t))); err != nil {
+		t.Fatal(err)
+	}
+	d := &DB{}
+	if got := d.Lookup(netip.MustParseAddr("1.0.0.1"), "zh-CN"); got != (Location{}) {
+		t.Fatalf("未加载时应返回零值: %+v", got)
+	}
+	if err := d.Load(path); err != nil {
+		t.Fatal(err)
+	}
+	defer d.Close()
+	cases := []struct {
+		ip, lang string
+		want     Location
+	}{
+		{"1.0.0.1", "zh-CN", Location{"CN", "广东", "广州"}},
+		{"1.0.0.1", "zh-TW", Location{"CN", "广东", "广州"}},
+		{"1.0.0.1", "en", Location{"CN", "Guangdong", "Guangzhou"}},
+		{"1.0.0.1", "ko", Location{"CN", "Guangdong", "Guangzhou"}},
+		{"::ffff:1.0.0.1", "ja", Location{"CN", "Guangdong", "Guangzhou"}},
+		{"2.0.0.1", "zh-CN", Location{"CN", "北京市", ""}},
+		{"2.0.0.1", "en", Location{"CN", "Beijing", ""}},
+		{"3.0.0.1", "zh-CN", Location{"GB", "England", "London"}},
+		{"8.8.8.8", "zh-CN", Location{}},
+	}
+	for _, c := range cases {
+		if got := d.Lookup(netip.MustParseAddr(c.ip), c.lang); got != c.want {
+			t.Errorf("%s %s: got %+v want %+v", c.ip, c.lang, got, c.want)
+		}
+	}
+	if !d.Info().City {
+		t.Fatal("城市库 Info.City 应为 true")
+	}
+}
+
+func TestLookupCountryDB(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "c.mmdb")
+	if _, err := Save(path, bytes.NewReader(buildDB(t))); err != nil {
+		t.Fatal(err)
+	}
+	d := &DB{}
+	if err := d.Load(path); err != nil {
+		t.Fatal(err)
+	}
+	defer d.Close()
+	if got := d.Lookup(netip.MustParseAddr("2a00:1450::1"), "zh-CN"); got != (Location{Country: "JP"}) {
+		t.Fatalf("国家库应只有国家: %+v", got)
+	}
+	if d.Info().City {
+		t.Fatal("国家库 Info.City 应为 false")
+	}
+}
+
 func TestSaveCompressed(t *testing.T) {
 	raw := buildDB(t)
 	var gz bytes.Buffer

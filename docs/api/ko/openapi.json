@@ -1171,6 +1171,9 @@
             "format": "date-time",
             "type": "string"
           },
+          "city": {
+            "type": "boolean"
+          },
           "loaded": {
             "type": "boolean"
           },
@@ -25773,6 +25776,47 @@
           "FTP 서비스"
         ],
         "x-required-scope": "webdav:write,ftp:write,smb:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/geoip/lookup": {
+      "get": {
+        "description": "Web 서비스에서 가져온 GeoIP 데이터베이스로 조회합니다. `ip`는 주소입니다(반복 지정 또는 쉼표 구분, 한 번에 최대 200개. 포트나 접두사 길이를 포함할 수 있으며 그 안의 주소로 조회). `lang`은 UI 언어(`zh-CN`, `en` 등)로 지역과 도시 이름의 언어를 정하며, 데이터베이스에 해당 언어가 없으면 영어를 사용합니다. `loaded`(데이터베이스를 가져왔는지), `city`(도시 데이터베이스인지)와 `items`를 반환합니다. `items`는 조회한 주소를 키로 하며 `country`(국가 코드, 사설·로컬 주소는 `LAN`), `region`(주·성 등 1급 행정구역), `city`(도시)를 담습니다. 국가 데이터베이스는 `country`만 있고 데이터베이스에 없는 주소는 포함되지 않습니다. 로그인한 모든 신원과 API 토큰이 호출할 수 있습니다.\n\n유효한 API 토큰이면 특정 권한 없이 접근할 수 있습니다.",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "IP 주소 위치 일괄 조회",
+        "tags": [
+          "시스템"
+        ],
+        "x-required-scope": "",
         "x-token-allowed": true
       }
     },

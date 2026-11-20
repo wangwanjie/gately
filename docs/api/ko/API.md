@@ -984,6 +984,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | POST | `/api/system/onboarding/scenes` | 로그인 세션 전용 | 고른 용도 기록 |
 | POST | `/api/system/onboarding/done` | 로그인 세션 전용 | 「시작하기」 체크리스트 항목을 완료로 표시 |
 | POST | `/api/system/probe` | 로그인 세션 전용 | 백엔드 주소에 연결할 수 있는지 시험 |
+| GET | `/api/geoip/lookup` | 유효한 모든 토큰 | IP 주소 위치 일괄 조회 |
 | GET | `/api/openapi.json` | 유효한 모든 토큰 | 이 API의 OpenAPI 설명 가져오기 |
 
 ## 설정 가져오기
@@ -1530,6 +1531,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | 필드 | 타입 |
 | --- | --- |
 | `buildTime` | 시간 (RFC 3339) |
+| `city` | boolean |
 | `loaded` | boolean |
 | `size` | integer |
 | `type` | string |

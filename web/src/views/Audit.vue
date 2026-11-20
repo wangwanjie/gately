@@ -23,7 +23,7 @@
           <el-table-column :label="t('audit.actor')" min-width="150">
             <template #default="{ row }">
               <div>{{ row.actor || '-' }}</div>
-              <div class="meta mono">{{ row.ip }}</div>
+              <div class="meta mono">{{ row.ip }} <IpGeo v-if="row.ip" :ip="row.ip" /></div>
               <div v-if="row.via" class="meta mono">{{ t('audit.via', { ip: row.via }) }}</div>
             </template>
           </el-table-column>
@@ -59,6 +59,7 @@ import { useI18n } from 'vue-i18n'
 import { ClipboardList, RefreshCw, Search } from 'lucide-vue-next'
 import PageHeader from '../components/PageHeader.vue'
 import LoadError from '../components/LoadError.vue'
+import IpGeo from '../components/IpGeo.vue'
 import { api, errorText } from '../api'
 
 interface AuditEntry {

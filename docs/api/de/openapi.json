@@ -1171,6 +1171,9 @@
             "format": "date-time",
             "type": "string"
           },
+          "city": {
+            "type": "boolean"
+          },
           "loaded": {
             "type": "boolean"
           },
@@ -25773,6 +25776,47 @@
           "FTP-Dienst"
         ],
         "x-required-scope": "webdav:write,ftp:write,smb:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/geoip/lookup": {
+      "get": {
+        "description": "Fragt Adressen in der im Web-Dienst importierten GeoIP-Datenbank ab. `ip` ist eine Adresse (wiederholbar oder kommagetrennt, höchstens 200 pro Abfrage; Port oder Präfixlänge sind erlaubt, abgefragt wird die enthaltene Adresse); `lang` ist die Oberflächensprache (z. B. `zh-CN` oder `en`) und bestimmt die Sprache der Regions- und Städtenamen, mit Englisch als Rückfall, wenn die Datenbank sie nicht enthält. Liefert `loaded` (ob eine Datenbank importiert ist), `city` (ob es eine Städtedatenbank ist) und `items`, nach der abgefragten Adresse geordnet, mit `country` (Ländercode, `LAN` für private und lokale Adressen), `region` (Bundesland, Provinz oder andere erste Verwaltungsebene) und `city`. Eine Länderdatenbank liefert nur `country`; Adressen, die nicht in der Datenbank stehen, fehlen. Jede angemeldete Identität und jedes API-Token darf sie aufrufen.\n\nJedes gültige API-Token hat Zugriff; eine bestimmte Berechtigung ist nicht erforderlich.",
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Standort von IP-Adressen abfragen",
+        "tags": [
+          "System"
+        ],
+        "x-required-scope": "",
         "x-token-allowed": true
       }
     },

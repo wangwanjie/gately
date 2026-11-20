@@ -53,7 +53,7 @@
             <LoadError compact :error="loadError" @retry="loadAll" />
           </template>
           <el-table-column :label="t('guard.ban.address')" min-width="170">
-            <template #default="{ row }"><span class="mono">{{ row.key }}</span></template>
+            <template #default="{ row }"><span class="mono">{{ row.key }}</span> <IpGeo :ip="row.key" /></template>
           </el-table-column>
           <el-table-column :label="t('guard.ban.source')" min-width="140">
             <template #default="{ row }">
@@ -406,6 +406,7 @@ import { Ban, CopyPlus, Crosshair, FileCode, Flame, FlaskConical, LayoutTemplate
 import { api, errorText } from '../api'
 import PageHeader from '../components/PageHeader.vue'
 import ListPager from '../components/ListPager.vue'
+import IpGeo from '../components/IpGeo.vue'
 import { usePager } from '../composables/usePager'
 import EntityCard from '../components/EntityCard.vue'
 import GroupedList from '../components/GroupedList.vue'

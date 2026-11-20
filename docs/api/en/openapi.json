@@ -1171,6 +1171,9 @@
             "format": "date-time",
             "type": "string"
           },
+          "city": {
+            "type": "boolean"
+          },
           "loaded": {
             "type": "boolean"
           },
@@ -25773,6 +25776,47 @@
           "FTP service"
         ],
         "x-required-scope": "webdav:write,ftp:write,smb:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/geoip/lookup": {
+      "get": {
+        "description": "Looks addresses up in the GeoIP database imported in the Web service. `ip` is an address (repeatable or comma-separated, up to 200 per query; a port or prefix length is allowed and the address in it is looked up); `lang` is the UI language (such as `zh-CN` or `en`) that selects the language of region and city names, falling back to English when the database has none. Returns `loaded` (whether a database is imported), `city` (whether it is a city database) and `items`, keyed by the address as queried, with `country` (country code, `LAN` for private and local addresses), `region` (state, province or other first-level division) and `city`. A country database gives `country` only; addresses not in the database are left out. Any signed-in identity and any API token may call it.\n\nAny valid API token can access this endpoint; no specific permission is required.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Look up the location of IP addresses",
+        "tags": [
+          "System"
+        ],
+        "x-required-scope": "",
         "x-token-allowed": true
       }
     },

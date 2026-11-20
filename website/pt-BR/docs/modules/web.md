@@ -395,6 +395,16 @@ O "Filtro de países" de um site tem três modos: desativado, permitir apenas e 
 - Endereços de redes privadas são sempre permitidos;
 - No modo "Negar", endereços cujo país não é encontrado no banco de dados são permitidos.
 
+### Localização de IP {#ip-geo}
+
+Com um banco GeoIP importado, a interface de administração mostra a localização dos endereços IP onde quer que os liste: auditoria de visitantes, principais IPs de origem nas estatísticas do site, conexões ativas, listas de bloqueio (inclusive na proteção contra intrusão), logs dos módulos, IPs ativos na topologia de rede (ocultos enquanto o mascaramento está ativo), auditoria de operações e endereços liberados por port knocking.
+
+- Um banco de países mostra só o país; um banco de cidades (como DB-IP City Lite ou MaxMind GeoLite2-City) mostra também a região e a cidade. Os nomes seguem o idioma da interface e, quando o banco não o tem, usam o inglês. O banco de cidades da DB-IP só tem nomes em inglês;
+- Endereços privados e locais aparecem como «LAN» sem precisar de banco; nos logs não são marcados;
+- As consultas usam apenas o banco importado nesta máquina; os endereços dos visitantes não são enviados a terceiros;
+- Desative em "Configurações globais → Mostrar localização de IP"; a opção vale só para este navegador;
+- Região e cidade vêm de bancos de endereços públicos. Endereços IPv6 e de redes móveis costumam aparecer no local de registro da operadora, então use-os como referência.
+
 ## Backends por caminho
 
 Para um site de proxy reverso, envie as requisições sob um prefixo de caminho para outros backends, como o `location /api/ { proxy_pass ...; }` do nginx. Adicione-os em "Backends por caminho", na página "Básico" do editor do site.
@@ -691,7 +701,7 @@ Todos os números vêm dos contadores em memória desta instância: zeram ao rei
 A aba «Auditoria de visitantes», no topo da página «Web → Serviços Web» da barra lateral (`#/web/visitors`), resume os acessos a todos os sites por endereço do visitante: quem acessou quais sites e caminhos, quando, com qual identidade e quantas vezes foi bloqueado. Todos os sites são contados, incluindo o site padrão e requisições que não correspondem a nenhum site, esteja ou não ativado o log de acesso do site; com [proxies confiáveis](#real-ip) configurados, é registrado o endereço real do visitante.
 
 - **Resumo e tendência**: escolha o período no cabeçalho (hoje, 7 dias, 30 dias, todo o período de retenção). Os cartões mostram visitantes (e novos), requisições, bloqueios e sua proporção, visitantes que passaram pela autenticação do site, visitantes banidos no momento e endereços do tipo scanner; clique em um cartão para filtrar e de novo para limpar. No gráfico diário, a altura da barra é o número de requisições e a parte vermelha os bloqueios; clique ou passe o cursor sobre um dia para ver seus visitantes, requisições e bloqueios.
-- **Lista**: cada visitante mostra o código do país (com uma base GeoIP importada; endereços privados e locais mostram «LAN»), requisições e bloqueios no período, os sites mais acessados, identidades, primeira e última visita e a última requisição (status, método, caminho, domínio e User-Agent). Pesquise por endereço, identidade, site, domínio, caminho ou User-Agent; filtre por «Com bloqueios», «Autenticados», «Administradores», «Banidos», «Tipo scanner» e site; ordene por última visita, mais requisições, mais bloqueios ou primeira visita. Sites com o mesmo nome em dois listeners levam o nome do listener.
+- **Lista**: cada visitante mostra sua [localização](#ip-geo) (endereços privados e locais mostram «LAN»), requisições e bloqueios no período, os sites mais acessados, identidades, primeira e última visita e a última requisição (status, método, caminho, domínio e User-Agent). Pesquise por endereço, identidade, site, domínio, caminho ou User-Agent; filtre por «Com bloqueios», «Autenticados», «Administradores», «Banidos», «Tipo scanner» e site; ordene por última visita, mais requisições, mais bloqueios ou primeira visita. Sites com o mesmo nome em dois listeners levam o nome do listener.
 - **Identidade**: após autenticação bem-sucedida no site (login web, autenticação básica, usuários compartilhados, login de terceiros, autenticação encaminhada) o nome de usuário é registrado; requisições com sessão do console de administração desta instância são registradas como «admin». Tentativas com senha errada e requisições bloqueadas não registram identidade.
 - **Tipo scanner**: endereços que só foram bloqueados ou só acessaram sites sem correspondência e nunca se autenticaram.
 - **Detalhes**: clique em uma linha para abrir o visitante: primeira e última visita, total de requisições, bloqueios, bytes enviados, conexões encerradas (444), gráfico diário do período de retenção, distribuição de status e motivos de bloqueio (banimento, lista de IP, filtro de país, limite de taxa, WAF), sites visitados, caminhos mais requisitados (até 10), identidades e User-Agents. Daqui é possível banir ou remover o banimento (IPv6 por /64), ver o log de acesso deste endereço ou excluir o registro.

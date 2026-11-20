@@ -400,6 +400,7 @@
             <div v-if="!panelIps.length" class="ip-empty">{{ t('webTopology.ipNone') }}</div>
             <div v-for="ip in panelIps" :key="ip.ip" role="button" tabindex="0" class="ip-row" :class="{ on: ip.ip === ipFilter }" @click="setIp(ip.ip)" @keydown.enter="setIp(ip.ip)">
               <span class="mono ip">{{ showIP(ip.ip) }}</span>
+              <IpGeo v-if="!hide('visitor')" :ip="ip.ip" short class="ip-geo-tag" />
               <span class="ip-meta">
                 <span v-if="ip.n" class="live">{{ t('webTopology.ipActive', { n: ip.n }) }}</span>
                 <span v-else>{{ ago(ip.last) }}</span>
@@ -475,6 +476,7 @@ import {
 import { api, formatBytes, formatRate } from '../api'
 import Sparkline from './Sparkline.vue'
 import TopologyReplay from './TopologyReplay.vue'
+import IpGeo from './IpGeo.vue'
 import type { SiteLogTarget } from './SiteLogDialog.vue'
 import { useCollapsed } from '../composables/useCollapsed'
 import { useScrollLock } from '../composables/useScrollLock'
@@ -3019,6 +3021,10 @@ defineExpose({ reload })
   font-size: 12px;
   text-align: left;
   cursor: pointer;
+}
+.ip-geo-tag {
+  margin-right: auto;
+  align-self: center;
 }
 .ip-row:last-child {
   border-bottom: 0;

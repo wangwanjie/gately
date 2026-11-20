@@ -984,6 +984,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | POST | `/api/system/onboarding/scenes` | Solo sesión iniciada | Registrar los escenarios de uso elegidos |
 | POST | `/api/system/onboarding/done` | Solo sesión iniciada | Marcar como hecho un elemento de Primeros pasos |
 | POST | `/api/system/probe` | Solo sesión iniciada | Probar si una dirección de backend es accesible |
+| GET | `/api/geoip/lookup` | Cualquier token válido | Consultar la ubicación de direcciones IP |
 | GET | `/api/openapi.json` | Cualquier token válido | Obtener la descripción OpenAPI de esta API |
 
 ## Importación de configuración
@@ -1530,6 +1531,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | Campo | Tipo |
 | --- | --- |
 | `buildTime` | Hora (RFC 3339) |
+| `city` | boolean |
 | `loaded` | boolean |
 | `size` | integer |
 | `type` | string |
