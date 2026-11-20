@@ -390,7 +390,7 @@ La liste de bannissement est partagée avec la [prévention d'intrusion](/fr/doc
 
 Le « Filtre de pays » d'un site propose trois modes : désactivé, autoriser uniquement et refuser. Saisissez des codes pays ISO à deux lettres séparés par des virgules, comme `CN, HK, US`. Au moins un pays est requis lorsque le filtre est activé.
 
-- Le filtrage dépend d'une base GeoIP, que vous devez d'abord importer sous « Paramètres globaux → Base GeoIP » : téléversez un fichier `.mmdb`, ou saisissez une URL de téléchargement (« Proxy de téléchargement » utilise par défaut le proxy global de mise à jour ; sans proxy de mise à jour configuré, la connexion est directe). MaxMind GeoLite2, DB-IP et d'autres bases de pays ou de villes sont pris en charge ; la limite de téléversement est de 129 Mo ;
+- Le filtrage dépend d'une base GeoIP, que vous devez d'abord importer sous « Paramètres globaux → Base GeoIP » : téléversez un fichier `.mmdb` (un `.mmdb.gz` ou l'archive `.tar.gz` fournie par MaxMind conviennent aussi), ou saisissez une URL de téléchargement (« Proxy de téléchargement » utilise par défaut le proxy global de mise à jour ; sans proxy de mise à jour configuré, la connexion est directe). MaxMind GeoLite2, DB-IP et d'autres bases de pays ou de villes sont pris en charge ; la limite de téléversement est de 257 Mo, et la base décompressée peut atteindre 256 Mo ;
 - Lorsqu'aucune base n'est chargée, le filtrage n'a aucun effet (tous les visiteurs passent) et l'interface affiche un avertissement ;
 - Les adresses de réseaux privés sont toujours autorisées ;
 - En mode « Refuser », les adresses dont le pays est introuvable dans la base sont autorisées.

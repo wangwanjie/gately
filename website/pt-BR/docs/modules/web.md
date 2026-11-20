@@ -390,7 +390,7 @@ A lista de bloqueio é compartilhada com a [Prevenção de intrusão](/pt-BR/doc
 
 O "Filtro de países" de um site tem três modos: desativado, permitir apenas e negar. Informe códigos de país ISO de duas letras separados por vírgula, como `CN, HK, US`. Pelo menos um país é obrigatório quando ativado.
 
-- A filtragem depende de um banco de dados GeoIP, que você precisa importar antes em "Configurações globais → Banco de dados GeoIP": envie um arquivo `.mmdb` ou informe uma URL de download (o "Proxy de download" usa por padrão o proxy global de atualização e conecta direto enquanto nenhum estiver definido). MaxMind GeoLite2, DB-IP e outros bancos de países ou cidades são compatíveis; o limite de envio é 129 MB;
+- A filtragem depende de um banco de dados GeoIP, que você precisa importar antes em "Configurações globais → Banco de dados GeoIP": envie um arquivo `.mmdb` (um `.mmdb.gz` ou o arquivo `.tar.gz` da MaxMind também servem) ou informe uma URL de download (o "Proxy de download" usa por padrão o proxy global de atualização e conecta direto enquanto nenhum estiver definido). MaxMind GeoLite2, DB-IP e outros bancos de países ou cidades são compatíveis; o limite de envio é 257 MB, e o banco descompactado pode ter até 256 MB;
 - Quando nenhum banco de dados está carregado, a filtragem não tem efeito (todos os visitantes passam) e a interface mostra um aviso;
 - Endereços de redes privadas são sempre permitidos;
 - No modo "Negar", endereços cujo país não é encontrado no banco de dados são permitidos.

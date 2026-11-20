@@ -1,7 +1,9 @@
 package geoip
 
 import (
+	"archive/tar"
 	"bytes"
+	"compress/gzip"
 	"net"
 	"net/netip"
 	"os"
@@ -83,5 +85,50 @@ func TestIsLocal(t *testing.T) {
 		if IsLocal(netip.MustParseAddr(ip)) != want {
 			t.Errorf("IsLocal(%s) != %v", ip, want)
 		}
+	}
+}
+
+func TestSaveCompressed(t *testing.T) {
+	raw := buildDB(t)
+	var gz bytes.Buffer
+	zw := gzip.NewWriter(&gz)
+	_, _ = zw.Write(raw)
+	_ = zw.Close()
+
+	var tgz bytes.Buffer
+	zw = gzip.NewWriter(&tgz)
+	tw := tar.NewWriter(zw)
+	readme := []byte("readme")
+	_ = tw.WriteHeader(&tar.Header{Name: "GeoLite2-City_20261118/README.txt", Mode: 0o644, Size: int64(len(readme)), Typeflag: tar.TypeReg})
+	_, _ = tw.Write(readme)
+	_ = tw.WriteHeader(&tar.Header{Name: "GeoLite2-City_20261118/GeoLite2-City.mmdb", Mode: 0o644, Size: int64(len(raw)), Typeflag: tar.TypeReg})
+	_, _ = tw.Write(raw)
+	_ = tw.Close()
+	_ = zw.Close()
+
+	var noMMDB bytes.Buffer
+	zw = gzip.NewWriter(&noMMDB)
+	tw = tar.NewWriter(zw)
+	_ = tw.WriteHeader(&tar.Header{Name: "README.txt", Mode: 0o644, Size: int64(len(readme)), Typeflag: tar.TypeReg})
+	_, _ = tw.Write(readme)
+	_ = tw.Close()
+	_ = zw.Close()
+
+	for name, data := range map[string][]byte{"gz": gz.Bytes(), "tar.gz": tgz.Bytes()} {
+		path := filepath.Join(t.TempDir(), "c.mmdb")
+		n, err := Save(path, bytes.NewReader(data))
+		if err != nil {
+			t.Fatalf("%s: %v", name, err)
+		}
+		got, _ := os.ReadFile(path)
+		if n != int64(len(raw)) || !bytes.Equal(got, raw) {
+			t.Fatalf("%s: 解压结果不符", name)
+		}
+	}
+	if _, err := Save(filepath.Join(t.TempDir(), "c.mmdb"), bytes.NewReader(noMMDB.Bytes())); err == nil {
+		t.Fatal("不含 .mmdb 的压缩包应被拒绝")
+	}
+	if _, err := Save(filepath.Join(t.TempDir(), "c.mmdb"), bytes.NewReader([]byte{0x1f, 0x8b, 0, 0})); err == nil {
+		t.Fatal("损坏的 gzip 应被拒绝")
 	}
 }

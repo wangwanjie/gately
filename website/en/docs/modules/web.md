@@ -390,7 +390,7 @@ The ban list is shared with [Intrusion Prevention](/en/docs/modules/guard): when
 
 A site's "Country filter" has three modes: off, allow only, and deny. Enter two-letter ISO country codes separated by commas, such as `CN, HK, US`. At least one country is required when enabled.
 
-- Filtering depends on a GeoIP database, which you must first import under "Global settings → GeoIP database": upload a `.mmdb` file, or enter a download URL ("Download proxy" defaults to the global update proxy, and connects directly when no update proxy is set). MaxMind GeoLite2, DB-IP and other country or city databases are supported; the upload limit is 129 MB;
+- Filtering depends on a GeoIP database, which you must first import under "Global settings → GeoIP database": upload a `.mmdb` file (a `.mmdb.gz` or the `.tar.gz` archive MaxMind provides also works), or enter a download URL ("Download proxy" defaults to the global update proxy, and connects directly when no update proxy is set). MaxMind GeoLite2, DB-IP and other country or city databases are supported; the upload limit is 257 MB, and the database may be up to 256 MB once decompressed;
 - When no database is loaded, filtering has no effect (all visitors pass) and the UI shows a notice;
 - Private network addresses are always allowed;
 - In "Deny" mode, addresses whose country cannot be found in the database are allowed.

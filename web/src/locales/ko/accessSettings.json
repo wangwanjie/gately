@@ -15,7 +15,7 @@
   "geoTitle": "GeoIP 데이터베이스 (국가 필터)",
   "geoLoaded": "로드됨: {type}, 빌드 {buildTime}, {size} MB",
   "remove": "제거",
-  "geoNotImported": "가져오지 않았습니다. MaxMind GeoLite2 / DB-IP 등의 .mmdb 국가 DB 또는 도시 DB를 지원합니다",
+  "geoNotImported": "가져오지 않았습니다. MaxMind GeoLite2 / DB-IP 등의 .mmdb 국가 또는 도시 데이터베이스를 지원하며 .mmdb.gz, .tar.gz 압축 파일도 가능합니다",
   "uploadMmdb": ".mmdb 업로드",
   "mmdbUrlPlaceholder": "또는 .mmdb 다운로드 주소 입력",
   "geoImported": "GeoIP 데이터베이스를 가져왔습니다",

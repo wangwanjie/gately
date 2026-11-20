@@ -15,7 +15,7 @@
   "geoTitle": "GeoIP データベース（国別フィルタ）",
   "geoLoaded": "読み込み済み: {type}、ビルド日時 {buildTime}、{size} MB",
   "remove": "削除",
-  "geoNotImported": "未インポート。MaxMind GeoLite2 / DB-IP などの .mmdb 形式の国別・都市別データベースに対応しています",
+  "geoNotImported": "未インポート。MaxMind GeoLite2 / DB-IP などの .mmdb 形式の国別・都市別データベースに対応しています（.mmdb.gz、.tar.gz 圧縮ファイルも可）",
   "uploadMmdb": ".mmdb をアップロード",
   "mmdbUrlPlaceholder": "または .mmdb のダウンロード URL を入力",
   "geoImported": "GeoIP データベースをインポートしました",
