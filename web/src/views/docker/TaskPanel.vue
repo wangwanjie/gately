@@ -1,6 +1,7 @@
 <template>
   <!-- 后台任务浮条：展示最近的任务进度，结束后可手动关闭 -->
-  <div v-if="visible.length" class="task-panel">
+  <div v-if="visible.length" class="task-spacer" :style="{ height: panelHeight + 24 + 'px' }" aria-hidden="true"></div>
+  <div v-if="visible.length" ref="panelEl" class="task-panel">
     <div v-for="task in visible" :key="task.id" class="task" :class="`is-${task.status}`">
       <div class="task-head">
         <Loader v-if="task.status === 'running'" :size="16" class="spin" />
@@ -28,7 +29,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive } from 'vue'
+import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Ban, CircleCheck, CircleX, Loader, Square, X } from 'lucide-vue-next'
 import { cancelTask, trackedTasks, type TrackedTask } from './tasks'
@@ -37,6 +38,27 @@ const { t } = useI18n()
 
 const open = reactive<Record<string, boolean>>({})
 const visible = computed(() => trackedTasks.filter((task) => !task.dismissed).slice(0, 3))
+
+// 浮条固定在右下角，会盖住页面末尾的内容：在文档流末尾放一块同高占位，让页面能滚过浮条
+const panelEl = ref<HTMLElement | null>(null)
+const panelHeight = ref(0)
+let ro: ResizeObserver | null = null
+watch(panelEl, (el) => {
+  ro?.disconnect()
+  ro = null
+  if (!el) {
+    panelHeight.value = 0
+    return
+  }
+  panelHeight.value = el.offsetHeight
+  if (typeof ResizeObserver !== 'undefined') {
+    ro = new ResizeObserver(() => {
+      panelHeight.value = el.offsetHeight
+    })
+    ro.observe(el)
+  }
+})
+onBeforeUnmount(() => ro?.disconnect())
 
 function toggle(id: string) {
   open[id] = !open[id]
