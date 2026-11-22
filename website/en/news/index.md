@@ -7,6 +7,10 @@ description: Release announcements and notes for each Gately version.
 
 Announcements for major releases are listed below. See [GitHub Releases](https://github.com/wangwanjie/gately/releases) for the full changes and downloads of every version.
 
+## [v0.6.8.5](/en/news/v0.6.8.5)
+
+November 23, 2026 · Visitor IP locations; GeoIP databases as .mmdb.gz and .tar.gz; several single sign-on domains; 9 built-in styles for the Web authentication sign-in pages; fixes saving settings over plain HTTP on the fnOS gateway and the Docker task panel covering buttons.
+
 ## [v0.6.8.4](/en/news/v0.6.8.4)
 
 November 19, 2026 · Security fix: notification channel keys could appear in delivery errors; changes to port forwarding, protocol routing, Web services and global settings take effect only once a new connection confirms them and are otherwise rolled back automatically; failed notifications are retried and resent when the channel recovers; certificates can use the fnOS system certificate; System settings shows storage usage; fixes Intrusion Prevention trap ports occupying the admin port and making Gately exit on restart.

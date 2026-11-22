@@ -98,8 +98,8 @@
   "home": {
     "pill": "Kostenlos und Open Source · Apache-2.0",
     "announce": {
-      "text": "v0.6.8.4: Bestätigung nach dem Speichern mit automatischem Zurücksetzen, Nachsendung fehlgeschlagener Benachrichtigungen, fnOS-Systemzertifikat →",
-      "link": "/de/news/v0.6.8.4"
+      "text": "v0.6.8.5: IP-Standort von Besuchern, mehrere Single-Sign-On-Domains, 9 Stile für Anmeldeseiten →",
+      "link": "/de/news/v0.6.8.5"
     },
     "titleLine1": "Ein Eingang für Ihre selbst gehosteten Dienste",
     "titleLine2": "Reverse Proxy, HTTPS, DDNS, NAT-Traversal, WAF und Sperren in einer Binärdatei",

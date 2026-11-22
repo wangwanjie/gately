@@ -98,8 +98,8 @@
   "home": {
     "pill": "무료 오픈소스 · Apache-2.0",
     "announce": {
-      "text": "v0.6.8.4 출시: 설정 저장 후 확인과 자동 롤백, 알림 실패 시 재전송, fnOS 시스템 인증서 →",
-      "link": "/ko/news/v0.6.8.4"
+      "text": "v0.6.8.5 출시: 방문자 IP 위치, 여러 SSO 도메인, 로그인 페이지 스타일 9종 →",
+      "link": "/ko/news/v0.6.8.5"
     },
     "titleLine1": "셀프 호스팅 서비스를 위한 단일 관문",
     "titleLine2": "리버스 프록시, HTTPS, DDNS, NAT 통과, WAF, 차단을 하나의 바이너리로",

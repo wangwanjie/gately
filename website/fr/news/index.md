@@ -7,6 +7,10 @@ description: Annonces et notes de version de chaque version de Gately.
 
 Les annonces des versions majeures sont listées ci-dessous. Consultez [GitHub Releases](https://github.com/wangwanjie/gately/releases) pour la liste complète des changements et les téléchargements de chaque version.
 
+## [v0.6.8.5](/fr/news/v0.6.8.5)
+
+23 novembre 2026 · Localisation des IP des visiteurs, bases GeoIP en .mmdb.gz et .tar.gz, plusieurs domaines d'authentification unique, 9 styles intégrés pour les pages de connexion de l'authentification Web ; corrige l'enregistrement refusé en HTTP sur la passerelle fnOS et le panneau de tâches Docker qui masquait des boutons.
+
 ## [v0.6.8.4](/fr/news/v0.6.8.4)
 
 19 novembre 2026 · Correctif de sécurité : les clés des canaux de notification pouvaient apparaître dans les erreurs de livraison ; les modifications de la redirection de ports, du routage par protocole, des services Web et des paramètres globaux ne sont conservées que si une nouvelle connexion les confirme, sinon elles sont annulées automatiquement ; les notifications en échec sont retentées puis renvoyées au rétablissement du canal ; les certificats peuvent utiliser le certificat système fnOS ; les paramètres système affichent l'utilisation du stockage ; correction des ports pièges de la prévention d'intrusion qui occupaient le port d'administration et faisaient quitter Gately au redémarrage.
