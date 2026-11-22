@@ -2977,6 +2977,7 @@
   "经渠道 %s 补推「%s」: %s": "Renvoi de « %[2]s » via le canal %[1]s : %[3]s",
   "经渠道 %s 补推「%s」失败，稍后再试: %v": "Échec du renvoi de « %[2]s » via le canal %[1]s, nouvel essai plus tard : %[3]v",
   "经渠道 %s 补推「%s」成功": "« %[2]s » renvoyé via le canal %[1]s",
+  "经统一网关的请求因来源未确认被拒绝：%s %s，Origin=%q，Host=%q，Sec-Fetch-Site=%q": "Requête via la passerelle unifiée refusée car son origine n'est pas confirmée : %s %s, Origin=%q, Host=%q, Sec-Fetch-Site=%q",
   "绑定端口无效": "Port de liaison invalide",
   "结束时间，RFC 3339 格式或毫秒时间戳": "Heure de fin, RFC 3339 ou horodatage en millisecondes",
   "给这个 Passkey 起个名字（可选）": "Donnez un nom à cette Passkey (facultatif)",

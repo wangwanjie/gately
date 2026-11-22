@@ -26,6 +26,8 @@ type gwReq struct {
 	ws bool
 	// multipart 为 true 时以表单方式提交（不触发浏览器预检的写请求）
 	multipart bool
+	// page 为 true 时带上管理界面的 X-Gately-Page 请求头
+	page bool
 }
 
 func (q gwReq) do(t *testing.T, h http.Handler) *httptest.ResponseRecorder {
@@ -56,6 +58,9 @@ func (q gwReq) do(t *testing.T, h http.Handler) *httptest.ResponseRecorder {
 	}
 	if q.cookie != "" {
 		req.Header.Set("Cookie", q.cookie)
+	}
+	if q.page {
+		req.Header.Set(gatewayPageHeader, "1")
 	}
 	if q.ws {
 		req.Header.Set("Connection", "Upgrade")
@@ -238,5 +243,79 @@ func TestGatewayOriginLearnedOnlyFromAdmin(t *testing.T) {
 	}
 	if known(gwOtherPort) {
 		t.Fatal("其他端口不应被确认")
+	}
+}
+
+// 经 HTTP 地址访问（如飞牛的 5000 端口、飞牛 App 的 HTTP 模式）时浏览器不发 Sec-Fetch-Site：管理界面的请求带着
+// X-Gately-Page，凭飞牛登录态登录后的写请求照常通过，并为之后的 WebSocket 握手确认来源；别的端口的页面带不上这个
+// 请求头（须先通过 CORS 预检），仍被拒绝。
+func TestGatewayPlainHTTPPageHeader(t *testing.T) {
+	a, h := newOriginApp(t, t.TempDir(), true)
+	if err := a.auth.AddUser("viewer", "tide-Lamp-47-oak"); err != nil {
+		t.Fatal(err)
+	}
+	a.settingsMu.Lock()
+	a.settings.GatewaySSO = true
+	a.settingsMu.Unlock()
+	const httpOrigin = "http://nas.example.com:5000"
+	known := func(o string) bool {
+		key, _ := originKey(o)
+		return a.gatewayOriginKnown(key)
+	}
+	// 打开首页时凭飞牛登录态自动登录
+	req := httptest.NewRequest("GET", "http://nas.example.com/app/gately/", nil)
+	req.Host = "nas.example.com"
+	req.Header.Set("X-Trim-Isadmin", "true")
+	req.Header.Set("X-Trim-Username", "boss")
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, req)
+	sso := sessionCookie(t, rec)
+
+	wsPath := "/api/portforward/rules/x/ws"
+	// 修复前：不带 Sec-Fetch-Site、来源未确认的写请求一律被拒（修改设置提示“拒绝跨源请求”）
+	if rec := (gwReq{method: "DELETE", path: "/api/portforward/logs", origin: httpOrigin, cookie: sso}).do(t, h); rec.Code != http.StatusForbidden {
+		t.Fatalf("不带 X-Gately-Page 的写请求应被拒绝: %d", rec.Code)
+	}
+	if rec := (gwReq{method: "GET", path: wsPath, origin: httpOrigin, cookie: sso, ws: true}).do(t, h); rec.Code != http.StatusForbidden {
+		t.Fatalf("来源确认前的 WebSocket 握手应被拒绝: %d", rec.Code)
+	}
+	if rec := (gwReq{method: "DELETE", path: "/api/portforward/logs", origin: httpOrigin, cookie: sso, page: true}).do(t, h); rec.Code != 200 {
+		t.Fatalf("管理界面经 HTTP 发出的写请求应通过: %d %s", rec.Code, rec.Body.String())
+	}
+	if !known(httpOrigin) {
+		t.Fatal("带管理员会话与 X-Gately-Page 的请求应确认来源")
+	}
+	if rec := (gwReq{method: "GET", path: wsPath, origin: httpOrigin, cookie: sso, ws: true}).do(t, h); rec.Code == http.StatusForbidden {
+		t.Fatalf("来源确认后的 WebSocket 握手不应被拒绝: %d %s", rec.Code, rec.Body.String())
+	}
+	// 主机名不同的来源，带着请求头也不行；只读账号带着请求头不能确认来源
+	if rec := (gwReq{method: "DELETE", path: "/api/portforward/logs", origin: "http://evil.example:5000", cookie: sso, page: true}).do(t, h); rec.Code != http.StatusForbidden {
+		t.Fatalf("主机名不同的来源应被拒绝: %d", rec.Code)
+	}
+	rec = gwReq{method: "POST", path: "/api/login", origin: gwOtherPort, page: true, body: `{"username":"viewer","password":"tide-Lamp-47-oak"}`}.do(t, h)
+	if rec.Code != 200 {
+		t.Fatalf("只读账号登录失败: %d %s", rec.Code, rec.Body.String())
+	}
+	viewer := sessionCookie(t, rec)
+	gwReq{method: "PUT", path: "/api/account/ui-language", origin: gwOtherPort, page: true, cookie: viewer, body: `{"language":"zh-CN"}`}.do(t, h)
+	if known(gwOtherPort) {
+		t.Fatal("只读账号不能让来源变成已确认")
+	}
+	// 别的端口的页面带不上自定义请求头：管理员会话下的写请求与握手仍被拒绝
+	if rec := (gwReq{method: "DELETE", path: "/api/portforward/logs", origin: gwOtherPort, cookie: sso}).do(t, h); rec.Code != http.StatusForbidden {
+		t.Fatalf("其他端口的写请求应被拒绝: %d", rec.Code)
+	}
+	if rec := (gwReq{method: "GET", path: wsPath, origin: gwOtherPort, cookie: sso, ws: true}).do(t, h); rec.Code != http.StatusForbidden {
+		t.Fatalf("其他端口的握手应被拒绝: %d", rec.Code)
+	}
+	// 拒绝时按来源记一条日志，写明判断依据
+	found := false
+	for _, e := range a.sysLogs.Since(0) {
+		if strings.Contains(e.Message, "来源未确认被拒绝") && strings.Contains(e.Message, gwOtherPort) {
+			found = true
+		}
+	}
+	if !found {
+		t.Fatal("被拒绝的来源应记入系统日志")
 	}
 }

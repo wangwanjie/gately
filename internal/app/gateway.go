@@ -120,6 +120,7 @@ func (a *App) gatewayHandler(prefix string, next http.Handler) http.Handler {
 		if host, present, trusted := a.gatewayOriginHost(r, r2.URL.Path); trusted {
 			r2.Host = host
 		} else if present && originGuarded(r) {
+			a.logGatewayOriginRejected(r, r2.URL.Path)
 			httpx.Error(w, http.StatusForbidden, "拒绝跨源请求")
 			return
 		}
@@ -141,11 +142,14 @@ func (a *App) gatewayHandler(prefix string, next http.Handler) http.Handler {
 // ---- 页面来源确认 ----
 //
 // 经网关访问时 Gately 不知道浏览器地址栏里的端口，无法像直接访问那样拿 Origin 与 Host 逐字比较。
-// 这里改为确认“这个 Origin 的页面就是管理界面自己”，依据有两种：
+// 这里改为确认“这个 Origin 的页面就是管理界面自己”，依据有三种：
 //   - 浏览器写入的 Sec-Fetch-Site: same-origin。这个请求头页面脚本无法伪造，同主机其他端口的页面发来的请求
 //     是 same-site，其他站点是 cross-site；
-//   - 之前确认过的来源。不带 Sec-Fetch-Site 的请求（部分浏览器的 WebSocket 握手、较旧的浏览器）按此判断。
-//     来源在两种情况下记为已确认：带着管理员会话且浏览器标明 same-origin 的请求，以及管理员用密码或 Passkey 登录成功的请求。
+//   - 自定义请求头 X-Gately-Page。浏览器只在 HTTPS 等安全上下文里发送 Sec-Fetch-Site，经 HTTP 地址访问时靠它判断：
+//     别的来源的页面带上它须先通过 CORS 预检，管理接口不放行预检；
+//   - 之前确认过的来源。WebSocket 握手无法加请求头，经 HTTP 访问或部分浏览器的握手不带 Sec-Fetch-Site，按此判断。
+//     来源在三种情况下记为已确认：带着管理员会话且浏览器标明 same-origin 的请求，带着管理员会话和 X-Gately-Page 的请求，
+//     以及管理员用密码或 Passkey 登录成功的请求。
 //
 // 已确认的来源保存在配置目录，重启后仍然有效（已打开的终端页面重连时不必先做一次别的操作）。
 
@@ -160,6 +164,8 @@ type gatewayOrigins struct {
 	mu     sync.Mutex
 	loaded bool
 	list   []string
+	// rejected 为已记录过拒绝日志的来源，见 logGatewayOriginRejected
+	rejected map[string]bool
 }
 
 type gatewayOriginsFile struct {
@@ -239,6 +245,30 @@ func (a *App) learnGatewayLoginOrigin(r *http.Request) {
 	}
 }
 
+// gatewayPageHeader 是管理界面经网关发出的请求所带的自定义请求头，见 gatewayOriginHost。
+const gatewayPageHeader = "X-Gately-Page"
+
+// maxRejectedOriginLogs 为按来源记录“拒绝跨源请求”日志的来源数上限，避免被大量伪造来源刷满日志。
+const maxRejectedOriginLogs = 32
+
+// logGatewayOriginRejected 在某个来源的请求第一次被拒绝时记一条日志，写明判断依据，便于排查经反向代理、
+// HTTP 地址等方式访问时的问题（不含 Cookie 等敏感信息）。
+func (a *App) logGatewayOriginRejected(r *http.Request, path string) {
+	origin := r.Header.Get("Origin")
+	a.gwOrigins.mu.Lock()
+	if a.gwOrigins.rejected == nil {
+		a.gwOrigins.rejected = make(map[string]bool)
+	}
+	if a.gwOrigins.rejected[origin] || len(a.gwOrigins.rejected) >= maxRejectedOriginLogs {
+		a.gwOrigins.mu.Unlock()
+		return
+	}
+	a.gwOrigins.rejected[origin] = true
+	a.gwOrigins.mu.Unlock()
+	a.sysLogs.Add(logbuf.LevelWarn, "gateway", fmt.Sprintf("经统一网关的请求因来源未确认被拒绝：%s %s，Origin=%q，Host=%q，Sec-Fetch-Site=%q",
+		r.Method, path, origin, r.Host, r.Header.Get("Sec-Fetch-Site")))
+}
+
 // originGuarded 判断请求是否需要确认页面来源：修改状态的请求与 WebSocket 握手。
 // 其余 GET 请求即使来自别的页面，浏览器也不会把响应交给它（没有跨源许可）。
 func originGuarded(r *http.Request) bool {
@@ -273,6 +303,16 @@ func (a *App) gatewayOriginHost(r *http.Request, path string) (host string, pres
 		return "", true, false
 	}
 	if a.gatewayOriginKnown(key) {
+		return u.Host, true, true
+	}
+	// 浏览器只在安全上下文（HTTPS、localhost）中发送 Sec-Fetch-Site，经 HTTP 地址（如飞牛的 5666/5000 端口、飞牛 App
+	// 的 HTTP 模式）打开时一律没有。管理界面经网关发出的 fetch/XHR 都带 X-Gately-Page（见 web/src/basePath.ts）：
+	// 这是自定义请求头，别的来源的页面要带上它必须先通过 CORS 预检，而管理接口不放行任何预检，所以带着它就说明请求来自
+	// 管理界面自己。带着管理员会话时同样把来源记下来，供之后无法加请求头的 WebSocket 握手使用
+	if r.Header.Get(gatewayPageHeader) != "" {
+		if id, ok := a.auth.Identify(auth.TokenFromRequest(r)); ok && id.Role == auth.RoleAdmin {
+			a.learnGatewayOrigin(key)
+		}
 		return u.Host, true, true
 	}
 	// 没有 Sec-Fetch-Site 的浏览器首次登录：登录与退出接口本身不依赖已有会话，放行后由登录成功确认来源

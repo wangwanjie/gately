@@ -2977,6 +2977,7 @@
   "经渠道 %s 补推「%s」: %s": "Erneutes Senden von „%[2]s“ über Kanal %[1]s: %[3]s",
   "经渠道 %s 补推「%s」失败，稍后再试: %v": "Erneutes Senden von „%[2]s“ über Kanal %[1]s fehlgeschlagen, später neuer Versuch: %[3]v",
   "经渠道 %s 补推「%s」成功": "„%[2]s“ über Kanal %[1]s erneut gesendet",
+  "经统一网关的请求因来源未确认被拒绝：%s %s，Origin=%q，Host=%q，Sec-Fetch-Site=%q": "Anfrage über das einheitliche Gateway abgelehnt, da ihr Ursprung nicht bestätigt ist: %s %s, Origin=%q, Host=%q, Sec-Fetch-Site=%q",
   "绑定端口无效": "Bindungsport ungültig",
   "结束时间，RFC 3339 格式或毫秒时间戳": "Endzeit, RFC 3339 oder Zeitstempel in Millisekunden",
   "给这个 Passkey 起个名字（可选）": "Name für diesen Passkey (optional)",

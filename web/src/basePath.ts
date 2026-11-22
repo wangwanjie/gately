@@ -45,18 +45,55 @@ function rewrite(url: string | URL): string | URL {
   return url.startsWith('/') ? withBase(url) : withBaseAbsolute(url)
 }
 
+/**
+ * 经网关发往本站的 fetch/XHR 都带上的请求头。经 HTTP 地址打开时浏览器不发 Sec-Fetch-Site，后端凭它确认请求来自
+ * 管理界面自己：这是自定义请求头，别的来源的页面要带上它须先通过 CORS 预检，而管理接口不放行预检。
+ */
+export const pageHeader = 'X-Gately-Page'
+
+/** 判断地址是否指向本站（同协议、主机与端口）。 */
+export function isSameOrigin(url: string | URL): boolean {
+  try {
+    return new URL(url, window.location.href).origin === window.location.origin
+  } catch {
+    return false
+  }
+}
+
+/** 给发往本站的请求加上 pageHeader；已带同名请求头时保持不变。 */
+export function withPageHeader(input: RequestInfo | URL, init?: RequestInit): [RequestInfo | URL, RequestInit | undefined] {
+  if (input instanceof Request) {
+    if (!isSameOrigin(input.url) || input.headers.has(pageHeader)) {
+      return [input, init]
+    }
+    const headers = new Headers(init?.headers ?? input.headers)
+    headers.set(pageHeader, '1')
+    return [input, { ...init, headers }]
+  }
+  if (!isSameOrigin(input)) {
+    return [input, init]
+  }
+  const headers = new Headers(init?.headers)
+  if (!headers.has(pageHeader)) {
+    headers.set(pageHeader, '1')
+  }
+  return [input, { ...init, headers }]
+}
+
 function install() {
   const origFetch = window.fetch.bind(window)
   window.fetch = (input: RequestInfo | URL, init?: RequestInit) => {
-    if (typeof input === 'string' || input instanceof URL) {
-      return origFetch(rewrite(input), init)
-    }
-    return origFetch(input, init)
+    const target = typeof input === 'string' || input instanceof URL ? rewrite(input) : input
+    return origFetch(...withPageHeader(target, init))
   }
 
   const origOpen = XMLHttpRequest.prototype.open
   XMLHttpRequest.prototype.open = function (this: XMLHttpRequest, method: string, url: string | URL, ...rest: unknown[]) {
-    return (origOpen as (...args: unknown[]) => void).call(this, method, rewrite(url), ...rest)
+    const target = rewrite(url)
+    ;(origOpen as (...args: unknown[]) => void).call(this, method, target, ...rest)
+    if (isSameOrigin(target)) {
+      this.setRequestHeader(pageHeader, '1')
+    }
   } as typeof XMLHttpRequest.prototype.open
 
   const OrigWebSocket = window.WebSocket
