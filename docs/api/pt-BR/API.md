@@ -468,6 +468,9 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | GET | `/api/webservice/topology/replay` | `webservice:read` | Visão geral do replay da topologia |
 | GET | `/api/webservice/topology/replay/frame` | `webservice:read` | Instantâneo do replay da topologia em um momento |
 | PUT | `/api/webservice/topology/replay/settings` | `webservice:write` | Alterar as configurações do replay da topologia |
+| GET | `/api/webservice/loginpage` | `webservice:read` | Ler a aparência das páginas de autenticação web (login, alteração de senha, gerenciamento de Passkey) e a lista de estilos integrados |
+| PUT | `/api/webservice/loginpage` | `webservice:write` | Salvar a aparência das páginas de autenticação web: estilo, cor principal, imagem de fundo, logotipo, título, descrição, marca no rodapé e CSS personalizado |
+| POST | `/api/webservice/loginpage/preview` | `webservice:write` | Gerar prévias da página de login para uma aparência (mesmo não salva); se styles estiver vazio, são gerados o estilo padrão e todos os estilos integrados |
 | GET | `/api/webservice/connections` | `webservice:read` | Requisições em andamento e requisições longas encerradas recentemente de um site (?listener=&site=&q=) |
 | POST | `/api/webservice/connections/close` | `webservice:write` | Encerrar uma solicitação em andamento em um site, bloqueando opcionalmente o endereço de origem (banSeconds -1 significa permanente) |
 | GET | `/api/webservice/bans` | `webservice:read` | IPs atualmente bloqueados |
@@ -2762,6 +2765,43 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `stripPrefix` | boolean |
 | `targets` | Array de string |
 
+### webservice.LoginPage
+
+| Campo | Tipo |
+| --- | --- |
+| `background` | string |
+| `bgDim` | integer |
+| `color` | string |
+| `css` | string |
+| `hideBrand` | boolean |
+| `logo` | string |
+| `style` | string |
+| `subtitle` | string |
+| `title` | string |
+
+### webservice.LoginPageView
+
+| Campo | Tipo |
+| --- | --- |
+| `loginPage` | `webservice.LoginPage` |
+| `siteStyles` | Mapa de integer |
+| `styles` | Array de string |
+
+### webservice.LoginPreviewRequest
+
+| Campo | Tipo |
+| --- | --- |
+| `loginPage` | `webservice.LoginPage` |
+| `state` | string |
+| `styles` | Array de string |
+
+### webservice.LoginStylePreview
+
+| Campo | Tipo |
+| --- | --- |
+| `html` | string |
+| `id` | string |
+
 ### webservice.OIDCClient
 
 | Campo | Tipo |
@@ -3070,6 +3110,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `lbPolicy` | string |
 | `listDir` | boolean |
 | `locations` | Array de `webservice.Location` |
+| `loginStyle` | string |
 | `name` | string |
 | `notFoundPage` | string |
 | `oauthUsers` | Array de string |

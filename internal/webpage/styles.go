@@ -3,6 +3,7 @@ package webpage
 import (
 	"bytes"
 	"net/http"
+	"slices"
 	"strconv"
 	"unicode/utf8"
 
@@ -144,17 +145,46 @@ const (
 	previewReferrer = "no-referrer"
 )
 
+// loginPreviewCSP 为网页认证页面预览的内容安全策略：页面在无脚本的 sandbox iframe 中显示，
+// 允许加载管理员填写的 http(s) 背景图、Logo 与自定义 CSS 引用的图片和字体，其他资源一律不加载。
+const loginPreviewCSP = "default-src 'none'; style-src 'unsafe-inline'; img-src data: http: https:; font-src data: http: https:; base-uri 'none'; form-action 'none'"
+
+// ForLoginPreview 与 ForPreview 相同，但使用 loginPreviewCSP，供网页认证页面外观的预览使用；
+// 预览在无脚本的 sandbox 中显示，页面里的脚本与 autofocus 一并去掉，免得浏览器为每个预览记录拦截提示。
+func ForLoginPreview(page []byte) []byte {
+	return forPreview(page, loginPreviewCSP, stripScripts)
+}
+
+// stripScripts 去掉文档中的 <script> 元素与 autofocus 属性。
+func stripScripts(n *xhtml.Node) {
+	for c := n.FirstChild; c != nil; {
+		next := c.NextSibling
+		if c.Type == xhtml.ElementNode && c.DataAtom == atom.Script {
+			n.RemoveChild(c)
+		} else {
+			if c.Type == xhtml.ElementNode {
+				c.Attr = slices.DeleteFunc(c.Attr, func(a xhtml.Attribute) bool { return a.Key == "autofocus" })
+			}
+			stripScripts(c)
+		}
+		c = next
+	}
+}
+
 // ForPreview 把 previewCSP 与 previewReferrer 以 meta 标签插到页面 <head> 的最前面，供管理界面预览使用。
 // 在解析树上插入：<head> 带属性或文本中出现 "<head>" 字样时也能放到正确位置。
 func ForPreview(page []byte) []byte {
 	return forPreview(page, previewCSP)
 }
 
-// forPreview 把 csp 与 previewReferrer 以 meta 标签插到页面 <head> 的最前面。
-func forPreview(page []byte, csp string) []byte {
+// forPreview 把 csp 与 previewReferrer 以 meta 标签插到页面 <head> 的最前面；fix 非空时先用它调整解析树。
+func forPreview(page []byte, csp string, fix ...func(*xhtml.Node)) []byte {
 	doc, err := xhtml.Parse(bytes.NewReader(page))
 	if err != nil {
 		return nil
+	}
+	for _, f := range fix {
+		f(doc)
 	}
 	var head *xhtml.Node
 	var find func(n *xhtml.Node)

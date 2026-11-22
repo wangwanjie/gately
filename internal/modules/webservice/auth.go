@@ -65,6 +65,8 @@ type authenticator struct {
 	// passkeyOn 为是否允许共享用户使用 Passkey；pkChal 为已下发的挑战，见 passkey.go
 	passkeyOn atomic.Bool
 	pkChal    passkeyChallenges
+	// look 为认证页面的外观设置，见 loginpage.go
+	look lookHolder
 	// savePasskeys 在配置锁内修改用户的 Passkey 列表：mutate 收到全部共享用户与目标用户下标，返回新的列表（不得修改传入的列表）；
 	// 返回 errNoPasskeyChange 表示无需保存。onPasskeyEvent 记录 Passkey 相关日志
 	savePasskeys   func(userID string, mutate func(all []AuthUser, i int) ([]webauthn.Credential, error)) error
@@ -526,11 +528,12 @@ func (a *authenticator) checkUser(w http.ResponseWriter, r *http.Request, s Site
 // loginSrc 是网页认证登录页的主体（外壳与样式见 webpage 包）。设置了 Pending 时在登录卡片上弹出动态验证码对话框。
 // 模板内不写中文（包括脚本注释），否则整段会被 i18nsync 当作翻译键；脚本依次处理：显示/隐藏密码、
 // 提交后禁用按钮防止重复提交、验证码只保留数字且输满 6 位自动提交。页面不依赖脚本也能正常登录。
+// Look 为外观（见 loginpage.go）：设置了 Logo、标题或说明时替换锁形图标与默认文案；OIDC 登录页的副标题仍显示应用名。
 // 验证码对话框打开时锁定页面滚动（body:has(.modal)），滚轮和触摸滑动不穿透到下方的登录卡片；屏幕过矮时对话框自身可滚动。
 const loginSrc = `{{define "body"}}<section class="card login"{{if .Pending}} aria-hidden="true"{{end}}>
-<div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="16" r="1"/><rect x="3" y="10" width="18" height="12" rx="2"/><path d="M7 10V7a5 5 0 0 1 10 0v3"/></svg></div>
-<h1>{{.T.title}}</h1>
-<p class="sub">{{if .Client}}{{printf .T.clientSubtitle .Client}}{{else}}{{.T.subtitle}}{{end}}</p>
+{{if and .Look .Look.Logo}}<div class="icon logo"><img src="{{.Look.Logo}}" alt=""></div>{{else}}<div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="16" r="1"/><rect x="3" y="10" width="18" height="12" rx="2"/><path d="M7 10V7a5 5 0 0 1 10 0v3"/></svg></div>{{end}}
+<h1>{{if and .Look .Look.Title}}{{.Look.Title}}{{else}}{{.T.title}}{{end}}</h1>
+<p class="sub">{{if .Client}}{{printf .T.clientSubtitle .Client}}{{else if and .Look .Look.Subtitle}}{{.Look.Subtitle}}{{else}}{{.T.subtitle}}{{end}}</p>
 <div class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg><span>{{.Host}}</span></div>
 {{if and .Error (not .Pending)}}<div class="alert" role="alert"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg><span>{{.Error}}</span></div>{{end}}
 {{if .HasPassword}}<form method="post" action="{{.Action}}" data-once>
@@ -710,6 +713,9 @@ const totpStepTTL = 5 * time.Minute
 func (a *authenticator) handleLogin(w http.ResponseWriter, r *http.Request, s Site, ip string) {
 	host := hostOnly(r.Host)
 	base := s.authPrefix()
+	if a.serveLookAsset(w, r, base) {
+		return
+	}
 	if r.URL.Path == base+passwordSuffix {
 		a.handlePassword(w, r, s, ip)
 		return
@@ -819,6 +825,7 @@ func (a *authenticator) handleLogin(w http.ResponseWriter, r *http.Request, s Si
 		data["Error"] = i18n.Tr(lang, msg)
 	}
 	data["PageTitle"] = i18n.Tr(lang, loginTexts["pageTitle"]) + " · " + host
+	data["Look"] = a.pageLook(s, host, lang)
 	webpage.Render(w, status, "ws-login", lang, loginTexts, data)
 }
 

@@ -468,6 +468,9 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | GET | `/api/webservice/topology/replay` | `webservice:read` | Resumen de la reproducción de topología |
 | GET | `/api/webservice/topology/replay/frame` | `webservice:read` | Instantánea de reproducción de topología en un momento |
 | PUT | `/api/webservice/topology/replay/settings` | `webservice:write` | Cambiar los ajustes de reproducción de topología |
+| GET | `/api/webservice/loginpage` | `webservice:read` | Leer la apariencia de las páginas de autenticación web (inicio de sesión, cambio de contraseña, gestión de Passkey) y la lista de estilos integrados |
+| PUT | `/api/webservice/loginpage` | `webservice:write` | Guardar la apariencia de las páginas de autenticación web: estilo, color principal, imagen de fondo, logotipo, título, descripción, marca del pie y CSS personalizado |
+| POST | `/api/webservice/loginpage/preview` | `webservice:write` | Generar vistas previas de la página de inicio de sesión con una apariencia (aunque no esté guardada); si styles está vacío se generan el estilo predeterminado y todos los integrados |
 | GET | `/api/webservice/connections` | `webservice:read` | Solicitudes en curso y solicitudes largas terminadas recientemente de un sitio (?listener=&site=&q=) |
 | POST | `/api/webservice/connections/close` | `webservice:write` | Cerrar una solicitud en curso de un sitio y, opcionalmente, bloquear su dirección de origen (banSeconds -1 significa permanente) |
 | GET | `/api/webservice/bans` | `webservice:read` | IP bloqueadas actualmente |
@@ -2762,6 +2765,43 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `stripPrefix` | boolean |
 | `targets` | Lista de string |
 
+### webservice.LoginPage
+
+| Campo | Tipo |
+| --- | --- |
+| `background` | string |
+| `bgDim` | integer |
+| `color` | string |
+| `css` | string |
+| `hideBrand` | boolean |
+| `logo` | string |
+| `style` | string |
+| `subtitle` | string |
+| `title` | string |
+
+### webservice.LoginPageView
+
+| Campo | Tipo |
+| --- | --- |
+| `loginPage` | `webservice.LoginPage` |
+| `siteStyles` | Mapa de integer |
+| `styles` | Lista de string |
+
+### webservice.LoginPreviewRequest
+
+| Campo | Tipo |
+| --- | --- |
+| `loginPage` | `webservice.LoginPage` |
+| `state` | string |
+| `styles` | Lista de string |
+
+### webservice.LoginStylePreview
+
+| Campo | Tipo |
+| --- | --- |
+| `html` | string |
+| `id` | string |
+
 ### webservice.OIDCClient
 
 | Campo | Tipo |
@@ -3070,6 +3110,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `lbPolicy` | string |
 | `listDir` | boolean |
 | `locations` | Lista de `webservice.Location` |
+| `loginStyle` | string |
 | `name` | string |
 | `notFoundPage` | string |
 | `oauthUsers` | Lista de string |

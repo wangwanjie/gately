@@ -4173,6 +4173,86 @@
         },
         "type": "object"
       },
+      "webservice.LoginPage": {
+        "properties": {
+          "background": {
+            "type": "string"
+          },
+          "bgDim": {
+            "type": "integer"
+          },
+          "color": {
+            "type": "string"
+          },
+          "css": {
+            "type": "string"
+          },
+          "hideBrand": {
+            "type": "boolean"
+          },
+          "logo": {
+            "type": "string"
+          },
+          "style": {
+            "type": "string"
+          },
+          "subtitle": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.LoginPageView": {
+        "properties": {
+          "loginPage": {
+            "$ref": "#/components/schemas/webservice.LoginPage"
+          },
+          "siteStyles": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object"
+          },
+          "styles": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.LoginPreviewRequest": {
+        "properties": {
+          "loginPage": {
+            "$ref": "#/components/schemas/webservice.LoginPage"
+          },
+          "state": {
+            "type": "string"
+          },
+          "styles": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.LoginStylePreview": {
+        "properties": {
+          "html": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "webservice.OIDCClient": {
         "properties": {
           "allow": {
@@ -4932,6 +5012,9 @@
               "$ref": "#/components/schemas/webservice.Location"
             },
             "type": "array"
+          },
+          "loginStyle": {
+            "type": "string"
           },
           "name": {
             "type": "string"
@@ -52180,6 +52263,199 @@
           }
         ],
         "summary": "Enable or disable Web service listening",
+        "tags": [
+          "Web service"
+        ],
+        "x-required-scope": "webservice:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/loginpage": {
+      "get": {
+        "description": "Required permission: `webservice:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/webservice.LoginPageView"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Read the appearance settings of the web authentication pages (sign-in, password change, Passkey management) and the list of built-in styles",
+        "tags": [
+          "Web service"
+        ],
+        "x-required-scope": "webservice:read",
+        "x-token-allowed": true
+      },
+      "put": {
+        "description": "Required permission: `webservice:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/webservice.LoginPage"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/webservice.LoginPageView"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Save the appearance of the web authentication pages: style, accent color, background image, logo, title, description, footer branding and custom CSS",
+        "tags": [
+          "Web service"
+        ],
+        "x-required-scope": "webservice:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/loginpage/preview": {
+      "post": {
+        "description": "Required permission: `webservice:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/webservice.LoginPreviewRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/webservice.LoginStylePreview"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Generate login page previews for an appearance (which may not be saved yet); when styles is empty, the default style and all built-in styles are generated",
         "tags": [
           "Web service"
         ],

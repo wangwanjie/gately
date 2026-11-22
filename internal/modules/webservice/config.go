@@ -178,7 +178,10 @@ type Site struct {
 	// ErrorPage 为 404 与 5xx 错误页的样式，以及（反向代理站点）拦截后端错误的设置，见 errorpages.go。
 	// 默认站点的设置同时用于没有任何站点匹配时的 404（默认站点未启用时同样生效）
 	ErrorPage ErrorPageOptions `json:"errorPage"`
-	Remark    string           `json:"remark"`
+	// LoginStyle 为网页认证页面（登录、修改密码、Passkey 管理）的样式：空为跟随全局外观设置，
+	// default 为默认样式，其余为内置样式 ID；品牌项与自定义 CSS 始终使用全局设置，见 loginpage.go
+	LoginStyle string `json:"loginStyle"`
+	Remark     string `json:"remark"`
 
 	// scope 为 监听器key/站点key，运行时用于隔离会话 Cookie，不持久化
 	scope string
@@ -299,6 +302,8 @@ type fileConfig struct {
 	Replay ReplaySettings `json:"replay"`
 	// Panels 为导航面板库，供导航面板类型的站点引用
 	Panels []Panel `json:"panels"`
+	// LoginPage 为网页认证页面（登录、修改密码、Passkey 管理）的外观，见 loginpage.go
+	LoginPage LoginPage `json:"loginPage"`
 }
 
 func cleanList(in []string) []string {
@@ -654,6 +659,10 @@ func (s *Site) validate(isDefault bool) error {
 		return err
 	}
 	if err := s.validateProxyExtras(); err != nil {
+		return err
+	}
+	s.LoginStyle = strings.TrimSpace(s.LoginStyle)
+	if err := validateSiteLoginStyle(s.LoginStyle); err != nil {
 		return err
 	}
 	if err := s.ErrorPage.validate(); err != nil {

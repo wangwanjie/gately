@@ -468,6 +468,9 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/webservice/topology/replay` | `webservice:read` | 토폴로지 재생 개요 |
 | GET | `/api/webservice/topology/replay/frame` | `webservice:read` | 특정 시점의 토폴로지 재생 스냅숏 |
 | PUT | `/api/webservice/topology/replay/settings` | `webservice:write` | 토폴로지 재생 설정 변경 |
+| GET | `/api/webservice/loginpage` | `webservice:read` | 웹 인증 페이지(로그인, 비밀번호 변경, Passkey 관리)의 외관 설정과 내장 스타일 목록 조회 |
+| PUT | `/api/webservice/loginpage` | `webservice:write` | 웹 인증 페이지의 외관 저장: 스타일, 강조 색상, 배경 이미지, 로고, 제목, 설명, 바닥글 브랜드 표시, 사용자 정의 CSS |
+| POST | `/api/webservice/loginpage/preview` | `webservice:write` | (저장 전이어도 되는) 외관 설정으로 로그인 페이지 미리보기를 생성합니다. styles가 비어 있으면 기본 스타일과 모든 내장 스타일을 생성합니다 |
 | GET | `/api/webservice/connections` | `webservice:read` | 사이트의 진행 중인 요청과 최근 종료된 장시간 요청 (?listener=&site=&q=) |
 | POST | `/api/webservice/connections/close` | `webservice:write` | 사이트에서 진행 중인 요청을 끊고 출발지 주소를 함께 차단할 수 있음(banSeconds가 -1이면 영구) |
 | GET | `/api/webservice/bans` | `webservice:read` | 현재 차단된 IP |
@@ -2762,6 +2765,43 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `stripPrefix` | boolean |
 | `targets` | Array of string |
 
+### webservice.LoginPage
+
+| 필드 | 타입 |
+| --- | --- |
+| `background` | string |
+| `bgDim` | integer |
+| `color` | string |
+| `css` | string |
+| `hideBrand` | boolean |
+| `logo` | string |
+| `style` | string |
+| `subtitle` | string |
+| `title` | string |
+
+### webservice.LoginPageView
+
+| 필드 | 타입 |
+| --- | --- |
+| `loginPage` | `webservice.LoginPage` |
+| `siteStyles` | Map of integer |
+| `styles` | Array of string |
+
+### webservice.LoginPreviewRequest
+
+| 필드 | 타입 |
+| --- | --- |
+| `loginPage` | `webservice.LoginPage` |
+| `state` | string |
+| `styles` | Array of string |
+
+### webservice.LoginStylePreview
+
+| 필드 | 타입 |
+| --- | --- |
+| `html` | string |
+| `id` | string |
+
 ### webservice.OIDCClient
 
 | 필드 | 타입 |
@@ -3070,6 +3110,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `lbPolicy` | string |
 | `listDir` | boolean |
 | `locations` | Array of `webservice.Location` |
+| `loginStyle` | string |
 | `name` | string |
 | `notFoundPage` | string |
 | `oauthUsers` | Array of string |

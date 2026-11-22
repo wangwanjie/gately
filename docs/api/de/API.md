@@ -468,6 +468,9 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | GET | `/api/webservice/topology/replay` | `webservice:read` | Übersicht der Topologie-Wiedergabe |
 | GET | `/api/webservice/topology/replay/frame` | `webservice:read` | Topologie-Wiedergabe zu einem Zeitpunkt |
 | PUT | `/api/webservice/topology/replay/settings` | `webservice:write` | Einstellungen der Topologie-Wiedergabe ändern |
+| GET | `/api/webservice/loginpage` | `webservice:read` | Erscheinungsbild der Web-Authentifizierungsseiten (Anmeldung, Passwortänderung, Passkey-Verwaltung) und Liste der integrierten Stile lesen |
+| PUT | `/api/webservice/loginpage` | `webservice:write` | Erscheinungsbild der Web-Authentifizierungsseiten speichern: Stil, Akzentfarbe, Hintergrundbild, Logo, Titel, Beschreibung, Branding in der Fußzeile und eigenes CSS |
+| POST | `/api/webservice/loginpage/preview` | `webservice:write` | Vorschauen der Anmeldeseite für ein (auch noch nicht gespeichertes) Erscheinungsbild erzeugen; ist styles leer, werden der Standardstil und alle integrierten Stile erzeugt |
 | GET | `/api/webservice/connections` | `webservice:read` | Laufende und kürzlich beendete lange Anfragen einer Site (?listener=&site=&q=) |
 | POST | `/api/webservice/connections/close` | `webservice:write` | Eine laufende Anfrage einer Website trennen und optional ihre Quelladresse sperren (banSeconds -1 bedeutet dauerhaft) |
 | GET | `/api/webservice/bans` | `webservice:read` | Aktuell gesperrte IPs |
@@ -2762,6 +2765,43 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `stripPrefix` | boolean |
 | `targets` | Array von string |
 
+### webservice.LoginPage
+
+| Feld | Typ |
+| --- | --- |
+| `background` | string |
+| `bgDim` | integer |
+| `color` | string |
+| `css` | string |
+| `hideBrand` | boolean |
+| `logo` | string |
+| `style` | string |
+| `subtitle` | string |
+| `title` | string |
+
+### webservice.LoginPageView
+
+| Feld | Typ |
+| --- | --- |
+| `loginPage` | `webservice.LoginPage` |
+| `siteStyles` | Map von integer |
+| `styles` | Array von string |
+
+### webservice.LoginPreviewRequest
+
+| Feld | Typ |
+| --- | --- |
+| `loginPage` | `webservice.LoginPage` |
+| `state` | string |
+| `styles` | Array von string |
+
+### webservice.LoginStylePreview
+
+| Feld | Typ |
+| --- | --- |
+| `html` | string |
+| `id` | string |
+
 ### webservice.OIDCClient
 
 | Feld | Typ |
@@ -3070,6 +3110,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `lbPolicy` | string |
 | `listDir` | boolean |
 | `locations` | Array von `webservice.Location` |
+| `loginStyle` | string |
 | `name` | string |
 | `notFoundPage` | string |
 | `oauthUsers` | Array von string |

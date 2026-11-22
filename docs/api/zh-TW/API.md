@@ -468,6 +468,9 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/webservice/topology/replay` | `webservice:read` | 拓撲回放概覽 |
 | GET | `/api/webservice/topology/replay/frame` | `webservice:read` | 某一時刻的拓撲回放快照 |
 | PUT | `/api/webservice/topology/replay/settings` | `webservice:write` | 修改拓撲回放設定 |
+| GET | `/api/webservice/loginpage` | `webservice:read` | 讀取網頁認證頁面（登入、修改密碼、Passkey 管理）的外觀設定與內建樣式列表 |
+| PUT | `/api/webservice/loginpage` | `webservice:write` | 儲存網頁認證頁面的外觀：樣式、主色、背景圖、Logo、標題、說明、頁尾標識與自訂 CSS |
+| POST | `/api/webservice/loginpage/preview` | `webservice:write` | 依（可以尚未儲存的）外觀設定產生登入頁預覽，styles 為空時產生預設樣式與全部內建樣式 |
 | GET | `/api/webservice/connections` | `webservice:read` | 站點進行中的請求與最近結束的長請求（?listener=&site=&q=） |
 | POST | `/api/webservice/connections/close` | `webservice:write` | 中斷站台的一個進行中請求，可同時封鎖其來源位址（banSeconds 為 -1 表示永久） |
 | GET | `/api/webservice/bans` | `webservice:read` | 目前被封鎖的 IP |
@@ -2762,6 +2765,43 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `stripPrefix` | boolean |
 | `targets` | 陣列 of string |
 
+### webservice.LoginPage
+
+| 欄位 | 類型 |
+| --- | --- |
+| `background` | string |
+| `bgDim` | integer |
+| `color` | string |
+| `css` | string |
+| `hideBrand` | boolean |
+| `logo` | string |
+| `style` | string |
+| `subtitle` | string |
+| `title` | string |
+
+### webservice.LoginPageView
+
+| 欄位 | 類型 |
+| --- | --- |
+| `loginPage` | `webservice.LoginPage` |
+| `siteStyles` | 對應 of integer |
+| `styles` | 陣列 of string |
+
+### webservice.LoginPreviewRequest
+
+| 欄位 | 類型 |
+| --- | --- |
+| `loginPage` | `webservice.LoginPage` |
+| `state` | string |
+| `styles` | 陣列 of string |
+
+### webservice.LoginStylePreview
+
+| 欄位 | 類型 |
+| --- | --- |
+| `html` | string |
+| `id` | string |
+
 ### webservice.OIDCClient
 
 | 欄位 | 類型 |
@@ -3070,6 +3110,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `lbPolicy` | string |
 | `listDir` | boolean |
 | `locations` | 陣列 of `webservice.Location` |
+| `loginStyle` | string |
 | `name` | string |
 | `notFoundPage` | string |
 | `oauthUsers` | 陣列 of string |

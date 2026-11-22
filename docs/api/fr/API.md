@@ -468,6 +468,9 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | GET | `/api/webservice/topology/replay` | `webservice:read` | Aperçu de la relecture de la topologie |
 | GET | `/api/webservice/topology/replay/frame` | `webservice:read` | Instantané de relecture de la topologie à un instant |
 | PUT | `/api/webservice/topology/replay/settings` | `webservice:write` | Modifier les paramètres de relecture de la topologie |
+| GET | `/api/webservice/loginpage` | `webservice:read` | Lire l’apparence des pages d’authentification web (connexion, changement de mot de passe, gestion des Passkeys) et la liste des styles intégrés |
+| PUT | `/api/webservice/loginpage` | `webservice:write` | Enregistrer l’apparence des pages d’authentification web : style, couleur principale, image de fond, logo, titre, description, mention en pied de page et CSS personnalisé |
+| POST | `/api/webservice/loginpage/preview` | `webservice:write` | Générer des aperçus de la page de connexion pour une apparence (même non enregistrée) ; si styles est vide, le style par défaut et tous les styles intégrés sont générés |
 | GET | `/api/webservice/connections` | `webservice:read` | Requêtes en cours et longues requêtes récemment terminées d’un site (?listener=&site=&q=) |
 | POST | `/api/webservice/connections/close` | `webservice:write` | Fermer une requête en cours sur un site, en bloquant éventuellement son adresse source (banSeconds -1 signifie permanent) |
 | GET | `/api/webservice/bans` | `webservice:read` | IP actuellement bannies |
@@ -2762,6 +2765,43 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `stripPrefix` | boolean |
 | `targets` | Tableau de string |
 
+### webservice.LoginPage
+
+| Champ | Type |
+| --- | --- |
+| `background` | string |
+| `bgDim` | integer |
+| `color` | string |
+| `css` | string |
+| `hideBrand` | boolean |
+| `logo` | string |
+| `style` | string |
+| `subtitle` | string |
+| `title` | string |
+
+### webservice.LoginPageView
+
+| Champ | Type |
+| --- | --- |
+| `loginPage` | `webservice.LoginPage` |
+| `siteStyles` | Table de correspondance de integer |
+| `styles` | Tableau de string |
+
+### webservice.LoginPreviewRequest
+
+| Champ | Type |
+| --- | --- |
+| `loginPage` | `webservice.LoginPage` |
+| `state` | string |
+| `styles` | Tableau de string |
+
+### webservice.LoginStylePreview
+
+| Champ | Type |
+| --- | --- |
+| `html` | string |
+| `id` | string |
+
 ### webservice.OIDCClient
 
 | Champ | Type |
@@ -3070,6 +3110,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `lbPolicy` | string |
 | `listDir` | boolean |
 | `locations` | Tableau de `webservice.Location` |
+| `loginStyle` | string |
 | `name` | string |
 | `notFoundPage` | string |
 | `oauthUsers` | Tableau de string |

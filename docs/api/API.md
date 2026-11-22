@@ -468,6 +468,9 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/webservice/topology/replay` | `webservice:read` | 拓扑回放概览 |
 | GET | `/api/webservice/topology/replay/frame` | `webservice:read` | 某一时刻的拓扑回放快照 |
 | PUT | `/api/webservice/topology/replay/settings` | `webservice:write` | 修改拓扑回放设置 |
+| GET | `/api/webservice/loginpage` | `webservice:read` | 读取网页认证页面（登录、修改密码、Passkey 管理）的外观设置与内置样式列表 |
+| PUT | `/api/webservice/loginpage` | `webservice:write` | 保存网页认证页面的外观：样式、主色、背景图、Logo、标题、说明、页脚标识与自定义 CSS |
+| POST | `/api/webservice/loginpage/preview` | `webservice:write` | 按（可以尚未保存的）外观设置生成登录页预览，styles 为空时生成默认样式与全部内置样式 |
 | GET | `/api/webservice/connections` | `webservice:read` | 站点进行中的请求与最近结束的长请求（?listener=&site=&q=） |
 | POST | `/api/webservice/connections/close` | `webservice:write` | 断开站点的一个进行中请求，可同时封禁其来源地址（banSeconds 为 -1 表示永久） |
 | GET | `/api/webservice/bans` | `webservice:read` | 当前被封禁的 IP |
@@ -2762,6 +2765,43 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `stripPrefix` | boolean |
 | `targets` | 数组 of string |
 
+### webservice.LoginPage
+
+| 字段 | 类型 |
+| --- | --- |
+| `background` | string |
+| `bgDim` | integer |
+| `color` | string |
+| `css` | string |
+| `hideBrand` | boolean |
+| `logo` | string |
+| `style` | string |
+| `subtitle` | string |
+| `title` | string |
+
+### webservice.LoginPageView
+
+| 字段 | 类型 |
+| --- | --- |
+| `loginPage` | `webservice.LoginPage` |
+| `siteStyles` | 映射 of integer |
+| `styles` | 数组 of string |
+
+### webservice.LoginPreviewRequest
+
+| 字段 | 类型 |
+| --- | --- |
+| `loginPage` | `webservice.LoginPage` |
+| `state` | string |
+| `styles` | 数组 of string |
+
+### webservice.LoginStylePreview
+
+| 字段 | 类型 |
+| --- | --- |
+| `html` | string |
+| `id` | string |
+
 ### webservice.OIDCClient
 
 | 字段 | 类型 |
@@ -3070,6 +3110,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `lbPolicy` | string |
 | `listDir` | boolean |
 | `locations` | 数组 of `webservice.Location` |
+| `loginStyle` | string |
 | `name` | string |
 | `notFoundPage` | string |
 | `oauthUsers` | 数组 of string |

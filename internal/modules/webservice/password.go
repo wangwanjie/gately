@@ -165,6 +165,7 @@ func (a *authenticator) handlePassword(w http.ResponseWriter, r *http.Request, s
 		data["Error"] = i18n.Tr(lang, msg)
 	}
 	data["PageTitle"] = i18n.Tr(lang, passwordTexts["pageTitle"]) + " · " + host
+	data["Look"] = a.pageLook(s, host, lang)
 	webpage.Render(w, status, "ws-password", lang, passwordTexts, data)
 }
 

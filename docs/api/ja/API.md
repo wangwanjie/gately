@@ -468,6 +468,9 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/webservice/topology/replay` | `webservice:read` | トポロジー再生の概要 |
 | GET | `/api/webservice/topology/replay/frame` | `webservice:read` | ある時点のトポロジー再生スナップショット |
 | PUT | `/api/webservice/topology/replay/settings` | `webservice:write` | トポロジー再生の設定を変更 |
+| GET | `/api/webservice/loginpage` | `webservice:read` | Web 認証ページ（ログイン、パスワード変更、Passkey 管理）の外観設定と組み込みスタイルの一覧を取得 |
+| PUT | `/api/webservice/loginpage` | `webservice:write` | Web 認証ページの外観（スタイル、アクセントカラー、背景画像、ロゴ、タイトル、説明、フッターのロゴ表示、カスタム CSS）を保存 |
+| POST | `/api/webservice/loginpage/preview` | `webservice:write` | （未保存でもよい）外観設定でログインページのプレビューを生成。styles が空の場合はデフォルトとすべての組み込みスタイルを生成 |
 | GET | `/api/webservice/connections` | `webservice:read` | サイトの進行中リクエストと最近終了した長時間リクエスト（?listener=&site=&q=） |
 | POST | `/api/webservice/connections/close` | `webservice:write` | サイトで進行中のリクエストを切断し、送信元アドレスを同時にブロックできます（banSeconds が -1 で無期限） |
 | GET | `/api/webservice/bans` | `webservice:read` | 現在ブロックされている IP |
@@ -2762,6 +2765,43 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `stripPrefix` | boolean |
 | `targets` | 配列 of string |
 
+### webservice.LoginPage
+
+| フィールド | 型 |
+| --- | --- |
+| `background` | string |
+| `bgDim` | integer |
+| `color` | string |
+| `css` | string |
+| `hideBrand` | boolean |
+| `logo` | string |
+| `style` | string |
+| `subtitle` | string |
+| `title` | string |
+
+### webservice.LoginPageView
+
+| フィールド | 型 |
+| --- | --- |
+| `loginPage` | `webservice.LoginPage` |
+| `siteStyles` | マップ of integer |
+| `styles` | 配列 of string |
+
+### webservice.LoginPreviewRequest
+
+| フィールド | 型 |
+| --- | --- |
+| `loginPage` | `webservice.LoginPage` |
+| `state` | string |
+| `styles` | 配列 of string |
+
+### webservice.LoginStylePreview
+
+| フィールド | 型 |
+| --- | --- |
+| `html` | string |
+| `id` | string |
+
 ### webservice.OIDCClient
 
 | フィールド | 型 |
@@ -3070,6 +3110,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `lbPolicy` | string |
 | `listDir` | boolean |
 | `locations` | 配列 of `webservice.Location` |
+| `loginStyle` | string |
 | `name` | string |
 | `notFoundPage` | string |
 | `oauthUsers` | 配列 of string |

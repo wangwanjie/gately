@@ -275,6 +275,15 @@ Al activar Inicio de sesión con Passkey en la página Usuarios de autenticació
 - Si se pierde un dispositivo, un administrador puede editar al usuario en la página Usuarios de autenticación y eliminar su Passkey (efecto inmediato). Las Passkeys solo las registran los propios usuarios. Cuando un administrador cambia la contraseña o la clave TOTP de un usuario en la página Usuarios de autenticación y guarda, se eliminan todas las Passkeys de ese usuario, que tendrá que registrarlas de nuevo; el cambio de contraseña hecho por el propio usuario no elimina las Passkeys;
 - El registro del servicio web anota el alta, la eliminación y el inicio de sesión con Passkey, así como los intentos fallidos con la IP de origen.
 
+### Apariencia de la página de inicio de sesión {#login-page}
+
+Las páginas de inicio de sesión, cambio de contraseña y gestión de Passkey de la autenticación web (incluida la página de inicio de sesión del dominio emisor [OIDC](/es/docs/modules/oidc)) pueden cambiar de apariencia. En la página «Usuarios de autenticación», abre «Apariencia de la página de inicio de sesión → Personalizar»:
+
+- **Estilo**: además del predeterminado hay 9 estilos integrados: Pantalla de bloqueo, Dividido, Minimalista, Terminal, Carta, Brutalista, Aurora, Píxel y Plano. Predeterminado, Dividido, Minimalista y Carta siguen el modo claro u oscuro del visitante, Brutalista solo es claro y el resto solo oscuro. Cada sitio puede elegir su propio estilo en «Seguridad → Estilo de la página de inicio de sesión»; si se deja vacío, sigue la configuración global;
+- **Marca**: color principal, imagen de fondo (URL de imagen o subida de hasta 1 MB, con oscurecimiento ajustable), logotipo (sustituye el icono de candado, hasta 256 KB), título y descripción (se muestran tal cual, sin traducir para los visitantes) y ocultar la marca de Gately en el pie. La marca se aplica a todos los estilos;
+- **CSS personalizado**: se añade después del estilo elegido, hasta 32 KB. La estructura de la página es la misma en todos los estilos; las clases más usadas son `body.skin-<estilo>`, `.bg`, `.card`, `.icon`, `.fields`, `.btn.primary`, `.btn.ghost`, `.otp`, `.modal` y `.foot`. El carácter `<` del CSS se escapa, así que no puede insertar etiquetas ni scripts. Las imágenes y fuentes externas referenciadas desde el CSS las carga directamente el navegador del visitante y revelan su IP a ese servidor; es preferible usar data URLs o direcciones del mismo sitio;
+- La vista previa de la derecha alterna entre los estados de inicio de sesión, verificación en dos pasos y error, entre claro y oscuro y un tamaño de móvil, y no ejecuta scripts. Al guardar, la apariencia se aplica de inmediato a todos los sitios con autenticación web; la lógica de inicio de sesión y la limitación de intentos son iguales en todos los estilos.
+
 ## Control de acceso
 
 ### Listas de IP permitidas y bloqueadas

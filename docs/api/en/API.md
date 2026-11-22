@@ -468,6 +468,9 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | GET | `/api/webservice/topology/replay` | `webservice:read` | Topology replay overview |
 | GET | `/api/webservice/topology/replay/frame` | `webservice:read` | Topology replay snapshot at a moment |
 | PUT | `/api/webservice/topology/replay/settings` | `webservice:write` | Change topology replay settings |
+| GET | `/api/webservice/loginpage` | `webservice:read` | Read the appearance settings of the web authentication pages (sign-in, password change, Passkey management) and the list of built-in styles |
+| PUT | `/api/webservice/loginpage` | `webservice:write` | Save the appearance of the web authentication pages: style, accent color, background image, logo, title, description, footer branding and custom CSS |
+| POST | `/api/webservice/loginpage/preview` | `webservice:write` | Generate login page previews for an appearance (which may not be saved yet); when styles is empty, the default style and all built-in styles are generated |
 | GET | `/api/webservice/connections` | `webservice:read` | Requests in progress and recently ended long requests of a site (?listener=&site=&q=) |
 | POST | `/api/webservice/connections/close` | `webservice:write` | Close a request in progress on a site, optionally banning its source address (banSeconds -1 means permanent) |
 | GET | `/api/webservice/bans` | `webservice:read` | Currently banned IPs |
@@ -2762,6 +2765,43 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `stripPrefix` | boolean |
 | `targets` | Array of string |
 
+### webservice.LoginPage
+
+| Field | Type |
+| --- | --- |
+| `background` | string |
+| `bgDim` | integer |
+| `color` | string |
+| `css` | string |
+| `hideBrand` | boolean |
+| `logo` | string |
+| `style` | string |
+| `subtitle` | string |
+| `title` | string |
+
+### webservice.LoginPageView
+
+| Field | Type |
+| --- | --- |
+| `loginPage` | `webservice.LoginPage` |
+| `siteStyles` | Map of integer |
+| `styles` | Array of string |
+
+### webservice.LoginPreviewRequest
+
+| Field | Type |
+| --- | --- |
+| `loginPage` | `webservice.LoginPage` |
+| `state` | string |
+| `styles` | Array of string |
+
+### webservice.LoginStylePreview
+
+| Field | Type |
+| --- | --- |
+| `html` | string |
+| `id` | string |
+
 ### webservice.OIDCClient
 
 | Field | Type |
@@ -3070,6 +3110,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `lbPolicy` | string |
 | `listDir` | boolean |
 | `locations` | Array of `webservice.Location` |
+| `loginStyle` | string |
 | `name` | string |
 | `notFoundPage` | string |
 | `oauthUsers` | Array of string |

@@ -6,6 +6,7 @@ package webpage
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"strings"
 	"sync"
@@ -15,14 +16,16 @@ import (
 )
 
 // layoutSrc 是所有页面共用的外壳；页面通过 {{define "body"}} 提供主体内容。
+// 数据中有 Look（*Look，网页认证页面的外观）时加上样式类名与背景装饰，并在主体之后输出外观样式，
+// 使它覆盖默认样式与页面主体自带的样式。
 const layoutSrc = `{{define "layout"}}<!doctype html>
 <html lang="{{.Lang}}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow"><meta name="color-scheme" content="light dark">
 <title>{{.PageTitle}}</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%230e7c66'/%3E%3Cpath d='M21.7 10.3A8 8 0 1 0 24 16h-7' stroke='%23fff' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='23.6' cy='8.6' r='2.2' fill='%239ff3dc'/%3E%3C/svg%3E">
 <style>` + baseCSS + `</style></head>
-<body><div class="bg" aria-hidden="true"></div>
-<main class="wrap">{{template "body" .}}</main>
+<body{{with .Look}} class="{{.BodyClass}}"{{end}}><div class="bg" aria-hidden="true">{{with .Look}}{{.Decor}}{{end}}</div>
+<main class="wrap">{{template "body" .}}</main>{{with .Look}}<style>{{.Style}}</style>{{end}}
 <footer class="foot">{{if .Host}}<span>{{.Host}}</span><span class="sep"></span>{{end}}<span class="brand"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" fill="currentColor"/><path d="M21.7 10.3A8 8 0 1 0 24 16h-7" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>Gately</span></footer>
 </body></html>{{end}}`
 
@@ -116,17 +119,34 @@ func Render(w http.ResponseWriter, status int, name, lang string, texts map[stri
 		http.Error(w, fmt.Sprintf("%d %s", status, http.StatusText(status)), status)
 		return
 	}
+	h := w.Header()
+	h.Set("Content-Type", "text/html; charset=utf-8")
+	h.Set("Cache-Control", "no-store")
+	h.Set("X-Content-Type-Options", "nosniff")
+	w.WriteHeader(status)
+	execPage(w, lt, lang, texts, data)
+}
+
+// RenderTo 把已注册的页面写入 w（不设置响应头），供管理界面生成预览；页面不存在时返回 false。
+func RenderTo(w io.Writer, name, lang string, texts map[string]string, data map[string]any) bool {
+	mu.RLock()
+	lt := pages[name]
+	mu.RUnlock()
+	if lt == nil {
+		return false
+	}
+	execPage(w, lt, lang, texts, data)
+	return true
+}
+
+// execPage 补上 Lang 与 T 后执行页面模板。
+func execPage(w io.Writer, lt *lazyTemplate, lang string, texts map[string]string, data map[string]any) {
 	t := lt.get()
 	if data == nil {
 		data = map[string]any{}
 	}
 	data["Lang"] = lang
 	data["T"] = Localize(lang, texts)
-	h := w.Header()
-	h.Set("Content-Type", "text/html; charset=utf-8")
-	h.Set("Cache-Control", "no-store")
-	h.Set("X-Content-Type-Options", "nosniff")
-	w.WriteHeader(status)
 	_ = t.ExecuteTemplate(w, "layout", data)
 }
 

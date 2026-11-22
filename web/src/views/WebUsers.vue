@@ -89,6 +89,18 @@
         </div>
       </div>
 
+      <!-- 登录页外观：独立保存，不影响上面的未保存修改 -->
+      <div class="g-card">
+        <div class="g-card-head">
+          <div class="g-card-title"><Palette :size="16" />{{ t('loginPage.title') }} <span class="g-card-desc">{{ t('loginPage.cardDesc') }}</span></div>
+        </div>
+        <div class="g-card-body look-row">
+          <span>{{ t('loginPage.current') }}<b>{{ t(`loginPage.styles.${lookStyle || LOGIN_STYLE_DEFAULT}`) }}</b></span>
+          <el-button size="small" type="primary" plain data-test="edit-login-page" @click="lookVisible = true">{{ t('loginPage.edit') }}</el-button>
+        </div>
+      </div>
+      <LoginPageEditor v-if="lookVisible" v-model="lookVisible" @saved="(s) => (lookStyle = s)" @closed="lookVisible = false" />
+
       <div class="g-card">
         <div class="g-card-head">
           <div class="g-card-title"><KeyRound :size="16" />{{ t('web.oidcDivider') }}</div>
@@ -111,7 +123,7 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { onBeforeRouteLeave } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { ChevronRight, ChevronsDownUp, ChevronsUpDown, Globe, KeyRound, Search, UserCog, UsersRound } from 'lucide-vue-next'
+import { ChevronRight, ChevronsDownUp, ChevronsUpDown, Globe, KeyRound, Palette, Search, UserCog, UsersRound } from 'lucide-vue-next'
 import { api } from '../api'
 import PageHeader from '../components/PageHeader.vue'
 import GroupHeader from '../components/GroupHeader.vue'
@@ -122,6 +134,8 @@ import SharedUsers from '../components/SharedUsers.vue'
 import ListInput from '../components/ListInput.vue'
 import { splitCommasOrSpaces } from '../composables/useListText'
 import OIDCProvider from '../components/OIDCProvider.vue'
+import LoginPageEditor from '../components/LoginPageEditor.vue'
+import { getLoginPage, LOGIN_STYLE_DEFAULT } from '../loginPage'
 import { useFormLayout } from '../composables/useIsMobile'
 import { type AuthUser, fromAPI, toAPI } from '../sharedUsers'
 import { oidcFromAPI, oidcToAPI, type OIDCSettings } from '../oidc'
@@ -366,14 +380,36 @@ function onBeforeUnload(e: BeforeUnloadEvent) {
   }
 }
 
+// lookStyle 为当前生效的登录页样式（全局设置），lookVisible 为外观对话框
+const lookStyle = ref('')
+const lookVisible = ref(false)
+
+async function loadLook() {
+  try {
+    lookStyle.value = (await getLoginPage()).loginPage.style
+  } catch {
+    // 读取失败时显示默认样式，打开对话框时会再次读取并提示错误
+  }
+}
+
 onMounted(() => {
   window.addEventListener('beforeunload', onBeforeUnload)
   load()
+  loadLook()
 })
 onBeforeUnmount(() => window.removeEventListener('beforeunload', onBeforeUnload))
 </script>
 
 <style scoped>
+.look-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.look-row b {
+  margin-left: 4px;
+}
 .block-gap {
   margin-bottom: 16px;
 }

@@ -275,6 +275,15 @@ Une fois « Connexion par Passkey » activée sur la page Utilisateurs d'authent
 - En cas de perte d'un appareil, un administrateur peut modifier l'utilisateur sur la page Utilisateurs d'authentification et supprimer sa Passkey (effet immédiat). Seuls les utilisateurs peuvent enregistrer leurs Passkeys. Lorsqu'un administrateur modifie le mot de passe ou la clé TOTP d'un utilisateur sur la page Utilisateurs d'authentification et enregistre, toutes les Passkeys de cet utilisateur sont supprimées et doivent être réenregistrées ; le changement de mot de passe en libre-service par l'utilisateur conserve ses Passkeys ;
 - Le journal du service web enregistre l'ajout, la suppression, la connexion et les échecs des Passkeys avec l'adresse IP d'origine.
 
+### Apparence de la page de connexion {#login-page}
+
+Les pages de connexion, de changement de mot de passe et de gestion des Passkeys de l’authentification web (y compris la page de connexion du domaine émetteur [OIDC](/fr/docs/modules/oidc)) peuvent changer d’apparence. Sur la page « Utilisateurs d'auth », ouvrez « Apparence de la page de connexion → Personnaliser » :
+
+- **Style** : en plus du style par défaut, 9 styles sont intégrés : Écran verrouillé, Scindé, Minimal, Terminal, Lettre, Brutaliste, Aurore, Pixel et Plan. Par défaut, Scindé, Minimal et Lettre suivent le mode clair ou sombre du visiteur, Brutaliste est uniquement clair et les autres uniquement sombres. Un site peut choisir son propre style dans « Sécurité → Style de la page de connexion » ; laissé vide, il suit le réglage global ;
+- **Identité visuelle** : couleur principale, image de fond (URL d’image ou envoi jusqu’à 1 Mo, avec assombrissement réglable), logo (remplace l’icône de cadenas, jusqu’à 256 Ko), titre et description (affichés tels quels, non traduits pour les visiteurs) et masquage de la mention Gately en pied de page. Ces réglages s’appliquent à tous les styles ;
+- **CSS personnalisé** : ajouté après le style choisi, jusqu’à 32 Ko. La structure de la page est identique pour tous les styles ; les classes courantes sont `body.skin-<style>`, `.bg`, `.card`, `.icon`, `.fields`, `.btn.primary`, `.btn.ghost`, `.otp`, `.modal` et `.foot`. Le caractère `<` du CSS est échappé, il ne peut donc pas insérer de balises ni de scripts. Les images et polices externes référencées dans le CSS sont chargées directement par le navigateur du visiteur et révèlent son IP à ce serveur ; préférez des data URLs ou des adresses du même site ;
+- L’aperçu à droite bascule entre les états connexion, vérification en deux étapes et échec, entre clair et sombre et une taille de téléphone, sans exécuter de scripts. Une fois enregistrée, l’apparence s’applique immédiatement à tous les sites avec authentification web ; la logique de connexion et la limitation des tentatives sont les mêmes pour tous les styles.
+
 ## Contrôle d'accès
 
 ### Liste d'autorisation et liste de blocage d'IP

@@ -275,6 +275,15 @@ Wenn auf der Seite Authentifizierungsbenutzer „Passkey-Anmeldung“ aktiviert 
 - Bei Geräteverlust kann ein Administrator den Benutzer auf der Seite Authentifizierungsbenutzer bearbeiten und dessen Passkey löschen (sofort wirksam). Passkeys können nur die Benutzer selbst registrieren. Ändert ein Administrator auf der Seite Authentifizierungsbenutzer das Passwort oder den TOTP-Schlüssel eines Benutzers und speichert, werden alle Passkeys dieses Benutzers gelöscht und müssen neu registriert werden; ändert der Benutzer sein Passwort selbst, bleiben die Passkeys erhalten;
 - Das Web-Dienst-Protokoll hält Registrierung, Löschung, Anmeldung und fehlgeschlagene Versuche mit Passkeys samt Quell-IP fest.
 
+### Erscheinungsbild der Anmeldeseite {#login-page}
+
+Die Anmelde-, Passwortänderungs- und Passkey-Verwaltungsseiten der Web-Authentifizierung (einschließlich der Anmeldeseite auf der [OIDC](/de/docs/modules/oidc)-Aussteller-Domain) lassen sich umgestalten. Öffnen Sie auf der Seite „Auth-Benutzer“ „Erscheinungsbild der Anmeldeseite → Anpassen“:
+
+- **Stil**: Neben dem Standardstil gibt es 9 integrierte Stile: Sperrbildschirm, Geteilt, Minimal, Terminal, Briefpapier, Brutalistisch, Polarlicht, Pixel und Blaupause. Standard, Geteilt, Minimal und Briefpapier folgen dem hellen oder dunklen Modus des Besuchers, Brutalistisch ist nur hell, die übrigen nur dunkel. Eine Website kann unter „Sicherheit → Stil der Anmeldeseite“ einen eigenen Stil wählen; leer bedeutet, der globalen Einstellung zu folgen;
+- **Branding**: Akzentfarbe, Hintergrundbild (Bild-URL oder Upload bis 1 MB, mit einstellbarer Abdunklung), Logo (ersetzt das Schloss-Symbol, bis 256 KB), Titel und Beschreibung (wie eingegeben angezeigt, nicht für Besucher übersetzt) sowie das Ausblenden des Gately-Zeichens in der Fußzeile. Das Branding gilt für alle Stile;
+- **Eigenes CSS**: wird nach dem gewählten Stil angefügt, höchstens 32 KB. Die Seitenstruktur ist bei allen Stilen gleich; gängige Klassennamen sind `body.skin-<Stil>`, `.bg`, `.card`, `.icon`, `.fields`, `.btn.primary`, `.btn.ghost`, `.otp`, `.modal` und `.foot`. `<` im CSS wird maskiert, sodass keine Tags oder Skripte eingefügt werden können. Externe Bilder und Schriften aus dem CSS lädt der Browser des Besuchers direkt und gibt dabei dessen IP an diesen Server preis; besser sind data-URLs oder Adressen derselben Website;
+- Die Vorschau rechts wechselt zwischen Anmeldung, Zwei-Schritt-Verifizierung und fehlgeschlagener Anmeldung, zwischen hell und dunkel sowie einer Telefongröße und führt keine Skripte aus. Nach dem Speichern gilt das Erscheinungsbild sofort für alle Websites mit Web-Authentifizierung; Anmeldelogik und Ratenbegrenzung sind bei allen Stilen gleich.
+
 ## Zugriffskontrolle
 
 ### IP-Allowlist und -Blocklist

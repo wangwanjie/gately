@@ -4173,6 +4173,86 @@
         },
         "type": "object"
       },
+      "webservice.LoginPage": {
+        "properties": {
+          "background": {
+            "type": "string"
+          },
+          "bgDim": {
+            "type": "integer"
+          },
+          "color": {
+            "type": "string"
+          },
+          "css": {
+            "type": "string"
+          },
+          "hideBrand": {
+            "type": "boolean"
+          },
+          "logo": {
+            "type": "string"
+          },
+          "style": {
+            "type": "string"
+          },
+          "subtitle": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.LoginPageView": {
+        "properties": {
+          "loginPage": {
+            "$ref": "#/components/schemas/webservice.LoginPage"
+          },
+          "siteStyles": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object"
+          },
+          "styles": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.LoginPreviewRequest": {
+        "properties": {
+          "loginPage": {
+            "$ref": "#/components/schemas/webservice.LoginPage"
+          },
+          "state": {
+            "type": "string"
+          },
+          "styles": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.LoginStylePreview": {
+        "properties": {
+          "html": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "webservice.OIDCClient": {
         "properties": {
           "allow": {
@@ -4932,6 +5012,9 @@
               "$ref": "#/components/schemas/webservice.Location"
             },
             "type": "array"
+          },
+          "loginStyle": {
+            "type": "string"
           },
           "name": {
             "type": "string"
@@ -52180,6 +52263,199 @@
           }
         ],
         "summary": "Activar o desactivar Escucha del servicio web",
+        "tags": [
+          "Servicio web"
+        ],
+        "x-required-scope": "webservice:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/loginpage": {
+      "get": {
+        "description": "Permiso necesario: `webservice:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/webservice.LoginPageView"
+                }
+              }
+            },
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parámetros de solicitud incorrectos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token no válido, caducado o sin sesión iniciada"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Al token le falta el permiso necesario"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Leer la apariencia de las páginas de autenticación web (inicio de sesión, cambio de contraseña, gestión de Passkey) y la lista de estilos integrados",
+        "tags": [
+          "Servicio web"
+        ],
+        "x-required-scope": "webservice:read",
+        "x-token-allowed": true
+      },
+      "put": {
+        "description": "Permiso necesario: `webservice:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/webservice.LoginPage"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/webservice.LoginPageView"
+                }
+              }
+            },
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parámetros de solicitud incorrectos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token no válido, caducado o sin sesión iniciada"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Al token le falta el permiso necesario"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Guardar la apariencia de las páginas de autenticación web: estilo, color principal, imagen de fondo, logotipo, título, descripción, marca del pie y CSS personalizado",
+        "tags": [
+          "Servicio web"
+        ],
+        "x-required-scope": "webservice:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/loginpage/preview": {
+      "post": {
+        "description": "Permiso necesario: `webservice:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/webservice.LoginPreviewRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/webservice.LoginStylePreview"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parámetros de solicitud incorrectos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token no válido, caducado o sin sesión iniciada"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Al token le falta el permiso necesario"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Generar vistas previas de la página de inicio de sesión con una apariencia (aunque no esté guardada); si styles está vacío se generan el estilo predeterminado y todos los integrados",
         "tags": [
           "Servicio web"
         ],

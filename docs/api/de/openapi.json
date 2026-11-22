@@ -4173,6 +4173,86 @@
         },
         "type": "object"
       },
+      "webservice.LoginPage": {
+        "properties": {
+          "background": {
+            "type": "string"
+          },
+          "bgDim": {
+            "type": "integer"
+          },
+          "color": {
+            "type": "string"
+          },
+          "css": {
+            "type": "string"
+          },
+          "hideBrand": {
+            "type": "boolean"
+          },
+          "logo": {
+            "type": "string"
+          },
+          "style": {
+            "type": "string"
+          },
+          "subtitle": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.LoginPageView": {
+        "properties": {
+          "loginPage": {
+            "$ref": "#/components/schemas/webservice.LoginPage"
+          },
+          "siteStyles": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object"
+          },
+          "styles": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.LoginPreviewRequest": {
+        "properties": {
+          "loginPage": {
+            "$ref": "#/components/schemas/webservice.LoginPage"
+          },
+          "state": {
+            "type": "string"
+          },
+          "styles": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "webservice.LoginStylePreview": {
+        "properties": {
+          "html": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "webservice.OIDCClient": {
         "properties": {
           "allow": {
@@ -4932,6 +5012,9 @@
               "$ref": "#/components/schemas/webservice.Location"
             },
             "type": "array"
+          },
+          "loginStyle": {
+            "type": "string"
           },
           "name": {
             "type": "string"
@@ -52180,6 +52263,199 @@
           }
         ],
         "summary": "Web-Dienst lauscht aktivieren oder deaktivieren",
+        "tags": [
+          "Web-Dienst"
+        ],
+        "x-required-scope": "webservice:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/loginpage": {
+      "get": {
+        "description": "Erforderliche Berechtigung: `webservice:read`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/webservice.LoginPageView"
+                }
+              }
+            },
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Erscheinungsbild der Web-Authentifizierungsseiten (Anmeldung, Passwortänderung, Passkey-Verwaltung) und Liste der integrierten Stile lesen",
+        "tags": [
+          "Web-Dienst"
+        ],
+        "x-required-scope": "webservice:read",
+        "x-token-allowed": true
+      },
+      "put": {
+        "description": "Erforderliche Berechtigung: `webservice:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/webservice.LoginPage"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/webservice.LoginPageView"
+                }
+              }
+            },
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Erscheinungsbild der Web-Authentifizierungsseiten speichern: Stil, Akzentfarbe, Hintergrundbild, Logo, Titel, Beschreibung, Branding in der Fußzeile und eigenes CSS",
+        "tags": [
+          "Web-Dienst"
+        ],
+        "x-required-scope": "webservice:write",
+        "x-token-allowed": true
+      }
+    },
+    "/api/webservice/loginpage/preview": {
+      "post": {
+        "description": "Erforderliche Berechtigung: `webservice:write`.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/webservice.LoginPreviewRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/webservice.LoginStylePreview"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Vorschauen der Anmeldeseite für ein (auch noch nicht gespeichertes) Erscheinungsbild erzeugen; ist styles leer, werden der Standardstil und alle integrierten Stile erzeugt",
         "tags": [
           "Web-Dienst"
         ],

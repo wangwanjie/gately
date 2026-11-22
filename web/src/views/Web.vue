@@ -485,6 +485,15 @@
               <el-input v-model="oauthUsersText" type="textarea" :rows="2" class="mono" :placeholder="t('web.oauthUsersPlaceholder')" />
               <div class="form-help">{{ t('web.providerHelp') }}</div>
             </el-form-item>
+            <!-- 登录页样式：空为跟随全局外观（认证用户页设置），品牌项与自定义 CSS 始终使用全局设置 -->
+            <el-form-item v-if="site.webAuth" :label="t('loginPage.siteStyle')" data-test="login-style">
+              <el-select v-model="site.loginStyle" class="w-260" :empty-values="[null, undefined]">
+                <el-option :label="t('loginPage.followGlobal')" value="" />
+                <el-option v-for="id in [LOGIN_STYLE_DEFAULT, ...builtinLoginStyles]" :key="id" :label="t(`loginPage.styles.${id}`)" :value="id" />
+              </el-select>
+              <el-button link type="primary" class="login-look-link" @click="loginPageVisible = true">{{ t('loginPage.editGlobal') }}</el-button>
+              <div class="form-help">{{ t('loginPage.siteStyleHelp') }}</div>
+            </el-form-item>
             <!-- 按用户分流与传递身份信息依赖认证结果，启用认证后显示；非反向代理站点未命中规则的用户按站点类型处理（#79） -->
             <template v-if="localAuthOn">
               <el-form-item :label="t('web.userRoutes')" data-test="user-routes">
@@ -705,6 +714,7 @@
     <NginxImport ref="nginxImport" @imported="load" />
     <QuickSite ref="quickSite" @done="load" />
     <ErrorPagesManager v-model="errorPagesVisible" />
+    <LoginPageEditor v-if="loginPageVisible" v-model="loginPageVisible" @closed="loginPageVisible = false" />
   </div>
 </template>
 
@@ -799,6 +809,8 @@ import ProxyOptions from '../components/ProxyOptions.vue'
 import ErrorPagePicker from '../components/ErrorPagePicker.vue'
 import ErrorPagesManager from '../components/ErrorPagesManager.vue'
 import { emptyErrorPage, normalizeErrorPage, type ErrorPageOptions } from '../errorPages'
+import { builtinLoginStyles, LOGIN_STYLE_DEFAULT } from '../loginPage'
+import LoginPageEditor from '../components/LoginPageEditor.vue'
 import { usePolling } from '../composables/usePolling'
 
 interface Site {
@@ -888,6 +900,8 @@ interface Site {
   rewrites: Rewrite[]
   // errorPage 为 404 与 5xx 错误页的样式与拦截后端错误的设置
   errorPage: ErrorPageOptions
+  // loginStyle 为网页认证页面的样式：空为跟随全局外观，default 为默认样式，其余为内置样式
+  loginStyle: string
 }
 
 // Location 把某个路径前缀分到另一组后端
@@ -996,6 +1010,8 @@ async function loadPanels() {
 
 // errorPagesVisible 为自定义错误页面库对话框（从设置中打开）
 const errorPagesVisible = ref(false)
+// loginPageVisible 为网页认证页面外观对话框（从站点的登录页样式旁打开）
+const loginPageVisible = ref(false)
 const siteTab = ref('basic')
 // 监听与站点表单的引用与前端校验规则：必填项未填时标红并聚焦，不必等后端返回 toast
 const listenerForm = ref<FormInstance>()
@@ -1274,6 +1290,7 @@ function emptySite(): Site {
     cache: { enable: false, ttl: 0, maxMb: 64, rules: [] },
     rewrites: [],
     errorPage: emptyErrorPage(),
+    loginStyle: '',
   }
 }
 
@@ -2108,6 +2125,7 @@ function openSite(l: ListenerView, row?: SiteRow, copy = false) {
   draft.cache = { ...defaults.cache, ...(draft.cache ?? {}) }
   draft.cache.rules = (draft.cache.rules ?? []).map((r) => ({ ...r }))
   draft.errorPage = normalizeErrorPage(draft.errorPage)
+  draft.loginStyle = draft.loginStyle ?? ''
   draft.knock = draft.knock ?? ''
   draft.knockLan = !!draft.knockLan
   draft.knockGrant = { ...emptyKnockGrant(), ...(draft.knockGrant ?? {}) }
@@ -2489,6 +2507,9 @@ onMounted(async () => {
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
+}
+.login-look-link {
+  margin-left: 12px;
 }
 .users-link {
   color: var(--el-color-primary);

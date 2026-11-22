@@ -10,7 +10,7 @@
     <input ref="file" type="file" accept="image/png,image/jpeg,image/gif,image/webp,image/svg+xml" hidden @change="onFile" />
   </div>
   <div v-if="inline" class="form-help">{{ t('panels.bgInline', { size: formatBytes(model.length) }) }}</div>
-  <div v-else class="form-help">{{ t('panels.bgHelp') }}</div>
+  <div v-else class="form-help">{{ help || t('panels.bgHelp') }}</div>
 </template>
 
 <script setup lang="ts">
@@ -22,6 +22,8 @@ import { formatBytes } from '../api'
 import { MAX_BG_BYTES } from '../panels'
 
 const model = defineModel<string>({ default: '' })
+// help 替换未上传图片时的说明（其他页面的默认背景与导航面板不同）
+defineProps<{ help?: string }>()
 const emit = defineEmits<{ uploaded: [] }>()
 const { t } = useI18n()
 const file = ref<HTMLInputElement>()

@@ -468,6 +468,9 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/webservice/topology/replay` | `webservice:read` | Обзор повтора топологии |
 | GET | `/api/webservice/topology/replay/frame` | `webservice:read` | Снимок повтора топологии на момент |
 | PUT | `/api/webservice/topology/replay/settings` | `webservice:write` | Изменить настройки повтора топологии |
+| GET | `/api/webservice/loginpage` | `webservice:read` | Получить оформление страниц веб-аутентификации (вход, смена пароля, управление Passkey) и список встроенных стилей |
+| PUT | `/api/webservice/loginpage` | `webservice:write` | Сохранить оформление страниц веб-аутентификации: стиль, основной цвет, фоновое изображение, логотип, заголовок, описание, логотип в подвале и пользовательский CSS |
+| POST | `/api/webservice/loginpage/preview` | `webservice:write` | Сформировать предпросмотр страницы входа для оформления (можно несохранённого); если styles пуст, формируются стиль по умолчанию и все встроенные стили |
 | GET | `/api/webservice/connections` | `webservice:read` | Выполняющиеся и недавно завершённые длительные запросы сайта (?listener=&site=&q=) |
 | POST | `/api/webservice/connections/close` | `webservice:write` | Разорвать выполняющийся запрос сайта с возможной блокировкой адреса источника (banSeconds -1 — навсегда) |
 | GET | `/api/webservice/bans` | `webservice:read` | Заблокированные в данный момент IP |
@@ -2762,6 +2765,43 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `stripPrefix` | boolean |
 | `targets` | Массив из string |
 
+### webservice.LoginPage
+
+| Поле | Тип |
+| --- | --- |
+| `background` | string |
+| `bgDim` | integer |
+| `color` | string |
+| `css` | string |
+| `hideBrand` | boolean |
+| `logo` | string |
+| `style` | string |
+| `subtitle` | string |
+| `title` | string |
+
+### webservice.LoginPageView
+
+| Поле | Тип |
+| --- | --- |
+| `loginPage` | `webservice.LoginPage` |
+| `siteStyles` | Словарь из integer |
+| `styles` | Массив из string |
+
+### webservice.LoginPreviewRequest
+
+| Поле | Тип |
+| --- | --- |
+| `loginPage` | `webservice.LoginPage` |
+| `state` | string |
+| `styles` | Массив из string |
+
+### webservice.LoginStylePreview
+
+| Поле | Тип |
+| --- | --- |
+| `html` | string |
+| `id` | string |
+
 ### webservice.OIDCClient
 
 | Поле | Тип |
@@ -3070,6 +3110,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `lbPolicy` | string |
 | `listDir` | boolean |
 | `locations` | Массив из `webservice.Location` |
+| `loginStyle` | string |
 | `name` | string |
 | `notFoundPage` | string |
 | `oauthUsers` | Массив из string |

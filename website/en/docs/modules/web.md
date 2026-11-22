@@ -275,6 +275,15 @@ Turn on Passkey sign-in on the Auth users page and shared users can sign in with
 - When a device is lost, an administrator can open the user on the Auth users page and delete its Passkey (effective immediately). Passkeys can only be registered by the users themselves. When an administrator changes a user's password or TOTP secret on the Auth users page and saves, all of that user's Passkeys are deleted and must be registered again; a self-service password change does not delete Passkeys;
 - The web service log records the registration, deletion, sign-in and failed attempts of Passkeys with the source IP.
 
+### Sign-in page appearance {#login-page}
+
+The sign-in, password change and Passkey management pages of web authentication (including the sign-in page on the [OIDC](/en/docs/modules/oidc) issuer domain) can be restyled. On the Auth users page, open "Sign-in page appearance → Customize":
+
+- **Style**: besides the default style there are 9 built-in styles: Lock screen, Split, Minimal, Terminal, Letter, Brutalist, Aurora, Pixel and Blueprint. Default, Split, Minimal and Letter follow the visitor's light or dark mode, Brutalist is light only and the rest are dark only. A site can pick its own style under "Security → Sign-in page style"; leave it empty to follow the global setting;
+- **Branding**: accent color, background image (an image URL or an upload of up to 1 MB, with adjustable dimming), logo (replaces the lock icon, up to 256 KB), title and description (shown as entered, not translated for visitors), and hiding the Gately mark in the footer. Branding applies to every style;
+- **Custom CSS**: appended after the selected style, up to 32 KB. The page structure is the same for every style; common class names are `body.skin-<style>`, `.bg`, `.card`, `.icon`, `.fields`, `.btn.primary`, `.btn.ghost`, `.otp`, `.modal` and `.foot`. `<` in the CSS is escaped, so it cannot insert tags or scripts. External images and fonts referenced from the CSS are loaded directly by the visitor's browser and reveal the visitor's IP to that server; prefer data URLs or same-site addresses;
+- The preview on the right switches between the sign-in, two-step verification and failed sign-in states, light and dark, and a phone size, and runs no scripts. After saving, the appearance applies at once to every site with web authentication; sign-in logic and rate limiting are the same for every style.
+
 ## Access control
 
 ### IP allowlist and blocklist

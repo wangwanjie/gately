@@ -192,6 +192,10 @@ func (m *Module) Init(env module.Env) error {
 	// 导航面板库：配置中无效的面板不提供服务，记录日志说明原因
 	m.auth.panels.warn = errLog.Warnf
 	m.auth.panels.set(m.cfg.Panels)
+	// 认证页面外观：配置无效时使用默认外观并记录原因
+	if err := m.auth.look.set(m.cfg.LoginPage); err != nil {
+		errLog.Warnf("登录页外观设置无效，已使用默认外观: %v", err)
+	}
 	m.initVisitors()
 	// 登记站点对敲门规则的引用：敲门页面据此显示引用方，并阻止删除仍被引用的规则
 	m.syncKnockLocked()
@@ -553,6 +557,7 @@ func (m *Module) Routes(r module.Router) {
 	r.HandleFunc("GET /visitors/settings", m.handleVisitorSettings)
 	r.HandleFunc("PUT /visitors/settings", m.handlePutVisitorSettings)
 	m.registerReplay(r)
+	m.registerLoginPage(r)
 	module.DocOf(r, "GET /topology", module.Doc{Summary: "拓扑视图快照：监听、站点、后端与监听级动作的实时速率、计数与活动 IP（?focus=节点编号&ip=地址）", Resp: &TopologyView{}})
 	r.HandleFunc("GET /connections", m.handleConns)
 	r.HandleFunc("POST /connections/close", m.handleCloseConn)

@@ -275,6 +275,15 @@ Ao ativar Login com Passkey na página Usuários de autenticação, os usuários
 - Se um dispositivo for perdido, um administrador pode editar o usuário na página Usuários de autenticação e excluir sua Passkey (efeito imediato). As Passkeys só podem ser registradas pelos próprios usuários. Quando um administrador altera e salva a senha ou a chave TOTP de um usuário na página Usuários de autenticação, todas as Passkeys desse usuário são excluídas e ele precisa registrá-las de novo; a troca de senha feita pelo próprio usuário não exclui as Passkeys;
 - O log do serviço web registra cadastro, exclusão, login e tentativas com falha de Passkeys com o IP de origem.
 
+### Aparência da página de login {#login-page}
+
+As páginas de login, alteração de senha e gerenciamento de Passkey da autenticação web (incluindo a página de login do domínio emissor [OIDC](/pt-BR/docs/modules/oidc)) podem mudar de aparência. Na página «Usuários de autenticação», abra «Aparência da página de login → Personalizar»:
+
+- **Estilo**: além do padrão, há 9 estilos integrados: Tela de bloqueio, Dividido, Minimalista, Terminal, Carta, Brutalista, Aurora, Pixel e Planta. Padrão, Dividido, Minimalista e Carta seguem o modo claro ou escuro do visitante, Brutalista é só claro e os demais só escuros. Cada site pode escolher o próprio estilo em «Segurança → Estilo da página de login»; vazio segue a configuração global;
+- **Identidade visual**: cor principal, imagem de fundo (URL de imagem ou envio de até 1 MB, com escurecimento ajustável), logotipo (substitui o ícone de cadeado, até 256 KB), título e descrição (exibidos como digitados, sem tradução para os visitantes) e ocultar a marca Gately no rodapé. Valem para todos os estilos;
+- **CSS personalizado**: adicionado depois do estilo escolhido, até 32 KB. A estrutura da página é a mesma em todos os estilos; as classes mais usadas são `body.skin-<estilo>`, `.bg`, `.card`, `.icon`, `.fields`, `.btn.primary`, `.btn.ghost`, `.otp`, `.modal` e `.foot`. O caractere `<` no CSS é escapado, então não é possível inserir tags ou scripts. Imagens e fontes externas referenciadas no CSS são carregadas diretamente pelo navegador do visitante e revelam o IP dele a esse servidor; prefira data URLs ou endereços do próprio site;
+- A prévia à direita alterna entre os estados de login, verificação em duas etapas e falha, entre claro e escuro e um tamanho de celular, e não executa scripts. Ao salvar, a aparência vale imediatamente para todos os sites com autenticação web; a lógica de login e a limitação de tentativas são iguais em todos os estilos.
+
 ## Controle de acesso
 
 ### Lista de IPs permitidos e bloqueados

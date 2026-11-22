@@ -686,5 +686,6 @@ func (a *authenticator) passkeyPage(w http.ResponseWriter, r *http.Request, s Si
 		data["Error"] = i18n.Tr(lang, err.Error())
 	}
 	data["PageTitle"] = i18n.Tr(lang, passkeyTexts["pageTitle"]) + " · " + host
+	data["Look"] = a.pageLook(s, host, lang)
 	webpage.Render(w, http.StatusOK, "ws-passkey", lang, passkeyTexts, data)
 }
