@@ -693,6 +693,9 @@ func (h *siteHandler) newProxy(s Site, p *pool, strip string) http.Handler {
 		Transport:  rt,
 		BufferPool: sharedBufferPool,
 		Rewrite: func(pr *httputil.ProxyRequest) {
+			// 标准库在调用 Rewrite 前会重新解析查询串，含分号或无效转义的参数被整段丢弃、其余参数重排；
+			// 后端（如 a=1;b=2 写法的过滤参数）需要访客的原始查询串，这里恢复后原样转发
+			pr.Out.URL.RawQuery = pr.In.URL.RawQuery
 			retarget(pr, attemptFrom(pr.In.Context()).current())
 			// 客户端自带的 X-Real-IP、X-Forwarded-* 与源端口头不可信（含下划线写法的变体），只在开启转发头时由 Gately 写入
 			stripForwardedHeaders(pr.Out.Header)
