@@ -7,6 +7,10 @@ description: Anuncios y notas de cada versión de Gately.
 
 A continuación se listan los anuncios de las versiones principales. Consulta [GitHub Releases](https://github.com/wangwanjie/gately/releases) para ver todos los cambios y las descargas de cada versión.
 
+## [v0.6.8.6](/es/news/v0.6.8.6)
+
+23 de noviembre de 2026 · La topología de red muestra las tasas de subida con un periodo de promedio seleccionable; las notificaciones SMTP pueden omitir la verificación del certificado; la vista general de Windows muestra la información completa de recursos; corrige el recuento en la vista general de los contenedores Docker cuya comprobación de estado falla y el sentido de la flecha de plegado de la topología.
+
 ## [v0.6.8.5](/es/news/v0.6.8.5)
 
 23 de noviembre de 2026 · Ubicación de las IP de los visitantes, bases GeoIP en .mmdb.gz y .tar.gz, varios dominios de inicio de sesión único, 9 estilos integrados para las páginas de acceso de la autenticación Web; corrige el guardado rechazado por HTTP en la pasarela fnOS y el panel de tareas de Docker que tapaba botones.

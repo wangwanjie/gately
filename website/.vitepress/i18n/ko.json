@@ -98,8 +98,8 @@
   "home": {
     "pill": "무료 오픈소스 · Apache-2.0",
     "announce": {
-      "text": "v0.6.8.5 출시: 방문자 IP 위치, 여러 SSO 도메인, 로그인 페이지 스타일 9종 →",
-      "link": "/ko/news/v0.6.8.5"
+      "text": "v0.6.8.6 출시: 토폴로지 업로드 속도와 집계 기간, SMTP 인증서 검증 건너뛰기, Windows 개요 →",
+      "link": "/ko/news/v0.6.8.6"
     },
     "titleLine1": "셀프 호스팅 서비스를 위한 단일 관문",
     "titleLine2": "리버스 프록시, HTTPS, DDNS, NAT 통과, WAF, 차단을 하나의 바이너리로",

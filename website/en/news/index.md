@@ -7,6 +7,10 @@ description: Release announcements and notes for each Gately version.
 
 Announcements for major releases are listed below. See [GitHub Releases](https://github.com/wangwanjie/gately/releases) for the full changes and downloads of every version.
 
+## [v0.6.8.6](/en/news/v0.6.8.6)
+
+November 23, 2026 · Network topology shows upload rates with a selectable averaging period; SMTP notifications can skip certificate verification; the Windows overview shows full resource information; fixes the overview count of Docker containers whose health check fails and the topology fold arrow direction.
+
 ## [v0.6.8.5](/en/news/v0.6.8.5)
 
 November 23, 2026 · Visitor IP locations; GeoIP databases as .mmdb.gz and .tar.gz; several single sign-on domains; 9 built-in styles for the Web authentication sign-in pages; fixes saving settings over plain HTTP on the fnOS gateway and the Docker task panel covering buttons.

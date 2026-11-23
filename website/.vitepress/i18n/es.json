@@ -98,8 +98,8 @@
   "home": {
     "pill": "Gratis y de código abierto · Apache-2.0",
     "announce": {
-      "text": "v0.6.8.5: ubicación de IP de visitantes, varios dominios SSO, 9 estilos de páginas de acceso →",
-      "link": "/es/news/v0.6.8.5"
+      "text": "v0.6.8.6: tasas de subida y periodo de promedio en la topología, SMTP sin verificar certificado, vista general de Windows →",
+      "link": "/es/news/v0.6.8.6"
     },
     "titleLine1": "Una sola puerta de entrada para tus servicios autoalojados",
     "titleLine2": "Proxy inverso, HTTPS, DDNS, traversal de NAT, WAF y bloqueos en un solo binario",

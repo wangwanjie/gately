@@ -7,6 +7,10 @@ description: Gately 各版本的發布公告與更新說明。
 
 重要版本的發布公告如下，每個版本的完整變更與下載檔案見 [GitHub Releases](https://github.com/wangwanjie/gately/releases)。
 
+## [v0.6.8.6](/zh-TW/news/v0.6.8.6)
+
+2026 年 11 月 23 日 · 網路拓撲顯示上行速率並可選擇統計時間段；SMTP 通知可略過憑證驗證；Windows 概覽顯示完整資源資訊；修復概覽中健康檢查失敗容器的計數與拓撲折疊箭頭方向。
+
 ## [v0.6.8.5](/zh-TW/news/v0.6.8.5)
 
 2026 年 11 月 23 日 · 訪客 IP 歸屬地顯示、GeoIP 資料庫支援 .mmdb.gz 與 .tar.gz；多個單一登入網域；網頁認證登入頁 9 種內建樣式；修復飛牛 HTTP 入口儲存設定被拒絕與 Docker 任務浮條擋住按鈕。

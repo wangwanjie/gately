@@ -98,8 +98,8 @@
   "home": {
     "pill": "開源免費 · Apache-2.0",
     "announce": {
-      "text": "v0.6.8.5 發佈：訪客 IP 歸屬地、多個單一登入網域、登入頁 9 種樣式 →",
-      "link": "/zh-TW/news/v0.6.8.5"
+      "text": "v0.6.8.6 發佈：拓撲上行速率與統計時間段、SMTP 略過憑證驗證、Windows 概覽 →",
+      "link": "/zh-TW/news/v0.6.8.6"
     },
     "titleLine1": "自架服務的統一入口",
     "titleLine2": "反向代理、憑證、動態網域、穿透、WAF 與封鎖，一個程式",
