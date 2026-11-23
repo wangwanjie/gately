@@ -52,7 +52,7 @@ func TestParsePS(t *testing.T) {
 	if len(got) != 2 {
 		t.Fatalf("只应保留父进程为自身的两行: %+v", got)
 	}
-	if r := got[101]; r.rss != 2048*1024 || r.ticks != 150 {
+	if r := got[101]; r.rss != 2048*1024 || r.ticks != 3*clockTicks/2 {
 		t.Fatalf("101 解析不符: %+v", r)
 	}
 	if r := got[103]; r.ticks != 3600*clockTicks {
@@ -72,19 +72,19 @@ func TestManagedStats(t *testing.T) {
 	}
 	t0 := time.Unix(2000, 0)
 	prev := rawSample{at: t0, children: map[int]childRaw{
-		10: {since: since.UnixNano(), ticks: 100, rss: 1 << 20},
+		10: {since: since.UnixNano(), ticks: clockTicks, rss: 1 << 20},
 		// 11 在上一次采样时是另一个进程（重启后 PID 复用）
 		11: {since: since.Add(-time.Hour).UnixNano(), ticks: 0},
 	}}
 	cur := rawSample{at: t0.Add(2 * time.Second), children: map[int]childRaw{
-		10: {since: since.UnixNano(), ticks: 180, rss: 8 << 20, threads: 5},
-		11: {since: since.UnixNano(), ticks: 500, rss: 2 << 20},
+		10: {since: since.UnixNano(), ticks: clockTicks * 18 / 10, rss: 8 << 20, threads: 5},
+		11: {since: since.UnixNano(), ticks: clockTicks * 5, rss: 2 << 20},
 	}}
 	got := managedStats(list, cur, prev, 4)
 	if len(got) != 3 {
 		t.Fatalf("应列出全部托管进程: %+v", got)
 	}
-	// 80 个时钟周期 = 0.8 秒 CPU，2 秒内、4 核：0.8/2/4 = 10%
+	// 0.8 秒 CPU，2 秒内、4 核：0.8/2/4 = 10%
 	if got[0].CPU == nil || *got[0].CPU < 9.99 || *got[0].CPU > 10.01 || got[0].RSS != 8<<20 || got[0].Threads != 5 {
 		t.Fatalf("frpc 占用不符: %+v cpu=%v", got[0], got[0].CPU)
 	}
@@ -95,7 +95,7 @@ func TestManagedStats(t *testing.T) {
 		t.Fatalf("读不到计数器时只列出进程: %+v", got[2])
 	}
 	// 计数器回退（异常）时不计算
-	cur.children[10] = childRaw{since: since.UnixNano(), ticks: 50}
+	cur.children[10] = childRaw{since: since.UnixNano(), ticks: clockTicks / 2}
 	if g := managedStats(list, cur, prev, 4); g[0].CPU != nil {
 		t.Fatal("CPU 时间回退时不应计算")
 	}
@@ -107,12 +107,14 @@ func TestManagedStats(t *testing.T) {
 
 // 真实启动一个托管进程，采集结果应包含它；Linux 与 macOS 上能读到常驻内存
 func TestSnapshotManaged(t *testing.T) {
+	// 用一个长时间运行的系统命令充当托管进程：Windows 没有 sleep，改用 ping 本机 60 次
+	prog, args := "sleep", []string{"60"}
 	if runtime.GOOS == "windows" {
-		t.Skip("依赖 sleep 命令")
+		prog, args = "ping", []string{"-n", "60", "127.0.0.1"}
 	}
 	buf := logbuf.New(50, nil)
 	s := proc.New(buf.Logger("t"))
-	s.Start(proc.Spec{Path: "sleep", Args: []string{"60"}, Module: "frp", Name: "测试"})
+	s.Start(proc.Spec{Path: prog, Args: args, Module: "frp", Name: "测试"})
 	defer s.Stop()
 	deadline := time.Now().Add(5 * time.Second)
 	for !s.State().Running && time.Now().Before(deadline) {
@@ -132,10 +134,10 @@ func TestSnapshotManaged(t *testing.T) {
 	if found == nil {
 		t.Fatalf("快照应包含托管进程 %d: %+v", pid, snap.Managed)
 	}
-	if found.Module != "frp" || found.Name != "测试" || found.Program != "sleep" {
+	if found.Module != "frp" || found.Name != "测试" || found.Program != prog {
 		t.Fatalf("归属信息不符: %+v", found)
 	}
-	if runtime.GOOS == "linux" || runtime.GOOS == "darwin" {
+	if runtime.GOOS == "linux" || runtime.GOOS == "darwin" || runtime.GOOS == "windows" {
 		if found.RSS == 0 {
 			t.Fatalf("应读到常驻内存: %+v", found)
 		}
