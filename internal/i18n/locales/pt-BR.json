@@ -1008,6 +1008,7 @@
   "停止模块 %s 失败: %v": "Falha ao parar o módulo %s: %v",
   "停用共享密钥时请至少添加一个启用的身份，否则规则不接受任何敲门": "Ao desativar as chaves compartilhadas, adicione pelo menos uma identidade ativada; caso contrário, a regra não aceita nenhum knock",
   "健康检查参数超出范围（间隔 1-3600 秒、超时 1-60 秒、次数 1-20）": "Parâmetros de verificação de integridade fora do intervalo (intervalo 1-3600 s, tempo limite 1-60 s, tentativas 1-20)",
+  "健康检查失败": "Não íntegro",
   "健康检查路径需以 / 开头": "O caminho da verificação de integridade deve começar com /",
   "健康检查返回 HTTP %d": "A verificação de integridade retornou HTTP %d",
   "允许端口范围 %q 格式错误": "Formato do intervalo de portas permitido %q inválido",

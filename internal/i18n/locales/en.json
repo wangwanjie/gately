@@ -1008,6 +1008,7 @@
   "停止模块 %s 失败: %v": "Failed to stop module %s: %v",
   "停用共享密钥时请至少添加一个启用的身份，否则规则不接受任何敲门": "When the shared keys are disabled, add at least one enabled identity, otherwise the rule accepts no knocks",
   "健康检查参数超出范围（间隔 1-3600 秒、超时 1-60 秒、次数 1-20）": "Health check parameters out of range (interval 1-3600 s, timeout 1-60 s, count 1-20)",
+  "健康检查失败": "Unhealthy",
   "健康检查路径需以 / 开头": "Health check path must start with /",
   "健康检查返回 HTTP %d": "Health check returned HTTP %d",
   "允许端口范围 %q 格式错误": "Invalid allowed port range %q",

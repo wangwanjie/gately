@@ -27,7 +27,7 @@ type summaryCache struct {
 	items []module.SummaryItem
 }
 
-// Summary 实现 module.Summarizer：容器运行 / 停止 / 异常数量与待更新数量；连不上 Docker 时提示未连接。
+// Summary 实现 module.Summarizer：容器运行 / 停止 / 异常 / 健康检查失败数量与待更新数量；连不上 Docker 时提示未连接。
 func (m *Module) Summary() []module.SummaryItem {
 	m.summary.Lock()
 	defer m.summary.Unlock()
@@ -59,16 +59,20 @@ func (m *Module) buildSummary() []module.SummaryItem {
 	}
 	m.mu.Unlock()
 
-	running, stopped, bad, upd := 0, 0, 0, 0
+	running, stopped, bad, unhealthy, upd := 0, 0, 0, 0, 0
 	for _, ct := range list {
 		if updates[ct.ID].HasUpdate {
 			upd++
 		}
 		switch {
-		case ct.State == "restarting" || ct.State == "dead" || strings.Contains(ct.Status, "unhealthy"):
+		case ct.State == "restarting" || ct.State == "dead":
 			bad++
 		case ct.State == "running" || ct.State == "paused":
+			// 健康检查失败的容器仍在运行，计入运行中并单独列出，和容器列表的状态保持一致
 			running++
+			if strings.Contains(ct.Status, "(unhealthy)") {
+				unhealthy++
+			}
 		default:
 			// 非 0 退出码视为异常退出，正常停止的容器只计入已停止
 			if mt := exitedCode.FindStringSubmatch(ct.Status); mt != nil && mt[1] != "0" {
@@ -79,13 +83,20 @@ func (m *Module) buildSummary() []module.SummaryItem {
 		}
 	}
 	level := "ok"
-	if bad > 0 {
+	if bad > 0 || unhealthy > 0 {
 		level = "warn"
+	}
+	badLevel := "ok"
+	if bad > 0 {
+		badLevel = "warn"
 	}
 	items := []module.SummaryItem{
 		{Label: "运行中", Value: fmt.Sprintf("%d / %d", running, len(list)), Level: level},
 		{Label: "已停止", Value: fmt.Sprint(stopped)},
-		{Label: "异常", Value: fmt.Sprint(bad), Level: level},
+		{Label: "异常", Value: fmt.Sprint(bad), Level: badLevel},
+	}
+	if unhealthy > 0 {
+		items = append(items, module.SummaryItem{Label: "健康检查失败", Value: fmt.Sprint(unhealthy), Level: "warn"})
 	}
 	if upd > 0 {
 		items = append(items, module.SummaryItem{Label: "有更新", Value: fmt.Sprint(upd), Level: "info"})

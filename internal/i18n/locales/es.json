@@ -1008,6 +1008,7 @@
   "停止模块 %s 失败: %v": "Error al detener el módulo %s: %v",
   "停用共享密钥时请至少添加一个启用的身份，否则规则不接受任何敲门": "Al desactivar las claves compartidas, añade al menos una identidad activada; si no, la regla no acepta ningún knock",
   "健康检查参数超出范围（间隔 1-3600 秒、超时 1-60 秒、次数 1-20）": "Parámetros de comprobación de estado fuera de rango (intervalo 1-3600 s, tiempo de espera 1-60 s, reintentos 1-20)",
+  "健康检查失败": "No saludable",
   "健康检查路径需以 / 开头": "La ruta de comprobación de estado debe empezar por /",
   "健康检查返回 HTTP %d": "La comprobación de estado devolvió HTTP %d",
   "允许端口范围 %q 格式错误": "Formato incorrecto del rango de puertos permitidos %q",
