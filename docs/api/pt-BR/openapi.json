@@ -4628,6 +4628,9 @@
           },
           "qps60": {
             "type": "number"
+          },
+          "upBps": {
+            "type": "number"
           }
         },
         "type": "object"
@@ -4658,6 +4661,9 @@
             "type": "integer"
           },
           "t": {
+            "type": "integer"
+          },
+          "up": {
             "type": "integer"
           }
         },
@@ -54303,7 +54309,7 @@
     },
     "/api/webservice/topology": {
       "get": {
-        "description": "Somente leitura; todos os dados vêm de contadores em memória, adequado para consultas a cada 2 segundos. Em `rate`, `qps` e `bps` são médias dos últimos `window` segundos completos e `qps60` é a média de 60 segundos. IDs de nó: listener `l:\u003ckey do listener\u003e`, site `s:\u003ckey do listener\u003e/\u003ckey do site\u003e`, backends começam com `u:` e as ações do listener são `a:\u003ckey do listener\u003e/redirect` ou `a:\u003ckey do listener\u003e/notfound`; quando `focus` é um ID de nó (ou internet / gately para a instância inteira), `series` retorna as requisições e bytes por segundo desse nó nos últimos 60 segundos. Quando `ip` é um endereço de visitante, ele aparece garantidamente em `ips`; um endereço inválido retorna 400. `blocked` de um site conta os bloqueios por motivo, com as chaves ban, ip, country, rateLimit e waf. `ips` lista endereços de visitantes vistos nos últimos 60 segundos ou com requisições em andamento, no máximo 500; `ipTotal` é o total e `ipTruncated` é true quando a lista foi cortada.\n\nPermissão necessária: `webservice:read`.",
+        "description": "Somente leitura; todos os dados vêm de contadores em memória, adequado para consultas a cada 2 segundos. Em `rate`, `qps`, `bps` (download: bytes enviados aos visitantes ou retornados pelo backend) e `upBps` (upload: bytes do corpo da requisição enviados pelos visitantes ou repassados ao backend, incluindo os dados que os visitantes enviam após uma atualização de protocolo) são médias dos últimos `window` segundos completos; `window` pode ser definido pelo parâmetro de mesmo nome de 1 a 60 segundos, padrão 10. `qps60` é a média de 60 segundos. IDs de nó: listener `l:\u003ckey do listener\u003e`, site `s:\u003ckey do listener\u003e/\u003ckey do site\u003e`, backends começam com `u:` e as ações do listener são `a:\u003ckey do listener\u003e/redirect` ou `a:\u003ckey do listener\u003e/notfound`; quando `focus` é um ID de nó (ou internet / gately para a instância inteira), `series` retorna as requisições e os bytes de download (`bytes`) e upload (`up`) por segundo desse nó nos últimos 60 segundos. Quando `ip` é um endereço de visitante, ele aparece garantidamente em `ips`; um endereço inválido retorna 400. `blocked` de um site conta os bloqueios por motivo, com as chaves ban, ip, country, rateLimit e waf. `ips` lista endereços de visitantes vistos nos últimos 60 segundos ou com requisições em andamento, no máximo 500; `ipTotal` é o total e `ipTruncated` é true quando a lista foi cortada.\n\nPermissão necessária: `webservice:read`.",
         "responses": {
           "200": {
             "content": {

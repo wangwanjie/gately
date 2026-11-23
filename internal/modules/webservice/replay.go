@@ -604,7 +604,7 @@ func (m *Module) replayLoop(ctx context.Context, st *replayStore) {
 
 // recordReplay 采样一帧。模块未启用或没有运行中的监听时不录（时间轴上留出空档）。
 func (m *Module) recordReplay(ctx context.Context, st *replayStore, t int64) error {
-	v := m.topology(t, "", netip.Addr{})
+	v := m.topology(t, "", netip.Addr{}, rateAvgWindow)
 	if !v.Enabled || !anyRunning(v.Listeners) {
 		return nil
 	}

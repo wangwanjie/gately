@@ -36,7 +36,7 @@ var topoMaxAggIPs = 5000
 
 // TopologyView 是拓扑接口的输出。
 type TopologyView struct {
-	// Time 为快照时刻（Unix 秒），Window 为 qps / bps 取均值的秒数
+	// Time 为快照时刻（Unix 秒），Window 为 qps / bps / upBps 取均值的秒数
 	Time   int64 `json:"time"`
 	Window int   `json:"window"`
 	// Enabled 为 Web 服务模块是否启用
@@ -263,12 +263,22 @@ func (m *Module) handleTopology(w http.ResponseWriter, r *http.Request) {
 		}
 		wantIP = a.Unmap()
 	}
-	httpx.OK(w, m.topology(time.Now().Unix(), focus, wantIP))
+	window := rateAvgWindow
+	if s := strings.TrimSpace(q.Get("window")); s != "" {
+		n, err := strconv.Atoi(s)
+		if err != nil || n < 1 || n > rateSeriesSeconds {
+			httpx.Error(w, http.StatusBadRequest, "统计时间段无效")
+			return
+		}
+		window = n
+	}
+	httpx.OK(w, m.topology(time.Now().Unix(), focus, wantIP, window))
 }
 
-// topology 生成拓扑快照。focus 为需要返回曲线的节点编号；wantIP 有效时保证该地址出现在活动 IP 列表中（只要它是活动的）。
-func (m *Module) topology(now int64, focus string, wantIP netip.Addr) TopologyView {
-	v := TopologyView{Time: now, Window: rateAvgWindow, Listeners: []TopoListener{}, IPs: []TopoIP{}, Focus: focus}
+// topology 生成拓扑快照。focus 为需要返回曲线的节点编号；wantIP 有效时保证该地址出现在活动 IP 列表中（只要它是活动的）；
+// window 为速率取均值的完整秒数（1 到 rateSeriesSeconds）。
+func (m *Module) topology(now int64, focus string, wantIP netip.Addr, window int) TopologyView {
+	v := TopologyView{Time: now, Window: window, Listeners: []TopoListener{}, IPs: []TopoIP{}, Focus: focus}
 	var refs []topoSiteRef
 	runners := map[int]*listenerRunner{}
 
@@ -377,7 +387,7 @@ func (m *Module) topology(now int64, focus string, wantIP netip.Addr) TopologyVi
 		ts.Active = h.stats.Active.Load()
 		ts.Errors = h.stats.Errors.Load()
 		ts.Closed = h.conns.closed.Load()
-		ts.Rate = h.metrics.rate.rate(now)
+		ts.Rate = h.metrics.rate.rate(now, window)
 		ts.Blocked = h.stats.blocked()
 		_, st := h.metrics.totals()
 		for c := 2; c <= 5; c++ {
@@ -392,7 +402,7 @@ func (m *Module) topology(now int64, focus string, wantIP netip.Addr) TopologyVi
 			healthy := !u.down.Load()
 			ts.Upstreams = append(ts.Upstreams, TopoUpstream{ID: id, URL: u.displayURL(), Scope: x.scope, Match: x.match,
 				Weight: u.weight, Backup: u.backup, Healthy: &healthy, Conns: u.conns.Load(),
-				Requests: u.stats.requests.Load(), Bytes: u.stats.bytes.Load(), Rate: u.stats.rate.rate(now)})
+				Requests: u.stats.requests.Load(), Bytes: u.stats.bytes.Load(), Rate: u.stats.rate.rate(now, window)})
 			if focus == id {
 				v.Series = addSeries(v.Series, u.stats.rate.series(now, rateSeriesSeconds))
 			}
@@ -451,7 +461,7 @@ func (m *Module) topology(now int64, focus string, wantIP netip.Addr) TopologyVi
 				act = &run.acts.redirect
 			}
 			ta.Requests = act.total.Load()
-			ta.Rate = act.rate.rate(now)
+			ta.Rate = act.rate.rate(now, window)
 			addFocus(ta.ID, tl.Key, &act.rate)
 			if act.recent.each(now, func(a netip.Addr, last int64) {
 				x := agg(a, false)

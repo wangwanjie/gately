@@ -2964,6 +2964,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `bps` | number |
 | `qps` | number |
 | `qps60` | number |
+| `upBps` | number |
 
 ### webservice.RateLimit
 
@@ -2981,6 +2982,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `bytes` | integer |
 | `requests` | integer |
 | `t` | integer |
+| `up` | integer |
 
 ### webservice.ReplayBucket
 

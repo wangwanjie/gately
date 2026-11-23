@@ -303,7 +303,7 @@ func TestHTTPPortTopology(t *testing.T) {
 	m.mu.Lock()
 	m.restartLocked("hp")
 	m.mu.Unlock()
-	v := m.topology(time.Now().Unix(), "", netip.Addr{})
+	v := m.topology(time.Now().Unix(), "", netip.Addr{}, rateAvgWindow)
 	if len(v.Listeners) != 1 {
 		t.Fatalf("listeners = %d", len(v.Listeners))
 	}

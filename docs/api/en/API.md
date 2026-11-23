@@ -2964,6 +2964,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `bps` | number |
 | `qps` | number |
 | `qps60` | number |
+| `upBps` | number |
 
 ### webservice.RateLimit
 
@@ -2981,6 +2982,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | `bytes` | integer |
 | `requests` | integer |
 | `t` | integer |
+| `up` | integer |
 
 ### webservice.ReplayBucket
 

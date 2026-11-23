@@ -10,47 +10,66 @@ import (
 //
 // 分钟桶（siteMetrics.ring）适合看 24 小时趋势，但突发流量要一分钟后才体现；这里另外为站点、后端与
 // 监听级动作各保留最近 rateSlots 秒的请求数与字节数，接口按“最近 rateAvgWindow 秒均值”给出 QPS 与吞吐，
-// 并提供近 60 秒的曲线。每次登记只是加锁后对数组下标累加，不分配内存。
+// 并提供近 60 秒的曲线。字节数分下行（发给访客 / 后端返回）与上行（访客发来 / 发给后端）两项。
+// 每次登记只是加锁后对数组下标累加，不分配内存。
 
 const (
 	// rateSlots 为秒级环的槽数：保留 60 个完整秒，另加正在累计的当前秒与余量
 	rateSlots = 64
 	// rateSeriesSeconds 为曲线返回的完整秒数
 	rateSeriesSeconds = 60
-	// rateAvgWindow 为 QPS 与吞吐取均值的完整秒数
+	// rateAvgWindow 为 QPS 与吞吐默认取均值的完整秒数，接口可用 window 参数在 1 到 rateSeriesSeconds 之间另选
 	rateAvgWindow = 10
 )
 
 type rateBucket struct {
-	sec, req, bytes int64
+	// bytes 为下行字节数，up 为上行字节数
+	sec, req, bytes, up int64
 }
 
-// rateRing 记录最近 rateSlots 秒每秒的请求数与字节数。零值可用。
+// rateRing 记录最近 rateSlots 秒每秒的请求数与上下行字节数。零值可用。
 type rateRing struct {
 	mu sync.Mutex
 	b  [rateSlots]rateBucket
 }
 
-// add 在第 sec 秒（Unix 秒）登记 req 个请求、bytes 个字节。
+// add 在第 sec 秒（Unix 秒）登记 req 个请求、bytes 个下行字节。
 func (r *rateRing) add(sec, req, bytes int64) {
 	if sec <= 0 {
 		return
 	}
 	r.mu.Lock()
-	b := &r.b[sec%rateSlots]
-	if b.sec != sec {
-		*b = rateBucket{sec: sec}
-	}
+	b := r.slot(sec)
 	b.req += req
 	b.bytes += bytes
 	r.mu.Unlock()
 }
 
-// RatePoint 是秒级曲线的一个点。
+// addUp 在第 sec 秒（Unix 秒）登记 n 个上行字节。
+func (r *rateRing) addUp(sec, n int64) {
+	if sec <= 0 {
+		return
+	}
+	r.mu.Lock()
+	r.slot(sec).up += n
+	r.mu.Unlock()
+}
+
+// slot 返回第 sec 秒的槽位，槽位里是更早的秒时先清零。调用方持有 r.mu。
+func (r *rateRing) slot(sec int64) *rateBucket {
+	b := &r.b[sec%rateSlots]
+	if b.sec != sec {
+		*b = rateBucket{sec: sec}
+	}
+	return b
+}
+
+// RatePoint 是秒级曲线的一个点。Bytes 为下行字节数，Up 为上行字节数。
 type RatePoint struct {
 	Time     int64 `json:"t"`
 	Requests int64 `json:"requests"`
 	Bytes    int64 `json:"bytes"`
+	Up       int64 `json:"up"`
 }
 
 // series 返回 now 之前 n 个完整秒（不含正在累计的当前秒）的曲线，按时间正序，缺失的秒为 0。
@@ -65,15 +84,15 @@ func (r *rateRing) series(now int64, n int) []RatePoint {
 		sec := now - int64(i)
 		p := RatePoint{Time: sec}
 		if b := r.b[sec%rateSlots]; b.sec == sec {
-			p.Requests, p.Bytes = b.req, b.bytes
+			p.Requests, p.Bytes, p.Up = b.req, b.bytes, b.up
 		}
 		out = append(out, p)
 	}
 	return out
 }
 
-// sum 返回 now 之前 n 个完整秒的请求数与字节数之和。
-func (r *rateRing) sum(now int64, n int) (req, bytes int64) {
+// sum 返回 now 之前 n 个完整秒的请求数、下行与上行字节数之和。
+func (r *rateRing) sum(now int64, n int) (req, bytes, up int64) {
 	if n > rateSlots-1 {
 		n = rateSlots - 1
 	}
@@ -84,25 +103,29 @@ func (r *rateRing) sum(now int64, n int) (req, bytes int64) {
 		if b := r.b[sec%rateSlots]; b.sec == sec {
 			req += b.req
 			bytes += b.bytes
+			up += b.up
 		}
 	}
-	return req, bytes
+	return req, bytes, up
 }
 
-// Rate 是一个节点的速率。QPS、BPS 为最近 rateAvgWindow 个完整秒的均值，QPS60 为最近 60 秒均值。
+// Rate 是一个节点的速率。QPS、BPS（下行）、UpBPS（上行）为最近 window 个完整秒的均值，QPS60 为最近 60 秒均值。
 type Rate struct {
 	QPS   float64 `json:"qps"`
 	BPS   float64 `json:"bps"`
+	UpBPS float64 `json:"upBps"`
 	QPS60 float64 `json:"qps60"`
 }
 
-// rate 返回速率快照。
-func (r *rateRing) rate(now int64) Rate {
-	req, bytes := r.sum(now, rateAvgWindow)
-	req60, _ := r.sum(now, rateSeriesSeconds)
+// rate 返回速率快照，window 为取均值的完整秒数（调用方保证在 1 到 rateSeriesSeconds 之间）。
+func (r *rateRing) rate(now int64, window int) Rate {
+	req, bytes, up := r.sum(now, window)
+	req60, _, _ := r.sum(now, rateSeriesSeconds)
+	w := float64(window)
 	return Rate{
-		QPS:   float64(req) / rateAvgWindow,
-		BPS:   float64(bytes) / rateAvgWindow,
+		QPS:   float64(req) / w,
+		BPS:   float64(bytes) / w,
+		UpBPS: float64(up) / w,
 		QPS60: float64(req60) / rateSeriesSeconds,
 	}
 }
@@ -111,6 +134,7 @@ func (r *rateRing) rate(now int64) Rate {
 func (a *Rate) addRate(b Rate) {
 	a.QPS += b.QPS
 	a.BPS += b.BPS
+	a.UpBPS += b.UpBPS
 	a.QPS60 += b.QPS60
 }
 
@@ -123,6 +147,7 @@ func addSeries(a, b []RatePoint) []RatePoint {
 		if i < len(b) {
 			a[i].Requests += b[i].Requests
 			a[i].Bytes += b[i].Bytes
+			a[i].Up += b[i].Up
 		}
 	}
 	return a

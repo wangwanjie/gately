@@ -2964,6 +2964,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `bps` | number |
 | `qps` | number |
 | `qps60` | number |
+| `upBps` | number |
 
 ### webservice.RateLimit
 
@@ -2981,6 +2982,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `bytes` | integer |
 | `requests` | integer |
 | `t` | integer |
+| `up` | integer |
 
 ### webservice.ReplayBucket
 

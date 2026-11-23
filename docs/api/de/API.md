@@ -2964,6 +2964,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `bps` | number |
 | `qps` | number |
 | `qps60` | number |
+| `upBps` | number |
 
 ### webservice.RateLimit
 
@@ -2981,6 +2982,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `bytes` | integer |
 | `requests` | integer |
 | `t` | integer |
+| `up` | integer |
 
 ### webservice.ReplayBucket
 

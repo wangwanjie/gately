@@ -2964,6 +2964,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `bps` | number |
 | `qps` | number |
 | `qps60` | number |
+| `upBps` | number |
 
 ### webservice.RateLimit
 
@@ -2981,6 +2982,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `bytes` | integer |
 | `requests` | integer |
 | `t` | integer |
+| `up` | integer |
 
 ### webservice.ReplayBucket
 

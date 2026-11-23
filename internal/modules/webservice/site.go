@@ -326,6 +326,23 @@ func (b *upstreamBody) Read(p []byte) (int, error) {
 	return n, err
 }
 
+// upstreamReqBody 统计发给后端的请求体字节数，计入当前后端的秒级上行速率。
+// 由 Transport 的写协程读取，后端选择用原子量读取（换后端重试时请求体还没读过，不会记错后端）。
+type upstreamReqBody struct {
+	io.ReadCloser
+	att *proxyAttempt
+}
+
+func (b *upstreamReqBody) Read(p []byte) (int, error) {
+	n, err := b.ReadCloser.Read(p)
+	if n > 0 {
+		if up := b.att.current(); up != nil {
+			up.stats.rate.addUp(time.Now().Unix(), int64(n))
+		}
+	}
+	return n, err
+}
+
 // pools 返回站点的全部后端组：站点后端、自带后端的分路径规则、按用户分流规则，顺序固定，同一组只出现一次。
 func (h *siteHandler) pools() []*pool {
 	var out []*pool
@@ -591,6 +608,13 @@ func (rt *upstreamRoundTripper) RoundTrip(req *http.Request) (*http.Response, er
 		body = &retryBody{ReadCloser: req.Body}
 		out = shallowRequest(req)
 		out.Body = body
+	}
+	if out.Body != nil && out.Body != http.NoBody {
+		// 统计发给后端的请求体字节数（后端的上行速率），换后端重试时记到当时使用的后端
+		if out == req {
+			out = shallowRequest(req)
+		}
+		out.Body = &upstreamReqBody{ReadCloser: out.Body, att: att}
 	}
 	for {
 		up := att.current()
@@ -1076,7 +1100,7 @@ func (h *siteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// 登记项与访客超时一起放进上下文，只复制一次请求
 	r = r.WithContext(context.WithValue(ctx, ctxKeyClientDeadlines{}, dl))
 	if r.Body != nil && r.Body != http.NoBody {
-		r.Body = &idleBody{ReadCloser: &trackedBody{ReadCloser: r.Body, req: ar}, d: dl}
+		r.Body = &idleBody{ReadCloser: &trackedBody{ReadCloser: r.Body, req: ar, rate: &h.metrics.rate}, d: dl}
 	}
 	defer func() {
 		// 已接管的连接由 close 直接关闭，无需再中断

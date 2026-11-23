@@ -4628,6 +4628,9 @@
           },
           "qps60": {
             "type": "number"
+          },
+          "upBps": {
+            "type": "number"
           }
         },
         "type": "object"
@@ -4658,6 +4661,9 @@
             "type": "integer"
           },
           "t": {
+            "type": "integer"
+          },
+          "up": {
             "type": "integer"
           }
         },
@@ -54303,7 +54309,7 @@
     },
     "/api/webservice/topology": {
       "get": {
-        "description": "Read-only; all data comes from in-memory counters, suitable for polling every 2 seconds. In `rate`, `qps` and `bps` are averages over the last `window` complete seconds and `qps60` is the 60-second average. Node IDs: listener `l:\u003clistener key\u003e`, site `s:\u003clistener key\u003e/\u003csite key\u003e`, backends start with `u:`, listener-level actions `a:\u003clistener key\u003e/redirect` or `a:\u003clistener key\u003e/notfound`; when `focus` is a node ID (or internet / gately for the whole instance), `series` returns that node's requests and bytes per second for the last 60 seconds. When `ip` is a visitor address it is guaranteed to appear in `ips`; an invalid address returns 400. A site's `blocked` counts blocked requests by reason, with keys ban, ip, country, rateLimit and waf. `ips` lists visitor addresses seen in the last 60 seconds or with requests still in progress, at most 500; `ipTotal` is the total and `ipTruncated` is true when the list was cut.\n\nRequired permission: `webservice:read`.",
+        "description": "Read-only; all data comes from in-memory counters, suitable for polling every 2 seconds. In `rate`, `qps`, `bps` (download: bytes sent to visitors or returned by the backend) and `upBps` (upload: request body bytes sent by visitors or forwarded to the backend, including data visitors send after a protocol upgrade) are averages over the last `window` complete seconds; `window` can be set with the parameter of the same name from 1 to 60 seconds, default 10. `qps60` is the 60-second average. Node IDs: listener `l:\u003clistener key\u003e`, site `s:\u003clistener key\u003e/\u003csite key\u003e`, backends start with `u:`, listener-level actions `a:\u003clistener key\u003e/redirect` or `a:\u003clistener key\u003e/notfound`; when `focus` is a node ID (or internet / gately for the whole instance), `series` returns that node's requests, download bytes (`bytes`) and upload bytes (`up`) per second for the last 60 seconds. When `ip` is a visitor address it is guaranteed to appear in `ips`; an invalid address returns 400. A site's `blocked` counts blocked requests by reason, with keys ban, ip, country, rateLimit and waf. `ips` lists visitor addresses seen in the last 60 seconds or with requests still in progress, at most 500; `ipTotal` is the total and `ipTruncated` is true when the list was cut.\n\nRequired permission: `webservice:read`.",
         "responses": {
           "200": {
             "content": {

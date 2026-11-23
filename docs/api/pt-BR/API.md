@@ -2964,6 +2964,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `bps` | number |
 | `qps` | number |
 | `qps60` | number |
+| `upBps` | number |
 
 ### webservice.RateLimit
 
@@ -2981,6 +2982,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `bytes` | integer |
 | `requests` | integer |
 | `t` | integer |
+| `up` | integer |
 
 ### webservice.ReplayBucket
 

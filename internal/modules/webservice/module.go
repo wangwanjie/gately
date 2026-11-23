@@ -558,7 +558,7 @@ func (m *Module) Routes(r module.Router) {
 	r.HandleFunc("PUT /visitors/settings", m.handlePutVisitorSettings)
 	m.registerReplay(r)
 	m.registerLoginPage(r)
-	module.DocOf(r, "GET /topology", module.Doc{Summary: "拓扑视图快照：监听、站点、后端与监听级动作的实时速率、计数与活动 IP（?focus=节点编号&ip=地址）", Resp: &TopologyView{}})
+	module.DocOf(r, "GET /topology", module.Doc{Summary: "拓扑视图快照：监听、站点、后端与监听级动作的实时速率、计数与活动 IP（?focus=节点编号&ip=地址&window=均值秒数）", Resp: &TopologyView{}})
 	r.HandleFunc("GET /connections", m.handleConns)
 	r.HandleFunc("POST /connections/close", m.handleCloseConn)
 	module.DocOf(r, "GET /connections", module.Doc{Summary: "站点进行中的请求与最近结束的长请求（?listener=&site=&q=）", Resp: &ConnsView{}})

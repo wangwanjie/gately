@@ -656,6 +656,9 @@ func demoConns(a *App, r *http.Request) any {
 	return demoMap{"active": active, "recent": recent, "activeTotal": len(active)}
 }
 
+// demoUpRatio 为演示数据中上行速率占下行速率的比例（请求体通常远小于响应体）
+const demoUpRatio = 0.04
+
 func demoTopology(a *App, r *http.Request, v any) any {
 	t, ok := v.(demoMap)
 	if !ok {
@@ -686,7 +689,7 @@ func demoTopology(a *App, r *http.Request, v any) any {
 			s["running"] = true
 			s["requests"], s["active"] = req, act
 			s["errors"], s["closed"] = req/200, int64(0)
-			s["rate"] = demoMap{"qps": qps, "qps60": qps * 0.97, "bps": bps}
+			s["rate"] = demoMap{"qps": qps, "qps60": qps * 0.97, "bps": bps, "upBps": bps * demoUpRatio}
 			s["status"] = demoMap{"2xx": req * 86 / 100, "3xx": req * 8 / 100, "4xx": req * 55 / 1000, "5xx": req / 200}
 			s["blocked"] = demoMap{}
 			if sk == "default" {
@@ -698,7 +701,7 @@ func demoTopology(a *App, r *http.Request, v any) any {
 				u["conns"] = act / int64(len(ups))
 				u["requests"] = req / int64(len(ups))
 				u["bytes"] = req / int64(len(ups)) * 52000
-				u["rate"] = demoMap{"qps": qps / float64(len(ups)), "qps60": qps / float64(len(ups)), "bps": bps / float64(len(ups))}
+				u["rate"] = demoMap{"qps": qps / float64(len(ups)), "qps60": qps / float64(len(ups)), "bps": bps / float64(len(ups)), "upBps": bps * demoUpRatio / float64(len(ups))}
 			}
 			lReq += req
 			lActive += act
@@ -708,17 +711,17 @@ func demoTopology(a *App, r *http.Request, v any) any {
 		}
 		for _, ac := range asMaps(l["actions"]) {
 			ac["requests"] = a.demoTotal(lk+"/act", 0.1)
-			ac["rate"] = demoMap{"qps": 0.1, "qps60": 0.1, "bps": 2000.0}
+			ac["rate"] = demoMap{"qps": 0.1, "qps60": 0.1, "bps": 2000.0, "upBps": 60.0}
 		}
 		l["requests"], l["active"] = lReq, lActive
-		l["rate"] = demoMap{"qps": lQPS, "qps60": lQPS * 0.97, "bps": lBPS}
+		l["rate"] = demoMap{"qps": lQPS, "qps60": lQPS * 0.97, "bps": lBPS, "upBps": lBPS * demoUpRatio}
 		totalReq += lReq
 		totalActive += lActive
 		totalQPS += lQPS
 		totalBPS += lBPS
 	}
 	t["requests"], t["active"] = totalReq, totalActive
-	t["rate"] = demoMap{"qps": totalQPS, "qps60": totalQPS * 0.97, "bps": totalBPS}
+	t["rate"] = demoMap{"qps": totalQPS, "qps60": totalQPS * 0.97, "bps": totalBPS, "upBps": totalBPS * demoUpRatio}
 	t["time"] = now.Unix()
 	var ids []string
 	for _, n := range ipNodes {

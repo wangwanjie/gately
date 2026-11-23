@@ -4628,6 +4628,9 @@
           },
           "qps60": {
             "type": "number"
+          },
+          "upBps": {
+            "type": "number"
           }
         },
         "type": "object"
@@ -4658,6 +4661,9 @@
             "type": "integer"
           },
           "t": {
+            "type": "integer"
+          },
+          "up": {
             "type": "integer"
           }
         },
@@ -54303,7 +54309,7 @@
     },
     "/api/webservice/topology": {
       "get": {
-        "description": "Lecture seule ; toutes les données proviennent de compteurs en mémoire, adapté à une interrogation toutes les 2 secondes. Dans `rate`, `qps` et `bps` sont les moyennes des `window` dernières secondes complètes et `qps60` la moyenne sur 60 secondes. Identifiants de nœud : écouteur `l:\u003cclé de l'écouteur\u003e`, site `s:\u003cclé de l'écouteur\u003e/\u003cclé du site\u003e`, les backends commencent par `u:` et les actions de l'écouteur sont `a:\u003cclé de l'écouteur\u003e/redirect` ou `a:\u003cclé de l'écouteur\u003e/notfound` ; quand `focus` est un identifiant de nœud (ou internet / gately pour toute l'instance), `series` renvoie les requêtes et octets par seconde de ce nœud sur les 60 dernières secondes. Quand `ip` est une adresse de visiteur, elle figure toujours dans `ips` ; une adresse invalide renvoie 400. `blocked` d'un site compte les blocages par motif, avec les clés ban, ip, country, rateLimit et waf. `ips` liste les adresses de visiteurs vues dans les 60 dernières secondes ou ayant des requêtes en cours, 500 au plus ; `ipTotal` est le total et `ipTruncated` vaut true si la liste a été tronquée.\n\nPermission requise : `webservice:read`.",
+        "description": "Lecture seule ; toutes les données proviennent de compteurs en mémoire, adapté à une interrogation toutes les 2 secondes. Dans `rate`, `qps`, `bps` (descendant : octets envoyés aux visiteurs ou renvoyés par le backend) et `upBps` (montant : octets du corps de requête envoyés par les visiteurs ou transmis au backend, y compris les données envoyées par les visiteurs après une mise à niveau de protocole) sont les moyennes des `window` dernières secondes complètes ; `window` se règle avec le paramètre du même nom entre 1 et 60 secondes, 10 par défaut. `qps60` est la moyenne sur 60 secondes. Identifiants de nœud : écouteur `l:\u003cclé de l'écouteur\u003e`, site `s:\u003cclé de l'écouteur\u003e/\u003cclé du site\u003e`, les backends commencent par `u:` et les actions de l'écouteur sont `a:\u003cclé de l'écouteur\u003e/redirect` ou `a:\u003cclé de l'écouteur\u003e/notfound` ; quand `focus` est un identifiant de nœud (ou internet / gately pour toute l'instance), `series` renvoie les requêtes et les octets descendants (`bytes`) et montants (`up`) par seconde de ce nœud sur les 60 dernières secondes. Quand `ip` est une adresse de visiteur, elle figure toujours dans `ips` ; une adresse invalide renvoie 400. `blocked` d'un site compte les blocages par motif, avec les clés ban, ip, country, rateLimit et waf. `ips` liste les adresses de visiteurs vues dans les 60 dernières secondes ou ayant des requêtes en cours, 500 au plus ; `ipTotal` est le total et `ipTruncated` vaut true si la liste a été tronquée.\n\nPermission requise : `webservice:read`.",
         "responses": {
           "200": {
             "content": {

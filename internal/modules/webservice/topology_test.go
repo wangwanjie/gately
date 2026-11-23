@@ -44,7 +44,7 @@ func TestRateRing(t *testing.T) {
 	if s[59].Requests != 4 || s[59].Bytes != 400 || s[0].Requests != 2 || s[30].Requests != 0 {
 		t.Fatalf("曲线数值错误: %+v %+v %+v", s[59], s[0], s[30])
 	}
-	rt := r.rate(now)
+	rt := r.rate(now, rateAvgWindow)
 	if rt.QPS != 1 || rt.BPS != 100 {
 		t.Fatalf("10 秒均值错误: %+v", rt)
 	}
@@ -58,6 +58,39 @@ func TestRateRing(t *testing.T) {
 	}
 	if got := len(r.series(now, 1000)); got != rateSlots-1 {
 		t.Fatalf("曲线长度应限制在 %d: %d", rateSlots-1, got)
+	}
+}
+
+// TestRateRingUpWindow 验证上行字节单独累计、不影响下行，均值按指定的时间段计算，汇总时上行一起累加。
+func TestRateRingUpWindow(t *testing.T) {
+	var r rateRing
+	const now = int64(1_000_000)
+	r.add(now-1, 2, 1000)
+	r.addUp(now-1, 300)
+	r.addUp(now-4, 200)
+	r.addUp(now, 999) // 当前秒，不计入
+	r.addUp(0, 999)   // 无效时间忽略
+	one := r.rate(now, 1)
+	if one.QPS != 2 || one.BPS != 1000 || one.UpBPS != 300 {
+		t.Fatalf("1 秒均值错误: %+v", one)
+	}
+	five := r.rate(now, 5)
+	if five.QPS != 0.4 || five.BPS != 200 || five.UpBPS != 100 {
+		t.Fatalf("5 秒均值错误: %+v", five)
+	}
+	if s := r.series(now, 4); s[3].Up != 300 || s[0].Up != 200 || s[3].Bytes != 1000 {
+		t.Fatalf("曲线上行错误: %+v", s)
+	}
+	// 同一槽位复用时上行同样清零
+	r.add(now-1+rateSlots, 1, 0)
+	if s := r.series(now+rateSlots, 1); s[0].Up != 0 {
+		t.Fatalf("槽位复用后上行应清零: %+v", s)
+	}
+	sum := Rate{}
+	sum.addRate(five)
+	sum.addRate(five)
+	if sum.UpBPS != 200 || sum.BPS != 400 {
+		t.Fatalf("汇总错误: %+v", sum)
 	}
 }
 
@@ -342,7 +375,7 @@ func TestUpstreamStatsAndScopes(t *testing.T) {
 	if st[0].Requests != 2 || st[0].Bytes != int64(2*len("main-body")) || st[1].Requests != 1 || st[1].Bytes != 3 || st[2].Requests != 1 || st[2].Bytes != 4 {
 		t.Fatalf("后端计数错误: %+v", st)
 	}
-	if r := h.pool.ups[0].stats.rate.rate(time.Now().Unix() + 1); r.QPS60 == 0 {
+	if r := h.pool.ups[0].stats.rate.rate(time.Now().Unix()+1, rateAvgWindow); r.QPS60 == 0 {
 		t.Fatalf("后端秒级速率应有数据: %+v", r)
 	}
 	// 热更新（改备注）后沿用计数
@@ -396,9 +429,61 @@ func TestUpstreamStatsWebSocket(t *testing.T) {
 	if st := h.upstreamStatus(); st[0].Requests != 1 {
 		t.Fatalf("升级请求应计入后端: %+v", st)
 	}
-	_, bytes := h.metrics.rate.sum(time.Now().Unix()+1, rateSeriesSeconds)
+	_, bytes, up := h.metrics.rate.sum(time.Now().Unix()+1, rateSeriesSeconds)
 	if bytes < int64(len("echo:hi\n")) {
 		t.Fatalf("升级后发给访客的数据应计入站点流量: %d", bytes)
+	}
+	if up < int64(len("hi\n")) {
+		t.Fatalf("升级后访客发来的数据应计入站点上行: %d", up)
+	}
+}
+
+// TestUploadRate 验证上行速率：访客上传的请求体计入站点上行，转发给后端的请求体计入实际使用的后端上行，
+// 下行不受影响；拓扑接口按 window 参数取均值，参数无效时返回 400。
+func TestUploadRate(t *testing.T) {
+	backend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		n, _ := io.Copy(io.Discard, r.Body)
+		_, _ = fmt.Fprintf(w, "%d", n)
+	}))
+	defer backend.Close()
+	addr, run := startRunner(t, Listener{Sites: []Site{{Enable: true, Domains: []string{"up.test"}, Targets: []string{backend.URL}}}}, nil, nil)
+	body := strings.Repeat("x", 50_000)
+	req, _ := http.NewRequest("POST", "http://"+addr+"/upload", strings.NewReader(body))
+	req.Host = "up.test"
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, _ := io.ReadAll(resp.Body)
+	resp.Body.Close()
+	if string(got) != "50000" {
+		t.Fatalf("后端收到的请求体长度错误: %s", got)
+	}
+	h := siteOf(run)
+	now := time.Now().Unix() + 1
+	if _, down, up := h.metrics.rate.sum(now, rateSeriesSeconds); up != 50_000 || down != int64(len(got)) {
+		t.Fatalf("站点上下行错误: down=%d up=%d", down, up)
+	}
+	if _, _, up := h.pool.ups[0].stats.rate.sum(now, rateSeriesSeconds); up != 50_000 {
+		t.Fatalf("后端上行错误: %d", up)
+	}
+	m := &Module{runners: map[string]*listenerRunner{run.cfg.Key: run}}
+	m.cfg.Settings.Enable = true
+	m.cfg.Listeners = []Listener{run.cfg}
+	if v := m.topology(now, "", netip.Addr{}, rateSeriesSeconds); v.Window != rateSeriesSeconds || v.Rate.UpBPS != 50_000.0/rateSeriesSeconds {
+		t.Fatalf("拓扑上行均值错误: window=%d %+v", v.Window, v.Rate)
+	}
+	for _, bad := range []string{"0", "61", "abc", "-1"} {
+		rec := httptest.NewRecorder()
+		m.handleTopology(rec, httptest.NewRequest("GET", "/api/webservice/topology?window="+bad, nil))
+		if rec.Code != http.StatusBadRequest {
+			t.Fatalf("window=%s 应返回 400: %d", bad, rec.Code)
+		}
+	}
+	rec := httptest.NewRecorder()
+	m.handleTopology(rec, httptest.NewRequest("GET", "/api/webservice/topology?window=5", nil))
+	if rec.Code != http.StatusOK || !strings.Contains(rec.Body.String(), `"window":5`) {
+		t.Fatalf("window=5 应生效: %d %s", rec.Code, rec.Body.String())
 	}
 }
 
@@ -558,7 +643,7 @@ func TestTopologyAPI(t *testing.T) {
 
 	// 汇总节点的曲线：internet 为全部站点之和，不含后端（避免重复计数）
 	// 取 2 秒后的快照，让全部请求所在的秒都已完整
-	all := m.topology(time.Now().Unix()+2, "internet", netip.Addr{})
+	all := m.topology(time.Now().Unix()+2, "internet", netip.Addr{}, rateAvgWindow)
 	var sum int64
 	for _, p := range all.Series {
 		sum += p.Requests
@@ -566,7 +651,7 @@ func TestTopologyAPI(t *testing.T) {
 	if sum != 4 {
 		t.Fatalf("实例曲线应为全部站点请求数之和（不含后端）: %d", sum)
 	}
-	if up := m.topology(time.Now().Unix()+2, "u:l1/a/1", netip.Addr{}); len(up.Series) != rateSeriesSeconds {
+	if up := m.topology(time.Now().Unix()+2, "u:l1/a/1", netip.Addr{}, rateAvgWindow); len(up.Series) != rateSeriesSeconds {
 		t.Fatalf("后端曲线长度错误: %d", len(up.Series))
 	}
 
@@ -592,7 +677,7 @@ func TestTopologyAPI(t *testing.T) {
 	oldAgg := topoMaxAggIPs
 	topoMaxAggIPs = 100
 	t.Cleanup(func() { topoMaxAggIPs = oldAgg })
-	capped := m.topology(now, "", last)
+	capped := m.topology(now, "", last, rateAvgWindow)
 	if !capped.IPTruncated || capped.IPTotal > 101 {
 		t.Fatalf("汇总应在上限处停止: truncated=%v total=%d", capped.IPTruncated, capped.IPTotal)
 	}
@@ -769,7 +854,7 @@ func TestTopologyConcurrent(t *testing.T) {
 	}
 	deadline := time.Now().Add(500 * time.Millisecond)
 	for n := 0; time.Now().Before(deadline); n++ {
-		_ = m.topology(time.Now().Unix(), "gately", netip.Addr{})
+		_ = m.topology(time.Now().Unix(), "gately", netip.Addr{}, rateAvgWindow)
 		_ = m.Metrics()
 		m.mu.Lock()
 		m.cfg.Listeners[0].Sites[0].Remark = fmt.Sprint(n)
@@ -778,7 +863,7 @@ func TestTopologyConcurrent(t *testing.T) {
 	}
 	close(stop)
 	wg.Wait()
-	v := m.topology(time.Now().Unix()+1, "", netip.Addr{})
+	v := m.topology(time.Now().Unix()+1, "", netip.Addr{}, rateAvgWindow)
 	if v.Requests == 0 || v.Listeners[0].Sites[0].Upstreams[0].Requests == 0 {
 		t.Fatalf("热更新后计数应沿用且大于 0: %+v", v.Listeners[0].Sites[0])
 	}

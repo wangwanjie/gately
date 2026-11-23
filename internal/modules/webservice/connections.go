@@ -367,11 +367,16 @@ func formatConnID(id uint64) string {
 type trackedBody struct {
 	io.ReadCloser
 	req *activeReq
+	// rate 为站点的秒级速率，访客发来的请求体计入上行，可为 nil
+	rate *rateRing
 }
 
 func (b *trackedBody) Read(p []byte) (int, error) {
 	n, err := b.ReadCloser.Read(p)
 	b.req.up.Add(int64(n))
+	if b.rate != nil && n > 0 {
+		b.rate.addUp(time.Now().Unix(), int64(n))
+	}
 	return n, err
 }
 
@@ -379,13 +384,16 @@ func (b *trackedBody) Read(p []byte) (int, error) {
 type trackedConn struct {
 	net.Conn
 	req *activeReq
-	// rate 为站点的秒级速率，发给访客的字节同样计入
+	// rate 为站点的秒级速率，发给访客的字节计入下行，访客发来的计入上行
 	rate *rateRing
 }
 
 func (c *trackedConn) Read(p []byte) (int, error) {
 	n, err := c.Conn.Read(p)
 	c.req.up.Add(int64(n))
+	if c.rate != nil && n > 0 {
+		c.rate.addUp(time.Now().Unix(), int64(n))
+	}
 	return n, err
 }
 
