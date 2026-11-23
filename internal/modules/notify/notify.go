@@ -53,15 +53,17 @@ type Channel struct {
 	Enable bool   `json:"enable"`
 	Kind   string `json:"kind"`
 
-	URL      string         `json:"url"`
-	Secret   string         `json:"secret"`
-	Target   string         `json:"target"`
-	Host     string         `json:"host"`
-	Port     int            `json:"port"`
-	Security string         `json:"security"`
-	User     string         `json:"user"`
-	From     string         `json:"from"`
-	Webhook  webhook.Config `json:"webhook"`
+	URL      string `json:"url"`
+	Secret   string `json:"secret"`
+	Target   string `json:"target"`
+	Host     string `json:"host"`
+	Port     int    `json:"port"`
+	Security string `json:"security"`
+	User     string `json:"user"`
+	From     string `json:"from"`
+	// InsecureSkipVerify 为 SMTP 使用 TLS/STARTTLS 时不校验服务器证书，用于自签名或证书域名与服务器地址不符的自建邮件服务
+	InsecureSkipVerify bool           `json:"insecureSkipVerify,omitempty"`
+	Webhook            webhook.Config `json:"webhook"`
 	// Proxy 为该渠道使用的代理，留空跟随通知设置中的全局代理；取值见 Settings.Proxy，另外 direct 表示该渠道直连
 	Proxy  string `json:"proxy,omitempty"`
 	Remark string `json:"remark"`

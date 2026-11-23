@@ -1921,6 +1921,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `from` | string |
 | `group` | string |
 | `host` | string |
+| `insecureSkipVerify` | boolean |
 | `key` | string |
 | `kind` | string |
 | `name` | string |

@@ -80,6 +80,8 @@ Zusätzliche Felder, die ein Ereignis mitführt (etwa `ip` und `container`), las
 
 Bei Port 0 wird der Standardport der gewählten Verschlüsselung verwendet. Mehrere Empfänger können Sie kommagetrennt eingeben. E-Mails werden als UTF-8-Klartext gesendet. PLAIN-Authentifizierung wird verwendet, wenn der Server AUTH unterstützt und ein Benutzername gesetzt ist; ist der Absender leer, wird der Benutzername verwendet.
 
+Bei STARTTLS oder SSL/TLS wird das Serverzertifikat standardmäßig geprüft. Verwendet ein selbst betriebener Mailserver ein selbstsigniertes Zertifikat oder passt der Zertifikatsname nicht zur eingetragenen Serveradresse (etwa ein nur für `localhost` gültiges Zertifikat), aktivieren Sie „Zertifikatsprüfung überspringen“ (`insecureSkipVerify`). Die Verbindung kann dann von einem Man-in-the-Middle abgefangen werden; korrigieren Sie nach Möglichkeit das Zertifikat.
+
 ### Signaturen und Antwortcodes
 
 - DingTalk: Ist ein Signatur-Secret gesetzt, tragen Anfragen automatisch `timestamp` und `sign`.

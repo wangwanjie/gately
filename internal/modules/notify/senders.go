@@ -296,7 +296,7 @@ const (
 
 func sendSMTP(ctx context.Context, ch Channel, msg Message) error {
 	addr := net.JoinHostPort(ch.Host, strconv.Itoa(ch.Port))
-	tlsCfg := &tls.Config{ServerName: ch.Host}
+	tlsCfg := &tls.Config{ServerName: ch.Host, InsecureSkipVerify: ch.InsecureSkipVerify} //nolint:gosec // 用户为自建邮件服务显式开启
 	// 配置了代理时经代理建立 TCP 连接（http/https 代理用 CONNECT，socks5 由代理解析域名），否则直连
 	conn, err := smtpDial(ctx, ch.Proxy, addr, 15*time.Second)
 	if err != nil {

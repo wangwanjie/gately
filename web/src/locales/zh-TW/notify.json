@@ -42,6 +42,8 @@
   "starttls": "STARTTLS（587）",
   "tls": "SSL/TLS（465）",
   "noEncryption": "無加密（25）",
+  "skipVerify": "略過憑證驗證",
+  "skipVerifyHelp": "不驗證郵件伺服器的 TLS 憑證，用於自簽憑證或憑證網域與伺服器位址不符的自架郵件服務。開啟後連線可能被中間人攔截，能修正憑證時優先修正憑證。",
   "port": "連接埠",
   "user": "使用者名稱",
   "password": "密碼",

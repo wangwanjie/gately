@@ -80,6 +80,8 @@ Los campos adicionales que lleva un evento (como `ip` y `container`) también se
 
 Un puerto 0 usa el puerto por defecto del cifrado elegido. Puedes introducir varios destinatarios separados por comas. Los correos se envían como texto plano UTF-8. Se usa la autenticación PLAIN cuando el servidor admite AUTH y se ha definido un usuario; cuando el remitente está vacío, se usa el usuario.
 
+Con STARTTLS o SSL/TLS el certificado del servidor se verifica por defecto. Si un servidor de correo propio usa un certificado autofirmado, o el nombre del certificado no coincide con la dirección introducida (por ejemplo, un certificado válido solo para `localhost`), marque «Omitir verificación del certificado» (`insecureSkipVerify`). La conexión puede ser interceptada por un intermediario; corrija el certificado cuando pueda.
+
 ### Firmas y códigos de respuesta
 
 - DingTalk: una vez definido un secreto de firma, las peticiones llevan automáticamente `timestamp` y `sign`.

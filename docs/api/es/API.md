@@ -1921,6 +1921,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `from` | string |
 | `group` | string |
 | `host` | string |
+| `insecureSkipVerify` | boolean |
 | `key` | string |
 | `kind` | string |
 | `name` | string |

@@ -42,6 +42,8 @@
   "starttls": "STARTTLS (587)",
   "tls": "SSL/TLS (465)",
   "noEncryption": "Keine (25)",
+  "skipVerify": "Zertifikatsprüfung überspringen",
+  "skipVerifyHelp": "Das TLS-Zertifikat des Mailservers wird nicht geprüft. Für selbst betriebene Mailserver mit selbstsigniertem Zertifikat oder einem Zertifikat, dessen Name nicht zur Serveradresse passt. Die Verbindung kann dann von einem Man-in-the-Middle abgefangen werden; korrigieren Sie nach Möglichkeit das Zertifikat.",
   "port": "Port",
   "user": "Benutzername",
   "password": "Passwort",

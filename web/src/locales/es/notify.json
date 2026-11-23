@@ -42,6 +42,8 @@
   "starttls": "STARTTLS (587)",
   "tls": "SSL/TLS (465)",
   "noEncryption": "Ninguno (25)",
+  "skipVerify": "Omitir verificación del certificado",
+  "skipVerifyHelp": "No verifica el certificado TLS del servidor de correo. Para servidores de correo propios con certificado autofirmado o cuyo nombre no coincide con la dirección del servidor. La conexión puede ser interceptada por un intermediario; corrija el certificado cuando pueda.",
   "port": "Puerto",
   "user": "Usuario",
   "password": "Contraseña",

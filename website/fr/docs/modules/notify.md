@@ -80,6 +80,8 @@ Les champs supplémentaires portés par un événement (comme `ip` et `container
 
 Un port à 0 utilise le port par défaut du chiffrement choisi. Vous pouvez saisir plusieurs destinataires séparés par des virgules. Les e-mails sont envoyés en texte brut UTF-8. L'authentification PLAIN est utilisée lorsque le serveur prend en charge AUTH et qu'un nom d'utilisateur est défini ; lorsque l'expéditeur est vide, le nom d'utilisateur est utilisé.
 
+Avec STARTTLS ou SSL/TLS, le certificat du serveur est vérifié par défaut. Si un serveur de messagerie auto-hébergé utilise un certificat auto-signé, ou si le nom du certificat ne correspond pas à l'adresse saisie (par exemple un certificat valable uniquement pour `localhost`), cochez « Ignorer la vérification du certificat » (`insecureSkipVerify`). La connexion peut alors être interceptée par un intermédiaire ; corrigez le certificat si possible.
+
 ### Signatures et codes de réponse
 
 - DingTalk : une fois un secret de signature défini, les requêtes portent automatiquement `timestamp` et `sign`.

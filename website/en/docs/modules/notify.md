@@ -80,6 +80,8 @@ Extra fields carried by an event (such as `ip` and `container`) can also be used
 
 A port of 0 uses the default port for the chosen encryption. You can enter several recipients separated by commas. Emails are sent as UTF-8 plain text. PLAIN authentication is used when the server supports AUTH and a username is set; when the sender is empty, the username is used.
 
+With STARTTLS or SSL/TLS the server certificate is verified by default. When a self-hosted mail server uses a self-signed certificate, or the certificate name does not match the server address you entered (for example a certificate valid only for `localhost`), tick "Skip certificate verification" (`insecureSkipVerify`). The connection can then be intercepted by a man in the middle, so fix the certificate when you can.
+
 ### Signatures and response codes
 
 - DingTalk: once a signing secret is set, requests automatically carry `timestamp` and `sign`.

@@ -1921,6 +1921,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `from` | string |
 | `group` | string |
 | `host` | string |
+| `insecureSkipVerify` | boolean |
 | `key` | string |
 | `kind` | string |
 | `name` | string |

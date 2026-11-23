@@ -80,6 +80,8 @@ Campos extras que um evento carrega (como `ip` e `container`) também podem ser 
 
 Uma porta 0 usa a porta padrão da criptografia escolhida. Você pode informar vários destinatários separados por vírgula. Os e-mails são enviados em texto simples UTF-8. A autenticação PLAIN é usada quando o servidor oferece AUTH e um usuário está definido; quando o remetente está em branco, o usuário é usado.
 
+Com STARTTLS ou SSL/TLS o certificado do servidor é verificado por padrão. Se um servidor de e-mail próprio usa certificado autoassinado, ou o nome do certificado não corresponde ao endereço informado (por exemplo, um certificado válido só para `localhost`), marque "Ignorar verificação do certificado" (`insecureSkipVerify`). A conexão pode ser interceptada por um intermediário; corrija o certificado quando possível.
+
 ### Assinaturas e códigos de resposta
 
 - DingTalk: depois de definido um segredo de assinatura, as requisições levam `timestamp` e `sign` automaticamente.

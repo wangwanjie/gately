@@ -2083,6 +2083,9 @@
           "host": {
             "type": "string"
           },
+          "insecureSkipVerify": {
+            "type": "boolean"
+          },
           "key": {
             "type": "string"
           },

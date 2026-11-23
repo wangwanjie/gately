@@ -1921,6 +1921,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `from` | string |
 | `group` | string |
 | `host` | string |
+| `insecureSkipVerify` | boolean |
 | `key` | string |
 | `kind` | string |
 | `name` | string |

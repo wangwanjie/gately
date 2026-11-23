@@ -42,6 +42,8 @@
   "starttls": "STARTTLS (587)",
   "tls": "SSL/TLS (465)",
   "noEncryption": "None (25)",
+  "skipVerify": "Skip certificate verification",
+  "skipVerifyHelp": "Do not verify the mail server's TLS certificate. Use it for self-hosted mail servers with a self-signed certificate or a certificate whose name does not match the server address. The connection can then be intercepted by a man in the middle, so fix the certificate when you can.",
   "port": "Port",
   "user": "Username",
   "password": "Password",

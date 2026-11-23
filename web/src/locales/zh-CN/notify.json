@@ -42,6 +42,8 @@
   "starttls": "STARTTLS（587）",
   "tls": "SSL/TLS（465）",
   "noEncryption": "无加密（25）",
+  "skipVerify": "跳过证书校验",
+  "skipVerifyHelp": "不校验邮件服务器的 TLS 证书，用于自签名证书或证书域名与服务器地址不符的自建邮件服务。开启后连接可能被中间人截获，能修正证书时优先修正证书。",
   "port": "端口",
   "user": "用户名",
   "password": "密码",

@@ -195,6 +195,10 @@
               <el-option :label="t('notify.noEncryption')" value="none" />
             </el-select>
           </el-form-item>
+          <el-form-item v-if="editingChannel.security !== 'none'" label=" ">
+            <el-checkbox v-model="editingChannel.insecureSkipVerify">{{ t('notify.skipVerify') }}</el-checkbox>
+            <div class="form-help">{{ t('notify.skipVerifyHelp') }}</div>
+          </el-form-item>
           <el-form-item :label="t('notify.port')"><el-input-number v-model="editingChannel.port" :min="0" :max="65535" /></el-form-item>
           <el-form-item :label="t('notify.user')"><el-input v-model="editingChannel.user" /></el-form-item>
           <el-form-item :label="t('notify.password')"><SecretInput v-model="editingChannel.secret" :reveal="secretReveal" :placeholder="secretHint" /></el-form-item>
@@ -348,6 +352,8 @@ interface Channel {
   host: string
   port: number
   security: string
+  // insecureSkipVerify 为 SMTP 不校验服务器证书
+  insecureSkipVerify?: boolean
   user: string
   from: string
   webhook: WebhookCfg
@@ -489,6 +495,7 @@ function emptyChannel(): Channel {
     host: '',
     port: 0,
     security: 'starttls',
+    insecureSkipVerify: false,
     user: '',
     from: '',
     webhook: { enable: true, url: '', method: 'POST', headers: [], body: '{"text":"{title}\\n{text}"}', successContent: [], timeout: 0, insecureSkipVerify: false },

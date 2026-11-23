@@ -134,6 +134,11 @@ func fakeSMTP(t *testing.T) (string, <-chan string) {
 		t.Fatal(err)
 	}
 	t.Cleanup(func() { ln.Close() })
+	return ln.Addr().String(), serveFakeSMTP(ln)
+}
+
+// serveFakeSMTP 在 ln 上接受一个连接并按最简 SMTP 流程收下一封邮件。
+func serveFakeSMTP(ln net.Listener) <-chan string {
 	mail := make(chan string, 1)
 	go func() {
 		c, err := ln.Accept()
@@ -179,7 +184,7 @@ func fakeSMTP(t *testing.T) (string, <-chan string) {
 			}
 		}
 	}()
-	return ln.Addr().String(), mail
+	return mail
 }
 
 // connectProxy 是支持 CONNECT 的最小代理，记录请求的目标地址。

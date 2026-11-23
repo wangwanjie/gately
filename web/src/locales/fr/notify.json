@@ -42,6 +42,8 @@
   "starttls": "STARTTLS (587)",
   "tls": "SSL/TLS (465)",
   "noEncryption": "Aucun (25)",
+  "skipVerify": "Ignorer la vérification du certificat",
+  "skipVerifyHelp": "Ne vérifie pas le certificat TLS du serveur de messagerie. Pour les serveurs auto-hébergés avec un certificat auto-signé ou dont le nom ne correspond pas à l'adresse du serveur. La connexion peut alors être interceptée par un intermédiaire ; corrigez le certificat si possible.",
   "port": "Port",
   "user": "Nom d'utilisateur",
   "password": "Mot de passe",
