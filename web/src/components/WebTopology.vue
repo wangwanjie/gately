@@ -288,7 +288,7 @@
                   <text class="rlabel" v-bind="radialLabel(n)" dominant-baseline="central">{{ fit(nodeTitle(n), radialLabel(n).max) }}</text>
                   <g v-if="n.kind === 'listener' && !activeOnly" class="fold" @click.stop="toggleListener(n)">
                     <circle :cx="n.w + 1" :cy="-1" r="7" />
-                    <use :href="n.collapsed ? '#gtopo-right' : '#gtopo-down'" :x="n.w - 5" :y="-7" width="12" height="12" />
+                    <use :href="'#gtopo-' + foldIcon(n)" :x="n.w - 5" :y="-7" width="12" height="12" />
                   </g>
                   <g v-if="ipCount(n.id) > 0 && n.kind !== 'upstream'" class="ipbadge">
                     <rect :x="-14" :y="-9" :width="22" height="13" rx="6.5" />
@@ -305,7 +305,7 @@
                   <circle v-if="n.kind !== 'more'" class="dot" :cx="n.w - 10" cy="10" r="4" />
                   <g v-if="n.kind === 'listener' && !activeOnly" class="fold" @click.stop="toggleListener(n)">
                     <rect :x="n.w - 26" :y="n.h - 22" width="20" height="18" rx="5" />
-                    <use :href="n.collapsed ? '#gtopo-right' : '#gtopo-down'" :x="n.w - 23" :y="n.h - 20" width="14" height="14" />
+                    <use :href="'#gtopo-' + foldIcon(n)" :x="n.w - 23" :y="n.h - 20" width="14" height="14" />
                   </g>
                   <g v-if="ipCount(n.id) > 0 && n.kind !== 'upstream'" class="ipbadge">
                     <rect :x="n.w - 30" :y="-8" :width="26" height="15" rx="7.5" />
@@ -470,7 +470,9 @@ import {
   ChartPie,
   Check,
   ChevronDown,
+  ChevronLeft,
   ChevronRight,
+  ChevronUp,
   ChevronsDownUp,
   ChevronsUp,
   ChevronsUpDown,
@@ -493,9 +495,11 @@ import {
   Lock,
   Maximize,
   Minimize,
+  Minus,
   Network,
   Orbit,
   Pencil,
+  Plus,
   Router,
   SearchX,
   Server,
@@ -755,6 +759,19 @@ function readRateWindow(): number {
   }
 }
 
+// foldIcon 返回监听节点折叠按钮的图标，箭头指向点击后子节点的去向：
+// 树形向右展开、向左收起，竖向向下展开、向上收起，径向用加号与减号
+function foldIcon(n: LayoutNode): string {
+  switch (layoutMode.value) {
+    case 'vertical':
+      return n.collapsed ? 'down' : 'up'
+    case 'radial':
+      return n.collapsed ? 'plus' : 'minus'
+    default:
+      return n.collapsed ? 'right' : 'left'
+  }
+}
+
 // 布局方式（树形 / 径向），记住上次的选择
 const layoutKey = 'gately.topology.layout'
 const layoutMode = ref<LayoutMode>(readLayoutMode())
@@ -980,8 +997,12 @@ const icons: Record<string, Component> = {
   notfound: SearchX,
   unplug: Unplug,
   server: Server,
+  left: ChevronLeft,
   right: ChevronRight,
+  up: ChevronUp,
   down: ChevronDown,
+  plus: Plus,
+  minus: Minus,
   more: Ellipsis,
   less: ChevronsUp,
 }
