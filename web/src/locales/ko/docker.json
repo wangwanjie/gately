@@ -18,7 +18,8 @@
     "paused": "일시 중지됨",
     "restarting": "재시작 중",
     "dead": "비정상",
-    "removing": "삭제 중"
+    "removing": "삭제 중",
+    "unhealthy": "상태 검사 실패"
   },
   "task": {
     "failed": "{title} 실패",
@@ -252,6 +253,7 @@
     "list": {
       "search": "이름, 이미지 또는 프로젝트 검색",
       "all": "전체",
+      "problem": "이상",
       "groupByProject": "프로젝트별 그룹",
       "newContainer": "새 컨테이너",
       "checkAll": "전체 업데이트 확인",

@@ -9,7 +9,7 @@
     </template>
     <template #sub>{{ c.status }}</template>
     <template #status>
-      <StatusBadge v-bind="containerBadge(c.state)" />
+      <StatusBadge v-bind="containerBadge(c.state, c.status)" />
     </template>
     <Field :label="t('docker.container.card.image')" mono>
       {{ c.image }}

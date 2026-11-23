@@ -102,8 +102,28 @@ export function uploadFile(url: string, file: File, contentType: string, onProgr
   })
 }
 
-// 容器状态到徽标的映射。
-export function containerBadge(state: string): { type: 'running' | 'off' | 'warn' | 'pending' | 'error' | 'info'; text: string } {
+// isUnhealthy 判断运行中的容器健康检查是否失败（状态文本形如 "Up 5 minutes (unhealthy)"）。
+export function isUnhealthy(status?: string): boolean {
+  return !!status && status.includes('(unhealthy)')
+}
+
+// isProblem 与总览摘要的口径一致：重启中、异常终止、非 0 退出码退出，或健康检查失败。
+export function isProblem(c: { state: string; status?: string }): boolean {
+  if (c.state === 'restarting' || c.state === 'dead') {
+    return true
+  }
+  if (c.state === 'running' || c.state === 'paused') {
+    return isUnhealthy(c.status)
+  }
+  const m = /^Exited \((-?\d+)\)/.exec(c.status ?? '')
+  return !!m && m[1] !== '0'
+}
+
+// 容器状态到徽标的映射；传入状态文本时，健康检查失败的运行中容器显示为警告。
+export function containerBadge(state: string, status?: string): { type: 'running' | 'off' | 'warn' | 'pending' | 'error' | 'info'; text: string } {
+  if (state === 'running' && isUnhealthy(status)) {
+    return { type: 'warn', text: t('docker.state.unhealthy') }
+  }
   const map: Record<string, { type: 'running' | 'off' | 'warn' | 'pending' | 'error' | 'info'; text: string }> = {
     running: { type: 'running', text: t('common.running') },
     exited: { type: 'off', text: t('common.stopped') },

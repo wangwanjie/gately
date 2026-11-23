@@ -11,7 +11,7 @@
     <template #header>
       <div class="dh">
         <span class="dh-name">{{ container?.name }}</span>
-        <StatusBadge v-if="container" v-bind="containerBadge(container.state)" />
+        <StatusBadge v-if="container" v-bind="containerBadge(container.state, container.status)" />
       </div>
     </template>
     <el-tabs v-model="tab" class="tabs">

@@ -18,7 +18,8 @@
     "paused": "Pausado",
     "restarting": "Reiniciando",
     "dead": "Morto",
-    "removing": "Removendo"
+    "removing": "Removendo",
+    "unhealthy": "Não íntegro"
   },
   "task": {
     "failed": "{title} falhou",
@@ -252,6 +253,7 @@
     "list": {
       "search": "Pesquisar por nome, imagem ou projeto",
       "all": "Todos",
+      "problem": "Com problema",
       "groupByProject": "Agrupar por projeto",
       "newContainer": "Novo contêiner",
       "checkAll": "Verificar atualizações de todos",

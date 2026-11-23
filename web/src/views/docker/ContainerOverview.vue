@@ -5,7 +5,7 @@
       <div class="g-card">
         <div class="g-card-head"><div class="g-card-title"><Info :size="16" />{{ t('docker.container.overview.basicInfo') }}</div></div>
         <div class="grid">
-          <Field :label="t('common.status')"><StatusBadge v-bind="containerBadge(d.state)" /> <span class="muted">{{ d.status }}</span></Field>
+          <Field :label="t('common.status')"><StatusBadge v-bind="containerBadge(d.state, d.status)" /> <span class="muted">{{ d.status }}</span></Field>
           <Field :label="t('docker.container.overview.health')">{{ d.healthStatus || '-' }}</Field>
           <Field :label="t('docker.container.overview.restartCount')">{{ d.restartCount }}</Field>
           <Field :label="t('docker.container.overview.exitCode')">{{ d.exitCode }}</Field>

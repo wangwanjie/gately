@@ -18,7 +18,8 @@
     "paused": "一時停止中",
     "restarting": "再起動中",
     "dead": "異常",
-    "removing": "削除中"
+    "removing": "削除中",
+    "unhealthy": "ヘルスチェック失敗"
   },
   "task": {
     "failed": "{title} に失敗しました",
@@ -252,6 +253,7 @@
     "list": {
       "search": "名前、イメージ、プロジェクトを検索",
       "all": "すべて",
+      "problem": "異常",
       "groupByProject": "プロジェクト別にグループ化",
       "newContainer": "コンテナを新規作成",
       "checkAll": "すべての更新を確認",

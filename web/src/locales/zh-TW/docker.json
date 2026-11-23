@@ -18,7 +18,8 @@
     "paused": "已暫停",
     "restarting": "重新啟動中",
     "dead": "異常",
-    "removing": "刪除中"
+    "removing": "刪除中",
+    "unhealthy": "健康檢查失敗"
   },
   "task": {
     "failed": "{title} 失敗",
@@ -252,6 +253,7 @@
     "list": {
       "search": "搜尋名稱、映像檔或專案",
       "all": "全部",
+      "problem": "異常",
       "groupByProject": "依專案分組",
       "newContainer": "新增容器",
       "checkAll": "檢查全部更新",

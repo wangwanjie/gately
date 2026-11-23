@@ -18,7 +18,8 @@
     "paused": "已暂停",
     "restarting": "重启中",
     "dead": "异常",
-    "removing": "删除中"
+    "removing": "删除中",
+    "unhealthy": "健康检查失败"
   },
   "task": {
     "failed": "{title} 失败",
@@ -252,6 +253,7 @@
     "list": {
       "search": "搜索名称、镜像或项目",
       "all": "全部",
+      "problem": "异常",
       "groupByProject": "按项目分组",
       "newContainer": "新建容器",
       "checkAll": "检查全部更新",

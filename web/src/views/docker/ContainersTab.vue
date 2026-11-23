@@ -6,6 +6,7 @@
         <el-radio-button value="all">{{ t('docker.container.list.all') }}</el-radio-button>
         <el-radio-button value="running">{{ t('common.running') }}</el-radio-button>
         <el-radio-button value="stopped">{{ t('common.stopped') }}</el-radio-button>
+        <el-radio-button value="problem">{{ t('docker.container.list.problem') }}</el-radio-button>
       </el-radio-group>
       <el-checkbox v-model="grouped">{{ t('docker.container.list.groupByProject') }}</el-checkbox>
       <CompactToggle v-model="compact" />
@@ -74,6 +75,7 @@ import RestartOverlay from '../../components/RestartOverlay.vue'
 import ContainerCard from './ContainerCard.vue'
 import ContainerDetail from './ContainerDetail.vue'
 import ContainerForm from './ContainerForm.vue'
+import { isProblem } from './format'
 import { reportError } from './state'
 import { trackTask } from './tasks'
 import type { ContainerView } from './types'
@@ -115,6 +117,9 @@ const filtered = computed(() => {
       return false
     }
     if (stateFilter.value === 'stopped' && c.state === 'running') {
+      return false
+    }
+    if (stateFilter.value === 'problem' && !isProblem(c)) {
       return false
     }
     return !k || c.name.toLowerCase().includes(k) || c.image.toLowerCase().includes(k) || (c.project ?? '').toLowerCase().includes(k)
