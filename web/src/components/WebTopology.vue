@@ -33,8 +33,12 @@
       </div>
       <div class="bar-right">
         <div v-if="data" class="kpis">
-          <span class="kpi" :title="t('webTopology.qpsHelp')"><b>{{ formatQps(data.rate.qps) }}</b> {{ t('webTopology.qpsUnit') }}</span>
-          <span class="kpi" :title="t('webTopology.bpsHelp')"><b>{{ formatRate(data.rate.bps) }}</b></span>
+          <span class="kpi" :title="t('webTopology.qpsHelp', { n: data.window })"><b>{{ formatQps(data.rate.qps) }}</b> {{ t('webTopology.qpsUnit') }}</span>
+          <!-- 上下行放在同一个胶囊里，窄屏也能一行放下 -->
+          <span class="kpi">
+            <span :title="t('webTopology.bps') + '：' + t('webTopology.bpsHelp', { n: data.window })">↓<b>{{ formatRate(data.rate.bps) }}</b></span>
+            <span class="kpi-sep" :title="t('webTopology.upBps') + '：' + t('webTopology.upBpsHelp', { n: data.window })">↑<b>{{ formatRate(data.rate.upBps ?? 0) }}</b></span>
+          </span>
           <span class="kpi" :title="t('webTopology.activeHelp')"><b>{{ data.active }}</b> {{ t('webTopology.active') }}</span>
           <span class="kpi" :title="t('webTopology.activeIpsHelp')"><b>{{ data.ipTotal }}</b> IP</span>
         </div>
@@ -363,6 +367,21 @@
             </div>
             <div v-if="detail.error" class="panel-error">{{ detail.error }}</div>
           </div>
+          <!-- 速率统计时间段：QPS、上行、下行取所选秒数内的均值；回放快照固定为录制时的时间段 -->
+          <div class="rate-win">
+            <span class="rw-label">{{ t('webTopology.rateWindow') }}</span>
+            <el-tooltip :content="t('webTopology.rateWindowHelp')" placement="top"><Info :size="12" class="m-help" /></el-tooltip>
+            <el-select
+              :model-value="data?.replay ? data.window : rateWindow"
+              size="small"
+              class="rw-select"
+              :disabled="!!data?.replay"
+              :aria-label="t('webTopology.rateWindow')"
+              @update:model-value="(v: number) => (rateWindow = v)"
+            >
+              <el-option v-for="w in rateWindowOptions" :key="w" :value="w" :label="t('webTopology.rateWindowOpt', { n: w })" />
+            </el-select>
+          </div>
           <div class="metrics">
             <div v-for="m in detail.metrics" :key="m.label" class="metric">
               <div class="m-label">
@@ -378,8 +397,21 @@
               <span class="chart-meta">{{ t('webTopology.curveMeta', { max: formatQps(seriesMax) }) }}</span>
             </div>
             <Sparkline :series="[{ values: data.series.map((p) => p.requests), color: 'var(--el-color-primary)' }]" :capacity="data.series.length" :height="56" />
-            <div class="chart-title">{{ t('webTopology.curveBytes') }}</div>
-            <Sparkline :series="[{ values: data.series.map((p) => p.bytes), color: 'var(--g-chart-2)' }]" :capacity="data.series.length" :height="40" />
+            <div class="chart-title">
+              {{ t('webTopology.curveBytes') }}
+              <span class="chart-meta legend">
+                <span class="lg-dot down" />{{ t('webTopology.bps') }}
+                <span class="lg-dot up" />{{ t('webTopology.upBps') }}
+              </span>
+            </div>
+            <Sparkline
+              :series="[
+                { values: data.series.map((p) => p.bytes), color: 'var(--g-chart-2)' },
+                { values: data.series.map((p) => p.up ?? 0), color: 'var(--el-color-warning)' },
+              ]"
+              :capacity="data.series.length"
+              :height="40"
+            />
           </template>
           <div v-if="detail.rows.length" class="rows">
             <div v-for="r in detail.rows" :key="r.label" class="row">
@@ -514,6 +546,8 @@ import {
   maskIP,
   maskText,
   maskURL,
+  DEFAULT_RATE_WINDOW,
+  rateWindowOptions,
   nodeCovers,
   pathOf,
   resolveId,
@@ -521,6 +555,7 @@ import {
   type LayoutMode,
   type LayoutNode,
   type MaskStyle,
+  type Rate,
   type TopoFilter,
   type TopoIP,
   type TopologyView,
@@ -698,6 +733,26 @@ async function toggleActiveOnly() {
   activeOnly.value = !activeOnly.value
   await nextTick()
   refit()
+}
+
+// rateWindow 为速率统计时间段（秒），按设备记住；接口按它计算 QPS 与上下行均值
+const rateWindowKey = 'gately.topology.rateWindow'
+const rateWindow = ref(readRateWindow())
+watch(rateWindow, (v) => {
+  try {
+    localStorage.setItem(rateWindowKey, String(v))
+  } catch {
+    // 存储不可用时仅本次会话生效
+  }
+  reload()
+})
+function readRateWindow(): number {
+  try {
+    const v = Number(localStorage.getItem(rateWindowKey))
+    return rateWindowOptions.includes(v) ? v : DEFAULT_RATE_WINDOW
+  } catch {
+    return DEFAULT_RATE_WINDOW
+  }
 }
 
 // 布局方式（树形 / 径向），记住上次的选择
@@ -1195,11 +1250,13 @@ const detailFocus = computed(() => {
 // 峰值按每秒计：回放曲线每个点覆盖 seriesStep 秒
 const seriesMax = computed(() => Math.max(0, ...(data.value?.series ?? []).map((p) => p.requests)) / (data.value?.seriesStep || 1))
 
-function rateMetrics(r: { qps: number; bps: number; qps60: number }, bpsHelp?: string): Metric[] {
+// rateMetrics 为节点的 QPS、上行、下行三项，均为最近 data.window 秒的均值；upstream 为后端节点（字节口径不同）
+function rateMetrics(r: Rate, upstream = false): Metric[] {
+  const n = data.value?.window ?? DEFAULT_RATE_WINDOW
   return [
-    { label: t('webTopology.qps'), value: formatQps(r.qps), help: t('webTopology.qpsHelp') },
-    { label: t('webTopology.qps60'), value: formatQps(r.qps60), help: t('webTopology.qps60Help') },
-    { label: t('webTopology.bps'), value: formatRate(r.bps), help: bpsHelp ?? t('webTopology.bpsHelp') },
+    { label: t('webTopology.qps'), value: formatQps(r.qps), help: t('webTopology.qpsHelp', { n }) },
+    { label: t('webTopology.upBps'), value: formatRate(r.upBps ?? 0), help: t(upstream ? 'webTopology.upBpsUpstreamHelp' : 'webTopology.upBpsHelp', { n }) },
+    { label: t('webTopology.bps'), value: formatRate(r.bps), help: t(upstream ? 'webTopology.bpsUpstreamHelp' : 'webTopology.bpsHelp', { n }) },
   ]
 }
 
@@ -1339,10 +1396,10 @@ const detail = computed<Detail | undefined>(() => {
         d.tags.push({ text: t('webTopology.upBackup'), type: 'warning' })
       }
       d.metrics = [
-        ...rateMetrics(u.rate, t('webTopology.bpsUpstreamHelp')),
+        ...rateMetrics(u.rate, true),
         { label: t('webTopology.conns'), value: String(u.conns), help: t('webTopology.connsHelp') },
         { label: t('webTopology.requests'), value: formatCount(u.requests), help: t('webTopology.upRequestsHelp') },
-        { label: t('webTopology.upBytes'), value: formatBytes(u.bytes), help: t('webTopology.bpsUpstreamHelp') },
+        { label: t('webTopology.upBytes'), value: formatBytes(u.bytes), help: t('webTopology.upBytesHelp') },
       ]
       d.rows.push({ label: t('webTopology.weight'), value: String(u.weight) })
       // 访问日志只记录到站点，按后端所属站点查看
@@ -1925,7 +1982,7 @@ async function load() {
   const my = ++seq
   const focus = detailFocus.value
   try {
-    const q = new URLSearchParams({ focus })
+    const q = new URLSearchParams({ focus, window: String(rateWindow.value) })
     // 筛选值在选择时已校验为完整地址
     if (ipFilter.value && isValidIP(ipFilter.value)) {
       q.set('ip', ipFilter.value)
@@ -2181,6 +2238,7 @@ defineExpose({ reload })
 }
 .kpis {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
   margin-right: 4px;
 }
@@ -2195,6 +2253,9 @@ defineExpose({ reload })
 .kpi b {
   color: var(--el-text-color-primary);
   font-variant-numeric: tabular-nums;
+}
+.kpi-sep {
+  margin-left: 8px;
 }
 .topo-main {
   display: grid;
@@ -2911,6 +2972,17 @@ defineExpose({ reload })
   color: var(--el-color-danger);
   word-break: break-all;
 }
+.rate-win {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
+}
+.rw-select {
+  width: 112px;
+  margin-left: auto;
+}
 .metrics {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -2937,7 +3009,9 @@ defineExpose({ reload })
   font-size: 15px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
-  word-break: break-all;
+  /* 「175.8 KB/s」这类数值只在空格处断行，单个词过长时才拆开 */
+  overflow-wrap: anywhere;
+  word-break: normal;
 }
 .bad {
   color: var(--el-color-danger);
@@ -2956,6 +3030,24 @@ defineExpose({ reload })
 .chart-meta {
   font-weight: 400;
   color: var(--el-text-color-secondary);
+}
+.chart-meta.legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+.lg-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.lg-dot.down {
+  background: var(--g-chart-2);
+}
+.lg-dot.up {
+  margin-left: 6px;
+  background: var(--el-color-warning);
 }
 .rows {
   display: flex;

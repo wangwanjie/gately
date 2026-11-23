@@ -3,16 +3,25 @@ import { hierarchy, pack, treemap, treemapSquarify, type HierarchyNode } from 'd
 // Web 服务拓扑视图的数据类型与纯函数：布局、链路高亮、IP 筛选与打码。
 // 组件 WebTopology.vue 只负责渲染与交互，这里的函数可在 node --test 中直接测试。
 
+// Rate 为节点速率：qps、bps（下行）、upBps（上行）为最近 window 秒均值，qps60 为 60 秒均值。
+// 旧版本录制的回放帧没有 upBps
 export interface Rate {
   qps: number
   bps: number
+  upBps?: number
   qps60: number
 }
 
+// DEFAULT_RATE_WINDOW 为速率默认取均值的秒数，rateWindowOptions 为可选的统计时间段（秒），与接口 window 参数的范围 1~60 一致
+export const DEFAULT_RATE_WINDOW = 10
+export const rateWindowOptions = [1, 5, 10, 30, 60]
+
+// RatePoint 为每秒曲线的一个点：bytes 为下行字节数，up 为上行字节数（旧版本录制的回放帧没有）
 export interface RatePoint {
   t: number
   requests: number
   bytes: number
+  up?: number
 }
 
 export interface TopoUpstream {
@@ -397,7 +406,7 @@ function curve(x1: number, y1: number, x2: number, y2: number): string {
   return `M${x1},${y1} C${x1 + dx},${y1} ${x2 - dx},${y2} ${x2},${y2}`
 }
 
-const zero: Rate = { qps: 0, bps: 0, qps60: 0 }
+const zero: Rate = { qps: 0, bps: 0, upBps: 0, qps60: 0 }
 
 // TNode 为排版前的抽象树节点：先按搜索、折叠与数量上限决定显示哪些节点，再交给具体布局计算坐标
 type TNode = Omit<LayoutNode, 'col' | 'x' | 'y' | 'w' | 'h'> & { kids: TNode[] }
@@ -435,7 +444,7 @@ function buildTree(v: TopologyView, collapsed: Set<string>, query: string, opts:
     }
     const sum = rest.reduce((a, t) => {
       const r = nodeRate(t)
-      return { qps: a.qps + r.qps, bps: a.bps + r.bps, qps60: a.qps60 + r.qps60 }
+      return { qps: a.qps + r.qps, bps: a.bps + r.bps, upBps: (a.upBps ?? 0) + (r.upBps ?? 0), qps60: a.qps60 + r.qps60 }
     }, zero)
     const active = rest.reduce((a, t) => a + (t.kind === 'upstream' ? (t.upstream?.conns ?? 0) : (t.site?.active ?? 0)), 0)
     const isOpen = expanded.has(owner)
