@@ -348,6 +348,11 @@ test('maskDomain 与 maskDomainText 打码域名', () => {
   assert.equal(maskDomainText('主站 app-*-dev.home.example.com, *.example.org'), '主站 app-*-dev.***.com, *.e***.org')
   assert.equal(maskDomainText('*api.example.com'), '*api.***.com')
   assert.ok(!maskDomainText('站点 api-*.secret-corp.com').includes('secret-corp'))
+  // 中间整段与非首段内的通配同样打码
+  assert.equal(maskDomain('audiobook.*.home.example.com'), 'audiobook.***.com')
+  assert.equal(maskDomainText('有声书 audiobook.*.secret-corp.com'), '有声书 audiobook.***.com')
+  assert.equal(maskDomainText('x.api-*.secret-corp.com, b.c.d.e.org'), 'x.***.com, b.***.org')
+  assert.ok(!maskDomainText('audiobook.*.secret-corp.com').includes('secret-corp'))
   assert.equal(maskURL('http://nas.lan:5000/x', true), 'http://n***.lan:5000/x')
   assert.equal(maskURL('http://nas.lan:5000/x'), 'http://nas.lan:5000/x')
 })
