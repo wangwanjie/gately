@@ -70,7 +70,7 @@
   "lastSeen": "Letzter Besuch",
   "totalRequests": "Anfragen gesamt",
   "totalDenied": "Blockiert",
-  "traffic": "Heruntergeladen",
+  "traffic": "Gesendet",
   "closed": "Verbindung getrennt (444)",
   "statusTitle": "Antwortstatus",
   "denyReasons": "Blockierungsgründe",

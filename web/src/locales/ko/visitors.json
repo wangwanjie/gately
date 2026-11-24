@@ -70,7 +70,7 @@
   "lastSeen": "최근 방문",
   "totalRequests": "전체 요청",
   "totalDenied": "차단됨",
-  "traffic": "다운로드량",
+  "traffic": "송신량",
   "closed": "연결 끊김(444)",
   "statusTitle": "응답 상태",
   "denyReasons": "차단 사유",

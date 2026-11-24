@@ -70,7 +70,7 @@
   "lastSeen": "最終アクセス",
   "totalRequests": "総リクエスト数",
   "totalDenied": "ブロック",
-  "traffic": "ダウンロード量",
+  "traffic": "送信量",
   "closed": "接続切断（444）",
   "statusTitle": "レスポンスのステータス",
   "denyReasons": "ブロック理由",

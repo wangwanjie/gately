@@ -44,7 +44,7 @@
           <Field :label="t('stun.target')" mono>{{ r.disableForward ? t('stun.routerForward') : `${(r.targetAddresses ?? []).join(' | ')}:${r.targetPort}` }}</Field>
           <Field :label="t('stun.connTraffic')">
             {{ t('stun.connStats', { active: r.state.stats.activeConns, total: r.state.stats.totalConns }) }}
-            <div class="meta">↑ {{ formatBytes(r.state.stats.bytesIn) }} · ↓ {{ formatBytes(r.state.stats.bytesOut) }}</div>
+            <div class="meta">↑ {{ formatBytes(r.state.stats.bytesOut) }} · ↓ {{ formatBytes(r.state.stats.bytesIn) }}</div>
           </Field>
           <Field v-if="r.ipMode && !r.disableForward" :label="t('ipAccessEditor.title')">{{ r.ipMode === 'whitelist' ? t('ipAccessEditor.whitelist') : t('ipAccessEditor.blacklist') }}</Field>
           <Field v-if="r.ipDenyList?.length || r.ipDenySets?.length" :label="t('ipAccessEditor.ipDeny')" mono>{{ (r.ipDenyList?.length ?? 0) + (r.ipDenySets?.length ?? 0) }}</Field>

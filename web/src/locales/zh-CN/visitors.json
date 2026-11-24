@@ -70,7 +70,7 @@
   "lastSeen": "最近访问",
   "totalRequests": "请求总数",
   "totalDenied": "被拦截",
-  "traffic": "下行流量",
+  "traffic": "上行流量",
   "closed": "断开连接（444）",
   "statusTitle": "响应状态",
   "denyReasons": "拦截原因",

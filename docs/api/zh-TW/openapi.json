@@ -54312,7 +54312,7 @@
     },
     "/api/webservice/topology": {
       "get": {
-        "description": "唯讀，資料全部來自記憶體計數，適合每 2 秒輪詢。`rate` 中 `qps`、`bps`（下行：傳給訪客或後端回傳的位元組）、`upBps`（上行：訪客傳來或傳給後端的請求本文位元組，含協定升級後訪客傳來的資料）為最近 `window` 個完整秒的平均值，`window` 可用同名參數指定 1 到 60 秒，預設 10；`qps60` 為 60 秒平均值。節點編號：監聽 `l:\u003c監聽 key\u003e`，站點 `s:\u003c監聽 key\u003e/\u003c站點 key\u003e`，後端以 `u:` 開頭，監聽層級動作 `a:\u003c監聽 key\u003e/redirect` 或 `a:\u003c監聽 key\u003e/notfound`；`focus` 為節點編號（或 internet、gately 表示整個實例）時在 `series` 中回傳該節點近 60 秒每秒的請求數與下行（`bytes`）、上行（`up`）位元組數。`ip` 為訪客位址時保證它出現在 `ips` 中，位址無效回傳 400。站點的 `blocked` 依原因統計攔截次數，鍵為 ban、ip、country、rateLimit、waf。`ips` 為近 60 秒出現過或仍有進行中請求的訪客位址，最多 500 個，`ipTotal` 為總數，超出時 `ipTruncated` 為 true。\n\n所需權限：`webservice:read`。",
+        "description": "唯讀，資料全部來自記憶體計數，適合每 2 秒輪詢。`rate` 中 `qps`、`bps`（傳給訪客的位元組；後端節點為後端回傳的回應本文）、`upBps`（訪客傳來的位元組，含協定升級後訪客傳來的資料；後端節點為傳給後端的請求本文），介面依 Gately 自身視角把送出顯示為上行、收到顯示為下行，均為最近 `window` 個完整秒的平均值，`window` 可用同名參數指定 1 到 60 秒，預設 10；`qps60` 為 60 秒平均值。節點編號：監聽 `l:\u003c監聽 key\u003e`，站點 `s:\u003c監聽 key\u003e/\u003c站點 key\u003e`，後端以 `u:` 開頭，監聽層級動作 `a:\u003c監聽 key\u003e/redirect` 或 `a:\u003c監聽 key\u003e/notfound`；`focus` 為節點編號（或 internet、gately 表示整個實例）時在 `series` 中回傳該節點近 60 秒每秒的請求數與 `bytes`、`up` 位元組數（含義分別同 `bps`、`upBps`）。`ip` 為訪客位址時保證它出現在 `ips` 中，位址無效回傳 400。站點的 `blocked` 依原因統計攔截次數，鍵為 ban、ip、country、rateLimit、waf。`ips` 為近 60 秒出現過或仍有進行中請求的訪客位址，最多 500 個，`ipTotal` 為總數，超出時 `ipTruncated` 為 true。\n\n所需權限：`webservice:read`。",
         "responses": {
           "200": {
             "content": {

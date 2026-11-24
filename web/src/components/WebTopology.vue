@@ -34,10 +34,10 @@
       <div class="bar-right">
         <div v-if="data" class="kpis">
           <span class="kpi" :title="t('webTopology.qpsHelp', { n: data.window })"><b>{{ formatQps(data.rate.qps) }}</b> {{ t('webTopology.qpsUnit') }}</span>
-          <!-- 上下行放在同一个胶囊里，窄屏也能一行放下 -->
+          <!-- 上下行放在同一个胶囊里，窄屏也能一行放下；按 Gately 视角，下行为访客发来、上行为发给访客 -->
           <span class="kpi">
-            <span :title="t('webTopology.bps') + '：' + t('webTopology.bpsHelp', { n: data.window })">↓<b>{{ formatRate(data.rate.bps) }}</b></span>
-            <span class="kpi-sep" :title="t('webTopology.upBps') + '：' + t('webTopology.upBpsHelp', { n: data.window })">↑<b>{{ formatRate(data.rate.upBps ?? 0) }}</b></span>
+            <span :title="t('webTopology.down') + '：' + t('webTopology.downHelp', { n: data.window })">↓<b>{{ formatRate(data.rate.upBps ?? 0) }}</b></span>
+            <span class="kpi-sep" :title="t('webTopology.up') + '：' + t('webTopology.upHelp', { n: data.window })">↑<b>{{ formatRate(data.rate.bps) }}</b></span>
           </span>
           <span class="kpi" :title="t('webTopology.activeHelp')"><b>{{ data.active }}</b> {{ t('webTopology.active') }}</span>
           <span class="kpi" :title="t('webTopology.activeIpsHelp')"><b>{{ data.ipTotal }}</b> IP</span>
@@ -400,8 +400,8 @@
             <div class="chart-title">
               {{ t('webTopology.curveBytes') }}
               <span class="chart-meta legend">
-                <span class="lg-dot down" />{{ t('webTopology.bps') }}
-                <span class="lg-dot up" />{{ t('webTopology.upBps') }}
+                <span class="lg-dot sent" />{{ t('webTopology.up') }}
+                <span class="lg-dot recv" />{{ t('webTopology.down') }}
               </span>
             </div>
             <Sparkline
@@ -1271,13 +1271,17 @@ const detailFocus = computed(() => {
 // 峰值按每秒计：回放曲线每个点覆盖 seriesStep 秒
 const seriesMax = computed(() => Math.max(0, ...(data.value?.series ?? []).map((p) => p.requests)) / (data.value?.seriesStep || 1))
 
-// rateMetrics 为节点的 QPS、上行、下行三项，均为最近 data.window 秒的均值；upstream 为后端节点（字节口径不同）
+// rateMetrics 为节点的 QPS、上行、下行三项，均为最近 data.window 秒的均值。
+// 上下行按 Gately 视角：上行为 Gately 发出，下行为 Gately 收到。访客侧节点的 bps 是发给访客的、upBps 是访客发来的；
+// 后端节点（upstream）的 upBps 是发给后端的请求体、bps 是后端返回的响应体，方向正好相反。
 function rateMetrics(r: Rate, upstream = false): Metric[] {
   const n = data.value?.window ?? DEFAULT_RATE_WINDOW
+  const sent = upstream ? (r.upBps ?? 0) : r.bps
+  const recv = upstream ? r.bps : (r.upBps ?? 0)
   return [
     { label: t('webTopology.qps'), value: formatQps(r.qps), help: t('webTopology.qpsHelp', { n }) },
-    { label: t('webTopology.upBps'), value: formatRate(r.upBps ?? 0), help: t(upstream ? 'webTopology.upBpsUpstreamHelp' : 'webTopology.upBpsHelp', { n }) },
-    { label: t('webTopology.bps'), value: formatRate(r.bps), help: t(upstream ? 'webTopology.bpsUpstreamHelp' : 'webTopology.bpsHelp', { n }) },
+    { label: t('webTopology.up'), value: formatRate(sent), help: t(upstream ? 'webTopology.upUpstreamHelp' : 'webTopology.upHelp', { n }) },
+    { label: t('webTopology.down'), value: formatRate(recv), help: t(upstream ? 'webTopology.downUpstreamHelp' : 'webTopology.downHelp', { n }) },
   ]
 }
 
@@ -3063,10 +3067,10 @@ defineExpose({ reload })
   height: 8px;
   border-radius: 50%;
 }
-.lg-dot.down {
+.lg-dot.sent {
   background: var(--g-chart-2);
 }
-.lg-dot.up {
+.lg-dot.recv {
   margin-left: 6px;
   background: var(--el-color-warning);
 }

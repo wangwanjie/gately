@@ -70,7 +70,7 @@
   "lastSeen": "Dernière visite",
   "totalRequests": "Total des requêtes",
   "totalDenied": "Bloquées",
-  "traffic": "Téléchargé",
+  "traffic": "Envoyé",
   "closed": "Connexion fermée (444)",
   "statusTitle": "Statut des réponses",
   "denyReasons": "Motifs de blocage",

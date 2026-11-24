@@ -34,8 +34,8 @@
           </el-table-column>
           <el-table-column :label="t('siteConns.traffic')" width="110">
             <template #default="{ row }">
-              <div class="mono">↓ {{ formatBytes(row.down) }}</div>
-              <div v-if="row.up" class="mono meta">↑ {{ formatBytes(row.up) }}</div>
+              <div class="mono">↑ {{ formatBytes(row.down) }}</div>
+              <div v-if="row.up" class="mono meta">↓ {{ formatBytes(row.up) }}</div>
             </template>
           </el-table-column>
           <el-table-column :label="t('common.actions')" width="140" fixed="right">
@@ -82,8 +82,8 @@
           </el-table-column>
           <el-table-column :label="t('siteConns.traffic')" width="110">
             <template #default="{ row }">
-              <div class="mono">↓ {{ formatBytes(row.down) }}</div>
-              <div v-if="row.up" class="mono meta">↑ {{ formatBytes(row.up) }}</div>
+              <div class="mono">↑ {{ formatBytes(row.down) }}</div>
+              <div v-if="row.up" class="mono meta">↓ {{ formatBytes(row.up) }}</div>
             </template>
           </el-table-column>
           <el-table-column :label="t('siteConns.result')" width="90" fixed="right">

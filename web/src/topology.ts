@@ -3,7 +3,8 @@ import { hierarchy, pack, treemap, treemapSquarify, type HierarchyNode } from 'd
 // Web 服务拓扑视图的数据类型与纯函数：布局、链路高亮、IP 筛选与打码。
 // 组件 WebTopology.vue 只负责渲染与交互，这里的函数可在 node --test 中直接测试。
 
-// Rate 为节点速率：qps、bps（下行）、upBps（上行）为最近 window 秒均值，qps60 为 60 秒均值。
+// Rate 为节点速率：qps、bps（发给访客；后端节点为后端返回）、upBps（访客发来；后端节点为发给后端）为最近 window 秒均值，qps60 为 60 秒均值。
+// 界面按 Gately 视角显示：发出为上行、收到为下行。
 // 旧版本录制的回放帧没有 upBps
 export interface Rate {
   qps: number

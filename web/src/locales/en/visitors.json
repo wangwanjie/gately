@@ -70,7 +70,7 @@
   "lastSeen": "Last visit",
   "totalRequests": "Total requests",
   "totalDenied": "Blocked",
-  "traffic": "Downloaded",
+  "traffic": "Sent",
   "closed": "Connection closed (444)",
   "statusTitle": "Response status",
   "denyReasons": "Block reasons",
