@@ -25,7 +25,7 @@ func TestNormalizePattern(t *testing.T) {
 	}
 	for _, raw := range []string{
 		"api-*", "api-**.example.com", "api-*.x*.com", "*.*", "a.*.*", "-api*.example.com", "a.-*.com",
-		"api*-.example.com", "api-*.1.2.3.4", "192.168.1.*", "10.*.0.1", "a.*.example.com:443", "a..*", "api-*.example.com:443", "api-*.example.com/path",
+		"api*-.example.com", "api-*.1.2.3.4", "192.168.1.*", "192.168.*", "10.*", "1.*", "10.*.0.1", "a.*.example.com:443", "a..*", "api-*.example.com:443", "api-*.example.com/path",
 		"api-*.example.com?x", "api-*.example..com", "中*.example.com", strings.Repeat("x", 63) + "*.example.com",
 		"api-*." + strings.Repeat("a.", 125) + "com",
 	} {

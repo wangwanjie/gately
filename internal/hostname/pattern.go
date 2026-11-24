@@ -49,6 +49,10 @@ func NormalizePattern(d string) (string, bool) {
 	if _, err := netip.ParseAddr(strings.Replace(strings.Join(labels, "."), "*", "0", 1)); err == nil {
 		return "", false
 	}
+	// 末尾整段通配前全是数字段（192.168.*、10.*）同样是 IP 前缀，会把按 IP 访问的请求路由到该站点
+	if idx == len(labels)-1 && labels[idx] == "*" && allDigits(labels[:idx]) {
+		return "", false
+	}
 	out := strings.Join(labels, ".")
 	if len(out) > maxLen {
 		return "", false
@@ -101,4 +105,14 @@ func CapturePattern(pattern, host string) (string, bool) {
 		return "", false
 	}
 	return capture, true
+}
+
+// allDigits 判断各段是否都只由数字组成。
+func allDigits(labels []string) bool {
+	for _, l := range labels {
+		if l == "" || strings.Trim(l, "0123456789") != "" {
+			return false
+		}
+	}
+	return true
 }
