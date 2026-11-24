@@ -56,6 +56,7 @@ func init() {
 	demoFull["/api/perf/overview"] = demoPerfOverview
 	demoFull["/api/perf/sites"] = demoPerfSites
 	demoFull["/api/perf/processes"] = demoPerfProcesses
+	demoFull["/api/system/public-ip"] = demoPublicIP
 }
 
 // ---- 中间件 ----
@@ -921,4 +922,9 @@ func (a *App) demoEnabledBans() int {
 		}
 	}
 	return n
+}
+
+// demoPublicIP 用文档地址代替查询到的公网地址：演示实例的只读账号不能看到服务器的真实地址。
+func demoPublicIP(_ *App, _ *http.Request) any {
+	return publicIPResult{IPv4: "203.0.113.10", IPv6: "2001:db8::10", CheckedAt: time.Now()}
 }

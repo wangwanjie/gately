@@ -7,6 +7,7 @@ import (
 	"sort"
 	"strings"
 	"testing"
+	"time"
 )
 
 // demoGet 以只读演示访客读取接口，解析 JSON。
@@ -187,5 +188,20 @@ func TestDemoValuesDeterministic(t *testing.T) {
 		if w := demoWave(k, 60, 1, 3); w < 1 || w > 3 {
 			t.Errorf("demoWave(%q) 超出范围: %v", k, w)
 		}
+	}
+}
+
+// 演示模式下公网地址用文档地址代替：管理员查过或自检写入的真实地址不能被演示账号读到。
+func TestDemoPublicIPHidesRealAddress(t *testing.T) {
+	a, srv := newDemoApp(t, 0)
+	a.publicIP.store(publicIPResult{IPv4: "198.51.100.77", IPv6: "2400:1::77", CheckedAt: time.Now()})
+	c := demoClient()
+	if code, body := doJSON(t, c, "POST", srv.URL+"/api/login/demo", nil); code != 200 {
+		t.Fatalf("一键进入失败 %d %s", code, body)
+	}
+	v := demoGet(t, c, srv.URL+"/api/system/public-ip")
+	m, _ := v.(map[string]any)
+	if m["ipv4"] != "203.0.113.10" || m["ipv6"] != "2001:db8::10" {
+		t.Fatalf("演示模式返回了 %v", v)
 	}
 }
