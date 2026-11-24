@@ -49,7 +49,7 @@
             <span v-else class="route-meta">{{ t('protoRoute.defaultTargetNone', { rejected: it.item.stats.rejected ?? 0 }) }}</span>
           </Field>
           <Field :label="t('protoRoute.connections')">{{ t('protoRoute.connectionsValue', { active: it.item.stats.activeConns, total: it.item.stats.totalConns }) }}</Field>
-          <Field :label="t('protoRoute.traffic')">↑ {{ formatBytes(it.item.stats.bytesIn) }} · ↓ {{ formatBytes(it.item.stats.bytesOut) }}</Field>
+          <Field :label="t('protoRoute.traffic')">↑ {{ formatBytes(it.item.stats.bytesOut) }} · ↓ {{ formatBytes(it.item.stats.bytesIn) }}</Field>
           <Field v-if="it.item.ipMode" :label="t('ipAccessEditor.title')">{{ it.item.ipMode === 'whitelist' ? t('ipAccessEditor.whitelist') : t('ipAccessEditor.blacklist') }}</Field>
           <Field v-if="it.item.ipDenyList?.length || it.item.ipDenySets?.length" :label="t('ipAccessEditor.ipDeny')" mono>{{ (it.item.ipDenyList?.length ?? 0) + (it.item.ipDenySets?.length ?? 0) }}</Field>
           <Field v-if="it.item.knock" :label="t('ipAccessEditor.knock')">{{ knockRuleName(it.item.knock) }}</Field>
