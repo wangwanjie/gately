@@ -2830,6 +2830,7 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | --- | --- |
 | `altBadge` | boolean |
 | `altClick` | string |
+| `authGroups` | Array von string |
 | `background` | string |
 | `bgBlur` | integer |
 | `bgDim` | integer |

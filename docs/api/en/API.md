@@ -2830,6 +2830,7 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | --- | --- |
 | `altBadge` | boolean |
 | `altClick` | string |
+| `authGroups` | Array of string |
 | `background` | string |
 | `bgBlur` | integer |
 | `bgDim` | integer |

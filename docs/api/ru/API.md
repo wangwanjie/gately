@@ -2830,6 +2830,7 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | --- | --- |
 | `altBadge` | boolean |
 | `altClick` | string |
+| `authGroups` | Массив из string |
 | `background` | string |
 | `bgBlur` | integer |
 | `bgDim` | integer |

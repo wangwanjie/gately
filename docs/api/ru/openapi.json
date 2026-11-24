@@ -4316,6 +4316,12 @@
           "altClick": {
             "type": "string"
           },
+          "authGroups": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
           "background": {
             "type": "string"
           },

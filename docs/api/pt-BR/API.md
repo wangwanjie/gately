@@ -2830,6 +2830,7 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | --- | --- |
 | `altBadge` | boolean |
 | `altClick` | string |
+| `authGroups` | Array de string |
 | `background` | string |
 | `bgBlur` | integer |
 | `bgDim` | integer |

@@ -2830,6 +2830,7 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | --- | --- |
 | `altBadge` | boolean |
 | `altClick` | string |
+| `authGroups` | Lista de string |
 | `background` | string |
 | `bgBlur` | integer |
 | `bgDim` | integer |

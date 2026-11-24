@@ -2830,6 +2830,7 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | --- | --- |
 | `altBadge` | boolean |
 | `altClick` | string |
+| `authGroups` | Tableau de string |
 | `background` | string |
 | `bgBlur` | integer |
 | `bgDim` | integer |
