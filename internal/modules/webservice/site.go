@@ -730,8 +730,12 @@ func (h *siteHandler) newProxy(s Site, p *pool, strip string) http.Handler {
 			if resp.StatusCode == http.StatusSwitchingProtocols && h.auth != nil && h.auth.marker.get() != nil {
 				resp.Header.Del(authMarkerHeader)
 			}
+			att := attemptFrom(resp.Request.Context())
+			if att != nil {
+				fixRedirectScheme(resp.Header, att.in)
+			}
 			applyHeaders(resp.Header, s.ResponseHeaders)
-			if att := attemptFrom(resp.Request.Context()); att != nil {
+			if att != nil {
 				up := att.current()
 				p.ok(up)
 				// 统计后端返回的响应体字节数。101 协议升级时 ReverseProxy 要求响应体是可读写的连接，包装会破坏升级，不统计

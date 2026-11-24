@@ -125,6 +125,8 @@ Combinações comuns:
 - O backend é um serviço gRPC em porta sem TLS (por ex. NetBird): ative «HTTP/2 sem criptografia (h2c) para backends http://» e use o modo TCP na verificação de saúde.
 - Gately público só para WAF, Gately da rede local cuida do login: sem autenticação no site público, ative "Encaminhar cookies de login do Gately" e, para o IP real, também "Enviar PROXY v2 ao backend", com o Gately local aceitando o protocolo PROXY e confiando no Gately público.
 
+Quando o visitante usa HTTPS e o backend redireciona (`Location`) para um endereço absoluto `http://` no mesmo domínio e porta, o Gately o troca por `https://` antes de entregá-lo ao navegador, como o `proxy_redirect http:// https://` do nginx. Assim, backends que não leem `X-Forwarded-Proto` (como apps Spring Boot / Tomcat sem tratamento de cabeçalhos encaminhados) continuam em HTTPS após callbacks de login e redirecionamentos semelhantes; redirecionamentos para outros domínios ou portas passam sem alteração.
+
 ### Cabeçalhos de requisição e de resposta {#headers}
 
 Configurados na aba "Cabeçalhos" do editor de sites. Cabeçalhos de requisição vão para o backend e só valem para sites de proxy reverso; cabeçalhos de resposta voltam ao cliente e valem para sites de qualquer tipo.

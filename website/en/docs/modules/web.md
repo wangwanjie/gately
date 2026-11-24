@@ -125,6 +125,8 @@ Common combinations:
 - The backend is a gRPC service on a plain port (e.g. NetBird): turn on "Use HTTP/2 cleartext (h2c) for http:// backends" and use TCP mode for the health check.
 - Public Gately only for WAF, LAN Gately handles sign-in: no authentication on the public site, turn on "Forward Gately sign-in cookies", and for real client IPs also "Send PROXY v2 to the backend", with the LAN Gately accepting the PROXY protocol and trusting the public Gately.
 
+When the visitor uses HTTPS and the backend redirects (`Location`) to an absolute `http://` address on the same domain and port, Gately changes it to `https://` before passing it to the browser, like nginx's `proxy_redirect http:// https://`. Backends that ignore `X-Forwarded-Proto` (such as Spring Boot / Tomcat apps without forwarded-header handling) therefore stay on HTTPS after sign-in callbacks and similar redirects; redirects to other domains or ports are passed through unchanged.
+
 ### Request and response headers {#headers}
 
 Configured on the "Headers" tab of the site editor. Request headers are sent to the backend and only apply to reverse proxy sites; response headers are returned to the client and apply to sites of every type.

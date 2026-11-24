@@ -125,6 +125,8 @@ Typische Kombinationen:
 - Das Backend ist ein gRPC-Dienst auf einem Klartext-Port (z. B. NetBird): „Unverschlüsseltes HTTP/2 (h2c) für http://-Backends“ aktivieren und für den Health-Check den TCP-Modus wählen.
 - Öffentliches Gately nur für die WAF, Gately im LAN übernimmt die Anmeldung: keine Authentifizierung auf der öffentlichen Site, „Gately-Anmelde-Cookies weiterleiten“ einschalten und für echte Client-IPs zusätzlich „PROXY v2 an das Backend senden“; das Gately im LAN nimmt das PROXY-Protokoll an und vertraut dem öffentlichen Gately.
 
+Greift der Besucher per HTTPS zu und leitet das Backend (`Location`) auf eine absolute `http://`-Adresse mit derselben Domain und demselben Port um, ändert Gately sie in `https://`, bevor sie an den Browser geht – wie nginx' `proxy_redirect http:// https://`. Backends, die `X-Forwarded-Proto` nicht auswerten (etwa Spring-Boot-/Tomcat-Apps ohne Forwarded-Header-Verarbeitung), bleiben so nach Anmelde-Callbacks und ähnlichen Weiterleitungen bei HTTPS; Weiterleitungen auf andere Domains oder Ports bleiben unverändert.
+
 ### Anfrage- und Antwort-Header {#headers}
 
 Werden im Tab „Header“ des Site-Editors eingestellt. Anfrage-Header gehen an das Backend und wirken nur bei Reverse-Proxy-Sites; Antwort-Header gehen an den Client und wirken bei Sites jedes Typs.

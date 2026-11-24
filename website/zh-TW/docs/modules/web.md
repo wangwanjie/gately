@@ -125,6 +125,8 @@
 - 後端是明文連接埠上的 gRPC 服務（如 NetBird）：勾選「http:// 後端使用明文 HTTP/2（h2c）」，健康檢查選 TCP 模式。
 - 公網 Gately 只做 WAF、內網 Gately 負責登入：公網站點不開認證，開「轉發 Gately 登入 Cookie」，需要真實 IP 時再開「向後端傳送 PROXY v2」，並在內網 Gately 上接收 PROXY 協定、把公網 Gately 加入可信來源。
 
+訪客以 HTTPS 存取時，後端回傳的跳轉（`Location`）如果是指向同一網域和連接埠的 `http://` 絕對位址，Gately 會改成 `https://` 再交給瀏覽器，相當於 nginx 的 `proxy_redirect http:// https://`。不讀取 `X-Forwarded-Proto` 的後端（如未開啟轉發標頭處理的 Spring Boot / Tomcat 應用）在登入回呼等跳轉後因此不會掉到 http；指向其他網域或其他連接埠的跳轉原樣保留。
+
 ### 請求標頭與回應標頭 {#headers}
 
 在站點編輯框的「請求標頭」頁設定。請求標頭送往後端，只對反向代理站點生效；回應標頭回傳給用戶端，對所有類型的站點生效。

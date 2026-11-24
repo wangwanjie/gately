@@ -125,6 +125,8 @@ Combinaisons courantes :
 - Le backend est un service gRPC sur un port en clair (par ex. NetBird) : activez « HTTP/2 en clair (h2c) pour les backends http:// » et choisissez le mode TCP pour la vérification d'état.
 - Gately public uniquement pour le WAF, Gately du réseau local chargé de la connexion : pas d'authentification sur le site public, activez « Transmettre les cookies de connexion Gately » et, pour l'IP réelle, « Envoyer PROXY v2 au backend », le Gately local acceptant le protocole PROXY et faisant confiance au Gately public.
 
+Lorsque le visiteur utilise HTTPS et que le backend redirige (`Location`) vers une adresse absolue `http://` sur le même domaine et le même port, Gately la remplace par `https://` avant de la transmettre au navigateur, comme `proxy_redirect http:// https://` de nginx. Les backends qui ignorent `X-Forwarded-Proto` (par exemple les applications Spring Boot / Tomcat sans gestion des en-têtes transférés) restent ainsi en HTTPS après les rappels de connexion et redirections similaires ; les redirections vers d'autres domaines ou ports sont transmises telles quelles.
+
 ### En-têtes de requête et de réponse {#headers}
 
 Se règlent dans l'onglet « En-têtes » de l'éditeur de site. Les en-têtes de requête sont envoyés au backend et ne s'appliquent qu'aux sites en proxy inverse ; les en-têtes de réponse sont renvoyés au client et s'appliquent à tous les types de site.

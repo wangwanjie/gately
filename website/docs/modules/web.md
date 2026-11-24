@@ -125,6 +125,8 @@
 - 后端是明文端口上的 gRPC 服务（如 NetBird）：勾选“http:// 后端使用明文 HTTP/2（h2c）”，健康检查选 TCP 模式。
 - 公网 Gately 只做 WAF、内网 Gately 负责登录：公网站点不开认证，开「转发 Gately 登录 Cookie」，需要真实 IP 时再开「向后端发送 PROXY v2」，并在内网 Gately 上接收 PROXY 协议、把公网 Gately 加入可信来源。
 
+访客以 HTTPS 访问时，后端返回的跳转（`Location`）如果是指向同一域名和端口的 `http://` 绝对地址，Gately 会改成 `https://` 再交给浏览器，相当于 nginx 的 `proxy_redirect http:// https://`。不读取 `X-Forwarded-Proto` 的后端（如未开启转发头处理的 Spring Boot / Tomcat 应用）在登录回调等跳转后因此不会掉到 http；指向其他域名或其他端口的跳转原样保留。
+
 ### 请求头与响应头 {#headers}
 
 在站点编辑框的「请求头」页配置。请求头发往后端，只对反向代理站点生效；响应头返回给客户端，对所有类型的站点生效。
