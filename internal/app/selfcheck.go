@@ -42,11 +42,13 @@ func (a *App) runSelfCheck(ctx context.Context) []module.CheckResult {
 
 	// 公网地址（IPv4 / IPv6）并行查询，后续检查依赖它们
 	var env module.CheckEnv
+	var e4, e6 error
 	wg.Add(2)
 	go func() {
 		defer wg.Done()
 		ip, err := ipsource.Get(ctx, ipsource.Source{Enable: true, Type: ipsource.TypeURL, URLs: ipsource.DefaultIPv4URLs}, ipsource.IPv4)
 		if err != nil {
+			e4 = err
 			add(module.CheckResult{ID: "net.publicIPv4", Status: module.CheckFail, Params: map[string]string{"error": err.Error()}})
 			return
 		}
@@ -57,6 +59,7 @@ func (a *App) runSelfCheck(ctx context.Context) []module.CheckResult {
 		defer wg.Done()
 		ip, err := ipsource.Get(ctx, ipsource.Source{Enable: true, Type: ipsource.TypeURL, URLs: ipsource.DefaultIPv6URLs}, ipsource.IPv6)
 		if err != nil {
+			e6 = err
 			add(module.CheckResult{ID: "net.publicIPv6", Status: module.CheckInfo})
 			return
 		}
@@ -64,9 +67,9 @@ func (a *App) runSelfCheck(ctx context.Context) []module.CheckResult {
 		add(module.CheckResult{ID: "net.publicIPv6", Status: module.CheckOK, Params: map[string]string{"ip": ip.String()}})
 	}()
 	wg.Wait()
-	// 自检查到的地址同时供概览展示，免得再点一次「获取公网 IP」
+	// 自检查到的地址同时供概览展示，免得再点一次「获取公网 IP」；没查到的地址族带上原因，与手动查询的结果一致
 	if env.PublicIPv4 != "" || env.PublicIPv6 != "" {
-		a.publicIP.store(publicIPResult{IPv4: env.PublicIPv4, IPv6: env.PublicIPv6, CheckedAt: time.Now()})
+		a.publicIP.store(newPublicIPResult(env.PublicIPv4, env.PublicIPv6, e4, e6))
 	}
 
 	// 本机网卡与 NAT 情况

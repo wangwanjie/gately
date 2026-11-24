@@ -95,16 +95,7 @@ func (c *publicIPCache) refresh(ctx context.Context) publicIPResult {
 	}()
 	wg.Wait()
 
-	res := publicIPResult{IPv4: v4, IPv6: v6, CheckedAt: time.Now()}
-	if e4 != nil || e6 != nil {
-		res.Errors = map[string]string{}
-		if e4 != nil {
-			res.Errors["ipv4"] = e4.Error()
-		}
-		if e6 != nil {
-			res.Errors["ipv6"] = e6.Error()
-		}
-	}
+	res := newPublicIPResult(v4, v6, e4, e6)
 	c.mu.Lock()
 	c.last = res
 	c.running = nil
@@ -121,4 +112,19 @@ func (a *App) handlePublicIP(w http.ResponseWriter, r *http.Request) {
 // handlePublicIPRefresh 立即查询本机公网地址（访问公共查询服务），只允许管理员登录会话调用。
 func (a *App) handlePublicIPRefresh(w http.ResponseWriter, r *http.Request) {
 	httpx.OK(w, a.publicIP.refresh(r.Context()))
+}
+
+// newPublicIPResult 汇总一次公网地址查询的结果，失败的地址族记下原因。
+func newPublicIPResult(v4, v6 string, e4, e6 error) publicIPResult {
+	res := publicIPResult{IPv4: v4, IPv6: v6, CheckedAt: time.Now()}
+	if e4 != nil || e6 != nil {
+		res.Errors = map[string]string{}
+		if e4 != nil {
+			res.Errors["ipv4"] = e4.Error()
+		}
+		if e6 != nil {
+			res.Errors["ipv6"] = e6.Error()
+		}
+	}
+	return res
 }

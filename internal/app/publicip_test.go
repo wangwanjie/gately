@@ -96,3 +96,14 @@ func TestPublicIPScopes(t *testing.T) {
 		t.Fatalf("立即查询应只允许登录会话: %q", need)
 	}
 }
+
+// 自检与手动查询共用 newPublicIPResult：查到的地址族保留地址，没查到的记下原因，概览悬停能看到。
+func TestNewPublicIPResult(t *testing.T) {
+	r := newPublicIPResult("203.0.113.5", "", nil, errors.New("timeout"))
+	if r.IPv4 != "203.0.113.5" || r.IPv6 != "" || r.Errors["ipv6"] != "timeout" || r.Errors["ipv4"] != "" || r.CheckedAt.IsZero() {
+		t.Fatalf("unexpected result %+v", r)
+	}
+	if r := newPublicIPResult("203.0.113.5", "2001:db8::1", nil, nil); r.Errors != nil {
+		t.Fatalf("errors should be nil when both found: %+v", r)
+	}
+}
