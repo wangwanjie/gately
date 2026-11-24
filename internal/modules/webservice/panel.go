@@ -179,6 +179,9 @@ type Panel struct {
 	// LANCIDRs 为额外视为内网的访客地址（IP 或 CIDR）。回环、私有地址（10/8、172.16/12、192.168/16、fc00::/7）
 	// 与链路本地地址始终视为内网；经 Tailscale、ZeroTier 等组网访问时可在这里加上对应网段
 	LANCIDRs []string `json:"lanCidrs"`
+	// AuthGroups 为只对已登录访客显示的链接分组名称（空字符串表示未分组）：分组中的链接都按“登录后可见”处理，
+	// 之后加入这些分组的链接自动跟随，不必逐个勾选。保存时去掉已没有链接的分组
+	AuthGroups []string `json:"authGroups"`
 	// Links 为面板中的链接，按列表顺序显示；分组按首次出现的顺序排列
 	Links  []PanelLink `json:"links"`
 	Remark string      `json:"remark"`
@@ -209,7 +212,8 @@ type PanelLink struct {
 	HideName bool `json:"hideName"`
 	HideDesc bool `json:"hideDesc"`
 	// AuthOnly 为 true 时只对已登录的访客显示：未登录时页面中没有该链接（地址、名称都不下发）。
-	// 站点需启用网页认证并设为“仅对指定路径认证”，让未登录访客也能看到面板；没有启用认证的站点上这类链接始终不显示
+	// 站点需启用网页认证并设为“仅对指定路径认证”，让未登录访客也能看到面板；没有启用认证的站点上这类链接始终不显示。
+	// 所在分组列在面板的 AuthGroups 中时，不勾选也按登录后可见处理
 	AuthOnly bool `json:"authOnly"`
 	// Hide 为 true 时不在页面中显示
 	Hide bool `json:"hide"`
@@ -235,6 +239,7 @@ type PanelEngine struct {
 // 载入面板库时不能写到配置或正在服务的面板共用的数组上，否则与访客请求并发读写
 func (p Panel) clone() Panel {
 	p.LANCIDRs = slices.Clone(p.LANCIDRs)
+	p.AuthGroups = slices.Clone(p.AuthGroups)
 	p.Engines = slices.Clone(p.Engines)
 	p.Links = slices.Clone(p.Links)
 	for i := range p.Links {
@@ -569,10 +574,40 @@ func (p *Panel) validate() error {
 		}
 		total += n
 	}
+	if err := p.normalizeAuthGroups(); err != nil {
+		return err
+	}
 	if total > maxPanelIconsTotal {
 		return fmt.Errorf("面板中的图标合计不能超过 %d MB，请改用图标地址或更小的图片", maxPanelIconsTotal>>20)
 	}
 	return nil
+}
+
+// normalizeAuthGroups 规范化“登录后可见”的分组：去掉首尾空白与重复项，只保留仍有链接的分组，
+// 避免分组改名或清空后留下的旧名称在以后新建同名分组时意外生效。须在链接校验（规范化分组名）之后调用
+func (p *Panel) normalizeAuthGroups() error {
+	used := map[string]bool{}
+	for _, l := range p.Links {
+		used[l.Group] = true
+	}
+	var out []string
+	seen := map[string]bool{}
+	for _, g := range p.AuthGroups {
+		if err := crud.NormalizeGroup(&g); err != nil {
+			return err
+		}
+		if used[g] && !seen[g] {
+			seen[g] = true
+			out = append(out, g)
+		}
+	}
+	p.AuthGroups = out
+	return nil
+}
+
+// authOnly 判断链接是否只对已登录访客显示：链接自身勾选了“登录后可见”，或所在分组设为登录后可见
+func (p *Panel) authOnly(l *PanelLink) bool {
+	return l.AuthOnly || slices.Contains(p.AuthGroups, l.Group)
 }
 
 // validateLayout 校验链接样式与页面布局：数值为 0 表示默认，其余需在范围内。
@@ -853,7 +888,8 @@ func (p *compiledPanel) view(q redirectRequest, lan, forced, preview, authed boo
 		if l.Hide {
 			continue
 		}
-		if l.AuthOnly && !authed {
+		authOnly := p.authOnly(&l)
+		if authOnly && !authed {
 			v.Hidden++
 			continue
 		}
@@ -865,7 +901,7 @@ func (p *compiledPanel) view(q redirectRequest, lan, forced, preview, authed boo
 			raw = l.LANURL
 		}
 		// 锁标记只出现在已登录访客的页面上（未登录时这类链接不下发），面板可设置不显示
-		link := webpage.PanelLink{Name: l.Name, Description: l.Description, NewTab: !l.SameTab, Icon: panelIcon(l.Icon, l.Color), Locked: l.AuthOnly && !p.HideLock,
+		link := webpage.PanelLink{Name: l.Name, Description: l.Description, NewTab: !l.SameTab, Icon: panelIcon(l.Icon, l.Color), Locked: authOnly && !p.HideLock,
 			Small: l.Size == PanelSizeSmall, Wide: l.Size == PanelSizeWide, Big: l.Size == PanelSizeBig, HideName: l.HideName, HideDesc: l.HideDesc}
 		// 变量暂无值（例如 STUN 规则还没有公网地址）或展开后不再是允许的地址时，卡片显示为暂不可用
 		if href, ok := expandPanelURL(raw, q); ok {

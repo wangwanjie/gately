@@ -157,3 +157,43 @@ func TestPanelAuthOnlyEmptyHint(t *testing.T) {
 		t.Fatal("应只给出登录提示")
 	}
 }
+
+// 分组登录后可见：分组中的链接（包括之后加入的）都按登录后可见处理；未分组也可以设置；
+// 保存时去掉重复项与已没有链接的分组。
+func TestPanelAuthGroups(t *testing.T) {
+	p := Panel{Key: "p1", Name: "家里", Enable: true,
+		AuthGroups: []string{" 内部 ", "内部", "已删除的分组", ""},
+		Links: []PanelLink{
+			{Name: "公开站", Group: "公开", URL: "https://public.example.com"},
+			{Name: "内部站", Group: "内部", URL: "https://secret.example.com"},
+			{Name: "新加入的内部站", Group: " 内部", URL: "https://new.example.com"},
+			{Name: "未分组站", URL: "https://plain.example.com"},
+		}}
+	if err := p.validate(); err != nil {
+		t.Fatal(err)
+	}
+	if len(p.AuthGroups) != 2 || p.AuthGroups[0] != "内部" || p.AuthGroups[1] != "" {
+		t.Fatalf("规范化后的分组: %q", p.AuthGroups)
+	}
+	cp := &compiledPanel{Panel: p}
+	q := redirectRequest{r: httptest.NewRequest("GET", "http://home.nav.test/", nil)}
+	v := cp.view(q, false, false, false, false)
+	if v.Hidden != 3 || len(v.Groups) != 1 || v.Groups[0].Name != "公开" || len(v.Groups[0].Links) != 1 {
+		t.Fatalf("未登录只应看到公开分组: %+v", v)
+	}
+	v = cp.view(q, false, false, false, true)
+	if v.Hidden != 0 || len(v.Groups) != 3 {
+		t.Fatalf("已登录: %+v", v)
+	}
+	if v.Groups[0].Links[0].Locked || !v.Groups[1].Links[0].Locked || !v.Groups[1].Links[1].Locked || !v.Groups[2].Links[0].Locked {
+		t.Fatalf("分组内的链接应带锁标记: %+v", v.Groups)
+	}
+	// 分组里的链接全部移走后，旧分组名不再保留
+	p.Links = p.Links[:1]
+	if err := p.validate(); err != nil {
+		t.Fatal(err)
+	}
+	if len(p.AuthGroups) != 0 {
+		t.Fatalf("没有链接的分组应去掉: %q", p.AuthGroups)
+	}
+}
