@@ -125,6 +125,8 @@ export interface Panel {
   showLang: boolean
   hideSkin: boolean
   lanCidrs: string[]
+  // authGroups 为只对已登录访客显示的链接分组（空字符串为未分组）：分组中的链接、包括之后加入的，都按登录后可见处理
+  authGroups: string[]
   links: PanelLink[]
   remark: string
 }
@@ -224,7 +226,7 @@ export function moveEngine(engines: PanelEngine[], def: number, i: number, delta
 }
 
 export function emptyPanel(): Panel {
-  return { name: '', enable: true, group: '', title: '', subtitle: '', icon: '', tabTitle: '', favicon: '', description: '', footer: '', footerUrl: '', hideFooter: false, theme: '', skin: '', engines: [], defaultEngine: 0, background: '', bgDim: 0, bgBlur: 0, cardStyle: '', iconSize: 0, columns: 0, mobileColumns: 0, gap: 0, maxWidth: 0, groupCount: false, altBadge: false, altClick: '', hideAppName: false, hideLock: false, showLang: false, hideSkin: false, lanCidrs: [], links: [], remark: '' }
+  return { name: '', enable: true, group: '', title: '', subtitle: '', icon: '', tabTitle: '', favicon: '', description: '', footer: '', footerUrl: '', hideFooter: false, theme: '', skin: '', engines: [], defaultEngine: 0, background: '', bgDim: 0, bgBlur: 0, cardStyle: '', iconSize: 0, columns: 0, mobileColumns: 0, gap: 0, maxWidth: 0, groupCount: false, altBadge: false, altClick: '', hideAppName: false, hideLock: false, showLang: false, hideSkin: false, lanCidrs: [], authGroups: [], links: [], remark: '' }
 }
 
 export function emptyLink(group = ''): PanelLink {
@@ -267,6 +269,7 @@ export function toPanel(v: PanelView | Panel): Panel {
     showLang: v.showLang ?? false,
     hideSkin: v.hideSkin ?? false,
     lanCidrs: [...(v.lanCidrs ?? [])],
+    authGroups: [...(v.authGroups ?? [])],
     links: (v.links ?? []).map((l) => ({ ...emptyLink(), ...l, alts: (l.alts ?? []).map((a) => ({ name: a.name, url: a.url })) })),
     remark: v.remark ?? '',
   }

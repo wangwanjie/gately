@@ -140,7 +140,21 @@
                 <FolderClosed :size="14" />
                 <span class="group-name">{{ g.name || t('panels.ungrouped') }}</span>
                 <span class="group-count">{{ g.items.length }}</span>
+                <el-tag v-if="isAuthGroup(g.name)" size="small" type="warning" data-test="group-auth-tag"><Lock :size="11" /> {{ t('panels.authOnlyTag') }}</el-tag>
                 <span class="flex1" />
+                <!-- 分组可见性：设为登录后可见后，分组中的链接（包括之后加入的）都只对已登录访客显示 -->
+                <el-button
+                  v-if="!isReadonly"
+                  text
+                  size="small"
+                  :type="isAuthGroup(g.name) ? 'warning' : undefined"
+                  :icon="isAuthGroup(g.name) ? Lock : LockOpen"
+                  :aria-pressed="isAuthGroup(g.name)"
+                  :aria-label="isAuthGroup(g.name) ? t('panels.groupAuthOff') : t('panels.groupAuthOn')"
+                  :title="isAuthGroup(g.name) ? t('panels.groupAuthOff') : t('panels.groupAuthOn')"
+                  data-test="group-auth"
+                  @click="toggleAuthGroup(g.name)"
+                />
                 <template v-if="!isReadonly && linkGroups.length > 1">
                   <el-button text size="small" :icon="ArrowUp" :disabled="gi === 0" :aria-label="t('panels.moveUp')" :title="t('panels.groupUp')" @click="shiftGroup(g.name, -1)" />
                   <el-button text size="small" :icon="ArrowDown" :disabled="gi === linkGroups.length - 1" :aria-label="t('panels.moveDown')" :title="t('panels.groupDown')" @click="shiftGroup(g.name, 1)" />
@@ -174,7 +188,7 @@
                   <div class="link-name">
                     <span class="ellipsis">{{ editing.links[i].name }}</span>
                     <el-tag v-if="editing.links[i].hide" size="small" type="info">{{ t('panels.hiddenTag') }}</el-tag>
-                    <el-tag v-if="editing.links[i].authOnly" size="small" type="warning" data-test="auth-tag"><Lock :size="11" /> {{ t('panels.authOnlyTag') }}</el-tag>
+                    <el-tag v-if="editing.links[i].authOnly && !isAuthGroup(editing.links[i].group)" size="small" type="warning" data-test="auth-tag"><Lock :size="11" /> {{ t('panels.authOnlyTag') }}</el-tag>
                     <el-tag v-if="editing.links[i].size" size="small" type="info" data-test="size-tag">{{ sizeLabel(sizeChoice(editing.links[i].size, editing.cardStyle)) }}</el-tag>
                     <el-tag v-if="editing.links[i].sameTab" size="small" type="info">{{ t('panels.sameTabTag') }}</el-tag>
                     <el-tag v-if="editing.links[i].alts?.length" size="small" :title="editing.links[i].alts.map((a) => a.name).join(' / ')">{{ t('panels.altCount', { n: editing.links[i].alts.length }) }}</el-tag>
@@ -478,8 +492,11 @@
         <el-form-item :label="t('panels.options')">
           <el-checkbox v-model="link.sameTab">{{ t('panels.sameTab') }}</el-checkbox>
           <el-checkbox v-model="link.hide">{{ t('panels.hide') }}</el-checkbox>
-          <el-checkbox v-model="link.authOnly" data-test="link-auth-only">{{ t('panels.authOnly') }}</el-checkbox>
-          <div v-if="link.authOnly" class="form-help auth-help">{{ t('panels.authOnlyHelp') }}</div>
+          <!-- 所在分组已设为登录后可见时链接自动跟随，复选框显示为勾选且不可改 -->
+          <el-checkbox v-if="isAuthGroup(link.group)" :model-value="true" disabled data-test="link-auth-only">{{ t('panels.authOnly') }}</el-checkbox>
+          <el-checkbox v-else v-model="link.authOnly" data-test="link-auth-only">{{ t('panels.authOnly') }}</el-checkbox>
+          <div v-if="isAuthGroup(link.group)" class="form-help auth-help" data-test="link-auth-group-help">{{ t('panels.authOnlyByGroup', { name: link.group.trim() || t('panels.ungrouped') }) }}</div>
+          <div v-if="link.authOnly || isAuthGroup(link.group)" class="form-help auth-help">{{ t('panels.authOnlyHelp') }}</div>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -520,7 +537,7 @@
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
-import { ArrowDown, ArrowUp, CopyPlus, RotateCcw, Eye, FileInput, FolderClosed, FolderInput, GripVertical, Import, LayoutGrid, ListChecks, Lock, Pencil, Plus, RefreshCw, Search, Trash2 } from 'lucide-vue-next'
+import { ArrowDown, ArrowUp, CopyPlus, RotateCcw, Eye, FileInput, FolderClosed, FolderInput, GripVertical, Import, LayoutGrid, ListChecks, Lock, LockOpen, Pencil, Plus, RefreshCw, Search, Trash2 } from 'lucide-vue-next'
 import PageHeader from '../components/PageHeader.vue'
 import LoadError from '../components/LoadError.vue'
 import EntityCard from '../components/EntityCard.vue'
@@ -991,6 +1008,17 @@ function shiftLink(i: number, delta: -1 | 1) {
 }
 function shiftGroup(name: string, delta: -1 | 1) {
   editing.value.links = moveGroup(editing.value.links, name, delta)
+}
+
+// isAuthGroup 判断链接分组是否设为登录后可见（分组名按去掉首尾空白比较，与服务端一致）
+function isAuthGroup(name: string) {
+  return editing.value.authGroups.includes(name.trim())
+}
+// toggleAuthGroup 切换分组可见性；分组改名或清空后留下的旧名称由服务端保存时去掉
+function toggleAuthGroup(name: string) {
+  const g = name.trim()
+  const list = editing.value.authGroups
+  editing.value.authGroups = list.includes(g) ? list.filter((x) => x !== g) : [...list, g]
 }
 
 async function removeLink(i: number) {
