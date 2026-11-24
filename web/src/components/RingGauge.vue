@@ -59,15 +59,12 @@ const level = computed(() => {
 }
 .bar.normal {
   stroke: var(--el-color-primary);
-  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--el-color-primary) 55%, transparent));
 }
 .bar.warning {
   stroke: var(--el-color-warning);
-  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--el-color-warning) 55%, transparent));
 }
 .bar.danger {
   stroke: var(--el-color-danger);
-  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--el-color-danger) 55%, transparent));
 }
 .center {
   position: absolute;

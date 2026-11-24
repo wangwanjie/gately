@@ -561,7 +561,6 @@ onBeforeUnmount(() => {
   justify-content: center;
   color: #fff;
   background: linear-gradient(135deg, var(--el-color-primary), var(--el-color-primary-dark-2));
-  box-shadow: 0 6px 16px -6px color-mix(in srgb, var(--el-color-primary) 60%, transparent);
   flex-shrink: 0;
 }
 .hero-text {
