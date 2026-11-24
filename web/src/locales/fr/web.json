@@ -58,7 +58,7 @@
   "tabHeaders": "En-têtes",
   "domains": "Domaines",
   "domainsRequired": "Saisissez au moins un domaine",
-  "domainsPlaceholder": "Un par ligne ; *.example.com, api-*.example.com et * sont pris en charge",
+  "domainsPlaceholder": "Un par ligne ; *.example.com, api-*.example.com, audiobook.*.example.com, audiobook.* et * sont pris en charge",
   "type": "Type",
   "typeProxy": "Proxy inverse",
   "typeRedirect": "Redirection",

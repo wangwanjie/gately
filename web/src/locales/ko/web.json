@@ -58,7 +58,7 @@
   "tabHeaders": "헤더",
   "domains": "도메인",
   "domainsRequired": "도메인을 하나 이상 입력하세요",
-  "domainsPlaceholder": "한 줄에 하나씩, *.example.com, api-*.example.com 및 * 지원",
+  "domainsPlaceholder": "한 줄에 하나씩, *.example.com, api-*.example.com, audiobook.*.example.com, audiobook.* 및 * 지원",
   "type": "유형",
   "typeProxy": "리버스 프록시",
   "typeRedirect": "리디렉션",

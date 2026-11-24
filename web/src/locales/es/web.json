@@ -58,7 +58,7 @@
   "tabHeaders": "Cabeceras",
   "domains": "Dominios",
   "domainsRequired": "Indica al menos un dominio",
-  "domainsPlaceholder": "Uno por línea; admite *.example.com, api-*.example.com y *",
+  "domainsPlaceholder": "Uno por línea; admite *.example.com, api-*.example.com, audiobook.*.example.com, audiobook.* y *",
   "type": "Tipo",
   "typeProxy": "Proxy inverso",
   "typeRedirect": "Redirección",

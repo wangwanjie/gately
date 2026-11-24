@@ -58,7 +58,7 @@
   "tabHeaders": "Headers",
   "domains": "Domains",
   "domainsRequired": "Enter at least one domain",
-  "domainsPlaceholder": "One per line; supports *.example.com, api-*.example.com and *",
+  "domainsPlaceholder": "One per line; supports *.example.com, api-*.example.com, audiobook.*.example.com, audiobook.* and *",
   "type": "Type",
   "typeProxy": "Reverse proxy",
   "typeRedirect": "Redirect",

@@ -58,7 +58,7 @@
   "tabHeaders": "Cabeçalhos",
   "domains": "Domínios",
   "domainsRequired": "Informe pelo menos um domínio",
-  "domainsPlaceholder": "Um por linha; aceita *.example.com, api-*.example.com e *",
+  "domainsPlaceholder": "Um por linha; aceita *.example.com, api-*.example.com, audiobook.*.example.com, audiobook.* e *",
   "type": "Tipo",
   "typeProxy": "Proxy reverso",
   "typeRedirect": "Redirecionamento",

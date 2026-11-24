@@ -58,7 +58,7 @@
   "tabHeaders": "ヘッダー",
   "domains": "ドメイン",
   "domainsRequired": "ドメインを 1 つ以上入力してください",
-  "domainsPlaceholder": "1 行に 1 つ。*.example.com、api-*.example.com、* に対応",
+  "domainsPlaceholder": "1 行に 1 つ。*.example.com、api-*.example.com、audiobook.*.example.com、audiobook.*、* に対応",
   "type": "種類",
   "typeProxy": "リバースプロキシ",
   "typeRedirect": "リダイレクト",

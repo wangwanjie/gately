@@ -58,7 +58,7 @@
   "tabHeaders": "Заголовки",
   "domains": "Домены",
   "domainsRequired": "Укажите хотя бы один домен",
-  "domainsPlaceholder": "По одному в строке; поддерживаются *.example.com, api-*.example.com и *",
+  "domainsPlaceholder": "По одному в строке; поддерживаются *.example.com, api-*.example.com, audiobook.*.example.com, audiobook.* и *",
   "type": "Тип",
   "typeProxy": "Обратный прокси",
   "typeRedirect": "Перенаправление",
