@@ -406,8 +406,8 @@
             </div>
             <Sparkline
               :series="[
-                { values: data.series.map((p) => p.bytes), color: 'var(--g-chart-2)' },
-                { values: data.series.map((p) => p.up ?? 0), color: 'var(--el-color-warning)' },
+                { values: bytesSeries.sent, color: 'var(--g-chart-2)' },
+                { values: bytesSeries.recv, color: 'var(--el-color-warning)' },
               ]"
               :capacity="data.series.length"
               :height="40"
@@ -1270,6 +1270,15 @@ const detailFocus = computed(() => {
 
 // 峰值按每秒计：回放曲线每个点覆盖 seriesStep 秒
 const seriesMax = computed(() => Math.max(0, ...(data.value?.series ?? []).map((p) => p.requests)) / (data.value?.seriesStep || 1))
+
+// bytesSeries 为每秒流量曲线的上行、下行两条线，方向与 rateMetrics 相同：后端节点（u:）的 bytes 是后端返回的（Gately 收到），
+// up 是发给后端的请求体（Gately 发出），与访客侧节点正好相反。
+const bytesSeries = computed(() => {
+  const pts = data.value?.series ?? []
+  const bytes = pts.map((p) => p.bytes)
+  const up = pts.map((p) => p.up ?? 0)
+  return seriesFor.value.startsWith('u:') ? { sent: up, recv: bytes } : { sent: bytes, recv: up }
+})
 
 // rateMetrics 为节点的 QPS、上行、下行三项，均为最近 data.window 秒的均值。
 // 上下行按 Gately 视角：上行为 Gately 发出，下行为 Gately 收到。访客侧节点的 bps 是发给访客的、upBps 是访客发来的；
