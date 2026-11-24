@@ -44774,6 +44774,101 @@
         "x-token-allowed": false
       }
     },
+    "/api/system/public-ip": {
+      "get": {
+        "description": "Devuelve las direcciones IPv4 / IPv6 públicas de la última consulta bajo demanda (o del autodiagnóstico) sin contactar ningún servicio externo; si nunca se ha consultado, todos los campos están vacíos. `errors` indica el motivo del fallo por familia de direcciones (ipv4 / ipv6) y `checkedAt` la hora de la consulta.\n\nPermiso necesario: `status:read`.",
+        "responses": {
+          "200": {
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parámetros de solicitud incorrectos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token no válido, caducado o sin sesión iniciada"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Al token le falta el permiso necesario"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Ver direcciones IP públicas",
+        "tags": [
+          "Sistema"
+        ],
+        "x-required-scope": "status:read",
+        "x-token-allowed": true
+      },
+      "post": {
+        "description": "Consulta de inmediato servicios públicos de detección de IP para obtener las direcciones IPv4 / IPv6 públicas de este equipo y guarda el resultado en memoria; la respuesta tiene los mismos campos que `GET /api/system/public-ip`. Las llamadas repetidas en menos de 10 segundos devuelven el resultado anterior. Solo para sesiones iniciadas (administradores).\n\n**Solo disponible para sesiones de inicio de sesión; los tokens de API no pueden acceder a este endpoint.**",
+        "responses": {
+          "200": {
+            "description": "Correcto"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Parámetros de solicitud incorrectos"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token no válido, caducado o sin sesión iniciada"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Al token le falta el permiso necesario"
+          }
+        },
+        "summary": "Consultar direcciones IP públicas",
+        "tags": [
+          "Sistema"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
     "/api/system/restart": {
       "post": {
         "description": "Solo sesiones iniciadas. Con la cabecera `X-Gately-Confirm: 1`, los ajustes que solo se aplican tras reiniciar (direcciones de escucha de la interfaz de administración, módulos activados) que difieran de este arranque se registran como un cambio de configuración pendiente; el plazo empieza tras el reinicio y, si no se confirma a tiempo, esos ajustes se restauran. Véase `GET /api/system/confirm`.\n\n**Solo disponible para sesiones de inicio de sesión; los tokens de API no pueden acceder a este endpoint.**",

@@ -237,7 +237,7 @@ Execute comandos ou envie requisições HTTP em um agendamento cron.
 
 ## Visão geral e logs do sistema
 
-- A página "Visão geral" mostra informações do host: modelo, uso e carga da CPU, memória, disco, endereços das interfaces de rede e taxas em tempo real, IPv4 e IPv6 públicos (clique para copiar), o estado do serviço de cada módulo e, para o processo do Gately, versão, commit, data de compilação, hora de início, PID, CPU, memória residente, heap do Go e número de goroutines;
+- A página "Visão geral" mostra informações do host: modelo, uso e carga da CPU, memória, disco, endereços das interfaces de rede e taxas em tempo real, IPv4 e IPv6 públicos (clique para copiar; vêm dos endereços obtidos pelas tarefas de DDNS e, sem tarefa de DDNS, clique em "Consultar IP público" para consultá-los uma vez sob demanda; os endereços encontrados pelo autodiagnóstico de rede também aparecem aqui), o estado do serviço de cada módulo e, para o processo do Gately, versão, commit, data de compilação, hora de início, PID, CPU, memória residente, heap do Go e número de goroutines;
 - Quando o Gately gerencia programas externos (frp, Tailscale, NetBird, túnel do Cloudflare, File Browser), a página "Visão geral" também tem o cartão "Processos gerenciados", que lista cada processo com módulo e instância, nome do programa, PID, tempo ativo, número de reinícios, CPU e memória residente, com os totais no cabeçalho; clique em uma linha para abrir o módulo. Conta apenas o próprio processo, sem os filhos que ele inicia, e não mostra caminhos nem argumentos de inicialização;
 - A aba "Logs do sistema" da página "Logs" reúne os logs de todos os módulos, incluindo os registros de execução de módulos como Docker, FTP e Tarefas agendadas.
 

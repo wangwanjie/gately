@@ -44774,6 +44774,101 @@
         "x-token-allowed": false
       }
     },
+    "/api/system/public-ip": {
+      "get": {
+        "description": "Возвращает публичные адреса IPv4 / IPv6 из последнего запроса по требованию (или самопроверки), не обращаясь к внешним сервисам; если запросов не было, все поля пусты. `errors` содержит причину сбоя по семейству адресов (ipv4 / ipv6), `checkedAt` — время запроса.\n\nТребуемое разрешение: `status:read`.",
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Просмотр публичных IP-адресов",
+        "tags": [
+          "Система"
+        ],
+        "x-required-scope": "status:read",
+        "x-token-allowed": true
+      },
+      "post": {
+        "description": "Сразу обращается к публичным сервисам определения IP, получает публичные адреса IPv4 / IPv6 этого узла и хранит результат в памяти; поля ответа те же, что у `GET /api/system/public-ip`. Повторные вызовы в течение 10 секунд возвращают предыдущий результат. Доступно только для сеансов входа (администраторы).\n\n**Доступно только для сессий входа; API-токены не имеют доступа к этому эндпоинту.**",
+        "responses": {
+          "200": {
+            "description": "Успешно"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Ошибка параметров запроса"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Токен недействителен, истёк или вход не выполнен"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "У токена нет необходимого права"
+          }
+        },
+        "summary": "Запрос публичных IP-адресов",
+        "tags": [
+          "Система"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
     "/api/system/restart": {
       "post": {
         "description": "Только для сеансов входа. С заголовком `X-Gately-Confirm: 1` настройки, вступающие в силу после перезапуска (адреса прослушивания панели управления, включение модулей), отличающиеся от текущего запуска, записываются как ожидающее подтверждения изменение конфигурации; отсчёт начинается после перезапуска, и без подтверждения вовремя эти настройки восстанавливаются. См. `GET /api/system/confirm`.\n\n**Доступно только для сессий входа; API-токены не имеют доступа к этому эндпоинту.**",

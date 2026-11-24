@@ -113,6 +113,8 @@ type App struct {
 	upgradeSt upgradeStatus
 	// upgradeCancel 取消进行中的在线升级，同样由 upgradeMu 保护
 	upgradeCancel context.CancelFunc
+	// publicIP 是按需查询的本机公网地址（概览在动态域名没有地址时展示）
+	publicIP publicIPCache
 	// upd 为最近一次检查更新的结果，由 updMu 保护，updOnce 负责首次从文件读取；
 	// updCheckMu 串行化 Gately 本身的检查与结果写回，updProgMu 串行化托管程序的检查，
 	// updWake 在重新开启自动检查时唤醒检查协程
@@ -443,6 +445,8 @@ func (a *App) Handler() http.Handler {
 	rec.add("GET /api/system/access-path", a.handleAccessPath, "")
 	rec.add("POST /api/system/access-path/check", a.handleAccessCheck, "")
 	rec.add("POST /api/system/selfcheck", a.handleSelfCheck, "")
+	rec.add("GET /api/system/public-ip", a.handlePublicIP, "")
+	rec.add("POST /api/system/public-ip", a.handlePublicIPRefresh, "")
 	rec.add("GET /api/system/onboarding", a.handleOnboarding, "")
 	rec.add("POST /api/system/onboarding/dismiss", a.handleOnboardingDismiss, "")
 	rec.add("POST /api/system/onboarding/scenes", a.handleOnboardingScenes, "")

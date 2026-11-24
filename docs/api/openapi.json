@@ -44774,6 +44774,101 @@
         "x-token-allowed": false
       }
     },
+    "/api/system/public-ip": {
+      "get": {
+        "description": "返回最近一次按需查询（或自检）得到的公网 IPv4 / IPv6 地址，不访问外部服务；从未查询过时各字段为空。`errors` 按地址族（ipv4 / ipv6）给出查询失败的原因，`checkedAt` 为查询时间。\n\n所需权限：`status:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "查看本机公网地址",
+        "tags": [
+          "系统"
+        ],
+        "x-required-scope": "status:read",
+        "x-token-allowed": true
+      },
+      "post": {
+        "description": "立即访问公共的公网 IP 查询服务获取本机公网 IPv4 / IPv6 地址并保存在内存中，返回字段同 `GET /api/system/public-ip`。10 秒内重复调用直接返回上次结果。仅登录会话（管理员）可用。\n\n**仅登录会话可用，API 令牌无法访问此接口。**",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "请求参数错误"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌无效、已过期或未登录"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "令牌缺少所需权限"
+          }
+        },
+        "summary": "查询本机公网地址",
+        "tags": [
+          "系统"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
     "/api/system/restart": {
       "post": {
         "description": "仅登录会话可用。带请求头 `X-Gately-Confirm: 1` 时，需要重启才生效的设置（管理界面监听地址、功能模块开关）与本次启动时不同就登记为待确认的配置变更，重启后开始计时，超时未确认自动恢复这几项设置，见 `GET /api/system/confirm`。\n\n**仅登录会话可用，API 令牌无法访问此接口。**",

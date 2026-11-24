@@ -128,11 +128,18 @@
           <div class="g-card-title"><Network :size="16" />{{ t('overview.interfaces') }}</div>
           <span class="g-card-desc">{{ host ? t('overview.count', { count: host.interfaces.length }) : '' }}</span>
         </div>
-        <div v-if="publicIPs.length" class="public-ips">
+        <div v-if="publicIPs.length || canLookupIP" class="public-ips">
           <div v-for="p in publicIPs" :key="p.label" class="public-ip">
             <span class="pip-label"><Globe :size="13" />{{ t('overview.publicIp', { label: p.label }) }}</span>
-            <span class="mono copyable" :title="t('overview.clickToCopy')" @click="copy(p.value, $event)">{{ p.value }}</span>
+            <span v-if="p.value" class="mono copyable" :title="t('overview.clickToCopy')" @click="copy(p.value, $event)">{{ p.value }}</span>
+            <span v-else class="pip-none" :title="p.error">{{ t('overview.publicIpNone') }}</span>
           </div>
+          <span v-if="canLookupIP" class="pip-lookup">
+            <el-button size="small" text :icon="RefreshCw" :loading="lookingUp" @click="lookupPublicIP">
+              {{ lookup?.checkedAt ? t('overview.publicIpRefresh') : t('overview.publicIpLookup') }}
+            </el-button>
+            <span v-if="lookup?.checkedAt" class="pip-time">{{ t('overview.publicIpCheckedAt', { time: formatClock(lookup.checkedAt) }) }}</span>
+          </span>
         </div>
         <div class="ifaces">
           <div v-for="i in host?.interfaces ?? []" :key="i.name" class="iface">
@@ -225,6 +232,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { ElMessage } from 'element-plus'
 import { copyText } from '../composables/useClipboard'
 import {
   Activity,
@@ -310,11 +318,66 @@ const netTotal = computed(() => {
   return total
 })
 
-// 公网地址取自动态域名模块最近一次获取到的 IP，不额外访问外部服务
-const publicIPs = computed(() => {
+// 按需查询的公网地址（POST /api/system/public-ip），自检查到的地址也记在这里
+interface PublicIPLookup {
+  ipv4?: string
+  ipv6?: string
+  errors?: Record<string, string>
+  checkedAt?: string
+}
+const lookup = ref<PublicIPLookup>()
+const lookingUp = ref(false)
+
+// 动态域名模块最近一次获取到的地址，不额外访问外部服务
+const ddnsIPs = computed(() => {
   const ddns = status.value?.modules.find((m) => m.id === 'ddns')
   return (ddns?.summary ?? []).filter((it) => it.label === 'IPv4' || it.label === 'IPv6')
 })
+
+// 公网地址优先取动态域名的结果，没有的地址族用按需查询的结果补上；查询过但没查到的显示「未获取到」
+const publicIPs = computed(() => {
+  const out: { label: string; value: string; error?: string }[] = []
+  for (const fam of ['IPv4', 'IPv6'] as const) {
+    const fromDDNS = ddnsIPs.value.find((it) => it.label === fam)
+    if (fromDDNS) {
+      out.push({ label: fam, value: fromDDNS.value })
+      continue
+    }
+    const l = lookup.value
+    if (!l?.checkedAt) {
+      continue
+    }
+    const key = fam === 'IPv4' ? 'ipv4' : 'ipv6'
+    out.push({ label: fam, value: l[key] ?? '', error: l.errors?.[key] })
+  }
+  return out
+})
+
+// 动态域名没有同时提供 IPv4 与 IPv6 时，管理员可以手动查询；只读账号不能触发查询
+const canLookupIP = computed(() => !!status.value && sessionRole.value !== 'readonly' && ddnsIPs.value.length < 2)
+
+async function loadPublicIP() {
+  try {
+    lookup.value = await api.get<PublicIPLookup>('/api/system/public-ip')
+  } catch {
+    // 读取失败时只是不显示查询结果
+  }
+}
+
+async function lookupPublicIP() {
+  lookingUp.value = true
+  try {
+    lookup.value = await api.post<PublicIPLookup>('/api/system/public-ip', {})
+  } catch (e) {
+    ElMessage.error((e as Error).message)
+  } finally {
+    lookingUp.value = false
+  }
+}
+
+function formatClock(iso: string) {
+  return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+}
 
 // 每个有摘要的模块一行，状态取摘要中最严重的等级；还没有配置条目或未启用的模块为 idle（灰点，不计入异常）。公网 IP 已在网卡区域展示，这里略去
 const services = computed(() => {
@@ -477,6 +540,7 @@ function onVisibility() {
 
 onMounted(() => {
   load()
+  loadPublicIP()
   timer = window.setInterval(load, INTERVAL)
   document.addEventListener('visibilitychange', onVisibility)
 })
@@ -814,6 +878,19 @@ onBeforeUnmount(() => {
 .public-ip .copyable {
   min-width: 0;
   word-break: break-all;
+}
+.pip-none {
+  color: var(--el-text-color-secondary);
+}
+.pip-lookup {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+.pip-time {
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
 }
 .pip-label {
   display: inline-flex;

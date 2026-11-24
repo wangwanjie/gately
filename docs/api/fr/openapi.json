@@ -44774,6 +44774,101 @@
         "x-token-allowed": false
       }
     },
+    "/api/system/public-ip": {
+      "get": {
+        "description": "Renvoie les adresses IPv4 / IPv6 publiques issues de la dernière requête à la demande (ou de l'autodiagnostic) sans contacter de service externe ; tous les champs sont vides si aucune requête n'a été faite. `errors` donne la cause de l'échec par famille d'adresses (ipv4 / ipv6) et `checkedAt` l'heure de la requête.\n\nPermission requise : `status:read`.",
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Voir les adresses IP publiques",
+        "tags": [
+          "Système"
+        ],
+        "x-required-scope": "status:read",
+        "x-token-allowed": true
+      },
+      "post": {
+        "description": "Interroge immédiatement des services publics de détection d'IP pour obtenir les adresses IPv4 / IPv6 publiques de cet hôte et garde le résultat en mémoire ; la réponse a les mêmes champs que `GET /api/system/public-ip`. Les appels répétés en moins de 10 secondes renvoient le résultat précédent. Réservé aux sessions connectées (administrateurs).\n\n**Disponible uniquement pour les sessions de connexion ; les jetons d'API ne peuvent pas accéder à ce point d'accès.**",
+        "responses": {
+          "200": {
+            "description": "Succès"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Paramètres de requête incorrects"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Jeton invalide, expiré ou non connecté"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Il manque au jeton la permission requise"
+          }
+        },
+        "summary": "Interroger les adresses IP publiques",
+        "tags": [
+          "Système"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
     "/api/system/restart": {
       "post": {
         "description": "Sessions connectées uniquement. Avec l'en-tête `X-Gately-Confirm: 1`, les réglages qui ne s'appliquent qu'après redémarrage (adresses d'écoute de l'interface d'administration, activation des modules) différents de ce démarrage sont enregistrés comme modification de configuration en attente ; le délai démarre après le redémarrage et, sans confirmation à temps, ces réglages sont restaurés. Voir `GET /api/system/confirm`.\n\n**Disponible uniquement pour les sessions de connexion ; les jetons d'API ne peuvent pas accéder à ce point d'accès.**",

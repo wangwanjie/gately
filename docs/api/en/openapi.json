@@ -44774,6 +44774,101 @@
         "x-token-allowed": false
       }
     },
+    "/api/system/public-ip": {
+      "get": {
+        "description": "Returns the public IPv4 / IPv6 addresses from the most recent on-demand lookup (or self-check) without contacting any external service; all fields are empty if no lookup has been made. `errors` gives the failure reason per address family (ipv4 / ipv6) and `checkedAt` is the time of the lookup.\n\nRequired permission: `status:read`.",
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "View public IP addresses",
+        "tags": [
+          "System"
+        ],
+        "x-required-scope": "status:read",
+        "x-token-allowed": true
+      },
+      "post": {
+        "description": "Queries public IP lookup services right away for this host's public IPv4 / IPv6 addresses and keeps the result in memory; the response has the same fields as `GET /api/system/public-ip`. Repeated calls within 10 seconds return the previous result. Only available to signed-in sessions (administrators).\n\n**Available only to login sessions; API tokens cannot access this endpoint.**",
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Invalid request parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token is invalid, expired or not signed in"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token lacks the required permission"
+          }
+        },
+        "summary": "Look up public IP addresses",
+        "tags": [
+          "System"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
     "/api/system/restart": {
       "post": {
         "description": "Login sessions only. With the header `X-Gately-Confirm: 1`, settings that only take effect after a restart (admin UI listen addresses, module switches) that differ from this start are recorded as a pending configuration change; the timer starts after the restart, and if it isn't confirmed in time those settings are restored. See `GET /api/system/confirm`.\n\n**Available only to login sessions; API tokens cannot access this endpoint.**",

@@ -44774,6 +44774,101 @@
         "x-token-allowed": false
       }
     },
+    "/api/system/public-ip": {
+      "get": {
+        "description": "가장 최근의 수동 조회(또는 자가 점검)로 얻은 공인 IPv4 / IPv6 주소를 반환하며 외부 서비스에 접속하지 않습니다. 조회한 적이 없으면 모든 필드가 비어 있습니다. `errors`는 주소 계열(ipv4 / ipv6)별 실패 원인, `checkedAt`은 조회 시각입니다.\n\n필요한 권한: `status:read`.",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "공인 IP 주소 보기",
+        "tags": [
+          "시스템"
+        ],
+        "x-required-scope": "status:read",
+        "x-token-allowed": true
+      },
+      "post": {
+        "description": "공개 IP 조회 서비스에 즉시 접속해 이 호스트의 공인 IPv4 / IPv6 주소를 가져와 메모리에 저장합니다. 응답 필드는 `GET /api/system/public-ip`와 같습니다. 10초 이내에 다시 호출하면 이전 결과를 반환합니다. 로그인 세션(관리자)만 사용할 수 있습니다.\n\n**로그인 세션에서만 사용할 수 있으며, API 토큰으로는 이 엔드포인트에 접근할 수 없습니다.**",
+        "responses": {
+          "200": {
+            "description": "성공"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "요청 매개변수 오류"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰이 유효하지 않거나 만료되었거나 로그인하지 않음"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "토큰에 필요한 권한이 없음"
+          }
+        },
+        "summary": "공인 IP 주소 조회",
+        "tags": [
+          "시스템"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
     "/api/system/restart": {
       "post": {
         "description": "로그인 세션만 사용할 수 있습니다. 요청 헤더 `X-Gately-Confirm: 1`을 붙이면 재시작해야 적용되는 설정(관리 화면 수신 주소, 기능 모듈 켜기/끄기)이 이번 시작 때와 다를 경우 확인 대기 중인 설정 변경으로 기록하고 재시작 후 시간을 잽니다. 시간 안에 확인되지 않으면 이 설정들을 복원합니다. `GET /api/system/confirm`을 참고하세요.\n\n**로그인 세션에서만 사용할 수 있으며, API 토큰으로는 이 엔드포인트에 접근할 수 없습니다.**",

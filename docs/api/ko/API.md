@@ -982,6 +982,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/system/access-path` | 로그인 세션 전용 | 현재 접속 경로 보기 |
 | POST | `/api/system/access-path/check` | 로그인 세션 전용 | 변경이 현재 접속 경로에 영향을 주는지 확인 |
 | POST | `/api/system/selfcheck` | 로그인 세션 전용 | 네트워크 및 설정 자가 점검 |
+| GET | `/api/system/public-ip` | `status:read` | 공인 IP 주소 보기 |
+| POST | `/api/system/public-ip` | 로그인 세션 전용 | 공인 IP 주소 조회 |
 | GET | `/api/system/onboarding` | 로그인 세션 전용 | 첫 실행 안내 상태 |
 | POST | `/api/system/onboarding/dismiss` | 로그인 세션 전용 | 첫 실행 안내 완료 또는 닫기 |
 | POST | `/api/system/onboarding/scenes` | 로그인 세션 전용 | 고른 용도 기록 |

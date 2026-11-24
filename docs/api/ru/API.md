@@ -982,6 +982,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/system/access-path` | Только сессия входа | Просмотр текущего пути доступа |
 | POST | `/api/system/access-path/check` | Только сессия входа | Проверить, затрагивает ли изменение текущий путь доступа |
 | POST | `/api/system/selfcheck` | Только сессия входа | Самопроверка сети и конфигурации |
+| GET | `/api/system/public-ip` | `status:read` | Просмотр публичных IP-адресов |
+| POST | `/api/system/public-ip` | Только сессия входа | Запрос публичных IP-адресов |
 | GET | `/api/system/onboarding` | Только сессия входа | Состояние знакомства при первом запуске |
 | POST | `/api/system/onboarding/dismiss` | Только сессия входа | Завершить или закрыть знакомство при первом запуске |
 | POST | `/api/system/onboarding/scenes` | Только сессия входа | Сохранить выбранные сценарии использования |

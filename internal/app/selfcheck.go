@@ -64,6 +64,10 @@ func (a *App) runSelfCheck(ctx context.Context) []module.CheckResult {
 		add(module.CheckResult{ID: "net.publicIPv6", Status: module.CheckOK, Params: map[string]string{"ip": ip.String()}})
 	}()
 	wg.Wait()
+	// 自检查到的地址同时供概览展示，免得再点一次「获取公网 IP」
+	if env.PublicIPv4 != "" || env.PublicIPv6 != "" {
+		a.publicIP.store(publicIPResult{IPv4: env.PublicIPv4, IPv6: env.PublicIPv6, CheckedAt: time.Now()})
+	}
 
 	// 本机网卡与 NAT 情况
 	add(natChecks(env.PublicIPv4, env.PublicIPv6)...)

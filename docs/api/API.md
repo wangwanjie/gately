@@ -982,6 +982,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/system/access-path` | 仅登录会话 | 查看当前访问路径 |
 | POST | `/api/system/access-path/check` | 仅登录会话 | 检查修改是否影响当前访问路径 |
 | POST | `/api/system/selfcheck` | 仅登录会话 | 网络与配置自检 |
+| GET | `/api/system/public-ip` | `status:read` | 查看本机公网地址 |
+| POST | `/api/system/public-ip` | 仅登录会话 | 查询本机公网地址 |
 | GET | `/api/system/onboarding` | 仅登录会话 | 首次启动引导状态 |
 | POST | `/api/system/onboarding/dismiss` | 仅登录会话 | 完成或关闭首次启动引导 |
 | POST | `/api/system/onboarding/scenes` | 仅登录会话 | 记录选择的使用场景 |

@@ -287,6 +287,8 @@ var apiCatalog = map[string]epDoc{
 	"POST /api/account/passkeys/begin":                   {Summary: "开始注册 Passkey", Desc: "返回 WebAuthn 注册参数与一次性挑战。"},
 	"POST /api/account/passkeys":                         {Summary: "完成注册 Passkey", Desc: "提交浏览器返回的凭据与当前密码。", Body: true},
 	"DELETE /api/account/passkeys/{id}":                  {Summary: "删除 Passkey", Desc: "需要提交当前密码。", Body: true},
+	"GET /api/system/public-ip":                          {Summary: "查看本机公网地址", Desc: "返回最近一次按需查询（或自检）得到的公网 IPv4 / IPv6 地址，不访问外部服务；从未查询过时各字段为空。`errors` 按地址族（ipv4 / ipv6）给出查询失败的原因，`checkedAt` 为查询时间。"},
+	"POST /api/system/public-ip":                         {Summary: "查询本机公网地址", Desc: "立即访问公共的公网 IP 查询服务获取本机公网 IPv4 / IPv6 地址并保存在内存中，返回字段同 `GET /api/system/public-ip`。10 秒内重复调用直接返回上次结果。仅登录会话（管理员）可用。"},
 	"POST /api/system/selfcheck":                         {Summary: "网络与配置自检", Desc: "检查公网 IP、是否处于运营商 NAT 之后、本机时钟、80/443 端口、DDNS 解析与证书有效期等。会访问配置的公网 IP 查询服务。仅登录会话（管理员）可用。"},
 	"GET /api/system/onboarding":                         {Summary: "首次启动引导状态", Desc: "仅登录会话可用。全新安装且尚未完成引导时 `pending` 为 true（显示「开始使用」清单）；`scenePending` 为 true 时需要先选择使用场景（只在全新安装、配置目录里还没有任何配置文件时出现）；`scenes` 为选择的使用场景，`done` 为手动标记完成的清单项。"},
 	"POST /api/system/onboarding/dismiss":                {Summary: "完成或关闭首次启动引导", Desc: "仅登录会话可用。之后不再显示「开始使用」清单，也不再询问使用场景。"},

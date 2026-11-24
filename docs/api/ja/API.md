@@ -982,6 +982,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | GET | `/api/system/access-path` | ログインセッションのみ | 現在のアクセス経路を表示 |
 | POST | `/api/system/access-path/check` | ログインセッションのみ | 変更が現在のアクセス経路に影響するか確認 |
 | POST | `/api/system/selfcheck` | ログインセッションのみ | ネットワークと設定のセルフチェック |
+| GET | `/api/system/public-ip` | `status:read` | グローバル IP アドレスを表示 |
+| POST | `/api/system/public-ip` | ログインセッションのみ | グローバル IP アドレスを照会 |
 | GET | `/api/system/onboarding` | ログインセッションのみ | 初回起動ガイドの状態 |
 | POST | `/api/system/onboarding/dismiss` | ログインセッションのみ | 初回起動ガイドを完了または閉じる |
 | POST | `/api/system/onboarding/scenes` | ログインセッションのみ | 選んだ用途を記録 |

@@ -982,6 +982,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | GET | `/api/system/access-path` | Somente sessão de login | Ver o caminho de acesso atual |
 | POST | `/api/system/access-path/check` | Somente sessão de login | Verificar se uma alteração afeta o caminho de acesso atual |
 | POST | `/api/system/selfcheck` | Somente sessão de login | Autoverificação de rede e configuração |
+| GET | `/api/system/public-ip` | `status:read` | Ver endereços IP públicos |
+| POST | `/api/system/public-ip` | Somente sessão de login | Consultar endereços IP públicos |
 | GET | `/api/system/onboarding` | Somente sessão de login | Estado da introdução do primeiro início |
 | POST | `/api/system/onboarding/dismiss` | Somente sessão de login | Concluir ou fechar a introdução do primeiro início |
 | POST | `/api/system/onboarding/scenes` | Somente sessão de login | Registrar os cenários de uso escolhidos |

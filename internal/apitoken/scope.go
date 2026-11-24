@@ -68,6 +68,8 @@ var sessionOnly = map[string]bool{
 	"PUT /api/tailscale/settings": true,
 	"PUT /api/netbird/settings":   true,
 	"GET /api/backup/secrets":     true,
+	// 立即查询公网地址会访问外部查询服务，与自检一样只在管理界面中触发；读取上次结果按状态读权限
+	"POST /api/system/public-ip": true,
 }
 
 // sensitiveGetSuffix 列出会返回敏感内容或建立交互通道的 GET 路径片段，这些接口按写权限处理。
@@ -110,7 +112,7 @@ func Required(method, path string) string {
 	switch path {
 	case "/api/session", "/api/openapi.json", "/api/geoip/lookup":
 		return Any
-	case "/api/status", "/api/system/info", "/api/system/update", "/api/system/update/state":
+	case "/api/status", "/api/system/info", "/api/system/update", "/api/system/update/state", "/api/system/public-ip":
 		return DomainStatus + ":" + LevelRead
 	case "/api/logs", "/api/logs/sources", "/api/logs/export":
 		return DomainLogs + ":" + LevelRead

@@ -982,6 +982,8 @@ Wildcards: `*:read` means read-only access to all modules; `*:write` or `*` mean
 | GET | `/api/system/access-path` | Login sessions only | View the current access path |
 | POST | `/api/system/access-path/check` | Login sessions only | Check whether a change affects the current access path |
 | POST | `/api/system/selfcheck` | Login sessions only | Network and configuration self-check |
+| GET | `/api/system/public-ip` | `status:read` | View public IP addresses |
+| POST | `/api/system/public-ip` | Login sessions only | Look up public IP addresses |
 | GET | `/api/system/onboarding` | Login sessions only | First-run onboarding status |
 | POST | `/api/system/onboarding/dismiss` | Login sessions only | Finish or close the first-run onboarding |
 | POST | `/api/system/onboarding/scenes` | Login sessions only | Record the chosen usage scenes |

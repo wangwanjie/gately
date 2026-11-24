@@ -982,6 +982,8 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | GET | `/api/system/access-path` | Nur Anmeldesitzung | Aktuellen Zugriffsweg anzeigen |
 | POST | `/api/system/access-path/check` | Nur Anmeldesitzung | Prüfen, ob eine Änderung den aktuellen Zugriffsweg betrifft |
 | POST | `/api/system/selfcheck` | Nur Anmeldesitzung | Selbsttest von Netzwerk und Konfiguration |
+| GET | `/api/system/public-ip` | `status:read` | Öffentliche IP-Adressen anzeigen |
+| POST | `/api/system/public-ip` | Nur Anmeldesitzung | Öffentliche IP-Adressen abfragen |
 | GET | `/api/system/onboarding` | Nur Anmeldesitzung | Status der Einführung beim ersten Start |
 | POST | `/api/system/onboarding/dismiss` | Nur Anmeldesitzung | Einführung beim ersten Start abschließen oder schließen |
 | POST | `/api/system/onboarding/scenes` | Nur Anmeldesitzung | Gewählte Einsatzzwecke speichern |

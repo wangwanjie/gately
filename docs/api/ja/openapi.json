@@ -44774,6 +44774,101 @@
         "x-token-allowed": false
       }
     },
+    "/api/system/public-ip": {
+      "get": {
+        "description": "直近のオンデマンド照会（またはセルフチェック）で得たグローバル IPv4 / IPv6 アドレスを返し、外部サービスにはアクセスしません。未照会の場合は各フィールドが空です。`errors` はアドレスファミリー（ipv4 / ipv6）ごとの失敗理由、`checkedAt` は照会時刻です。\n\n必要な権限: `status:read`。",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "グローバル IP アドレスを表示",
+        "tags": [
+          "システム"
+        ],
+        "x-required-scope": "status:read",
+        "x-token-allowed": true
+      },
+      "post": {
+        "description": "公開の IP 照会サービスにすぐ問い合わせて、このホストのグローバル IPv4 / IPv6 アドレスを取得しメモリに保存します。応答のフィールドは `GET /api/system/public-ip` と同じです。10 秒以内の再呼び出しは前回の結果を返します。ログインセッション（管理者）のみ利用できます。\n\n**ログインセッションでのみ利用できます。API トークンではこのエンドポイントにアクセスできません。**",
+        "responses": {
+          "200": {
+            "description": "成功"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "リクエストパラメーターが不正です"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンが無効、期限切れ、または未ログインです"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "トークンに必要な権限がありません"
+          }
+        },
+        "summary": "グローバル IP アドレスを照会",
+        "tags": [
+          "システム"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
     "/api/system/restart": {
       "post": {
         "description": "ログインセッションのみ利用可能。リクエストヘッダー `X-Gately-Confirm: 1` を付けると、再起動後に有効になる設定（管理画面の待ち受けアドレス、機能モジュールのオン／オフ）が今回の起動時と異なる場合、未確認の設定変更として記録し、再起動後に計時を始めます。時間内に確認されなければこれらの設定を元に戻します。`GET /api/system/confirm` を参照。\n\n**ログインセッションでのみ利用できます。API トークンではこのエンドポイントにアクセスできません。**",

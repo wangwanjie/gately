@@ -237,7 +237,7 @@ Führen Sie Befehle aus oder senden Sie HTTP-Anfragen nach einem Cron-Zeitplan.
 
 ## Übersicht und Systemprotokolle
 
-- Die Seite „Übersicht“ zeigt Host-Informationen: CPU-Modell, Auslastung und Last, Arbeitsspeicher, Datenträger, Adressen der Netzwerkschnittstellen und Live-Raten, öffentliche IPv4 und IPv6 (zum Kopieren anklicken), den Dienststatus jedes Moduls sowie für den Gately-Prozess Version, Commit, Build-Zeit, Startzeit, PID, CPU, resident Memory, Go-Heap und Anzahl der Goroutinen;
+- Die Seite „Übersicht“ zeigt Host-Informationen: CPU-Modell, Auslastung und Last, Arbeitsspeicher, Datenträger, Adressen der Netzwerkschnittstellen und Live-Raten, öffentliche IPv4 und IPv6 (zum Kopieren anklicken; übernommen aus den Adressen der DDNS-Aufgaben, ohne DDNS-Aufgabe per „Öffentliche IP abfragen“ einmalig auf Anforderung abgefragt; vom Netzwerk-Selbsttest ermittelte Adressen erscheinen ebenfalls hier), den Dienststatus jedes Moduls sowie für den Gately-Prozess Version, Commit, Build-Zeit, Startzeit, PID, CPU, resident Memory, Go-Heap und Anzahl der Goroutinen;
 - Wenn Gately externe Programme verwaltet (frp, Tailscale, NetBird, Cloudflare-Tunnel, File Browser), zeigt die Seite „Übersicht“ zusätzlich die Karte „Verwaltete Prozesse“ mit Modul und Instanz, Programmname, PID, Laufzeit, Anzahl der Neustarts, CPU und resident Memory jedes Prozesses und den Summen in der Kartenüberschrift; ein Klick auf eine Zeile öffnet das Modul. Gezählt wird nur der Prozess selbst, nicht die von ihm gestarteten Kindprozesse, und Pfade und Startargumente werden nicht angezeigt;
 - Der Tab „Systemprotokolle“ der Seite „Protokolle“ sammelt die Logs aller Module, einschließlich der Laufzeitprotokolle von Modulen wie Docker, FTP und geplanten Aufgaben.
 

@@ -982,6 +982,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | GET | `/api/system/access-path` | Session connectée uniquement | Voir le chemin d’accès actuel |
 | POST | `/api/system/access-path/check` | Session connectée uniquement | Vérifier si une modification touche le chemin d’accès actuel |
 | POST | `/api/system/selfcheck` | Session connectée uniquement | Autodiagnostic du réseau et de la configuration |
+| GET | `/api/system/public-ip` | `status:read` | Voir les adresses IP publiques |
+| POST | `/api/system/public-ip` | Session connectée uniquement | Interroger les adresses IP publiques |
 | GET | `/api/system/onboarding` | Session connectée uniquement | État de la prise en main du premier démarrage |
 | POST | `/api/system/onboarding/dismiss` | Session connectée uniquement | Terminer ou fermer la prise en main du premier démarrage |
 | POST | `/api/system/onboarding/scenes` | Session connectée uniquement | Enregistrer les usages choisis |

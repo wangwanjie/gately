@@ -44774,6 +44774,101 @@
         "x-token-allowed": false
       }
     },
+    "/api/system/public-ip": {
+      "get": {
+        "description": "Liefert die öffentlichen IPv4- / IPv6-Adressen der letzten Abfrage auf Anforderung (oder des Selbsttests), ohne externe Dienste zu kontaktieren; ohne bisherige Abfrage sind alle Felder leer. `errors` nennt den Fehlergrund je Adressfamilie (ipv4 / ipv6), `checkedAt` den Zeitpunkt der Abfrage.\n\nErforderliche Berechtigung: `status:read`.",
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Öffentliche IP-Adressen anzeigen",
+        "tags": [
+          "System"
+        ],
+        "x-required-scope": "status:read",
+        "x-token-allowed": true
+      },
+      "post": {
+        "description": "Fragt sofort öffentliche IP-Abfragedienste nach den öffentlichen IPv4- / IPv6-Adressen dieses Hosts ab und hält das Ergebnis im Speicher; die Antwort hat dieselben Felder wie `GET /api/system/public-ip`. Wiederholte Aufrufe innerhalb von 10 Sekunden liefern das vorherige Ergebnis. Nur für angemeldete Sitzungen (Administratoren).\n\n**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",
+        "responses": {
+          "200": {
+            "description": "Erfolgreich"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Anfrageparameter fehlerhaft"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Token ungültig, abgelaufen oder nicht angemeldet"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Dem Token fehlt die erforderliche Berechtigung"
+          }
+        },
+        "summary": "Öffentliche IP-Adressen abfragen",
+        "tags": [
+          "System"
+        ],
+        "x-required-scope": "!denied",
+        "x-token-allowed": false
+      }
+    },
     "/api/system/restart": {
       "post": {
         "description": "Nur für Anmeldesitzungen. Mit dem Header `X-Gately-Confirm: 1` werden Einstellungen, die erst nach einem Neustart wirken (Listen-Adressen der Verwaltungsoberfläche, Modulschalter) und sich vom aktuellen Start unterscheiden, als ausstehende Konfigurationsänderung erfasst; die Frist beginnt nach dem Neustart, ohne rechtzeitige Bestätigung werden diese Einstellungen wiederhergestellt. Siehe `GET /api/system/confirm`.\n\n**Nur für Anmeldesitzungen verfügbar; API-Tokens können auf diesen Endpunkt nicht zugreifen.**",

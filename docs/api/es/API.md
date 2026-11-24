@@ -982,6 +982,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | GET | `/api/system/access-path` | Solo sesión iniciada | Ver el camino de acceso actual |
 | POST | `/api/system/access-path/check` | Solo sesión iniciada | Comprobar si un cambio afecta al camino de acceso actual |
 | POST | `/api/system/selfcheck` | Solo sesión iniciada | Autodiagnóstico de red y configuración |
+| GET | `/api/system/public-ip` | `status:read` | Ver direcciones IP públicas |
+| POST | `/api/system/public-ip` | Solo sesión iniciada | Consultar direcciones IP públicas |
 | GET | `/api/system/onboarding` | Solo sesión iniciada | Estado de la guía del primer inicio |
 | POST | `/api/system/onboarding/dismiss` | Solo sesión iniciada | Terminar o cerrar la guía del primer inicio |
 | POST | `/api/system/onboarding/scenes` | Solo sesión iniciada | Registrar los escenarios de uso elegidos |
