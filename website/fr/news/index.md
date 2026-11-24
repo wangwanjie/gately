@@ -7,6 +7,10 @@ description: Annonces et notes de version de chaque version de Gately.
 
 Les annonces des versions majeures sont listées ci-dessous. Consultez [GitHub Releases](https://github.com/wangwanjie/gately/releases) pour la liste complète des changements et les téléchargements de chaque version.
 
+## [v0.6.8.8](/fr/news/v0.6.8.8)
+
+25 novembre 2026 · Les domaines de site acceptent un joker sur n'importe quel segment (audiobook.*) ; les groupes du panneau de navigation peuvent être visibles après connexion et renommés, et les icônes de lien gagnent Sites d’icônes et Rogner les marges ; l'aperçu peut obtenir l'IP publique ; l'envoi et la réception suivent partout le point de vue de Gately ; corrige la perte par le proxy inverse des paramètres de requête contenant un point-virgule et les redirections du backend vers http sous HTTPS.
+
 ## [v0.6.8.6](/fr/news/v0.6.8.6)
 
 23 novembre 2026 · La topologie réseau affiche les débits montants avec une période de moyenne au choix ; les notifications SMTP peuvent ignorer la vérification du certificat ; l'aperçu Windows affiche toutes les ressources ; corrige le comptage dans l'aperçu des conteneurs Docker dont le contrôle de santé échoue et le sens de la flèche de repli de la topologie.

@@ -7,6 +7,10 @@ description: Release announcements and notes for each Gately version.
 
 Announcements for major releases are listed below. See [GitHub Releases](https://github.com/wangwanjie/gately/releases) for the full changes and downloads of every version.
 
+## [v0.6.8.8](/en/news/v0.6.8.8)
+
+November 25, 2026 · Site domains accept a wildcard on any segment (audiobook.*); navigation panel groups can be set to visible after sign-in and renamed, and link icons gain Icon sites and Trim margins; the overview can look up the public IP; upload and download follow Gately's own point of view everywhere; fixes the reverse proxy dropping query parameters that contain semicolons and backends redirecting to http under HTTPS.
+
 ## [v0.6.8.6](/en/news/v0.6.8.6)
 
 November 23, 2026 · Network topology shows upload rates with a selectable averaging period; SMTP notifications can skip certificate verification; the Windows overview shows full resource information; fixes the overview count of Docker containers whose health check fails and the topology fold arrow direction.

@@ -98,8 +98,8 @@
   "home": {
     "pill": "Free and open source · Apache-2.0",
     "announce": {
-      "text": "v0.6.8.6 released: topology upload rates and averaging period, SMTP certificate skip, Windows overview →",
-      "link": "/en/news/v0.6.8.6"
+      "text": "v0.6.8.8 released: wildcard on any domain segment, panel groups visible after sign-in and rename, public IP lookup →",
+      "link": "/en/news/v0.6.8.8"
     },
     "titleLine1": "One gateway for your self-hosted services",
     "titleLine2": "Reverse proxy, HTTPS, DDNS, NAT traversal, WAF and bans, in one binary",

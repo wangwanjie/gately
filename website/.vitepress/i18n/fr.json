@@ -98,8 +98,8 @@
   "home": {
     "pill": "Gratuit et open source · Apache-2.0",
     "announce": {
-      "text": "v0.6.8.6 : débits montants et période de moyenne de la topologie, SMTP sans vérification du certificat, aperçu Windows →",
-      "link": "/fr/news/v0.6.8.6"
+      "text": "v0.6.8.8 : joker sur tout segment de domaine, groupes du panneau visibles après connexion et renommage, obtenir l'IP publique →",
+      "link": "/fr/news/v0.6.8.8"
     },
     "titleLine1": "Une seule entrée pour vos services auto-hébergés",
     "titleLine2": "Reverse proxy, HTTPS, DDNS, traversée de NAT, WAF et bannissements, en un seul binaire",

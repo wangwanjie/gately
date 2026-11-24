@@ -98,8 +98,8 @@
   "home": {
     "pill": "Kostenlos und Open Source · Apache-2.0",
     "announce": {
-      "text": "v0.6.8.6: Upload-Raten und Mittelungszeitraum in der Topologie, SMTP-Zertifikat überspringen, Windows-Übersicht →",
-      "link": "/de/news/v0.6.8.6"
+      "text": "v0.6.8.8: Platzhalter in jedem Domain-Segment, Panel-Gruppen nur nach Anmeldung sichtbar und umbenennen, öffentliche IP abfragen →",
+      "link": "/de/news/v0.6.8.8"
     },
     "titleLine1": "Ein Eingang für Ihre selbst gehosteten Dienste",
     "titleLine2": "Reverse Proxy, HTTPS, DDNS, NAT-Traversal, WAF und Sperren in einer Binärdatei",

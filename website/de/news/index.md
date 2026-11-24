@@ -7,6 +7,10 @@ description: Release-Ankündigungen und Versionshinweise zu jeder Gately-Version
 
 Unten stehen die Ankündigungen zu wichtigen Releases. Alle Änderungen und Downloads jeder Version finden Sie unter [GitHub Releases](https://github.com/wangwanjie/gately/releases).
 
+## [v0.6.8.8](/de/news/v0.6.8.8)
+
+25. November 2026 · Site-Domains erlauben einen Platzhalter in jedem Segment (audiobook.*); Gruppen im Navigationspanel können nur nach Anmeldung sichtbar gemacht und umbenannt werden, Link-Symbole erhalten Symbol-Websites und Ränder entfernen; die Übersicht kann die öffentliche IP abfragen; Upload und Download folgen überall der Sicht von Gately; behebt verlorene Query-Parameter mit Semikolon im Reverse-Proxy und Weiterleitungen des Backends auf http unter HTTPS.
+
 ## [v0.6.8.6](/de/news/v0.6.8.6)
 
 23. November 2026 · Die Netzwerktopologie zeigt Upload-Raten mit wählbarem Mittelungszeitraum; SMTP-Benachrichtigungen können die Zertifikatsprüfung überspringen; die Windows-Übersicht zeigt vollständige Ressourcen; behebt die Übersichtszählung von Docker-Containern mit fehlgeschlagener Health-Prüfung und die Richtung des Einklapp-Pfeils in der Topologie.
