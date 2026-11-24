@@ -1130,8 +1130,9 @@ export function maskDomain(host: string): string {
 
 // domainInText 匹配自由文本中的域名。顶级域之前的任意一段可以含一个 *：*.example.com、api-*.example.com、
 // audiobook.*.example.com、x.api-*.example.com。站点名称默认取首个域名，漏掉通配写法会让打码后的画面仍露出完整域名。
+// 末尾整段通配（audiobook.*、nas.secret-corp.*）没有字母顶级域，单独作为一种写法匹配。
 // String.replace 每次从头匹配，共用同一个 /g 正则是安全的
-const domainInText = /(?<![\w.*-])(?:[a-z0-9_-]+\.)*(?:[a-z0-9_-]*\*[a-z0-9_-]*\.)?(?:[a-z0-9_-]+\.)+[a-z][a-z0-9-]*[a-z](?![\w.-])/gi
+const domainInText = /(?<![\w.*-])(?:(?:[a-z0-9_-]+\.)*(?:[a-z0-9_-]*\*[a-z0-9_-]*\.)?(?:[a-z0-9_-]+\.)+[a-z][a-z0-9-]*[a-z]|(?:[a-z0-9_-]+\.)+\*)(?![\w.*-])/gi
 
 // maskDomainText 打码自由文本（如站点名称）中出现的域名。
 export function maskDomainText(text: string): string {

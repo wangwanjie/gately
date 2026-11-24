@@ -353,6 +353,9 @@ test('maskDomain 与 maskDomainText 打码域名', () => {
   assert.equal(maskDomainText('有声书 audiobook.*.secret-corp.com'), '有声书 audiobook.***.com')
   assert.equal(maskDomainText('x.api-*.secret-corp.com, b.c.d.e.org'), 'x.***.com, b.***.org')
   assert.ok(!maskDomainText('audiobook.*.secret-corp.com').includes('secret-corp'))
+  // 末尾整段通配
+  assert.equal(maskDomainText('站点 nas.secret-corp.*'), '站点 nas.***.*')
+  assert.equal(maskDomainText('audiobook.*, a.b.org'), 'a***.*, a.***.org')
   assert.equal(maskURL('http://nas.lan:5000/x', true), 'http://n***.lan:5000/x')
   assert.equal(maskURL('http://nas.lan:5000/x'), 'http://nas.lan:5000/x')
 })
