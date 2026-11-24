@@ -87,7 +87,7 @@ func TestValidate(t *testing.T) {
 		{Port: 80, MinTLS: "2.0"},
 		{Port: 80, Sites: []Site{{Targets: []string{"http://x"}}}},
 		{Port: 80, Sites: []Site{{Domains: []string{"a.com"}, Targets: []string{"ftp://x"}}}},
-		{Port: 80, Sites: []Site{{Domains: []string{"a.*.com"}, Targets: []string{"http://x"}}}},
+		{Port: 80, Sites: []Site{{Domains: []string{"a.*.*.com"}, Targets: []string{"http://x"}}}},
 		{Port: 80, Sites: []Site{{Domains: []string{"a.com"}, Type: TypeRedirect, RedirectTo: "/rel"}}},
 		{Port: 80, Sites: []Site{{Domains: []string{"a.com"}, Type: TypeStatic, Root: "rel"}}},
 		{Port: 80, Sites: []Site{{Domains: []string{"a.com"}, Targets: []string{"http://x"}, BasicAuth: true}}},

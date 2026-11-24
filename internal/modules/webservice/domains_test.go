@@ -223,3 +223,60 @@ func TestImportSkipsBadDomains(t *testing.T) {
 		t.Fatalf("nginx 导入应跳过变量域名并提示: %+v", pl)
 	}
 }
+
+// TestAnyLabelWildcardRouting 覆盖末尾整段（audiobook.*）、中间整段（audiobook.*.example.com）
+// 与非首段内通配的路由、优先级与 {1} 捕获。
+func TestAnyLabelWildcardRouting(t *testing.T) {
+	l := Listener{Port: 8080, Sites: []Site{
+		{Enable: true, Domains: []string{"*"}, Type: TypeText, Text: "fallback"},
+		{Enable: true, Domains: []string{"Audiobook.*"}, Type: TypeText, Text: "tail"},
+		{Enable: true, Domains: []string{"audiobook.*.example.com"}, Type: TypeText, Text: "middle"},
+		{Enable: true, Domains: []string{"x.api-*.example.com"}, Type: TypeText, Text: "inner"},
+		{Enable: true, Domains: []string{"audiobook.home.example.com"}, Type: TypeText, Text: "exact"},
+	}}
+	if err := l.Validate(); err != nil {
+		t.Fatal(err)
+	}
+	if got := l.Sites[1].Domains[0]; got != "audiobook.*" {
+		t.Fatalf("规范化结果错误: %s", got)
+	}
+	addr, _ := startRunner(t, l, nil, nil)
+	for host, want := range map[string]string{
+		"audiobook.home.example.com": "exact",
+		"audiobook.nas.example.com":  "middle",
+		// 中间整段只匹配一段，多出一级时由更短的 audiobook.* 承接
+		"audiobook.a.b.example.com": "tail",
+		"AUDIOBOOK.home.lan:8080":   "tail",
+		"audiobook.example.com":     "tail",
+		"x.api-one.example.com":     "inner",
+		"x.api-one.y.example.com":   "fallback",
+		"my.audiobook.example.com":  "fallback",
+		"audiobooks.example.com":    "fallback",
+	} {
+		resp, body := get(t, http.DefaultClient, addr, host, "/", nil)
+		if resp.StatusCode != 200 || body != want {
+			t.Errorf("Host %s: %d %q; want %q", host, resp.StatusCode, body, want)
+		}
+	}
+	for host, want := range map[string]string{
+		"audiobook.example.com":     "example.com",
+		"audiobook.nas.example.com": "nas",
+	} {
+		if got := wildcardPart([]string{"audiobook.*.example.com", "audiobook.*"}, host); got != want {
+			t.Errorf("wildcardPart(%q) = %q; want %q", host, got, want)
+		}
+	}
+	// 末尾整段通配的后缀不固定，不拿去匹配证书；中间整段按一个具体子域名匹配
+	if name, ok := certCheckName("audiobook.*"); ok {
+		t.Errorf("certCheckName(audiobook.*) = %q", name)
+	}
+	if name, ok := certCheckName("audiobook.*.example.com"); !ok || name != "audiobook.x.example.com" {
+		t.Errorf("certCheckName(audiobook.*.example.com) = %q, %v", name, ok)
+	}
+	for _, d := range []string{"192.168.1.*", "a.*.*", "audiobook.*:443"} {
+		bad := Listener{Port: 8080, Sites: []Site{{Domains: []string{d}, Type: TypeText}}}
+		if err := bad.Validate(); err == nil {
+			t.Errorf("域名 %q 应报错", d)
+		}
+	}
+}

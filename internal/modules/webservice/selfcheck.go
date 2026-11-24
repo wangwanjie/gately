@@ -68,6 +68,9 @@ func certCheckName(d string) (string, bool) {
 			return "", false
 		}
 		return "gately-check." + rest, true
+	case strings.HasSuffix(d, ".*"):
+		// audiobook.* 的后缀不固定，没有一张证书能代表它，按实际访问域名各自匹配
+		return "", false
 	case strings.Contains(d, "*"):
 		if name, ok := hostname.NormalizePattern(d); ok {
 			return strings.Replace(name, "*", "x", 1), true

@@ -48,7 +48,8 @@ type Site struct {
 	Enable bool   `json:"enable"`
 	// Group 为列表中的分组名称，只影响管理界面的展示，留空为未分组；默认站点不分组
 	Group string `json:"group"`
-	// Domains 支持精确域名、*.example.com（任意级子域名）、api-*.example.com（首段内通配）与 *（匹配所有）
+	// Domains 支持精确域名、*.example.com（任意级子域名）、api-*.example.com（段内通配，可在任意一段）、
+	// audiobook.*.example.com（中间整段匹配一段）、audiobook.*（末尾整段匹配一段或多段）与 *（匹配所有），每条只能有一个 *
 	Domains []string `json:"domains"`
 	Type    string   `json:"type"`
 
