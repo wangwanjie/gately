@@ -331,6 +331,46 @@ export function moveGroup(links: PanelLink[], name: string, delta: -1 | 1): Pane
   return flatten(links, groups)
 }
 
+// renameLinkGroup 把链接分组 from 改名为 to（都按去掉首尾空白比较），分组位置与组内顺序不变；
+// to 已是另一个分组时两组合并，放在两者中先出现的位置。登录后可见设置（authGroups）随分组改名：
+// 合并到一个未设登录后可见的分组时，原分组的链接逐个勾上登录后可见，不会因改名对未登录访客显示。
+// 链接直接改写 group 字段而不复制对象（编辑器靠对象身份记住行 id）。名称未变、为空或分组不存在时返回 null
+export function renameLinkGroup(links: PanelLink[], authGroups: readonly string[], from: string, to: string): { links: PanelLink[]; authGroups: string[] } | null {
+  const src = from.trim()
+  const dst = to.trim()
+  const groups = groupLinks(links)
+  if (!dst || src === dst || !groups.some((g) => g.name === src)) {
+    return null
+  }
+  const merging = groups.some((g) => g.name === dst)
+  const srcAuth = authGroups.includes(src)
+  const dstAuth = authGroups.includes(dst)
+  const moved = groups.find((g) => g.name === src)!.items
+  for (const i of moved) {
+    links[i].group = dst
+    if (merging && srcAuth && !dstAuth) {
+      links[i].authOnly = true
+    }
+  }
+  let nextAuth = authGroups.filter((g) => g !== src)
+  if (srcAuth && !merging) {
+    nextAuth.push(dst)
+  }
+  nextAuth = [...new Set(nextAuth)]
+  // 按改名后的分组重新排列：合并时目标组放在两者中先出现的位置，组内原顺序不变
+  const order: number[] = []
+  const seen = new Set<string>()
+  for (const g of groups) {
+    const name = g.name === src ? dst : g.name
+    if (seen.has(name)) {
+      continue
+    }
+    seen.add(name)
+    order.push(...groups.filter((x) => (x.name === src ? dst : x.name) === name).flatMap((x) => x.items))
+  }
+  return { links: order.map((i) => links[i]), authGroups: nextAuth }
+}
+
 // LinkDropTarget 为拖动链接的放置位置：group 为目标分组；before / after 为目标分组内某个链接在 links 中的下标，
 // 表示插到它之前或之后，都不提供时放到该分组末尾（放在分组标题上）
 export interface LinkDropTarget {

@@ -140,8 +140,18 @@
                 <FolderClosed :size="14" />
                 <span class="group-name">{{ g.name || t('panels.ungrouped') }}</span>
                 <span class="group-count">{{ g.items.length }}</span>
-                <el-tag v-if="isAuthGroup(g.name)" size="small" type="warning" data-test="group-auth-tag"><Lock :size="11" /> {{ t('panels.authOnlyTag') }}</el-tag>
+                <el-tag v-if="isAuthGroup(g.name)" size="small" type="warning" data-test="group-auth-tag" :title="t('panels.authOnlyTag')"><Lock :size="11" /><span class="group-tag-text"> {{ t('panels.authOnlyTag') }}</span></el-tag>
                 <span class="flex1" />
+                <el-button
+                  v-if="!isReadonly && g.name"
+                  text
+                  size="small"
+                  :icon="Pencil"
+                  :aria-label="t('groupSort.rename')"
+                  :title="t('groupSort.rename')"
+                  data-test="group-rename"
+                  @click="renameGroup(g.name)"
+                />
                 <!-- 分组可见性：设为登录后可见后，分组中的链接（包括之后加入的）都只对已登录访客显示 -->
                 <el-button
                   v-if="!isReadonly"
@@ -551,7 +561,7 @@ import ListTools from '../components/ListTools.vue'
 import SortCheck from '../components/SortCheck.vue'
 import SortMoves from '../components/SortMoves.vue'
 import CompactToggle from '../components/CompactToggle.vue'
-import { useGroupedList } from '../composables/useGroupSort'
+import { useGroupRename, useGroupedList } from '../composables/useGroupSort'
 import { useCompactView } from '../composables/useCompactView'
 import PanelIcon from '../components/PanelIcon.vue'
 import PanelIconInput from '../components/PanelIconInput.vue'
@@ -598,6 +608,7 @@ import {
   engineUrlProblem,
   moveEngine,
   moveGroup,
+  renameLinkGroup,
   moveLink,
   moveLinks,
   removeEngine,
@@ -1010,6 +1021,20 @@ function shiftGroup(name: string, delta: -1 | 1) {
   editing.value.links = moveGroup(editing.value.links, name, delta)
 }
 
+// renameGroup 重命名链接分组：组内链接一起改名，与已有分组同名时确认后合并，登录后可见设置随之迁移
+const askGroupName = useGroupRename()
+async function renameGroup(name: string) {
+  const to = await askGroupName(name, linkGroups.value.map((g) => g.name).filter((n) => n !== name))
+  if (to === null) {
+    return
+  }
+  const r = renameLinkGroup(editing.value.links, editing.value.authGroups, name, to)
+  if (r) {
+    editing.value.links = r.links
+    editing.value.authGroups = r.authGroups
+  }
+}
+
 // isAuthGroup 判断链接分组是否设为登录后可见（分组名按去掉首尾空白比较，与服务端一致）
 function isAuthGroup(name: string) {
   return editing.value.authGroups.includes(name.trim())
@@ -1356,6 +1381,25 @@ onMounted(async () => {
 }
 .flex1 {
   flex: 1;
+}
+.group-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.group-head > :not(.group-name):not(.flex1) {
+  flex-shrink: 0;
+}
+/* 手机上分组标题放不下：标签只留锁图标，按钮收紧，给分组名留出位置 */
+@media (max-width: 600px) {
+  .group-tag-text {
+    display: none;
+  }
+  .group-head .el-button {
+    padding-left: 6px;
+    padding-right: 6px;
+  }
 }
 .group-head .el-button + .el-button,
 .link-actions .el-button + .el-button {

@@ -5,7 +5,7 @@ import {
   emptyLink, groupLinks, moveLink, moveLinks, moveGroup, insertLink, importableSites, linksFromSites, iconKind, safeIconSrc,
   initial, paletteColor, textIconOk, hasVars, toPanel, mergeLinks, freeName, MAX_LINKS,
   emptyPanel, layoutDefaults, normalizeLayoutValue, LAYOUT_LIMITS,
-  sizeChoice, sizeValue, faviconUrls, SIZE_CHOICES,
+  sizeChoice, sizeValue, faviconUrls, SIZE_CHOICES, renameLinkGroup,
 } from '../src/panels.ts'
 
 const L = (name, group = '') => ({ ...emptyLink(group), name, url: `https://${name}.example.com` })
@@ -393,4 +393,42 @@ test('开关：旧配置载入后语言切换隐藏、换肤与锁标记显示�
   // 链接尺寸原样保留
   const q = toPanel({ name: 'x', enable: true, links: [{ ...emptyLink(), name: 'a', url: 'https://a.example.com', size: 'wide' }, { ...emptyLink(), name: 'b', url: 'https://b.example.com', size: 'big' }] })
   assert.deepEqual(q.links.map((l) => l.size), ['wide', 'big'])
+})
+
+test('renameLinkGroup 改名保持位置，合并到先出现的位置，登录后可见随之迁移', () => {
+  // 普通改名：位置不变，authGroups 跟着改名
+  let links = [L('a', 'x'), L('b', 'y'), L('c', 'x')]
+  let r = renameLinkGroup(links, ['x'], 'x', ' 新组 ')
+  assert.deepEqual(names(r.links), ['a', 'c', 'b'])
+  assert.deepEqual(r.links.map((l) => l.group), ['新组', '新组', 'y'])
+  assert.deepEqual(r.authGroups, ['新组'])
+  assert.equal(r.links[0], links[0], '保留对象身份')
+
+  // 合并到已有分组：放在两者中先出现的位置
+  links = [L('a', 'x'), L('b', 'y'), L('c', 'z'), L('d', 'x')]
+  r = renameLinkGroup(links, [], 'z', 'x')
+  assert.deepEqual(names(r.links), ['a', 'd', 'c', 'b'])
+  links = [L('a', 'x'), L('b', 'y'), L('c', 'x')]
+  r = renameLinkGroup(links, [], 'x', 'y')
+  assert.deepEqual(names(r.links), ['a', 'c', 'b'])
+  assert.ok(r.links.every((l) => l.group === 'y'))
+
+  // 登录后可见分组并入普通分组：被并入的链接逐个勾上，目标组原有链接不变
+  links = [L('a', 'secret'), L('b', 'pub')]
+  r = renameLinkGroup(links, ['secret'], 'secret', 'pub')
+  assert.deepEqual(r.authGroups, [])
+  assert.equal(r.links.find((l) => l.name === 'a').authOnly, true)
+  assert.equal(r.links.find((l) => l.name === 'b').authOnly, false)
+
+  // 并入登录后可见分组：不改链接，authGroups 保留目标组
+  links = [L('a', 'pub'), L('b', 'secret')]
+  r = renameLinkGroup(links, ['secret'], 'pub', 'secret')
+  assert.deepEqual(r.authGroups, ['secret'])
+  assert.equal(r.links[0].authOnly, false)
+
+  // 无效：名称未变、为空、分组不存在
+  links = [L('a', 'x')]
+  assert.equal(renameLinkGroup(links, [], 'x', ' x '), null)
+  assert.equal(renameLinkGroup(links, [], 'x', '  '), null)
+  assert.equal(renameLinkGroup(links, [], 'nope', 'y'), null)
 })
