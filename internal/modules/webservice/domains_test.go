@@ -270,8 +270,14 @@ func TestAnyLabelWildcardRouting(t *testing.T) {
 	if name, ok := certCheckName("audiobook.*"); ok {
 		t.Errorf("certCheckName(audiobook.*) = %q", name)
 	}
-	if name, ok := certCheckName("audiobook.*.example.com"); !ok || name != "audiobook.x.example.com" {
-		t.Errorf("certCheckName(audiobook.*.example.com) = %q, %v", name, ok)
+	// * 不在首段时没有一张证书能覆盖全部实际域名，同样不检查；首段内通配按 *.example.com 检查
+	for _, d := range []string{"audiobook.*.example.com", "a.api-*.example.com"} {
+		if name, ok := certCheckName(d); ok {
+			t.Errorf("certCheckName(%s) = %q", d, name)
+		}
+	}
+	if name, ok := certCheckName("api-*.example.com"); !ok || name != "api-x.example.com" {
+		t.Errorf("certCheckName(api-*.example.com) = %q, %v", name, ok)
 	}
 	for _, d := range []string{"192.168.1.*", "a.*.*", "audiobook.*:443"} {
 		bad := Listener{Port: 8080, Sites: []Site{{Domains: []string{d}, Type: TypeText}}}

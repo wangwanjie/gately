@@ -72,6 +72,11 @@ func certCheckName(d string) (string, bool) {
 		// audiobook.* 的后缀不固定，没有一张证书能代表它，按实际访问域名各自匹配
 		return "", false
 	case strings.Contains(d, "*"):
+		// 只有首段内的通配（api-*.example.com）能由 *.example.com 一张证书覆盖；* 在后面的段时
+		// （audiobook.*.example.com、a.api-*.example.com）每个实际域名要各自的证书，按访问域名各自匹配
+		if first, _, _ := strings.Cut(d, "."); !strings.Contains(first, "*") {
+			return "", false
+		}
 		if name, ok := hostname.NormalizePattern(d); ok {
 			return strings.Replace(name, "*", "x", 1), true
 		}
