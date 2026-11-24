@@ -694,6 +694,14 @@ func validateHeaderLines(list []string) error {
 	return nil
 }
 
+// ownedDomain 判断站点域名规则匹配到的域名是否都归管理员所有：最后一段固定的规则（精确域名、*.example.com、
+// audiobook.*.example.com、a.api-*.example.com）只匹配管理员域名下的名字；* 与末尾段含 * 的规则（audiobook.*）
+// 会匹配任何人都能注册的域名（audiobook.attacker.com），不能用来认定来源属于本站点（第三方登录回跳、跨域来源）。
+func ownedDomain(rule string) bool {
+	last := rule[strings.LastIndexByte(rule, '.')+1:]
+	return rule != "" && !strings.Contains(last, "*")
+}
+
 // matchDomain 判断 host 是否匹配规则。返回匹配优先级：精确 3、通配 2、全部 1，不匹配 0。
 func matchDomain(rule, host string) int {
 	switch {

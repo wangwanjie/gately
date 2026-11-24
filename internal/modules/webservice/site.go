@@ -1359,7 +1359,7 @@ func (h *siteHandler) corsAllowed(origin string) bool {
 	}
 	host := hostOnly(u.Host)
 	for _, d := range h.site.Domains {
-		if d != "*" && matchDomain(d, host) > 0 {
+		if ownedDomain(d) && matchDomain(d, host) > 0 {
 			return true
 		}
 	}

@@ -114,7 +114,7 @@ func (a *authenticator) setSiteHosts(domains []string) {
 	var out []string
 	for _, d := range domains {
 		d = strings.ToLower(strings.TrimSpace(d))
-		if d == "" || d == "*" {
+		if !ownedDomain(d) {
 			continue
 		}
 		out = append(out, d)
@@ -194,7 +194,7 @@ func (a *authenticator) oauthOrigin(r *http.Request, s Site, env oauthEnv) (orig
 // oauthHostAllowed 判断访问域名能否作为第三方登录的回跳地址，见 oauthOrigin。
 func (a *authenticator) oauthHostAllowed(r *http.Request, s Site, host string, env oauthEnv) bool {
 	for _, d := range s.Domains {
-		if d != "*" && matchDomain(strings.ToLower(d), host) > 0 {
+		if ownedDomain(d) && matchDomain(strings.ToLower(d), host) > 0 {
 			return true
 		}
 	}

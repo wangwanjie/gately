@@ -87,6 +87,12 @@ func TestOAuthStartForgedHostTicketLeak(t *testing.T) {
 				{Enable: true, Key: "p", Domains: []string{"app.test"}, Type: TypeText, Text: "secret area", WebAuth: true, OAuthUsers: []string{"gh:alice"}}},
 				Default: Site{Enable: true, Type: TypeText, Text: "dflt"}}
 		}},
+		// 末尾整段通配能匹配任何人都能注册的域名，不能作为回跳来源
+		{"trailing-wildcard-site", "audiobook.attacker.test", func(port int) Listener {
+			return Listener{ListenIP: "127.0.0.1", Network: "tcp4", Port: port, Sites: []Site{
+				{Enable: true, Key: "p", Domains: []string{"audiobook.*"}, Type: TypeText, Text: "secret area", WebAuth: true, OAuthUsers: []string{"gh:alice"}}},
+				Default: Site{Enable: true, Type: TypeText, Text: "dflt"}}
+		}},
 		{"pattern-site-with-port-suffix", "a.app.test:1", func(port int) Listener {
 			return Listener{ListenIP: "127.0.0.1", Network: "tcp4", Port: port, Sites: []Site{
 				{Enable: true, Key: "p", Domains: []string{"*.app.test"}, Type: TypeText, Text: "secret area", WebAuth: true, OAuthUsers: []string{"gh:alice"}}},

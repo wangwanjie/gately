@@ -42,6 +42,29 @@ func TestCORSRestrictedForProtectedSites(t *testing.T) {
 	}
 }
 
+// 末尾整段通配（audiobook.*）与 * 能匹配任何人都能注册的域名，不算站点自身的来源；最后一段固定的通配照常算。
+func TestOwnedDomainForOrigins(t *testing.T) {
+	for rule, want := range map[string]bool{
+		"app.test": true, "*.app.test": true, "audiobook.*.app.test": true, "a.api-*.app.test": true,
+		"*": false, "audiobook.*": false, "a.app.te*": false, "": false,
+	} {
+		if got := ownedDomain(rule); got != want {
+			t.Errorf("ownedDomain(%q) = %v; want %v", rule, got, want)
+		}
+	}
+	h := &siteHandler{site: Site{CORS: true, Domains: []string{"audiobook.*", "app.test"}, IPMode: IPModeWhitelist, IPList: []string{"10.0.0.0/8"}}}
+	for origin, want := range map[string]bool{
+		"https://audiobook.attacker.com": false, "https://audiobook.com": false, "https://app.test": true,
+	} {
+		if got := h.corsAllowed(origin); got != want {
+			t.Errorf("corsAllowed(%q) = %v; want %v", origin, got, want)
+		}
+		if got := h.ownOrigin(origin); got != want {
+			t.Errorf("ownOrigin(%q) = %v; want %v", origin, got, want)
+		}
+	}
+}
+
 // 经监听实际请求：转发认证站点对外来来源不写跨域头，对站点自身域名照常写。
 func TestCORSForwardAuthSiteHeaders(t *testing.T) {
 	fa := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(http.StatusOK) }))
