@@ -364,7 +364,7 @@ func compile(in Instance, onMatch func(types.MatchedRule)) (coraza.WAF, error) {
 	if err != nil {
 		return nil, err
 	}
-	cfg := coraza.NewWAFConfig().WithRootFS(coreruleset.FS).WithDirectives(d)
+	cfg := coraza.NewWAFConfig().WithRootFS(crsFS).WithDirectives(d)
 	if onMatch != nil {
 		cfg = cfg.WithErrorCallback(onMatch)
 	}
