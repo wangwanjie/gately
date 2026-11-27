@@ -161,7 +161,7 @@ function removeMount(u: FileUser, j: number) {
 .u-head,
 .u-row {
   display: grid;
-  grid-template-columns: 64px minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 2fr) 60px 40px;
+  grid-template-columns: 64px minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 2fr) 60px 44px;
   gap: 10px;
   align-items: center;
 }
@@ -207,7 +207,7 @@ function removeMount(u: FileUser, j: number) {
 }
 .m-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 3fr) 60px 40px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 3fr) 60px 44px;
   gap: 10px;
   align-items: center;
   margin-bottom: 6px;
