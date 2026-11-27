@@ -287,28 +287,54 @@ func isDockerBridge(name string) bool {
 	return true
 }
 
+// nicInfo 是筛选网卡所需的信息，从 net.Interfaces 转换而来，便于在测试中注入。
+type nicInfo struct {
+	name  string
+	flags net.Flags
+	mac   string
+	mtu   int
+	addrs []*net.IPNet
+}
+
 // interfaces 列出处于启用状态、配置了地址的网卡，并附带流量计数与速率。
 func interfaces(cur, prev rawSample) []Interface {
 	list, err := net.Interfaces()
 	if err != nil {
 		return []Interface{}
 	}
+	nics := make([]nicInfo, 0, len(list))
+	for _, ifc := range list {
+		n := nicInfo{name: ifc.Name, flags: ifc.Flags, mac: ifc.HardwareAddr.String(), mtu: ifc.MTU}
+		addrs, _ := ifc.Addrs()
+		for _, a := range addrs {
+			if ipn, ok := a.(*net.IPNet); ok {
+				n.addrs = append(n.addrs, ipn)
+			}
+		}
+		nics = append(nics, n)
+	}
+	return buildInterfaces(nics, defaultRouteIfaces(), cur, prev)
+}
+
+// buildInterfaces 按规则筛选网卡并计算速率。defaultRoutes 为承载默认路由的网卡名集合（不支持的平台为空）。
+//
+// 名称像虚拟网卡（veth、docker0 等）的网卡默认隐藏，避免宿主机上 Docker 网桥及其 veth 对端与物理网卡重复计数。
+// 但在容器里，容器自己的网卡也可能叫 veth（如 MikroTik RouterOS 的 container 内为 veth33），它承载默认路由，
+// 是容器的出口，必须保留；宿主机上的 veth 对端只是网桥端口，不会承载默认路由。
+// 按上述规则筛完一个都不剩时（容器没有默认路由等情况），退而展示有可路由地址的虚拟网卡，避免概览没有网速。
+func buildInterfaces(nics []nicInfo, defaultRoutes map[string]bool, cur, prev rawSample) []Interface {
 	dt := cur.at.Sub(prev.at).Seconds()
 	out := []Interface{}
-	for _, ifc := range list {
-		if ifc.Flags&net.FlagUp == 0 || ifc.Flags&net.FlagLoopback != 0 || isVirtual(ifc.Name) {
+	fallback := []Interface{}
+	for _, ifc := range nics {
+		if ifc.flags&net.FlagUp == 0 || ifc.flags&net.FlagLoopback != 0 {
 			continue
 		}
-		it := Interface{Name: ifc.Name, MAC: ifc.HardwareAddr.String(), MTU: ifc.MTU, IPv4: []string{}, IPv6: []string{}}
-		addrs, _ := ifc.Addrs()
+		it := Interface{Name: ifc.name, MAC: ifc.mac, MTU: ifc.mtu, IPv4: []string{}, IPv6: []string{}}
 		routable := false
-		for _, a := range addrs {
-			ipn, ok := a.(*net.IPNet)
-			if !ok {
-				continue
-			}
+		for _, ipn := range ifc.addrs {
 			ones, _ := ipn.Mask.Size()
-			if !ipn.IP.IsLinkLocalUnicast() {
+			if !ipn.IP.IsLinkLocalUnicast() && !ipn.IP.IsLoopback() {
 				routable = true
 			}
 			if ip4 := ipn.IP.To4(); ip4 != nil {
@@ -317,19 +343,26 @@ func interfaces(cur, prev rawSample) []Interface {
 				it.IPv6 = append(it.IPv6, ipn.IP.String()+"/"+strconv.Itoa(ones))
 			}
 		}
-		// 只有链路本地地址的网卡（如 macOS 的 awdl0、未拨号的接口）不展示
+		// 只有链路本地地址的网卡（如 macOS 的 awdl0、未拨号的接口、宿主机上的 veth 对端）不展示
 		if !routable {
 			continue
 		}
-		if b, ok := cur.ifBytes[ifc.Name]; ok {
+		if b, ok := cur.ifBytes[ifc.name]; ok {
 			it.RxBytes, it.TxBytes = b[0], b[1]
-			if p, ok := prev.ifBytes[ifc.Name]; ok && dt > 0 && b[0] >= p[0] && b[1] >= p[1] {
+			if p, ok := prev.ifBytes[ifc.name]; ok && dt > 0 && b[0] >= p[0] && b[1] >= p[1] {
 				rx := float64(b[0]-p[0]) / dt
 				tx := float64(b[1]-p[1]) / dt
 				it.RxRate, it.TxRate = &rx, &tx
 			}
 		}
+		if isVirtual(ifc.name) && !defaultRoutes[ifc.name] {
+			fallback = append(fallback, it)
+			continue
+		}
 		out = append(out, it)
+	}
+	if len(out) == 0 {
+		out = fallback
 	}
 	// 有 IPv4 的网卡排在前面，其次按名称排序，结果稳定便于前端展示
 	sort.SliceStable(out, func(i, j int) bool {

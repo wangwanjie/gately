@@ -85,3 +85,39 @@ func parseCPUTime(v string) (float64, bool) {
 	}
 	return days*86400 + total, true
 }
+
+// parseDefaultRoutes 从 /proc/net/route（IPv4）与 /proc/net/ipv6_route（IPv6）的内容中找出承载默认路由的网卡。
+// 只认启用（RTF_UP）且不是拒绝路由（RTF_REJECT）的条目；lo 上的不可达默认路由不算。
+func parseDefaultRoutes(v4, v6 string) map[string]bool {
+	const rtfUp, rtfReject = 0x0001, 0x0200
+	out := map[string]bool{}
+	// IPv4 每行：Iface Destination Gateway Flags RefCnt Use Metric Mask ...，地址与标志为十六进制
+	for _, line := range strings.Split(v4, "\n") {
+		f := strings.Fields(line)
+		if len(f) < 8 || f[0] == "Iface" || f[0] == "lo" {
+			continue
+		}
+		flags, err := strconv.ParseUint(f[3], 16, 32)
+		if err != nil {
+			continue
+		}
+		if f[1] == "00000000" && f[7] == "00000000" && flags&rtfUp != 0 && flags&rtfReject == 0 {
+			out[f[0]] = true
+		}
+	}
+	// IPv6 每行：目的地址 前缀长度 源地址 源前缀长度 下一跳 metric refcnt use flags 网卡
+	for _, line := range strings.Split(v6, "\n") {
+		f := strings.Fields(line)
+		if len(f) < 10 || f[9] == "lo" {
+			continue
+		}
+		flags, err := strconv.ParseUint(f[8], 16, 32)
+		if err != nil {
+			continue
+		}
+		if strings.Trim(f[0], "0") == "" && f[1] == "00" && flags&rtfUp != 0 && flags&rtfReject == 0 {
+			out[f[9]] = true
+		}
+	}
+	return out
+}
