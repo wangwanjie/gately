@@ -28,6 +28,8 @@
   "importAdded": "Added",
   "importEmpty": "No sites to add: sites with wildcard domains and Close connection sites have no address",
   "importN": "Add {n}",
+  "importNoPort": "Links without port number",
+  "importNoPortHelp": "Check this when the domains are reached on the default port (80/443) through router port mapping or an upstream proxy while the listener uses another port. You can also enter the public port under the listener's Access address, which corrects the links in the site list as well.",
   "importSearch": "Search sites, domains or groups",
   "importSites": "Add from Web service sites",
   "imported": "Added {n} links",

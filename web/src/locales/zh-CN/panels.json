@@ -28,6 +28,8 @@
   "importAdded": "已添加",
   "importEmpty": "没有可添加的站点：通配域名与断开连接类型的站点无法生成地址",
   "importN": "添加 {n} 个",
+  "importNoPort": "链接不带端口号",
+  "importNoPortHelp": "域名经路由器端口映射或上层代理以默认端口（80/443）访问、监听却在其他端口时勾选。也可以在监听的「访问地址」中填写对外端口，站点列表的链接会一起改正。",
   "importSearch": "搜索站点、域名或分组",
   "importSites": "从 Web 服务站点添加",
   "imported": "已添加 {n} 个链接",

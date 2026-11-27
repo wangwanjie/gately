@@ -28,6 +28,8 @@
   "importAdded": "Hinzugefügt",
   "importEmpty": "Keine Sites zum Hinzufügen: Sites mit Platzhalterdomains und Sites vom Typ „Verbindung trennen“ haben keine Adresse",
   "importN": "{n} hinzufügen",
+  "importNoPort": "Links ohne Portnummer",
+  "importNoPortHelp": "Aktivieren, wenn die Domains über Router-Portweiterleitung oder einen vorgelagerten Proxy auf dem Standardport (80/443) erreichbar sind, der Listener aber einen anderen Port nutzt. Alternativ den öffentlichen Port unter „Zugriffsadresse“ des Listeners eintragen – dann stimmen auch die Links in der Site-Liste.",
   "importSearch": "Sites, Domains oder Gruppen suchen",
   "importSites": "Aus Webdienst-Sites hinzufügen",
   "imported": "{n} Links hinzugefügt",

@@ -28,6 +28,8 @@
   "importAdded": "已新增",
   "importEmpty": "沒有可新增的站點：萬用網域與中斷連線類型的站點無法產生位址",
   "importN": "新增 {n} 個",
+  "importNoPort": "連結不帶連接埠號",
+  "importNoPortHelp": "網域經路由器連接埠對應或上層代理以預設連接埠（80/443）存取、監聽卻在其他連接埠時勾選。也可以在監聽的「存取位址」中填寫對外連接埠，站點列表的連結會一起修正。",
   "importSearch": "搜尋站點、網域或分組",
   "importSites": "從 Web 服務站點新增",
   "imported": "已新增 {n} 個連結",

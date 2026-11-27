@@ -1,7 +1,7 @@
 // 站点访问地址拼接的单元测试：node --test tests/
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { accessPort, accessScheme, firstHost, forwardedEntry, hostPart, parsePorts, safeHttpUrl, siteLink } from '../src/siteUrl.ts'
+import { accessPort, accessScheme, firstHost, forwardedEntry, hostPart, parsePorts, safeHttpUrl, siteLink, withoutPort } from '../src/siteUrl.ts'
 
 const https = (port, extra = {}) => ({ port, tls: true, ...extra })
 const http = (port, extra = {}) => ({ port, tls: false, ...extra })
@@ -30,6 +30,17 @@ test('访问协议与端口覆盖监听', () => {
   assert.equal(text('a.com', https(443, { accessScheme: 'javascript' })), 'https://a.com')
   assert.equal(accessScheme(http(80, { accessScheme: 'ftp' })), 'http')
   assert.equal(accessPort(http(80, { accessPort: -5 })), 80)
+})
+
+test('withoutPort 按访问协议换成默认端口，链接不带端口号', () => {
+  assert.equal(text('a.com', withoutPort(https(8443))), 'https://a.com')
+  assert.equal(text('a.com', withoutPort(http(8080))), 'http://a.com')
+  // 手填的访问端口也一并去掉，协议沿用访问协议
+  assert.equal(text('a.com', withoutPort(http(8080, { accessScheme: 'https', accessPort: 4433 }))), 'https://a.com')
+  // 不改动原对象，其他字段保留
+  const l = https(8443, { name: 'x' })
+  assert.deepEqual(withoutPort(l), { port: 8443, tls: true, name: 'x', accessPort: 443 })
+  assert.equal(l.accessPort, undefined)
 })
 
 test('通配与非法域名不生成链接', () => {

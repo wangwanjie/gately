@@ -518,6 +518,10 @@
     <!-- 从 Web 服务站点添加 -->
     <el-dialog v-model="importVisible" :title="t('panels.importSites')" width="640px" :fullscreen="isMobile" append-to-body data-test="import-dialog">
       <el-input v-model="importQuery" clearable :prefix-icon="Search" :placeholder="t('panels.importSearch')" class="import-search" />
+      <div class="import-opts">
+        <el-checkbox v-model="importNoPort" data-test="import-no-port">{{ t('panels.importNoPort') }}</el-checkbox>
+        <div class="muted import-opts-help">{{ t('panels.importNoPortHelp') }}</div>
+      </div>
       <div v-if="!importList.length" class="links-empty">{{ t('panels.importEmpty') }}</div>
       <div class="import-list">
         <label v-for="s in importList" :key="s.id" class="import-row" :class="{ added: existingUrls.has(s.url) }" data-test="import-row">
@@ -575,7 +579,7 @@ import { usePointerSort } from '../composables/usePointerSort'
 import { MAX_GROUP_LEN, groupSuggestions, type DropOver } from '../groupSort'
 import { splitLinesOrCommas, useListText } from '../composables/useListText'
 import { createItem, uniqueName, type CopySource } from '../copyDraft'
-import { forwardedEntry, siteLink, type ForwardSource } from '../siteUrl'
+import { forwardedEntry, siteLink, withoutPort, type ForwardSource } from '../siteUrl'
 import { DEFAULT_FAMILY, resolveTheme, themeFamilies, type ThemeFamily } from '../themes'
 import { loadForwardSources } from '../forwardSources'
 import {
@@ -1148,10 +1152,30 @@ function saveLink() {
 
 // ---- 从站点添加 ----
 
+// readFlag/writeFlag 读写本机浏览器里的开关，隐私模式等无法访问存储时按关闭处理、只在本次会话生效
+function readFlag(key: string): boolean {
+  try {
+    return localStorage.getItem(key) === '1'
+  } catch {
+    return false
+  }
+}
+function writeFlag(key: string, on: boolean) {
+  try {
+    localStorage.setItem(key, on ? '1' : '0')
+  } catch {
+    // 写入失败时仅本次会话生效
+  }
+}
+
 const importVisible = ref(false)
 const importQuery = ref('')
 const importSel = reactive(new Set<string>())
-const allImport = computed(() => importableSites(listeners.value, linkFor))
+// importNoPort 为生成的链接不带端口号（按访问协议的默认端口 80/443），记在本机浏览器，下次打开沿用
+const NO_PORT_KEY = 'gately.webpanels.importNoPort'
+const importNoPort = ref(readFlag(NO_PORT_KEY))
+watch(importNoPort, (v) => writeFlag(NO_PORT_KEY, v))
+const allImport = computed(() => importableSites(listeners.value, (l, d) => linkFor(importNoPort.value ? withoutPort(l) : l, d)))
 const importList = computed(() => {
   const q = importQuery.value.trim().toLowerCase()
   return q ? allImport.value.filter((s) => [s.name, s.group, s.url, s.listener].join(' ').toLowerCase().includes(q)) : allImport.value
@@ -1754,7 +1778,14 @@ onMounted(async () => {
   margin-top: 6px;
 }
 .import-search {
-  margin-bottom: 10px;
+  margin-bottom: 6px;
+}
+.import-opts {
+  margin-bottom: 8px;
+}
+.import-opts-help {
+  font-size: 12px;
+  line-height: 1.5;
 }
 .import-list {
   max-height: 55vh;

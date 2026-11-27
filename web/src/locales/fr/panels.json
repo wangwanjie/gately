@@ -28,6 +28,8 @@
   "importAdded": "Ajouté",
   "importEmpty": "Aucun site à ajouter : les sites à domaine générique et les sites « Fermer la connexion » n’ont pas d’adresse",
   "importN": "Ajouter {n}",
+  "importNoPort": "Liens sans numéro de port",
+  "importNoPortHelp": "À cocher lorsque les domaines sont accessibles sur le port par défaut (80/443) via une redirection de port du routeur ou un proxy en amont, alors que l'écouteur utilise un autre port. Vous pouvez aussi indiquer le port public dans l'adresse d'accès de l'écouteur, ce qui corrige aussi les liens de la liste des sites.",
   "importSearch": "Rechercher un site, un domaine ou un groupe",
   "importSites": "Ajouter depuis les sites du service Web",
   "imported": "{n} liens ajoutés",

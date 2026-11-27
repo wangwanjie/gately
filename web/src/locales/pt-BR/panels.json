@@ -28,6 +28,8 @@
   "importAdded": "Adicionado",
   "importEmpty": "Não há sites para adicionar: sites com domínio curinga e do tipo “Fechar conexão” não têm endereço",
   "importN": "Adicionar {n}",
+  "importNoPort": "Links sem número de porta",
+  "importNoPortHelp": "Marque quando os domínios são acessados pela porta padrão (80/443) via redirecionamento de portas do roteador ou um proxy anterior, enquanto o listener usa outra porta. Você também pode informar a porta pública no endereço de acesso do listener, o que corrige também os links da lista de sites.",
   "importSearch": "Pesquisar sites, domínios ou grupos",
   "importSites": "Adicionar dos sites do serviço Web",
   "imported": "{n} links adicionados",

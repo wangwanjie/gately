@@ -64,6 +64,12 @@ export function accessPort(l: AccessListener): number {
   return l.accessPort && l.accessPort > 0 ? l.accessPort : l.port
 }
 
+// withoutPort 返回把访问端口改为协议默认端口（http 80、https 443）的监听，用它拼出的地址不带端口号。
+// 用于域名经路由器端口映射、上层代理等以默认端口对外访问，而监听本身在其他端口的情况。
+export function withoutPort<L extends AccessListener>(l: L): L {
+  return { ...l, accessPort: accessScheme(l) === 'https' ? 443 : 80 }
+}
+
 export interface SiteLink {
   // href 为链接地址，主机名经 URL 规范化（国际化域名转为 punycode）
   href: string

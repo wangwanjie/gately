@@ -28,6 +28,8 @@
   "importAdded": "Añadido",
   "importEmpty": "No hay sitios que añadir: los sitios con dominios comodín y los de tipo «Cerrar conexión» no tienen dirección",
   "importN": "Añadir {n}",
+  "importNoPort": "Enlaces sin número de puerto",
+  "importNoPortHelp": "Márquelo cuando los dominios se acceden por el puerto predeterminado (80/443) mediante redirección de puertos del router o un proxy superior y el listener usa otro puerto. También puede indicar el puerto público en la dirección de acceso del listener, lo que corrige además los enlaces de la lista de sitios.",
   "importSearch": "Buscar sitios, dominios o grupos",
   "importSites": "Añadir desde sitios del servicio web",
   "imported": "Se añadieron {n} enlaces",
