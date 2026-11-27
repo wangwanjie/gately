@@ -151,6 +151,9 @@ func (a *App) gatewayHandler(prefix string, next http.Handler) http.Handler {
 //     来源在三种情况下记为已确认：带着管理员会话且浏览器标明 same-origin 的请求，带着管理员会话和 X-Gately-Page 的请求，
 //     以及管理员用密码或 Passkey 登录成功的请求。
 //
+// 以上依据都要求 Origin 的主机名与网关转发来的 Host 相同。经 FN Connect 等中继访问时 Host 是 localhost 之类的
+// 内部地址，与 Origin 不同，此时只认第一种（浏览器给出的同源证明）和由它确认过的来源，见 gatewayOriginHost。
+//
 // 已确认的来源保存在配置目录，重启后仍然有效（已打开的终端页面重连时不必先做一次别的操作）。
 
 // gatewayOriginsName 是保存已确认来源的配置名；maxGatewayOrigins 为保留的数量上限，超出时丢弃最早的。
@@ -287,10 +290,30 @@ func (a *App) gatewayOriginHost(r *http.Request, path string) (host string, pres
 		return "", false, false
 	}
 	key, u := originKey(origin)
-	if key == "" || !strings.EqualFold(hostOnly(u.Host), hostOnly(r.Host)) {
+	if key == "" {
 		return "", true, false
 	}
-	switch strings.ToLower(strings.TrimSpace(r.Header.Get("Sec-Fetch-Site"))) {
+	fetchSite := strings.ToLower(strings.TrimSpace(r.Header.Get("Sec-Fetch-Site")))
+	if !strings.EqualFold(hostOnly(u.Host), hostOnly(r.Host)) {
+		// 主机名不同：飞牛经中继转发时 Host 不是浏览器地址栏中的主机。例如 FN Connect（xxx.fnos.net）转发来的
+		// Host 是 localhost，无法据 Host 判断来源（issue #123）。此时只认浏览器给出的证据：
+		//   - Sec-Fetch-Site: same-origin：浏览器比较发起页面与请求地址后写入，页面脚本无法设置，
+		//     说明页面与请求地址（即经网关到达管理界面的那个地址）同源；
+		//   - 之前凭上述证据或管理员登录确认过的来源（供无法加请求头的 WebSocket 握手）。
+		// 不认 X-Gately-Page，也不放行登录接口：这两条只在 Host 与 Origin 主机名一致时才能排除别的站点的页面
+		// （例如经 HTTP 打开、没有 Fetch Metadata 时别的站点提交的表单登录）。
+		switch {
+		case fetchSite == "same-origin":
+			if id, ok := a.auth.Identify(auth.TokenFromRequest(r)); ok && id.Role == auth.RoleAdmin {
+				a.learnGatewayOrigin(key)
+			}
+			return u.Host, true, true
+		case fetchSite == "" && a.gatewayOriginKnown(key):
+			return u.Host, true, true
+		}
+		return "", true, false
+	}
+	switch fetchSite {
 	case "same-origin":
 		// 带着管理员会话时把来源记下来，之后不带 Sec-Fetch-Site 的请求（如 WebSocket 握手）按它判断。
 		// 只认管理员会话：只读账号的持有者可以不经浏览器自己构造请求头，不能让他替别的端口“确认”来源

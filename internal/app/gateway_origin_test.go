@@ -28,6 +28,8 @@ type gwReq struct {
 	multipart bool
 	// page 为 true 时带上管理界面的 X-Gately-Page 请求头
 	page bool
+	// host 为网关转发来的 Host，空串表示 nas.example.com
+	host string
 }
 
 func (q gwReq) do(t *testing.T, h http.Handler) *httptest.ResponseRecorder {
@@ -45,8 +47,12 @@ func (q gwReq) do(t *testing.T, h http.Handler) *httptest.ResponseRecorder {
 	case q.body != "":
 		body, ctype = strings.NewReader(q.body), "application/json"
 	}
-	req := httptest.NewRequest(q.method, "http://nas.example.com/app/gately"+q.path, body)
-	req.Host = "nas.example.com"
+	host := q.host
+	if host == "" {
+		host = "nas.example.com"
+	}
+	req := httptest.NewRequest(q.method, "http://"+host+"/app/gately"+q.path, body)
+	req.Host = host
 	if ctype != "" {
 		req.Header.Set("Content-Type", ctype)
 	}
@@ -317,5 +323,58 @@ func TestGatewayPlainHTTPPageHeader(t *testing.T) {
 	}
 	if !found {
 		t.Fatal("被拒绝的来源应记入系统日志")
+	}
+}
+
+// issue #123：经 FN Connect（xxx.fnos.net）访问时，飞牛转发来的 Host 是 localhost，与浏览器的 Origin 不同。
+// 浏览器写入的 Sec-Fetch-Site: same-origin 已证明页面与请求地址同源，应以 Origin 为准放行，并在管理员会话下记下来源
+// 供 WebSocket 握手使用；跨站请求、没有浏览器同源证明的请求（含登录）仍被拒绝。
+func TestGatewayRelayHostMismatch(t *testing.T) {
+	a, h := newOriginApp(t, t.TempDir(), true)
+	const relay = "https://abc123.fnos.net"
+	const relayHost = "localhost"
+	known := func(o string) bool {
+		key, _ := originKey(o)
+		return a.gatewayOriginKnown(key)
+	}
+	// 没有浏览器同源证明：表单登录 CSRF、带自定义请求头、跨站与同站请求都不能放行
+	for _, q := range []gwReq{
+		{method: "POST", path: "/api/login", origin: relay, body: `{"username":"admin","password":"test-password"}`},
+		{method: "POST", path: "/api/login", origin: relay, page: true, body: `{"username":"admin","password":"test-password"}`},
+		{method: "POST", path: "/api/login", origin: "https://evil.example", site: "cross-site", body: `{"username":"admin","password":"test-password"}`},
+		{method: "POST", path: "/api/login", origin: "https://other.fnos.net", site: "same-site", body: `{"username":"admin","password":"test-password"}`},
+	} {
+		q.host = relayHost
+		if rec := q.do(t, h); rec.Code != http.StatusForbidden {
+			t.Fatalf("%+v 应被拒绝: %d %s", q, rec.Code, rec.Body.String())
+		}
+	}
+	if known(relay) {
+		t.Fatal("被拒绝的请求不能确认来源")
+	}
+
+	// 修复前：Origin 与 Host 主机名不同，即使浏览器标明同源也被拒绝
+	rec := gwReq{method: "POST", path: "/api/login", origin: relay, site: "same-origin", host: relayHost, body: `{"username":"admin","password":"test-password"}`}.do(t, h)
+	if rec.Code != 200 {
+		t.Fatalf("经 FN Connect 登录应成功: %d %s", rec.Code, rec.Body.String())
+	}
+	admin := sessionCookie(t, rec)
+	if !known(relay) {
+		t.Fatal("管理员登录成功后应确认来源")
+	}
+	if rec := (gwReq{method: "PUT", path: "/api/account/ui-language", origin: relay, site: "same-origin", host: relayHost, cookie: admin, body: `{"language":"en"}`}).do(t, h); rec.Code != 200 {
+		t.Fatalf("经 FN Connect 切换语言应成功: %d %s", rec.Code, rec.Body.String())
+	}
+	// 已确认的来源：不带 Sec-Fetch-Site 的 WebSocket 握手放行
+	wsPath := "/api/portforward/rules/x/ws"
+	if rec := (gwReq{method: "GET", path: wsPath, origin: relay, host: relayHost, cookie: admin, ws: true}).do(t, h); rec.Code == http.StatusForbidden {
+		t.Fatalf("来源确认后的 WebSocket 握手不应被拒绝: %d %s", rec.Code, rec.Body.String())
+	}
+	// 其他来源借管理员会话仍被拒绝
+	if rec := (gwReq{method: "GET", path: wsPath, origin: "https://evil.example", host: relayHost, cookie: admin, ws: true}).do(t, h); rec.Code != http.StatusForbidden {
+		t.Fatalf("未确认来源的握手应被拒绝: %d", rec.Code)
+	}
+	if rec := (gwReq{method: "DELETE", path: "/api/portforward/logs", origin: "https://evil.example", site: "cross-site", host: relayHost, cookie: admin}).do(t, h); rec.Code != http.StatusForbidden {
+		t.Fatalf("跨站写请求应被拒绝: %d", rec.Code)
 	}
 }
