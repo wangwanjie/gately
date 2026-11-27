@@ -66,6 +66,7 @@
   "%s %s 跳过：%s": "%s %s skipped: %s",
   "%s %s 连接目标失败: %v": "%s %s failed to connect to the target: %v",
   "%s %s%s 后端错误: %v": "%s %s%s backend error: %v",
+  "%s %s%s 访客已断开，请求中止: %v": "%s %s%s client disconnected, request aborted: %v",
   "%s %s%s 读取请求体超时: %v": "%s %s%s request body read timed out: %v",
   "%s %s%s 连接后端 %s 失败（%v），改用 %s": "%s %s%s failed to connect to backend %s (%v), using %s instead",
   "%s -\u003e %s 已连接": "%s -\u003e %s connected",

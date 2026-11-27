@@ -66,6 +66,7 @@
   "%s %s 跳过：%s": "%s %s omitido: %s",
   "%s %s 连接目标失败: %v": "%s %s no se pudo conectar al destino: %v",
   "%s %s%s 后端错误: %v": "%s %s%s error de backend: %v",
+  "%s %s%s 访客已断开，请求中止: %v": "%s %s%s el visitante se desconectó, solicitud cancelada: %v",
   "%s %s%s 读取请求体超时: %v": "%s %s%s se agotó la lectura del cuerpo de la petición: %v",
   "%s %s%s 连接后端 %s 失败（%v），改用 %s": "%s %s%s no se pudo conectar al backend %s (%v); se usa %s",
   "%s -\u003e %s 已连接": "%s -\u003e %s conectado",

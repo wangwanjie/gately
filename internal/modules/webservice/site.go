@@ -760,9 +760,17 @@ func (h *siteHandler) newProxy(s Site, p *pool, strip string) http.Handler {
 				writeErrorPage(h.errPage, w, r, http.StatusRequestTimeout, "请求超时", "请求没有在规定时间内完成，请重试。")
 				return
 			}
+			// 访客在后端响应前断开（关闭页面、浏览器中止轮询等）或监听器正在停止：请求上下文已取消，
+			// 代理随之报 context canceled。这不是后端的错：不计入错误数与被动检查，只记调试日志；
+			// 与 nginx 一致按 499 记入访问日志（连接已断，写出的状态码访客收不到）。
+			// 后端自身的超时由 Transport 的超时设置触发，不会取消访客请求的上下文，仍按后端错误处理
+			if r.Context().Err() != nil {
+				h.reqLog(r).Debugf("%s %s%s 访客已断开，请求中止: %v", r.Method, r.Host, r.URL.Path, err)
+				w.WriteHeader(statusClientClosed)
+				return
+			}
 			h.stats.Errors.Add(1)
-			// 客户端中途断开不是后端的错
-			if att := attemptFrom(r.Context()); att != nil && r.Context().Err() == nil {
+			if att := attemptFrom(r.Context()); att != nil {
 				p.fail(att.current(), err)
 			}
 			h.reqLog(r).Warnf("%s %s%s 后端错误: %v", r.Method, r.Host, r.URL.Path, err)
@@ -797,6 +805,9 @@ func (h *siteHandler) newProxy(s Site, p *pool, strip string) http.Handler {
 		rp.ServeHTTP(w, in)
 	})
 }
+
+// statusClientClosed 为访客在响应前断开时记入访问日志的状态码（nginx 的 499 Client Closed Request）。
+const statusClientClosed = 499
 
 // isUpstreamTimeout 判断代理错误是否为连接后端时的超时：拨号、TLS 握手与等待响应头超时都实现 net.Error 的 Timeout。
 // 访客断开导致的 context.Canceled 不算超时。
@@ -932,9 +943,9 @@ func (s *statusRecorder) runBeforeHeaders() {
 	}
 }
 
-// countsForLatency 判断这次请求是否计入首字节延迟：必须写出过响应，且不是协议升级、断开连接或被管理员断开的请求。
+// countsForLatency 判断这次请求是否计入首字节延迟：必须写出过响应，且不是协议升级、断开连接、访客中途断开或被管理员断开的请求。
 func (s *statusRecorder) countsForLatency() bool {
-	if s.firstByte.IsZero() || s.status == http.StatusSwitchingProtocols || s.status == statusClosed {
+	if s.firstByte.IsZero() || s.status == http.StatusSwitchingProtocols || s.status == statusClosed || s.status == statusClientClosed {
 		return false
 	}
 	return s.req == nil || !s.req.killed.Load()
