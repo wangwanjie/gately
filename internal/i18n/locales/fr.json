@@ -2645,6 +2645,7 @@
   "用户 %s 的共享 %s 目录不可用: %s": "Le répertoire du partage %[2]s de l’utilisateur %[1]s est indisponible : %[3]s",
   "用户 %s 的共享名 %q 无效，不能包含 %s 等字符": "Le nom de partage %[2]q de l’utilisateur %[1]s est invalide ; il ne peut pas contenir de caractères tels que %[3]s",
   "用户 %s 的共享名 %s 重复（不区分大小写）": "Le nom de partage %[2]s de l’utilisateur %[1]s est en double (sans distinction de casse)",
+  "用户 %s 的备注不能超过 %d 个字符": "La remarque de l'utilisateur %s ne peut pas dépasser %d caractères",
   "用户 %s 的密码是 bcrypt 哈希，SMB 需要明文密码，请重新设置": "Le mot de passe de l’utilisateur %s est un hachage bcrypt ; SMB a besoin du mot de passe en clair, redéfinissez-le",
   "用户 %s 的挂载 %s: %s，已跳过": "Montage %s de l'utilisateur %s : %s, ignoré",
   "用户 %s 的目录 %s 与 Gately 的配置目录重叠，已停止提供，请改为其他目录": "Le répertoire %[2]s de l'utilisateur %[1]s chevauche le répertoire de configuration de Gately et n'est plus servi ; choisissez un autre répertoire",

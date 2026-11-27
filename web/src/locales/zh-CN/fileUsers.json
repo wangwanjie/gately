@@ -13,5 +13,6 @@
   "deleteDirectory": "删除目录",
   "displayName": "显示名称",
   "addDirectory": "添加目录",
-  "empty": "暂无用户"
+  "empty": "暂无用户",
+  "remarkPlaceholder": "例如：客厅电视"
 }

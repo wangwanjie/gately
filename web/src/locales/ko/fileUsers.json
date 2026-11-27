@@ -13,5 +13,6 @@
   "deleteDirectory": "디렉터리 삭제",
   "displayName": "표시 이름",
   "addDirectory": "디렉터리 추가",
-  "empty": "사용자가 없습니다"
+  "empty": "사용자가 없습니다",
+  "remarkPlaceholder": "예: 거실 TV"
 }

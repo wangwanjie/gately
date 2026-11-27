@@ -13,5 +13,6 @@
   "deleteDirectory": "ディレクトリを削除",
   "displayName": "表示名",
   "addDirectory": "ディレクトリを追加",
-  "empty": "ユーザーがいません"
+  "empty": "ユーザーがいません",
+  "remarkPlaceholder": "例：リビングのテレビ"
 }

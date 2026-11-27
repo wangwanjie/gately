@@ -13,5 +13,6 @@
   "deleteDirectory": "Supprimer le dossier",
   "displayName": "Nom affiché",
   "addDirectory": "Ajouter un dossier",
-  "empty": "Aucun utilisateur"
+  "empty": "Aucun utilisateur",
+  "remarkPlaceholder": "ex. : TV du salon"
 }

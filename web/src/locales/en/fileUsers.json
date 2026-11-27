@@ -13,5 +13,6 @@
   "deleteDirectory": "Delete directory",
   "displayName": "Display name",
   "addDirectory": "Add directory",
-  "empty": "No users yet"
+  "empty": "No users yet",
+  "remarkPlaceholder": "e.g. Living room TV"
 }

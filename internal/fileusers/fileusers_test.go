@@ -41,6 +41,25 @@ func TestValidate(t *testing.T) {
 	}
 }
 
+// TestValidateRemark 验证备注去掉首尾空白、超过 200 个字符时拒绝保存。
+func TestValidateRemark(t *testing.T) {
+	users := []User{{Name: "tv", Password: "p", Root: "/a", Remark: "  客厅电视  "}}
+	if err := Validate(users); err != nil {
+		t.Fatal(err)
+	}
+	if users[0].Remark != "客厅电视" {
+		t.Fatalf("备注未去掉首尾空白: %q", users[0].Remark)
+	}
+	users[0].Remark = strings.Repeat("备", 200)
+	if err := Validate(users); err != nil {
+		t.Fatalf("200 个字符的备注应允许: %v", err)
+	}
+	users[0].Remark = strings.Repeat("备", 201)
+	if err := Validate(users); err == nil {
+		t.Fatal("超过 200 个字符的备注应拒绝")
+	}
+}
+
 func TestCheckPassword(t *testing.T) {
 	h, _ := bcrypt.GenerateFromPassword([]byte("pw"), bcrypt.MinCost)
 	if !CheckPassword("pw", "pw") || CheckPassword("pw", "bad") || !CheckPassword(string(h), "pw") || CheckPassword(string(h), "bad") {

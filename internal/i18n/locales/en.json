@@ -2645,6 +2645,7 @@
   "用户 %s 的共享 %s 目录不可用: %s": "Directory of share %[2]s for user %[1]s is unavailable: %[3]s",
   "用户 %s 的共享名 %q 无效，不能包含 %s 等字符": "Share name %[2]q of user %[1]s is invalid; it cannot contain characters such as %[3]s",
   "用户 %s 的共享名 %s 重复（不区分大小写）": "Share name %[2]s of user %[1]s is duplicated (case-insensitive)",
+  "用户 %s 的备注不能超过 %d 个字符": "The remark of user %s cannot exceed %d characters",
   "用户 %s 的密码是 bcrypt 哈希，SMB 需要明文密码，请重新设置": "The password of user %s is a bcrypt hash; SMB needs the plain password, please set it again",
   "用户 %s 的挂载 %s: %s，已跳过": "Mount %s of user %s: %s, skipped",
   "用户 %s 的目录 %s 与 Gately 的配置目录重叠，已停止提供，请改为其他目录": "Directory %[2]s of user %[1]s overlaps Gately's configuration directory and is no longer served; change it to another directory",

@@ -2645,6 +2645,7 @@
   "用户 %s 的共享 %s 目录不可用: %s": "Verzeichnis der Freigabe %[2]s von Benutzer %[1]s ist nicht verfügbar: %[3]s",
   "用户 %s 的共享名 %q 无效，不能包含 %s 等字符": "Freigabename %[2]q von Benutzer %[1]s ist ungültig; er darf keine Zeichen wie %[3]s enthalten",
   "用户 %s 的共享名 %s 重复（不区分大小写）": "Freigabename %[2]s von Benutzer %[1]s ist doppelt vorhanden (ohne Beachtung der Groß-/Kleinschreibung)",
+  "用户 %s 的备注不能超过 %d 个字符": "Die Notiz von Benutzer %s darf höchstens %d Zeichen lang sein",
   "用户 %s 的密码是 bcrypt 哈希，SMB 需要明文密码，请重新设置": "Das Passwort von Benutzer %s ist ein bcrypt-Hash; SMB benötigt das Klartextpasswort, bitte neu festlegen",
   "用户 %s 的挂载 %s: %s，已跳过": "Mount %s von Benutzer %s: %s, übersprungen",
   "用户 %s 的目录 %s 与 Gately 的配置目录重叠，已停止提供，请改为其他目录": "Das Verzeichnis %[2]s des Benutzers %[1]s überschneidet sich mit dem Konfigurationsverzeichnis von Gately und wird nicht mehr bereitgestellt; wählen Sie ein anderes Verzeichnis",

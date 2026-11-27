@@ -49,6 +49,8 @@ type User struct {
 	ReadOnly bool   `json:"readOnly"`
 	// Mounts 为多个目录：登录后根目录按名称列出各目录，每个目录可单独设为只读
 	Mounts []mountfs.Mount `json:"mounts,omitempty"`
+	// Remark 为备注（例如账号的用途），只在管理界面展示
+	Remark string `json:"remark,omitempty"`
 }
 
 // Settings 是模块配置。
@@ -91,6 +93,9 @@ func (s *Settings) Validate() error {
 			return fmt.Errorf("用户 %s 重复", u.Name)
 		}
 		seen[u.Name] = true
+		if err := fileusers.NormalizeRemark(u.Name, &u.Remark); err != nil {
+			return err
+		}
 		if len(u.Mounts) > 0 {
 			// 多目录模式下根目录为虚拟目录，单目录字段清空，避免两套配置并存
 			u.Root, u.ReadOnly = "", false

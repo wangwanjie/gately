@@ -13,5 +13,6 @@
   "deleteDirectory": "Excluir diretório",
   "displayName": "Nome de exibição",
   "addDirectory": "Adicionar diretório",
-  "empty": "Nenhum usuário ainda"
+  "empty": "Nenhum usuário ainda",
+  "remarkPlaceholder": "ex.: TV da sala"
 }

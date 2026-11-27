@@ -36,6 +36,8 @@ type User struct {
 	ReadOnly bool   `json:"readOnly"`
 	// Mounts 为多个目录，每个目录以其名称作为一个共享，可单独设为只读
 	Mounts []mountfs.Mount `json:"mounts,omitempty"`
+	// Remark 为备注（例如账号的用途），只在管理界面展示
+	Remark string `json:"remark,omitempty"`
 }
 
 // Settings 是模块配置。
@@ -116,6 +118,9 @@ func (s *Settings) Validate() error {
 			return fmt.Errorf("用户 %s 重复", u.Name)
 		}
 		seen[key] = true
+		if err := fileusers.NormalizeRemark(u.Name, &u.Remark); err != nil {
+			return err
+		}
 		// NTLM 认证需要由明文密码计算 NT 哈希，bcrypt 哈希无法使用
 		if strings.HasPrefix(u.Password, "$2") && len(u.Password) == 60 {
 			return fmt.Errorf("用户 %s 的密码是 bcrypt 哈希，SMB 需要明文密码，请重新设置", u.Name)

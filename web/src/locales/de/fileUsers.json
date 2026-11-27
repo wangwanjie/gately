@@ -13,5 +13,6 @@
   "deleteDirectory": "Verzeichnis löschen",
   "displayName": "Anzeigename",
   "addDirectory": "Verzeichnis hinzufügen",
-  "empty": "Noch keine Benutzer"
+  "empty": "Noch keine Benutzer",
+  "remarkPlaceholder": "z. B. Wohnzimmer-TV"
 }

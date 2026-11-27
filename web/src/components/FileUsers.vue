@@ -4,18 +4,19 @@
       <div class="g-card-title"><Users :size="16" />{{ title || t('fileUsers.title') }} <span class="g-card-desc">{{ desc || t('fileUsers.desc') }}</span></div>
       <div class="u-actions">
         <slot name="head" />
-        <el-button size="small" :icon="UserPlus" @click="users.push({ name: '', password: '', root: '', readOnly: false })">{{ t('fileUsers.addUser') }}</el-button>
+        <el-button size="small" :icon="UserPlus" @click="users.push({ name: '', password: '', root: '', readOnly: false, remark: '' })">{{ t('fileUsers.addUser') }}</el-button>
       </div>
     </div>
     <div class="g-card-body">
       <slot name="notice" />
       <div v-if="users.length" class="u-head">
-        <span>{{ t('fileUsers.username') }}</span><span>{{ t('fileUsers.password') }}</span><span>{{ t('fileUsers.directory') }}</span><span>{{ t('fileUsers.readOnly') }}</span><span />
+        <span>{{ t('fileUsers.username') }}</span><span>{{ t('fileUsers.password') }}</span><span>{{ t('common.remark') }}</span><span>{{ t('fileUsers.directory') }}</span><span>{{ t('fileUsers.readOnly') }}</span><span />
       </div>
       <div v-for="(u, i) in users" :key="i" class="u-item">
         <div class="u-row">
           <div class="u-cell"><label class="u-label">{{ t('fileUsers.username') }}</label><el-input v-model="u.name" /></div>
           <div class="u-cell"><label class="u-label">{{ t('fileUsers.password') }}</label><SecretInput v-model="u.password" :reveal="revealOf(u)" /></div>
+          <div class="u-cell u-remark"><label class="u-label">{{ t('common.remark') }}</label><el-input v-model="u.remark" :placeholder="t('fileUsers.remarkPlaceholder')" maxlength="200" /></div>
           <div class="u-cell u-root">
             <label class="u-label">{{ t('fileUsers.directory') }}</label>
             <template v-if="!u.mounts?.length">
@@ -67,6 +68,8 @@ export interface FileUser {
   readOnly: boolean
   // mounts 非空时 root 与 readOnly 不再使用，根目录按名称列出各目录
   mounts?: FileMount[]
+  // remark 为备注（例如账号的用途），只在管理界面展示
+  remark?: string
 }
 
 const { t } = useI18n()
@@ -129,7 +132,7 @@ function removeMount(u: FileUser, j: number) {
 .u-head,
 .u-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 2fr) 60px 40px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 2fr) 60px 40px;
   gap: 10px;
   align-items: center;
 }
@@ -189,6 +192,7 @@ function removeMount(u: FileUser, j: number) {
     color: var(--el-text-color-secondary);
     margin-bottom: 2px;
   }
+  .u-remark,
   .u-root {
     grid-column: 1 / -1;
     flex-wrap: wrap;

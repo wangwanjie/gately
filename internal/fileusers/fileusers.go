@@ -38,6 +38,8 @@ type User struct {
 	ReadOnly bool   `json:"readOnly"`
 	// Mounts 为多个目录，每个目录可单独设为只读
 	Mounts []mountfs.Mount `json:"mounts,omitempty"`
+	// Remark 为备注（例如账号的用途），只在管理界面展示
+	Remark string `json:"remark,omitempty"`
 }
 
 // Issue 是无法在某个服务中使用的共享用户及原因代码，目前只有 SMB 会报告。
@@ -88,6 +90,9 @@ func Validate(users []User) error {
 			return fmt.Errorf("共享用户 %s 重复（不区分大小写）", u.Name)
 		}
 		seen[key] = true
+		if err := NormalizeRemark(u.Name, &u.Remark); err != nil {
+			return err
+		}
 		if len(u.Mounts) > 0 {
 			// 多目录模式下单目录字段清空，避免两套配置并存
 			u.Root, u.ReadOnly = "", false
@@ -100,6 +105,18 @@ func Validate(users []User) error {
 		if !filepath.IsAbs(u.Root) {
 			return fmt.Errorf("共享用户 %s 的目录需为绝对路径", u.Name)
 		}
+	}
+	return nil
+}
+
+// maxRemark 是用户备注的最大字符数。
+const maxRemark = 200
+
+// NormalizeRemark 去掉用户 name 的备注首尾空白并检查长度，共享用户与各文件服务的本地用户共用。
+func NormalizeRemark(name string, remark *string) error {
+	*remark = strings.TrimSpace(*remark)
+	if len([]rune(*remark)) > maxRemark {
+		return fmt.Errorf("用户 %s 的备注不能超过 %d 个字符", name, maxRemark)
 	}
 	return nil
 }
