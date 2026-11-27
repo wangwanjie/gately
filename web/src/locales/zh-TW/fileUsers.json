@@ -15,5 +15,8 @@
   "addDirectory": "新增目錄",
   "empty": "暫無使用者",
   "remarkPlaceholder": "例如：客廳電視",
-  "readWrite": "讀寫"
+  "readWrite": "讀寫",
+  "pickStorage": "從儲存掛載選擇",
+  "pickStorageEmpty": "還沒有已啟用的本機目錄掛載點。",
+  "pickStorageAdd": "前往新增"
 }

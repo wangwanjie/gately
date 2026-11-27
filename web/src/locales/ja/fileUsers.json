@@ -15,5 +15,8 @@
   "addDirectory": "ディレクトリを追加",
   "empty": "ユーザーがいません",
   "remarkPlaceholder": "例：リビングのテレビ",
-  "readWrite": "読み書き"
+  "readWrite": "読み書き",
+  "pickStorage": "ストレージマウントから選択",
+  "pickStorageEmpty": "有効なローカルディレクトリのマウントはまだありません。",
+  "pickStorageAdd": "追加する"
 }

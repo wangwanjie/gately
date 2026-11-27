@@ -15,5 +15,8 @@
   "addDirectory": "디렉터리 추가",
   "empty": "사용자가 없습니다",
   "remarkPlaceholder": "예: 거실 TV",
-  "readWrite": "읽기/쓰기"
+  "readWrite": "읽기/쓰기",
+  "pickStorage": "스토리지 마운트에서 선택",
+  "pickStorageEmpty": "사용 중인 로컬 디렉터리 마운트가 아직 없습니다.",
+  "pickStorageAdd": "추가하기"
 }

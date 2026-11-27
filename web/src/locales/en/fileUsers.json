@@ -15,5 +15,8 @@
   "addDirectory": "Add directory",
   "empty": "No users yet",
   "remarkPlaceholder": "e.g. Living room TV",
-  "readWrite": "Read-write"
+  "readWrite": "Read-write",
+  "pickStorage": "Choose from storage mounts",
+  "pickStorageEmpty": "No enabled local directory mounts yet.",
+  "pickStorageAdd": "Add one"
 }

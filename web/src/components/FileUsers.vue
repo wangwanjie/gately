@@ -25,7 +25,9 @@
           <div class="u-cell u-root">
             <label class="u-label">{{ t('fileUsers.directory') }}</label>
             <template v-if="!u.mounts?.length">
-              <el-input v-model="u.root" placeholder="/data/share" class="mono" />
+              <el-input v-model="u.root" placeholder="/data/share" class="mono">
+                <template #suffix><StorageMountPicker @pick="(m) => (u.root = m.path)" /></template>
+              </el-input>
               <el-button link type="primary" size="small" class="u-multi" @click="toMulti(u)">{{ t('fileUsers.mountMultiple') }}</el-button>
             </template>
             <span v-else class="u-summary">{{ t(mountSummaryKey || 'fileUsers.mountSummary', { count: u.mounts.length }) }}</span>
@@ -40,7 +42,9 @@
         <div v-if="u.mounts?.length" class="m-list">
           <div v-for="(mt, j) in u.mounts" :key="j" class="m-row">
             <div class="u-cell"><label class="u-label">{{ t('common.name') }}</label><el-input v-model="mt.name" :placeholder="mountNamePlaceholder || t('fileUsers.displayName')" /></div>
-            <div class="u-cell m-path"><label class="u-label">{{ t('fileUsers.directory') }}</label><el-input v-model="mt.path" placeholder="/data/share" class="mono" /></div>
+            <div class="u-cell m-path"><label class="u-label">{{ t('fileUsers.directory') }}</label><el-input v-model="mt.path" placeholder="/data/share" class="mono">
+                <template #suffix><StorageMountPicker @pick="(m) => pickMount(mt, m)" /></template>
+              </el-input></div>
             <div class="u-cell u-ro"><label class="u-label">{{ t('fileUsers.readOnly') }}</label><el-switch v-model="mt.readOnly" /></div>
             <div class="u-cell u-del"><el-button text type="danger" :icon="Trash2" :aria-label="t('fileUsers.deleteDirectory')" @click="removeMount(u, j)" /></div>
           </div>
@@ -59,6 +63,7 @@ import { useI18n } from 'vue-i18n'
 import { FolderPlus, Trash2, UserPlus, Users } from 'lucide-vue-next'
 import SecretInput from './SecretInput.vue'
 import ConfigDirHint from './ConfigDirHint.vue'
+import StorageMountPicker, { type LocalMount } from './StorageMountPicker.vue'
 import { fetchSecret } from '../secrets'
 
 export interface FileMount {
@@ -115,6 +120,14 @@ function setEnabled(u: FileUser, on: boolean) {
     delete u.disabled
   } else {
     u.disabled = true
+  }
+}
+
+// pickMount 用选中的存储挂载点填写多目录中的一项：名称为空时顺便用挂载点名称作为显示名称
+function pickMount(mt: FileMount, m: LocalMount) {
+  mt.path = m.path
+  if (!mt.name.trim()) {
+    mt.name = m.name
   }
 }
 

@@ -15,5 +15,8 @@
   "addDirectory": "Ajouter un dossier",
   "empty": "Aucun utilisateur",
   "remarkPlaceholder": "ex. : TV du salon",
-  "readWrite": "Lecture-écriture"
+  "readWrite": "Lecture-écriture",
+  "pickStorage": "Choisir dans les montages de stockage",
+  "pickStorageEmpty": "Aucun montage de répertoire local activé pour l'instant.",
+  "pickStorageAdd": "En ajouter"
 }

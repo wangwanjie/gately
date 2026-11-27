@@ -15,5 +15,8 @@
   "addDirectory": "添加目录",
   "empty": "暂无用户",
   "remarkPlaceholder": "例如：客厅电视",
-  "readWrite": "读写"
+  "readWrite": "读写",
+  "pickStorage": "从存储挂载选择",
+  "pickStorageEmpty": "还没有已启用的本地目录挂载点。",
+  "pickStorageAdd": "去添加"
 }

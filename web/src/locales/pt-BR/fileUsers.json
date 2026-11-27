@@ -15,5 +15,8 @@
   "addDirectory": "Adicionar diretório",
   "empty": "Nenhum usuário ainda",
   "remarkPlaceholder": "ex.: TV da sala",
-  "readWrite": "Leitura e escrita"
+  "readWrite": "Leitura e escrita",
+  "pickStorage": "Escolher dos pontos de montagem",
+  "pickStorageEmpty": "Ainda não há pontos de montagem de diretório local ativados.",
+  "pickStorageAdd": "Adicionar"
 }

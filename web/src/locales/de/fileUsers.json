@@ -15,5 +15,8 @@
   "addDirectory": "Verzeichnis hinzufügen",
   "empty": "Noch keine Benutzer",
   "remarkPlaceholder": "z. B. Wohnzimmer-TV",
-  "readWrite": "Lesen/Schreiben"
+  "readWrite": "Lesen/Schreiben",
+  "pickStorage": "Aus Speicher-Einbindungen wählen",
+  "pickStorageEmpty": "Noch keine aktivierten lokalen Verzeichnis-Einbindungen.",
+  "pickStorageAdd": "Hinzufügen"
 }

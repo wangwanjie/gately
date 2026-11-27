@@ -97,7 +97,9 @@
         <el-form-item :label="t('filebrowser.sources')">
           <div class="src-list">
             <div v-for="(s, i) in editing.sources" :key="i" class="src-row">
-              <el-input v-model="s.path" :placeholder="t('filebrowser.sourcePath')" class="mono src-path" />
+              <el-input v-model="s.path" :placeholder="t('filebrowser.sourcePath')" class="mono src-path">
+                <template #suffix><StorageMountPicker @pick="(m) => (s.path = m.path)" /></template>
+              </el-input>
               <el-input v-model="s.name" :placeholder="t('filebrowser.sourceName')" class="src-name" />
               <el-checkbox v-model="s.readOnly">{{ t('filebrowser.readOnly') }}</el-checkbox>
               <el-button text type="danger" :icon="X" :disabled="editing.sources.length <= 1" @click="editing.sources.splice(i, 1)" />
@@ -163,6 +165,7 @@ import { CopyPlus, Download, FolderOpen, FolderPlus, Pencil, Plus, RefreshCw, Sa
 import { api, errorText } from '../api'
 import UrlLink from '../components/UrlLink.vue'
 import ConfigDirHint from '../components/ConfigDirHint.vue'
+import StorageMountPicker from '../components/StorageMountPicker.vue'
 import SecretInput from '../components/SecretInput.vue'
 import { secretOf } from '../secrets'
 import PageHeader from '../components/PageHeader.vue'
