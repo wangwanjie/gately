@@ -60,6 +60,20 @@ type cfRecord struct {
 	Comment string `json:"comment,omitempty"`
 }
 
+// cfHTTPError 是带 Cloudflare 错误信息的 HTTP 失败，Unwrap 后可得到 *HTTPError。
+type cfHTTPError struct {
+	*HTTPError
+	msg string
+}
+
+func (e *cfHTTPError) Error() string {
+	return fmt.Sprintf("Cloudflare: HTTP %d: %s", e.Status, e.msg)
+}
+
+func (e *cfHTTPError) Unwrap() error {
+	return e.HTTPError
+}
+
 func (c *cloudflare) call(ctx context.Context, method, path string, body any, out any) error {
 	var rd *bytes.Reader
 	if body != nil {
@@ -82,7 +96,8 @@ func (c *cloudflare) call(ctx context.Context, method, path string, body any, ou
 	var env cfEnvelope
 	err = doJSON(c.hc, req, &env)
 	var he *HTTPError
-	if errors.As(err, &he) {
+	isHTTP := errors.As(err, &he)
+	if isHTTP {
 		_ = json.Unmarshal([]byte(he.Body), &env)
 	} else if err != nil {
 		return err
@@ -94,6 +109,10 @@ func (c *cloudflare) call(ctx context.Context, method, path string, body any, ou
 		}
 		if len(msgs) == 0 && err != nil {
 			return err
+		}
+		if isHTTP {
+			// 带上 HTTP 状态码便于判断是否为瞬时 5xx，并保留 *HTTPError 供上层判断是否可重试
+			return &cfHTTPError{HTTPError: he, msg: strings.Join(msgs, "; ")}
 		}
 		return fmt.Errorf("Cloudflare: %s", strings.Join(msgs, "; "))
 	}
