@@ -162,7 +162,7 @@ func (c *Collector) Snapshot() Snapshot {
 	s := Snapshot{
 		OS:          runtime.GOOS,
 		Arch:        runtime.GOARCH,
-		InContainer: inContainer(),
+		InContainer: InContainer(),
 		SampledAt:   time.Now(),
 	}
 	s.Hostname, _ = os.Hostname()
@@ -389,15 +389,6 @@ func fillProcess(p *Process) {
 		// 无法读取常驻内存时，用向系统申请的内存近似
 		p.RSS = ms.Sys
 	}
-}
-
-func inContainer() bool {
-	for _, f := range []string{"/.dockerenv", "/run/.containerenv"} {
-		if _, err := os.Stat(f); err == nil {
-			return true
-		}
-	}
-	return false
 }
 
 // DiskUsage 返回 dir 所在分区的容量，不支持的平台或读取失败时返回 nil。
