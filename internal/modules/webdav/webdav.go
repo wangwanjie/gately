@@ -51,6 +51,8 @@ type User struct {
 	Mounts []mountfs.Mount `json:"mounts,omitempty"`
 	// Remark 为备注（例如账号的用途），只在管理界面展示
 	Remark string `json:"remark,omitempty"`
+	// Disabled 为 true 时暂停该用户，不能登录，同名的共享用户也不能登录；旧配置没有该字段，即为启用
+	Disabled bool `json:"disabled,omitempty"`
 }
 
 // Settings 是模块配置。
@@ -108,7 +110,8 @@ func (s *Settings) Validate() error {
 			return fmt.Errorf("用户 %s 的目录需为绝对路径", u.Name)
 		}
 	}
-	if s.Enable && len(s.Users) == 0 && (!s.SharedUsers || len(fileusers.Default.List()) == 0) {
+	// 停用的用户只是暂停登录，仍算作已添加的用户
+	if s.Enable && len(s.Users) == 0 && (!s.SharedUsers || len(fileusers.Default.All()) == 0) {
 		return errors.New("启用 WebDAV 时至少添加一个用户")
 	}
 	return nil
@@ -164,7 +167,7 @@ func (m *Module) Init(env module.Env) error {
 		m.shared = map[string]*userHandler{}
 		if m.settings.Enable && m.settings.SharedUsers && m.srv != nil {
 			shared := m.sharedCountLocked()
-			m.logs.Add(logbuf.LevelInfo, "", fmt.Sprintf("共享用户已更新（%d 个用户，其中 %d 个共享用户）", len(m.settings.Users)+shared, shared))
+			m.logs.Add(logbuf.LevelInfo, "", fmt.Sprintf("共享用户已更新（%d 个用户，其中 %d 个共享用户）", enabledCount(m.settings.Users)+shared, shared))
 		}
 	})
 	// 共享用户页面展示本服务的启用状态、开关与本地用户
@@ -274,7 +277,7 @@ func (m *Module) sharedCountLocked() int {
 
 // logListenLocked 记录监听日志，开启共享用户时用户数计入共享用户；格式串保持完整以便日志翻译按模板匹配。
 func (m *Module) logListenLocked(addr string) {
-	local := len(m.settings.Users)
+	local := enabledCount(m.settings.Users)
 	if m.settings.SharedUsers {
 		shared := m.sharedCountLocked()
 		m.logs.Add(logbuf.LevelInfo, "", fmt.Sprintf("WebDAV 监听 %s（%d 个用户，其中 %d 个共享用户）", addr, local+shared, shared))
@@ -301,6 +304,10 @@ func newUserHandler(u User) *userHandler {
 // lookupLocked 按用户名查找处理器：先找本地用户，没有同名本地用户且开启了共享用户时再找共享用户。调用方需持有 m.mu。
 func (m *Module) lookupLocked(name string) (uh *userHandler, shared bool) {
 	if uh := m.handlers[name]; uh != nil {
+		// 停用的本地用户不能登录，也不改按同名共享用户校验
+		if uh.user.Disabled {
+			return nil, false
+		}
 		return uh, false
 	}
 	if !m.settings.SharedUsers || m.shared == nil {
@@ -426,6 +433,17 @@ func (m *Module) Routes(r module.Router) {
 		m.restartLocked()
 		httpx.OK(w, map[string]any{"running": m.srv != nil, "error": m.err})
 	})
+}
+
+// enabledCount 返回未停用的本地用户数，用于运行日志中的用户数。
+func enabledCount(users []User) int {
+	n := 0
+	for _, u := range users {
+		if !u.Disabled {
+			n++
+		}
+	}
+	return n
 }
 
 // userPasswords 返回本地用户的密码明文，按用户名索引。

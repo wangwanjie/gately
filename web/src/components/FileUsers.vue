@@ -10,12 +10,17 @@
     <div class="g-card-body">
       <slot name="notice" />
       <div v-if="users.length" class="u-head">
-        <span>{{ t('fileUsers.username') }}</span><span>{{ t('fileUsers.password') }}</span><span>{{ t('common.remark') }}</span><span>{{ t('fileUsers.directory') }}</span><span>{{ t('fileUsers.readOnly') }}</span><span />
+        <span :title="t('common.enable')">{{ t('common.enable') }}</span><span>{{ t('fileUsers.username') }}</span><span>{{ t('fileUsers.password') }}</span><span>{{ t('common.remark') }}</span><span>{{ t('fileUsers.directory') }}</span><span :title="t('fileUsers.readOnly')">{{ t('fileUsers.readOnly') }}</span><span />
       </div>
-      <div v-for="(u, i) in users" :key="i" class="u-item">
+      <div v-for="(u, i) in users" :key="i" class="u-item" :class="{ 'is-off': u.disabled }">
         <div class="u-row">
-          <div class="u-cell"><label class="u-label">{{ t('fileUsers.username') }}</label><el-input v-model="u.name" /></div>
-          <div class="u-cell"><label class="u-label">{{ t('fileUsers.password') }}</label><SecretInput v-model="u.password" :reveal="revealOf(u)" /></div>
+          <div class="u-cell u-on">
+            <label class="u-label">{{ t('common.enable') }}</label>
+            <!-- disabled 为 true 表示停用，开关显示的是「启用」，取反存取 -->
+            <el-switch :model-value="!u.disabled" :aria-label="t('common.enable')" @update:model-value="(v: string | number | boolean) => setEnabled(u, !!v)" />
+          </div>
+          <div class="u-cell u-name"><label class="u-label">{{ t('fileUsers.username') }}</label><el-input v-model="u.name" /></div>
+          <div class="u-cell u-pass"><label class="u-label">{{ t('fileUsers.password') }}</label><SecretInput v-model="u.password" :reveal="revealOf(u)" /></div>
           <div class="u-cell u-remark"><label class="u-label">{{ t('common.remark') }}</label><el-input v-model="u.remark" :placeholder="t('fileUsers.remarkPlaceholder')" maxlength="200" /></div>
           <div class="u-cell u-root">
             <label class="u-label">{{ t('fileUsers.directory') }}</label>
@@ -70,6 +75,8 @@ export interface FileUser {
   mounts?: FileMount[]
   // remark 为备注（例如账号的用途），只在管理界面展示
   remark?: string
+  // disabled 为 true 时暂停该用户，不能登录；没有该字段即为启用
+  disabled?: boolean
 }
 
 const { t } = useI18n()
@@ -102,6 +109,15 @@ function revealOf(u: FileUser): (() => Promise<string | undefined>) | undefined 
   return () => fetchSecret(url, savedNames.get(toRaw(u)) ?? u.name)
 }
 
+// setEnabled 设置用户是否启用：启用时删除 disabled 字段，与旧配置（没有该字段）保持一致，避免产生无意义的修改
+function setEnabled(u: FileUser, on: boolean) {
+  if (on) {
+    delete u.disabled
+  } else {
+    u.disabled = true
+  }
+}
+
 // toMulti 把单目录用户转换为多目录：已填写的目录成为第一个挂载
 function toMulti(u: FileUser) {
   const name = u.root.replace(/[\\/]+$/, '').split(/[\\/]/).pop() || ''
@@ -132,7 +148,7 @@ function removeMount(u: FileUser, j: number) {
 .u-head,
 .u-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 2fr) 60px 40px;
+  grid-template-columns: 64px minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 2fr) 60px 40px;
   gap: 10px;
   align-items: center;
 }
@@ -141,9 +157,20 @@ function removeMount(u: FileUser, j: number) {
   color: var(--el-text-color-secondary);
   padding-bottom: 6px;
 }
+/* 列宽固定，较长的译文（如德语）截断显示，完整文字见悬停提示 */
+.u-head > span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .u-item {
   padding: 8px 0;
   border-top: 1px solid var(--g-border);
+}
+/* 停用的用户除开关外整体淡化 */
+.u-item.is-off .u-row > .u-cell:not(.u-on),
+.u-item.is-off .m-list {
+  opacity: 0.55;
 }
 .u-label {
   display: none;
@@ -182,9 +209,34 @@ function removeMount(u: FileUser, j: number) {
     border: 1px solid var(--g-border);
     border-radius: 8px;
   }
-  .u-row,
   .m-row {
     grid-template-columns: 1fr 1fr;
+  }
+  /* 手机上：用户名 | 密码；备注；目录；只读 | 启用 | 删除 */
+  .u-row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  }
+  .u-name {
+    order: 1;
+  }
+  .u-pass {
+    order: 2;
+    grid-column: 2 / -1;
+  }
+  .u-remark {
+    order: 3;
+  }
+  .u-root {
+    order: 4;
+  }
+  .u-ro {
+    order: 5;
+  }
+  .u-on {
+    order: 6;
+  }
+  .u-del {
+    order: 7;
   }
   .u-label {
     display: block;
@@ -205,12 +257,14 @@ function removeMount(u: FileUser, j: number) {
   .m-path {
     grid-column: 1 / -1;
   }
-  .u-ro {
+  .u-ro,
+  .u-on {
     display: flex;
     align-items: center;
     gap: 8px;
   }
-  .u-ro .u-label {
+  .u-ro .u-label,
+  .u-on .u-label {
     margin: 0;
   }
   .u-del {

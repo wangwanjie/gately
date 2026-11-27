@@ -116,6 +116,8 @@ const savedPort = ref(445)
 const savedListenIp = ref('')
 // savedLocalShares 为已保存配置中本地用户的共享；savedSharedUsers 为已保存的共享用户开关
 const savedLocalShares = ref<ShareRow[]>([])
+// savedLocalNames 为已保存的本地用户名（含停用的用户）
+const savedLocalNames = ref<string[]>([])
 const savedSharedUsers = ref(false)
 // savedShares 为已保存配置中的全部共享，用于展示连接地址：开启共享用户时加入可用于 SMB 的共享用户
 // （与后端 buildAccounts 一致，排除与本地用户同名或无法用于 SMB 的共享用户）
@@ -126,9 +128,10 @@ const savedShares = computed((): ShareRow[] => {
   if (!savedSharedUsers.value) {
     return savedLocalShares.value
   }
-  const local = new Set(savedLocalShares.value.map((s) => s.user.toLowerCase()))
+  // 停用的本地用户仍占用用户名，同名的共享用户也不能登录
+  const local = new Set(savedLocalNames.value.map((n) => n.toLowerCase()))
   const bad = new Set(smbIssues.value.map((i) => i.name))
-  const usable = shared.savedUsers.value.filter((u) => !local.has(u.name.toLowerCase()) && !bad.has(u.name))
+  const usable = shared.savedUsers.value.filter((u) => !u.disabled && !local.has(u.name.toLowerCase()) && !bad.has(u.name))
   return [...savedLocalShares.value, ...sharesOf(usable)]
 })
 const running = ref(false)
@@ -199,7 +202,9 @@ async function load() {
   savedEnable.value = r.settings.enable
   savedPort.value = r.settings.port
   savedListenIp.value = r.settings.listenIp
-  savedLocalShares.value = sharesOf(settings.value.users)
+  // 停用的用户不能登录，不列出连接地址
+  savedLocalShares.value = sharesOf(settings.value.users.filter((u) => !u.disabled))
+  savedLocalNames.value = settings.value.users.map((u) => u.name)
   savedSharedUsers.value = !!r.settings.sharedUsers
   running.value = r.running
   error.value = r.error

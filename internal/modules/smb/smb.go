@@ -38,6 +38,8 @@ type User struct {
 	Mounts []mountfs.Mount `json:"mounts,omitempty"`
 	// Remark 为备注（例如账号的用途），只在管理界面展示
 	Remark string `json:"remark,omitempty"`
+	// Disabled 为 true 时暂停该用户，不能登录，同名（不区分大小写）的共享用户也不能登录；旧配置没有该字段，即为启用
+	Disabled bool `json:"disabled,omitempty"`
 }
 
 // Settings 是模块配置。
@@ -148,8 +150,8 @@ func (s *Settings) Validate() error {
 			return fmt.Errorf("用户 %s 的目录需为绝对路径", u.Name)
 		}
 	}
-	// 共享用户可能因用户名、bcrypt 密码或共享名不能用于 SMB 而被跳过，按实际可用的账号计算
-	if accounts, _ := buildAccounts(*s, fileusers.Default.List()); s.Enable && len(accounts) == 0 {
+	// 共享用户可能因用户名、bcrypt 密码或共享名不能用于 SMB 而被跳过，按实际可用的账号计算；停用的用户仍算作已添加
+	if accounts, _, disabled := buildAccountsCount(*s, fileusers.Default.All()); s.Enable && len(accounts)+disabled == 0 {
 		return errors.New("启用 SMB 时至少添加一个用户")
 	}
 	return nil
@@ -205,7 +207,8 @@ func (m *Module) Init(env module.Env) error {
 		}
 		// 不论开关是否打开都按打开计算，便于在打开之前看到哪些共享用户不能用于 SMB
 		s.SharedUsers = true
-		_, sv.Issues = buildAccounts(s, fileusers.Default.List())
+		// 停用的共享用户也检查，便于重新启用之前看到问题
+		_, sv.Issues = buildAccounts(s, fileusers.Default.All())
 		return sv
 	})
 	// 只靠共享用户启用时，修改后至少要有一个能用于 SMB 的共享用户
@@ -217,7 +220,8 @@ func (m *Module) Init(env module.Env) error {
 		if !s.Enable || len(s.Users) > 0 || !s.SharedUsers || loadErr != nil {
 			return nil
 		}
-		if accounts, _ := buildAccounts(s, users); len(accounts) == 0 {
+		// 停用的共享用户仍算作保留的用户，停用最后一个共享用户不拦截
+		if accounts, _, disabled := buildAccountsCount(s, users); len(accounts)+disabled == 0 {
 			return errors.New("SMB 已启用且只使用共享用户，至少保留一个能用于 SMB 的共享用户")
 		}
 		return nil
@@ -310,10 +314,17 @@ func (m *Module) restartLocked() {
 	}
 	m.srv = srv
 	m.accounts, m.accountsKey = accounts, accountsKey(accounts)
+	// 用户数按实际生成的账号计算，停用的用户不计入
+	shared := 0
+	for _, a := range accounts {
+		if a.Shared {
+			shared++
+		}
+	}
 	if m.settings.SharedUsers {
-		m.logs.Add(logbuf.LevelInfo, "", fmt.Sprintf("SMB 监听 %s（%d 个用户，其中 %d 个共享用户）", srv.Addr(), len(accounts), len(accounts)-len(m.settings.Users)))
+		m.logs.Add(logbuf.LevelInfo, "", fmt.Sprintf("SMB 监听 %s（%d 个用户，其中 %d 个共享用户）", srv.Addr(), len(accounts), shared))
 	} else {
-		m.logs.Add(logbuf.LevelInfo, "", fmt.Sprintf("SMB 监听 %s（%d 个用户）", srv.Addr(), len(m.settings.Users)))
+		m.logs.Add(logbuf.LevelInfo, "", fmt.Sprintf("SMB 监听 %s（%d 个用户）", srv.Addr(), len(accounts)))
 	}
 }
 
@@ -343,7 +354,7 @@ func (m *Module) Routes(r module.Router) {
 		s := m.settings
 		m.mu.Unlock()
 		s.SharedUsers = true
-		_, issues := buildAccounts(s, fileusers.Default.List())
+		_, issues := buildAccounts(s, fileusers.Default.All())
 		if issues == nil {
 			issues = []Issue{}
 		}

@@ -48,6 +48,8 @@ type User struct {
 	Mounts []mountfs.Mount `json:"mounts,omitempty"`
 	// Remark 为备注（例如账号的用途），只在管理界面展示
 	Remark string `json:"remark,omitempty"`
+	// Disabled 为 true 时暂停该用户，不能登录，同名的共享用户也不能登录；旧配置没有该字段，即为启用
+	Disabled bool `json:"disabled,omitempty"`
 }
 
 // Settings 是模块配置。
@@ -135,7 +137,8 @@ func (s *Settings) Validate() error {
 			return fmt.Errorf("用户 %s 的目录需为绝对路径", u.Name)
 		}
 	}
-	if s.Enable && len(s.Users) == 0 && (!s.SharedUsers || len(fileusers.Default.List()) == 0) {
+	// 停用的用户只是暂停登录，仍算作已添加的用户
+	if s.Enable && len(s.Users) == 0 && (!s.SharedUsers || len(fileusers.Default.All()) == 0) {
 		return errors.New("启用 FTP 时至少添加一个用户")
 	}
 	return nil
@@ -269,7 +272,8 @@ func (d *driver) authUser(cc ftpserver.ClientContext, user, pass string) (ftpser
 			u, shared = User(su), true
 		}
 	}
-	if !ok || !fileusers.CheckPassword(u.Password, pass) {
+	// 停用的本地用户不能登录，也不改按同名共享用户校验；停用的共享用户 Lookup 查不到
+	if !ok || u.Disabled || !fileusers.CheckPassword(u.Password, pass) {
 		if shared {
 			d.logs.Add(logbuf.LevelWarn, "", fmt.Sprintf("%s 认证失败（共享用户 %q）", cc.RemoteAddr(), fileusers.ClipName(user)))
 		} else {
@@ -479,7 +483,13 @@ func (m *Module) sharedCountLocked() int {
 
 // logListenLocked 记录监听日志，开启共享用户时用户数计入共享用户；格式串保持完整以便日志翻译按模板匹配。
 func (m *Module) logListenLocked(addr string) {
-	local := len(m.settings.Users)
+	// 停用的本地用户不能登录，不计入用户数
+	local := 0
+	for _, u := range m.settings.Users {
+		if !u.Disabled {
+			local++
+		}
+	}
 	if m.settings.SharedUsers {
 		shared := m.sharedCountLocked()
 		m.logs.Add(logbuf.LevelInfo, "", fmt.Sprintf("FTP 监听 %s（%d 个用户，其中 %d 个共享用户）", addr, local+shared, shared))

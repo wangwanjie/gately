@@ -60,6 +60,45 @@ func TestValidateRemark(t *testing.T) {
 	}
 }
 
+// TestDisabledUsers 验证停用的共享用户不出现在 List、Lookup 查不到（各服务据此拒绝登录），All 仍包含它，
+// 也不能自助修改密码；读取旧配置（没有 disabled 字段）时为启用。
+func TestDisabledUsers(t *testing.T) {
+	st, _ := config.Open(t.TempDir())
+	r := New()
+	if err := r.Init(st); err != nil {
+		t.Fatal(err)
+	}
+	if err := r.Save([]User{
+		{Name: "on", Password: "password-1", Root: "/a"},
+		{Name: "off", Password: "password-2", Root: "/b", Disabled: true},
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if l := r.List(); len(l) != 1 || l[0].Name != "on" {
+		t.Fatalf("List 不应包含停用的用户: %+v", l)
+	}
+	if a := r.All(); len(a) != 2 || !a[1].Disabled {
+		t.Fatalf("All 应包含停用的用户: %+v", a)
+	}
+	if _, ok := r.Lookup("off"); ok {
+		t.Fatal("停用的用户应查不到")
+	}
+	if _, ok := r.Lookup("on"); !ok {
+		t.Fatal("启用的用户应能查到")
+	}
+	if m := r.Masked(); len(m) != 2 || !m[1].Disabled {
+		t.Fatalf("接口应返回停用状态: %+v", m)
+	}
+	r.selfService = true
+	if err := r.ChangePassword("off", "password-2", "password-3"); !errors.Is(err, ErrBadCredentials) {
+		t.Fatalf("停用的用户不能自助修改密码: %v", err)
+	}
+	var u User
+	if err := json.Unmarshal([]byte(`{"name":"x","password":"p","root":"/a"}`), &u); err != nil || u.Disabled {
+		t.Fatalf("旧配置应视为启用: %+v %v", u, err)
+	}
+}
+
 func TestCheckPassword(t *testing.T) {
 	h, _ := bcrypt.GenerateFromPassword([]byte("pw"), bcrypt.MinCost)
 	if !CheckPassword("pw", "pw") || CheckPassword("pw", "bad") || !CheckPassword(string(h), "pw") || CheckPassword(string(h), "bad") {

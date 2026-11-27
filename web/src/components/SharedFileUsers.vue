@@ -63,7 +63,8 @@ const shadowed = computed(() => shadowedNames(props.users, props.localNames, pro
 
 // tagType 让开关打开时被本地用户遮蔽或无法使用的共享用户显示为警告色
 function tagType(name: string): 'warning' | 'info' | 'primary' {
-  if (!enabled.value) {
+  // 已停用的共享用户不能登录，与开关关闭时一样显示为灰色
+  if (!enabled.value || props.users.some((u) => u.name === name && u.disabled)) {
     return 'info'
   }
   if (shadowed.value.includes(name) || props.issues?.some((i) => i.name === name)) {

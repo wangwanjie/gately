@@ -40,6 +40,8 @@ type User struct {
 	Mounts []mountfs.Mount `json:"mounts,omitempty"`
 	// Remark 为备注（例如账号的用途），只在管理界面展示
 	Remark string `json:"remark,omitempty"`
+	// Disabled 为 true 时暂停该用户：保留配置但不能登录任何文件服务；旧配置没有该字段，即为启用
+	Disabled bool `json:"disabled,omitempty"`
 }
 
 // Issue 是无法在某个服务中使用的共享用户及原因代码，目前只有 SMB 会报告。
@@ -230,14 +232,29 @@ func (r *Registry) LoadErr() error {
 	return r.loadErr
 }
 
-// List 返回可以登录的共享用户的副本；读取到的列表未通过校验时返回空。
+// List 返回可以登录的共享用户的副本，已停用（Disabled）的用户不在其中；读取到的列表未通过校验时返回空。
 func (r *Registry) List() []User {
+	return r.list(false)
+}
+
+// All 同 List，但包含已停用的用户。各服务据此判断「至少有一个用户」：停用只是暂停登录，用户仍然存在。
+func (r *Registry) All() []User {
+	return r.list(true)
+}
+
+func (r *Registry) list(withDisabled bool) []User {
 	r.mu.RLock()
 	if r.loadErr != nil {
 		r.mu.RUnlock()
 		return nil
 	}
-	out := clone(r.users)
+	out := make([]User, 0, len(r.users))
+	for _, u := range clone(r.users) {
+		if u.Disabled && !withDisabled {
+			continue
+		}
+		out = append(out, u)
+	}
 	r.mu.RUnlock()
 	// 判断目录要访问文件系统（目录在失去响应的网络挂载上时可能很慢），放在锁外进行
 	for i := range out {
@@ -247,7 +264,7 @@ func (r *Registry) List() []User {
 	return out
 }
 
-// Lookup 按用户名（区分大小写）查找可以登录的共享用户。
+// Lookup 按用户名（区分大小写）查找可以登录的共享用户，已停用的用户视为不存在。
 func (r *Registry) Lookup(name string) (User, bool) {
 	u, ok := r.lookupRaw(name)
 	if !ok {
@@ -258,7 +275,7 @@ func (r *Registry) Lookup(name string) (User, bool) {
 	return u, true
 }
 
-// lookupRaw 返回已保存的共享用户（目录未经 Usable 处理）。
+// lookupRaw 返回已保存且未停用的共享用户（目录未经 Usable 处理）。
 func (r *Registry) lookupRaw(name string) (User, bool) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
@@ -267,6 +284,9 @@ func (r *Registry) lookupRaw(name string) (User, bool) {
 	}
 	for _, u := range r.users {
 		if u.Name == name {
+			if u.Disabled {
+				return User{}, false
+			}
 			u.Mounts = slices.Clone(u.Mounts)
 			return u, true
 		}

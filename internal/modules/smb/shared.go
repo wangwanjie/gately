@@ -58,15 +58,27 @@ func sharedIssue(u fileusers.User) string {
 
 // buildAccounts 生成 SMB 账号：先是本地用户，开启共享用户时再加入共享用户。
 // 与本地用户同名（不区分大小写）的共享用户只按本地用户校验，不列为问题；无法用于 SMB 的共享用户列在 issues 中。
+// 停用的用户不生成账号，不能登录；停用的本地用户仍占用其用户名，同名的共享用户也不能登录。
 func buildAccounts(s Settings, shared []fileusers.User) (out []account, issues []Issue) {
+	out, issues, _ = buildAccountsCount(s, shared)
+	return out, issues
+}
+
+// buildAccountsCount 同 buildAccounts，另外返回因停用而跳过的用户数（共享用户只计入可用于 SMB 且未被本地用户遮蔽的）。
+// 「启用服务至少要有一个用户」按 len(out)+disabled 判断：停用只是暂停登录，用户仍然存在。
+func buildAccountsCount(s Settings, shared []fileusers.User) (out []account, issues []Issue, disabled int) {
 	local := map[string]bool{}
 	for _, u := range s.Users {
+		local[strings.ToLower(u.Name)] = true
+		if u.Disabled {
+			disabled++
+			continue
+		}
 		// 与配置目录重叠的目录不提供，见 usable
 		out = append(out, account{User: usable(u, nil)})
-		local[strings.ToLower(u.Name)] = true
 	}
 	if !s.SharedUsers {
-		return out, nil
+		return out, nil, disabled
 	}
 	for _, su := range shared {
 		if local[strings.ToLower(su.Name)] {
@@ -76,9 +88,14 @@ func buildAccounts(s Settings, shared []fileusers.User) (out []account, issues [
 			issues = append(issues, Issue{Name: su.Name, Reason: reason})
 			continue
 		}
+		// fileusers.List 已排除停用的共享用户；保存前检查传入的是完整列表，这里再排除一次
+		if su.Disabled {
+			disabled++
+			continue
+		}
 		out = append(out, account{User: User(su), Shared: true})
 	}
-	return out, issues
+	return out, issues, disabled
 }
 
 // accountsShape 返回不含密码的账号集合指纹：与当前服务相同时说明只改了密码，不必重启服务。
