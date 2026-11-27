@@ -255,13 +255,14 @@ function removeMount(u: FileUser, j: number) {
     display: block;
     font-size: 12px;
     color: var(--el-text-color-secondary);
-    margin-bottom: 2px;
+    /* 标签与输入框留出足够间距，避免文字贴着输入框 */
+    margin-bottom: 6px;
   }
   .u-remark,
   .u-root {
     grid-column: 1 / -1;
     flex-wrap: wrap;
-    gap: 4px 8px;
+    gap: 6px 8px;
   }
   .u-root .u-label {
     width: 100%;
