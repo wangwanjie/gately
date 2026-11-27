@@ -366,6 +366,29 @@ func dynv6SameAddr(cur, want string) bool {
 	return a.Unmap() == b.Unmap()
 }
 
+// syncApexRecords 把 records 中名称为空（根域名）且类型相同、地址不同的记录改成目标地址，返回是否有改动。
+func (d *dynv6) syncApexRecords(ctx context.Context, zpath string, r Record) bool {
+	var recs []struct {
+		ID   int64  `json:"id"`
+		Name string `json:"name"`
+		Type string `json:"type"`
+		Data string `json:"data"`
+	}
+	if err := d.do(ctx, http.MethodGet, zpath, nil, &recs); err != nil {
+		return false
+	}
+	changed := false
+	for _, rec := range recs {
+		if (rec.Name != "" && rec.Name != "@") || rec.Type != r.Type || dynv6SameAddr(rec.Data, r.Value) {
+			continue
+		}
+		if err := d.do(ctx, http.MethodPatch, zpath+"/"+strconv.FormatInt(rec.ID, 10), map[string]string{"data": r.Value}, nil); err == nil {
+			changed = true
+		}
+	}
+	return changed
+}
+
 func (d *dynv6) Upsert(ctx context.Context, r Record) (string, error) {
 	zone, name, err := d.resolveZoneInfo(ctx, r.Zone, r.Sub)
 	if err != nil {
@@ -379,13 +402,19 @@ func (d *dynv6) Upsert(ctx context.Context, r Record) (string, error) {
 		if r.Type == "AAAA" {
 			cur, field = zone.IPv6, "ipv6prefix"
 		}
-		if dynv6SameAddr(cur, r.Value) {
-			return ActionUnchanged, nil
+		action := ActionUnchanged
+		if !dynv6SameAddr(cur, r.Value) {
+			if err := d.do(ctx, http.MethodPatch, zonePath, map[string]string{field: r.Value}, nil); err != nil {
+				return "", err
+			}
+			action = ActionUpdated
 		}
-		if err := d.do(ctx, http.MethodPatch, zonePath, map[string]string{field: r.Value}, nil); err != nil {
-			return "", err
+		// zone 的 ipv4address / ipv6prefix 更新后，records 里已存在的同类型根记录可能仍是旧地址
+		// （dynv6 不保证两处联动），这里一并校正；只改已有记录，不创建，失败不影响 zone 更新结果
+		if d.syncApexRecords(ctx, zonePath+"/records", r) {
+			action = ActionUpdated
 		}
-		return ActionUpdated, nil
+		return action, nil
 	}
 	zpath := zonePath + "/records"
 	var recs []struct {

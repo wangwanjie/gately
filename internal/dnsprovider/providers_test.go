@@ -289,6 +289,8 @@ func TestDynv6Root(t *testing.T) {
 				zone[k] = v
 			}
 			_, _ = w.Write([]byte(`{}`))
+		case r.Method == "GET" && r.URL.Path == "/zones/7/records":
+			_, _ = w.Write([]byte(`[]`))
 		default:
 			t.Errorf("意外请求 %s %s", r.Method, r.URL)
 		}
@@ -466,4 +468,107 @@ func TestDynv6ZoneFallback(t *testing.T) {
 	p.(*dynv6).endpoint = srv.URL
 	runUpsertSequence(t, p, Record{Zone: "dynv6.net", Sub: "a.my", Type: "AAAA"})
 	// 子域名仅一级时：zone=dynv6.net sub=my 同样应落到 my.dynv6.net 的根记录
+}
+
+// 根域名的 zone 地址更新后，records 里已有的同类型根记录若仍是旧地址也要校正；
+// 子域名记录与其他类型的根记录不受影响；records 里没有根记录时不创建。
+func TestDynv6RootSyncsRecords(t *testing.T) {
+	zone := map[string]any{"id": 7, "ipv4address": "", "ipv6prefix": "2001:db8::1"}
+	recs := []map[string]any{
+		{"id": 1, "name": "", "type": "AAAA", "data": "2001:db8::old"},
+		{"id": 2, "name": "www", "type": "AAAA", "data": "2001:db8::old"},
+		{"id": 3, "name": "", "type": "TXT", "data": "hello"},
+	}
+	var zonePatches, recPatches, posts int
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case r.Method == "GET" && r.URL.Path == "/zones/by-name/my.dynv6.net":
+			_ = json.NewEncoder(w).Encode(zone)
+		case r.Method == "GET" && r.URL.Path == "/zones/7/records":
+			_ = json.NewEncoder(w).Encode(recs)
+		case r.Method == "PATCH" && r.URL.Path == "/zones/7":
+			zonePatches++
+			for k, v := range readJSON(t, r) {
+				zone[k] = v
+			}
+			_, _ = w.Write([]byte(`{}`))
+		case r.Method == "PATCH" && r.URL.Path == "/zones/7/records/1":
+			recPatches++
+			recs[0]["data"] = readJSON(t, r)["data"]
+			_, _ = w.Write([]byte(`{}`))
+		case r.Method == "POST":
+			posts++
+			_, _ = w.Write([]byte(`{}`))
+		default:
+			t.Errorf("意外请求 %s %s", r.Method, r.URL)
+		}
+	}))
+	defer srv.Close()
+	p, _ := New("dynv6", Credentials{Secret: "tok"}, srv.Client())
+	p.(*dynv6).endpoint = srv.URL
+	rec := Record{Zone: "my.dynv6.net", Sub: "@", Type: "AAAA", Value: "2001:db8::2"}
+	// 只有 IPv6：zone 与根 AAAA 记录都更新，子域名记录和 TXT 不动
+	if got, err := p.Upsert(context.Background(), rec); err != nil || got != ActionUpdated {
+		t.Fatalf("首次: %v %v", got, err)
+	}
+	if zonePatches != 1 || recPatches != 1 || recs[0]["data"] != "2001:db8::2" || recs[1]["data"] != "2001:db8::old" {
+		t.Fatalf("zone=%d rec=%d recs=%v", zonePatches, recPatches, recs)
+	}
+	// 已一致：不再有任何写请求
+	if got, err := p.Upsert(context.Background(), rec); err != nil || got != ActionUnchanged || zonePatches != 1 || recPatches != 1 {
+		t.Fatalf("重复: %v %v zone=%d rec=%d", got, err, zonePatches, recPatches)
+	}
+	// zone 已是新地址、仅 records 滞后（本次报告的场景）：只校正记录
+	recs[0]["data"] = "2001:db8::old"
+	if got, err := p.Upsert(context.Background(), rec); err != nil || got != ActionUpdated || zonePatches != 1 || recPatches != 2 {
+		t.Fatalf("仅记录滞后: %v %v zone=%d rec=%d", got, err, zonePatches, recPatches)
+	}
+	// 根记录不存在时不创建
+	recs = recs[1:]
+	if _, err := p.Upsert(context.Background(), Record{Zone: "my.dynv6.net", Sub: "@", Type: "AAAA", Value: "2001:db8::3"}); err != nil || posts != 0 {
+		t.Fatalf("不应创建根记录: %v posts=%d", err, posts)
+	}
+}
+
+// 子域名 AAAA 记录：不存在时创建，地址相同时不重复更新，不同时 PATCH。
+func TestDynv6SubdomainAAAA(t *testing.T) {
+	recs := []map[string]any{}
+	var posts, patches int
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case r.Method == "GET" && r.URL.Path == "/zones/by-name/my.dynv6.net":
+			_, _ = w.Write([]byte(`{"id":7,"ipv4address":"","ipv6prefix":"2001:db8::1"}`))
+		case r.Method == "GET" && r.URL.Path == "/zones/7/records":
+			_ = json.NewEncoder(w).Encode(recs)
+		case r.Method == "POST" && r.URL.Path == "/zones/7/records":
+			posts++
+			b := readJSON(t, r)
+			recs = append(recs, map[string]any{"id": 9, "name": b["name"], "type": b["type"], "data": b["data"]})
+			_, _ = w.Write([]byte(`{}`))
+		case r.Method == "PATCH" && r.URL.Path == "/zones/7/records/9":
+			patches++
+			recs[0]["data"] = readJSON(t, r)["data"]
+			_, _ = w.Write([]byte(`{}`))
+		default:
+			t.Errorf("意外请求 %s %s", r.Method, r.URL)
+		}
+	}))
+	defer srv.Close()
+	p, _ := New("dynv6", Credentials{Secret: "tok"}, srv.Client())
+	p.(*dynv6).endpoint = srv.URL
+	rec := Record{Zone: "my.dynv6.net", Sub: "nas", Type: "AAAA", Value: "2001:db8::5"}
+	steps := []struct{ value, want string }{
+		{"2001:db8::5", ActionCreated},
+		{"2001:db8::5", ActionUnchanged},
+		{"2001:db8::6", ActionUpdated},
+	}
+	for _, s := range steps {
+		rec.Value = s.value
+		if got, err := p.Upsert(context.Background(), rec); err != nil || got != s.want {
+			t.Fatalf("%s: %v %v", s.value, got, err)
+		}
+	}
+	if posts != 1 || patches != 1 {
+		t.Fatalf("posts=%d patches=%d", posts, patches)
+	}
 }
