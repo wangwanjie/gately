@@ -841,9 +841,14 @@ onMounted(() => {
   .route-row {
     flex-wrap: wrap;
   }
-  /* 序号与协议下拉占第一行，名称和操作按钮换到下一行 */
+  /* 序号、开关与协议下拉占第一行；名称和操作按钮换到下一行，名称占去按钮以外的整行宽度，不会被挤成细条 */
   .route-proto {
-    flex: 1 1 calc(100% - 32px);
+    flex: 1 1 0;
+    min-width: 150px;
+  }
+  /* 三个图标按钮在手机上各 40px 宽，加上间距共约 146px */
+  .route-title {
+    flex: 1 1 calc(100% - 150px);
   }
   .route-targets {
     flex-basis: 100%;
