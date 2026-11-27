@@ -27,6 +27,29 @@ type RecordState struct {
 	LastAction string    `json:"lastAction,omitempty"`
 	LastError  string    `json:"lastError,omitempty"`
 	LastCheck  time.Time `json:"lastCheck,omitzero"`
+	// FailCount 为连续失败的轮数，成功后清零；FirstFail 为这一串失败中第一次失败的时间；
+	// Alerted 表示这一串失败已发过通知，恢复前不再重复发送。旧状态文件没有这些字段，按 0 处理
+	FailCount int       `json:"failCount,omitempty"`
+	FirstFail time.Time `json:"firstFail,omitzero"`
+	Alerted   bool      `json:"alerted,omitempty"`
+}
+
+const (
+	// alertAfterFails 连续失败达到该轮数仍未恢复才发失败通知，过滤服务商一次性的瞬时故障
+	alertAfterFails = 3
+	// alertAfterDuration 同步间隔较长时，连续失败持续超过该时长（且至少失败两轮）也发通知
+	alertAfterDuration = 5 * time.Minute
+)
+
+// shouldAlert 判断本次失败（已计入 FailCount）是否需要发通知；同一串失败只发一次。
+func shouldAlert(s RecordState, now time.Time) bool {
+	if s.Alerted {
+		return false
+	}
+	if s.FailCount >= alertAfterFails {
+		return true
+	}
+	return s.FailCount >= 2 && !s.FirstFail.IsZero() && now.Sub(s.FirstFail) >= alertAfterDuration
 }
 
 // TaskState 是任务的运行状态。
@@ -265,7 +288,7 @@ func (r *runner) syncOnce(ctx context.Context, force bool) {
 		}
 		cctx, cancel := context.WithTimeout(ctx, timeout*3)
 		// 保存时已转小写；旧配置可能还带大写字母，同步前再转一次
-		action, err := provider.Upsert(cctx, dnsprovider.Record{
+		action, err := dnsprovider.UpsertWithRetry(cctx, provider, dnsprovider.Record{
 			Zone: rec.Zone, Sub: strings.ToLower(rec.Sub), Type: rec.Type, Value: value, TTL: rec.TTL, Line: rec.Line, Remark: t.remarkOf(rec),
 		})
 		cancel()
@@ -275,21 +298,37 @@ func (r *runner) syncOnce(ctx context.Context, force bool) {
 		}
 		if err != nil {
 			failed = append(failed, fqdn)
-			r.setRecord(rec.Key, func(s *RecordState) { s.LastError = err.Error(); s.LastCheck = time.Now() })
-			r.log.Errorf("%s %s 同步失败: %v", rec.Type, fqdn, err)
-			events.Publish(events.Event{
-				Type:    events.DDNSFailed,
-				Source:  t.Name,
-				Level:   events.LevelError,
-				Title:   "动态域名更新失败：" + fqdn,
-				Message: fmt.Sprintf("%s 记录 %s 同步失败：%v", rec.Type, fqdn, err),
-				Fields:  map[string]string{"domain": fqdn, "error": err.Error()},
+			now := time.Now()
+			alert := false
+			r.setRecord(rec.Key, func(s *RecordState) {
+				s.LastError, s.LastCheck = err.Error(), now
+				if s.FailCount == 0 {
+					s.FirstFail = now
+				}
+				s.FailCount++
+				if shouldAlert(*s, now) {
+					s.Alerted = true
+					alert = true
+				}
 			})
+			// 日志每次都记录；通知要等连续失败达到阈值，避免服务商瞬时故障的误报
+			r.log.Errorf("%s %s 同步失败: %v", rec.Type, fqdn, err)
+			if alert {
+				events.Publish(events.Event{
+					Type:    events.DDNSFailed,
+					Source:  t.Name,
+					Level:   events.LevelError,
+					Title:   "动态域名更新失败：" + fqdn,
+					Message: fmt.Sprintf("%s 记录 %s 同步失败：%v", rec.Type, fqdn, err),
+					Fields:  map[string]string{"domain": fqdn, "error": err.Error()},
+				})
+			}
 			continue
 		}
 		now := time.Now()
 		r.setRecord(rec.Key, func(s *RecordState) {
 			s.Value, s.LastSync, s.LastAction, s.LastError, s.LastCheck = value, now, action, "", now
+			s.FailCount, s.FirstFail, s.Alerted = 0, time.Time{}, false
 		})
 		switch action {
 		case dnsprovider.ActionUnchanged:
