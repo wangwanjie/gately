@@ -14,5 +14,6 @@
   "displayName": "Display name",
   "addDirectory": "Add directory",
   "empty": "No users yet",
-  "remarkPlaceholder": "e.g. Living room TV"
+  "remarkPlaceholder": "e.g. Living room TV",
+  "readWrite": "Read-write"
 }

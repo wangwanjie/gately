@@ -14,5 +14,6 @@
   "displayName": "Отображаемое имя",
   "addDirectory": "Добавить каталог",
   "empty": "Пользователей пока нет",
-  "remarkPlaceholder": "например: ТВ в гостиной"
+  "remarkPlaceholder": "например: ТВ в гостиной",
+  "readWrite": "Чтение и запись"
 }

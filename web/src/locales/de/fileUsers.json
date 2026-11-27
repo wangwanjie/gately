@@ -14,5 +14,6 @@
   "displayName": "Anzeigename",
   "addDirectory": "Verzeichnis hinzufügen",
   "empty": "Noch keine Benutzer",
-  "remarkPlaceholder": "z. B. Wohnzimmer-TV"
+  "remarkPlaceholder": "z. B. Wohnzimmer-TV",
+  "readWrite": "Lesen/Schreiben"
 }

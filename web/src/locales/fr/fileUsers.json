@@ -14,5 +14,6 @@
   "displayName": "Nom affiché",
   "addDirectory": "Ajouter un dossier",
   "empty": "Aucun utilisateur",
-  "remarkPlaceholder": "ex. : TV du salon"
+  "remarkPlaceholder": "ex. : TV du salon",
+  "readWrite": "Lecture-écriture"
 }

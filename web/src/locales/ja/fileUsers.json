@@ -14,5 +14,6 @@
   "displayName": "表示名",
   "addDirectory": "ディレクトリを追加",
   "empty": "ユーザーがいません",
-  "remarkPlaceholder": "例：リビングのテレビ"
+  "remarkPlaceholder": "例：リビングのテレビ",
+  "readWrite": "読み書き"
 }

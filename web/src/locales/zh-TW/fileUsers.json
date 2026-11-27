@@ -14,5 +14,6 @@
   "displayName": "顯示名稱",
   "addDirectory": "新增目錄",
   "empty": "暫無使用者",
-  "remarkPlaceholder": "例如：客廳電視"
+  "remarkPlaceholder": "例如：客廳電視",
+  "readWrite": "讀寫"
 }

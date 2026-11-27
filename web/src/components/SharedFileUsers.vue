@@ -14,8 +14,22 @@
         </div>
         <div v-if="users.length" class="summary">
           <span>{{ t('sharedFileUsers.count', { count: users.length }) }}</span>
-          <div class="tags">
-            <el-tag v-for="u in users" :key="u.name" size="small" :type="tagType(u.name)">{{ u.name }}</el-tag>
+          <!-- 每个共享用户一行：用户名、状态与备注，右侧列出访问路径及只读/读写权限，不必再去共享用户页面查看 -->
+          <div class="s-list">
+            <div v-for="u in users" :key="u.name" class="s-row" :class="{ 'is-off': u.disabled }">
+              <div class="s-user">
+                <el-tag size="small" :type="tagType(u.name)">{{ u.name }}</el-tag>
+                <el-tag v-if="u.disabled" size="small" type="info" effect="plain">{{ t('common.disabled') }}</el-tag>
+                <span v-if="u.remark" class="s-remark" :title="u.remark">{{ u.remark }}</span>
+              </div>
+              <div class="s-dirs">
+                <div v-for="(d, j) in dirsOf(u)" :key="j" class="s-dir">
+                  <span v-if="d.name" class="s-dir-name">{{ d.name }}</span>
+                  <code class="mono s-path" :title="d.path">{{ d.path }}</code>
+                  <el-tag size="small" :type="d.readOnly ? 'info' : 'success'" effect="plain" class="s-perm">{{ d.readOnly ? t('fileUsers.readOnly') : t('fileUsers.readWrite') }}</el-tag>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         <div v-else>{{ t('sharedFileUsers.none') }}</div>
@@ -61,6 +75,14 @@ const issueText = (is: SMBIssue) => formatIssue(t, is)
 
 const shadowed = computed(() => shadowedNames(props.users, props.localNames, props.caseInsensitive))
 
+// dirsOf 返回共享用户的访问路径：单目录用户只有一项，多目录用户每个目录一项并带显示名称
+function dirsOf(u: FileUser): { name?: string; path: string; readOnly: boolean }[] {
+  if (u.mounts?.length) {
+    return u.mounts.map((mt) => ({ name: mt.name, path: mt.path, readOnly: mt.readOnly }))
+  }
+  return [{ path: u.root, readOnly: u.readOnly }]
+}
+
 // tagType 让开关打开时被本地用户遮蔽或无法使用的共享用户显示为警告色
 function tagType(name: string): 'warning' | 'info' | 'primary' {
   // 已停用的共享用户不能登录，与开关关闭时一样显示为灰色
@@ -98,6 +120,75 @@ function tagType(name: string): 'warning' | 'info' | 'primary' {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  align-self: stretch;
+}
+.s-list {
+  display: flex;
+  flex-direction: column;
+}
+.s-row {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  gap: 4px 16px;
+  padding: 6px 0;
+  border-top: 1px solid var(--g-border);
+}
+.s-row:first-child {
+  border-top: none;
+}
+.s-row.is-off {
+  opacity: 0.6;
+}
+.s-user {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.s-remark {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--el-text-color-secondary);
+}
+.s-dirs {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.s-dir {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.s-dir-name {
+  flex-shrink: 0;
+  max-width: 40%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--el-text-color-regular);
+}
+.s-path {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  color: var(--el-text-color-regular);
+}
+.s-perm {
+  flex-shrink: 0;
+}
+@media (max-width: 767.98px) {
+  .s-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 .tags {
   display: flex;

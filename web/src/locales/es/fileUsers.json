@@ -14,5 +14,6 @@
   "displayName": "Nombre visible",
   "addDirectory": "Añadir directorio",
   "empty": "Aún no hay usuarios",
-  "remarkPlaceholder": "p. ej.: TV del salón"
+  "remarkPlaceholder": "p. ej.: TV del salón",
+  "readWrite": "Lectura y escritura"
 }
