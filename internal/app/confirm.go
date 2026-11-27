@@ -387,7 +387,8 @@ func (a *App) beginConfirm(changed map[string]*string) {
 	}
 	a.armConfirmTimerLocked()
 	if fresh && !p.Hold {
-		a.sysLogs.Add(logbuf.LevelInfo, "system", fmt.Sprintf("配置变更（%s）待确认：%d 秒内未在管理界面确认访问正常将自动回滚", a.confirmTitles(p.names()), timeout))
+		// 每次保存都会经过这里，只记调试日志；结果（已确认生效或已回滚）另记一条
+		a.sysLogs.Add(logbuf.LevelDebug, "system", fmt.Sprintf("配置变更（%s）待确认：%d 秒内未在管理界面确认访问正常将自动回滚", a.confirmTitles(p.names()), timeout))
 	}
 }
 
@@ -544,7 +545,8 @@ func (a *App) prepareConfirmRestart(r *http.Request) {
 	}
 	c.tx = p
 	a.armConfirmTimerLocked()
-	a.sysLogs.Add(logbuf.LevelInfo, "system", fmt.Sprintf("配置变更（%s）将在重启后等待确认，%d 秒内未确认将自动回滚", a.confirmTitles(p.names()), p.Timeout))
+	// 中间状态只记调试日志，结果另记
+	a.sysLogs.Add(logbuf.LevelDebug, "system", fmt.Sprintf("配置变更（%s）将在重启后等待确认，%d 秒内未确认将自动回滚", a.confirmTitles(p.names()), p.Timeout))
 }
 
 // rollbackPending 立即回滚待确认的变更：标记回滚并重启。没有待确认变更时返回 false。
@@ -643,7 +645,8 @@ func (a *App) startConfirm() {
 	if p := rec.resume; p != nil {
 		c.tx = p
 		a.armConfirmTimerLocked()
-		a.sysLogs.Add(logbuf.LevelInfo, "system", fmt.Sprintf("配置变更（%s）待确认，%d 秒内未在管理界面确认将自动回滚", a.confirmTitles(p.names()), int(time.Until(p.Deadline).Seconds())))
+		// 中间状态只记调试日志，结果另记
+		a.sysLogs.Add(logbuf.LevelDebug, "system", fmt.Sprintf("配置变更（%s）待确认，%d 秒内未在管理界面确认将自动回滚", a.confirmTitles(p.names()), int(time.Until(p.Deadline).Seconds())))
 	}
 }
 

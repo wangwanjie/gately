@@ -18,6 +18,7 @@ import (
 
 	"github.com/wangwanjie/gately/internal/apitoken"
 	"github.com/wangwanjie/gately/internal/config"
+	"github.com/wangwanjie/gately/internal/logbuf"
 	"github.com/wangwanjie/gately/internal/module"
 	"github.com/wangwanjie/gately/internal/modules/portforward"
 )
@@ -385,5 +386,36 @@ func TestRollbackRequest(t *testing.T) {
 	b.logger = log.New(io.Discard, "", 0)
 	if cur, _ := b.store.ReadRaw("portforward"); string(cur) != string(want) || len(b.confirm.recovered.cliMsgs) != 1 {
 		t.Fatalf("启动时应处理遗留的回滚请求: %+v", b.confirm.recovered.cliMsgs)
+	}
+}
+
+// issue #128：每次保存只在确认或回滚时留下一条结果日志，“待确认”这类中间状态只记调试日志
+func TestConfirmLogsOnlyResult(t *testing.T) {
+	a, srv, c := loginApp(t)
+	for _, name := range []string{"log-a", "log-b"} {
+		if code, body := doConfirmJSON(t, c, "POST", srv.URL+"/api/portforward/rules", testRule(t, name)); code != 200 {
+			t.Fatalf("%d %s", code, body)
+		}
+	}
+	if got := confirmViaSocket(t, c, srv.URL); got != confirmConfirmed {
+		t.Fatalf("确认结果应为 confirmed，实际 %s", got)
+	}
+	confirmed := 0
+	for _, e := range a.sysLogs.Since(0) {
+		if e.Source != "system" {
+			continue
+		}
+		if strings.Contains(e.Message, "待确认") && e.Level != logbuf.LevelDebug {
+			t.Fatalf("待确认的中间状态不应记为 %s: %s", e.Level, e.Message)
+		}
+		if strings.Contains(e.Message, "已确认生效") {
+			if e.Level != logbuf.LevelInfo {
+				t.Fatalf("确认生效应记为 info，实际 %s", e.Level)
+			}
+			confirmed++
+		}
+	}
+	if confirmed != 1 {
+		t.Fatalf("两次保存后确认应只记一条已确认生效，实际 %d 条", confirmed)
 	}
 }
