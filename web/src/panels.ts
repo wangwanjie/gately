@@ -443,7 +443,7 @@ export function insertLink(links: PanelLink[], link: PanelLink): { links: PanelL
 // ---- 从 Web 服务站点生成链接 ----
 
 export interface ImportSite {
-  // 监听key/站点key，用于勾选
+  // 监听key/站点key，路径条目再接上路径，用于勾选
   id: string
   listener: string
   name: string
@@ -452,6 +452,10 @@ export interface ImportSite {
   url: string
   // type 为站点类型，导航面板站点自身不列出
   type: string
+  // path 为对外访问路径（以 / 开头和结尾），站点根地址为空
+  path: string
+  // source 为路径的来源：location 分路径后端、rule 路径规则，站点根地址为空
+  source: '' | 'location' | 'rule'
 }
 
 export interface ImportListener {
@@ -459,11 +463,47 @@ export interface ImportListener {
   port: number
   name: string
   enable: boolean
-  sites: { key?: string; name: string; group?: string; enable: boolean; type: string; domains: string[] | null }[]
+  sites: {
+    key?: string
+    name: string
+    group?: string
+    enable: boolean
+    type: string
+    domains: string[] | null
+    locations?: { prefix: string }[] | null
+    rules?: { prefix: string }[] | null
+  }[]
+}
+
+// importPath 把分路径后端、路径规则的前缀规范成对外访问的路径：合并重复的 /，结尾补 /（按路径段匹配时
+// /app 与 /app/ 等价，带 / 结尾时页面里的相对地址才会落在该路径下）。根路径、含 . 或 .. 段的前缀返回 null。
+// 开启「去掉路径前缀」时后端收到的路径不同，但浏览器访问的仍是这个前缀，所以一样使用。
+export function importPath(prefix: string): string | null {
+  const segs = prefix.trim().split('/').filter(Boolean)
+  if (!segs.length || segs.some((x) => x === '.' || x === '..')) {
+    return null
+  }
+  return `/${segs.join('/')}/`
+}
+
+// withPath 在站点根地址后接上路径，经 URL 编码；结果的协议、主机与端口必须与根地址相同，否则返回 null
+export function withPath(base: string, path: string): string | null {
+  try {
+    const b = new URL(base)
+    const u = new URL(b.href)
+    u.pathname = path
+    if (u.origin !== b.origin || u.search || u.hash) {
+      return null
+    }
+    return u.href
+  } catch {
+    return null
+  }
 }
 
 // importableSites 列出能生成具体地址的站点（取第一个能拼出地址的域名），跳过断开连接与导航面板站点；
-// linkFor 按监听的访问协议与端口拼出域名的地址，域名是通配等无法直接访问时返回 null（见 siteUrl.ts 的 siteLink）
+// linkFor 按监听的访问协议与端口拼出域名的地址，域名是通配等无法直接访问时返回 null（见 siteUrl.ts 的 siteLink）。
+// 站点配置了分路径后端或路径规则时，根地址之后再为每个路径列出一条（前缀相同的只列一次，分路径后端在前）
 export function importableSites<L extends ImportListener>(listeners: readonly L[], linkFor: (l: L, domain: string) => string | null): ImportSite[] {
   const out: ImportSite[] = []
   for (const l of listeners) {
@@ -473,10 +513,30 @@ export function importableSites<L extends ImportListener>(listeners: readonly L[
       }
       for (const d of s.domains ?? []) {
         const url = linkFor(l, d)
-        if (url) {
-          out.push({ id: `${l.key ?? ''}/${s.key ?? ''}`, listener: l.name || `:${l.port}`, name: s.name || d, group: s.group ?? '', domain: d, url, type: s.type })
-          break
+        if (!url) {
+          continue
         }
+        const id = `${l.key ?? ''}/${s.key ?? ''}`
+        const base = { listener: l.name || `:${l.port}`, group: s.group ?? '', domain: d, type: s.type }
+        const name = s.name || d
+        out.push({ ...base, id, name, url, path: '', source: '' })
+        const seen = new Set<string>()
+        const paths: [string, ImportSite['source']][] = [
+          ...(s.locations ?? []).map((x) => [x.prefix, 'location'] as [string, ImportSite['source']]),
+          ...(s.rules ?? []).map((x) => [x.prefix, 'rule'] as [string, ImportSite['source']]),
+        ]
+        for (const [prefix, source] of paths) {
+          const p = importPath(prefix ?? '')
+          if (!p || seen.has(p)) {
+            continue
+          }
+          seen.add(p)
+          const pu = withPath(url, p)
+          if (pu) {
+            out.push({ ...base, id: id + p, name: `${name} ${p.slice(0, -1)}`, url: pu, path: p, source })
+          }
+        }
+        break
       }
     }
   }

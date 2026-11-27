@@ -524,11 +524,12 @@
       </div>
       <div v-if="!importList.length" class="links-empty">{{ t('panels.importEmpty') }}</div>
       <div class="import-list">
-        <label v-for="s in importList" :key="s.id" class="import-row" :class="{ added: existingUrls.has(s.url) }" data-test="import-row">
+        <label v-for="s in importList" :key="s.id" class="import-row" :class="{ added: existingUrls.has(s.url), sub: !!s.path }" data-test="import-row">
           <el-checkbox :model-value="existingUrls.has(s.url) || importSel.has(s.id)" :disabled="existingUrls.has(s.url)" @change="(v: string | number | boolean) => toggleImport(s.id, !!v)" />
           <div class="import-main">
             <div class="ellipsis">
               <b>{{ s.name }}</b>
+              <span v-if="s.source" class="import-tag" data-test="import-tag">{{ s.source === 'location' ? t('web.locations') : t('siteAccess.pathRules') }}</span>
               <span v-if="s.group" class="muted"> · {{ s.group }}</span>
             </div>
             <div class="mono muted ellipsis">{{ s.url }}</div>
@@ -1800,6 +1801,21 @@ onMounted(async () => {
   cursor: pointer;
   min-width: 0;
 }
+/* 站点的路径条目缩进显示在站点根地址下方 */
+.import-row.sub {
+  padding-left: 28px;
+}
+.import-tag {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 0 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  line-height: 18px;
+  vertical-align: 1px;
+  color: var(--el-color-primary);
+  background: var(--el-color-primary-light-9);
+}
 .import-row.added {
   cursor: default;
   opacity: 0.6;
@@ -1873,6 +1889,14 @@ onMounted(async () => {
   .preview-frame {
     height: calc(100vh - 260px);
     min-height: 360px;
+  }
+  /* 手机上地址允许折行，路径条目的路径部分不被省略号截掉 */
+  .import-main .mono.ellipsis {
+    white-space: normal;
+    word-break: break-all;
+  }
+  .import-row.sub {
+    padding-left: 20px;
   }
   .import-listener {
     max-width: 30%;

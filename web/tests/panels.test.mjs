@@ -2,7 +2,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
-  emptyLink, groupLinks, moveLink, moveLinks, moveGroup, insertLink, importableSites, linksFromSites, iconKind, safeIconSrc,
+  emptyLink, groupLinks, moveLink, moveLinks, moveGroup, insertLink, importableSites, linksFromSites, importPath, withPath, iconKind, safeIconSrc,
   initial, paletteColor, textIconOk, hasVars, toPanel, mergeLinks, freeName, MAX_LINKS,
   emptyPanel, layoutDefaults, normalizeLayoutValue, LAYOUT_LIMITS,
   sizeChoice, sizeValue, faviconUrls, SIZE_CHOICES, renameLinkGroup,
@@ -137,6 +137,45 @@ test('importableSites 取第一个能拼出地址的域名，跳过断开连接�
     ['l1/s1', 'NAS', 'https://nas.example.com', '存储', 'HTTPS'],
     ['l1/s2', 'go.example.com', 'https://go.example.com', '', 'HTTPS'],
   ])
+})
+
+test('importableSites 为分路径后端与路径规则各列一条带路径的地址', () => {
+  const listeners = [
+    {
+      key: 'l1', name: 'HTTPS', port: 443, enable: true, sites: [
+        {
+          key: 's1', name: 'NAS', group: '存储', enable: true, type: 'proxy', domains: ['*.example.com', 'nas.example.com'],
+          // 去掉前缀的分路径后端对外仍是原前缀；/ 与重复前缀、含 .. 的前缀跳过
+          locations: [{ prefix: '/photos', stripPrefix: true }, { prefix: '/api/' }, { prefix: '/' }, { prefix: '/a/../b' }],
+          rules: [{ prefix: '/api' }, { prefix: '//share//x' }, { prefix: '/中文 路径' }],
+        },
+        { key: 's2', name: '通配', enable: true, type: 'proxy', domains: ['*.wild.example.com'], locations: [{ prefix: '/x' }] },
+      ],
+    },
+  ]
+  const linkFor = (l, d) => (d.includes('*') ? null : `https://${d}`)
+  const out = importableSites(listeners, linkFor)
+  assert.deepEqual(out.map((s) => [s.id, s.name, s.url, s.path, s.source, s.group]), [
+    ['l1/s1', 'NAS', 'https://nas.example.com', '', '', '存储'],
+    ['l1/s1/photos/', 'NAS /photos', 'https://nas.example.com/photos/', '/photos/', 'location', '存储'],
+    ['l1/s1/api/', 'NAS /api', 'https://nas.example.com/api/', '/api/', 'location', '存储'],
+    ['l1/s1/share/x/', 'NAS /share/x', 'https://nas.example.com/share/x/', '/share/x/', 'rule', '存储'],
+    ['l1/s1/中文 路径/', 'NAS /中文 路径', 'https://nas.example.com/%E4%B8%AD%E6%96%87%20%E8%B7%AF%E5%BE%84/', '/中文 路径/', 'rule', '存储'],
+  ])
+})
+
+test('importPath 与 withPath 规范路径且不改变主机', () => {
+  assert.equal(importPath('/app'), '/app/')
+  assert.equal(importPath(' /app// '), '/app/')
+  assert.equal(importPath('/'), null)
+  assert.equal(importPath(''), null)
+  assert.equal(importPath('/x/./y'), null)
+  assert.equal(withPath('https://a.com:8443', '/app/'), 'https://a.com:8443/app/')
+  // 以 // 开头的路径不会被当成另一个主机
+  assert.equal(withPath('https://a.com', '//evil.com/'), 'https://a.com//evil.com/')
+  // ? 与 # 被编码进路径，不会变成查询串或片段
+  assert.equal(withPath('https://a.com', '/a?b#c/'), 'https://a.com/a%3Fb%23c/')
+  assert.equal(withPath('not a url', '/a/'), null)
 })
 
 test('linksFromSites 跳过已有地址与重复地址', () => {
