@@ -949,6 +949,12 @@
           },
           "type": {
             "type": "string"
+          },
+          "useCompression": {
+            "type": "boolean"
+          },
+          "useEncryption": {
+            "type": "boolean"
           }
         },
         "type": "object"

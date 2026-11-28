@@ -1454,6 +1454,8 @@ Wildcard-Schreibweise: `*:read` bedeutet Lesezugriff auf alle Module, `*:write` 
 | `secretKey` | string |
 | `subdomain` | string |
 | `type` | string |
+| `useCompression` | boolean |
+| `useEncryption` | boolean |
 
 ### frp.Server
 

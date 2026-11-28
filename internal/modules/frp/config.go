@@ -219,7 +219,11 @@ type Proxy struct {
 	Subdomain     string   `json:"subdomain"`
 	// SecretKey 用于 stcp 与 xtcp，访问端需使用相同密钥
 	SecretKey string `json:"secretKey"`
-	Remark    string `json:"remark"`
+	// UseEncryption、UseCompression 对应 frpc 代理的 transport.useEncryption 与 transport.useCompression，
+	// 分别加密、压缩 frpc 与 frps 之间该代理的数据流量，需要穿透时降低被识别风险或节省带宽
+	UseEncryption  bool   `json:"useEncryption"`
+	UseCompression bool   `json:"useCompression"`
+	Remark         string `json:"remark"`
 	// Client 是代理所属 frpc 实例的 key
 	Client string `json:"client"`
 }
@@ -527,6 +531,12 @@ func ClientTOML(c ClientSettings, proxies []Proxy) string {
 			}
 		case TypeSTCP, TypeXTCP:
 			fmt.Fprintf(&b, "secretKey = %s\n", quote(p.SecretKey))
+		}
+		if p.UseEncryption {
+			b.WriteString("transport.useEncryption = true\n")
+		}
+		if p.UseCompression {
+			b.WriteString("transport.useCompression = true\n")
 		}
 	}
 	return b.String()

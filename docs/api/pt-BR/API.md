@@ -1454,6 +1454,8 @@ Curingas: `*:read` significa somente leitura em todos os módulos; `*:write` ou 
 | `secretKey` | string |
 | `subdomain` | string |
 | `type` | string |
+| `useCompression` | boolean |
+| `useEncryption` | boolean |
 
 ### frp.Server
 

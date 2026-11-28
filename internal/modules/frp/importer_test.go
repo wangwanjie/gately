@@ -102,10 +102,10 @@ func TestImportLegacyClient(t *testing.T) {
 			t.Errorf("导入的代理应启用: %s", p.Name)
 		}
 	}
-	if p := byName["pve-ssh"]; p.RemotePort != 6022 || p.LocalIP != "192.168.18.18" || p.LocalPort != 22 {
+	if p := byName["pve-ssh"]; p.RemotePort != 6022 || p.LocalIP != "192.168.18.18" || p.LocalPort != 22 || p.UseEncryption {
 		t.Errorf("tcp 代理错误: %+v", p)
 	}
-	if p := byName["pve"]; p.Type != TypeHTTPS || p.Subdomain != "pve" {
+	if p := byName["pve"]; p.Type != TypeHTTPS || p.Subdomain != "pve" || !p.UseEncryption {
 		t.Errorf("子域名代理错误: %+v", p)
 	}
 	if p := byName["gitea"]; !slices.Equal(p.CustomDomains, []string{"gitea.example.com", "git.example.com"}) {
@@ -115,12 +115,12 @@ func TestImportLegacyClient(t *testing.T) {
 		t.Errorf("stcp 代理错误: %+v", p)
 	}
 	all := strings.Join(res.Warnings, "\n")
-	for _, want := range []string{"range:ports", "已跳过代理 bad-plugin", "pve-ssh 重复", "use_encryption（1 个代理）"} {
+	for _, want := range []string{"range:ports", "已跳过代理 bad-plugin", "pve-ssh 重复"} {
 		if !strings.Contains(all, want) {
 			t.Errorf("提示缺少 %q:\n%s", want, all)
 		}
 	}
-	if strings.Contains(all, "tls_enable") || strings.Contains(all, "authentication_method") {
+	if strings.Contains(all, "use_encryption") || strings.Contains(all, "tls_enable") || strings.Contains(all, "authentication_method") {
 		t.Errorf("已处理的字段不应提示:\n%s", all)
 	}
 }
@@ -344,5 +344,41 @@ func TestApplyImport(t *testing.T) {
 	sres.Server.BindPort = 7200
 	if _, err := apply(ImportRequest{Target: out.Key}); err != nil || m.cfg.Servers[0].BindPort != 7200 || m.cfg.Servers[0].Name != "主服务" || !m.cfg.Servers[0].Enable {
 		t.Fatalf("覆盖 frps 实例错误: %v %+v", err, m.cfg.Servers)
+	}
+}
+
+// 代理的加密与压缩开关：生成配置、回导、新旧写法导入均能保留（issue #131）。
+func TestProxyEncryptionCompression(t *testing.T) {
+	c := ClientSettings{ServerAddr: "frp.example.com", ServerPort: 7000}
+	proxies := []Proxy{
+		{Name: "both", Type: TypeTCP, Enable: true, LocalIP: "127.0.0.1", LocalPort: 22, RemotePort: 6022, UseEncryption: true, UseCompression: true},
+		{Name: "plain", Type: TypeTCP, Enable: true, LocalIP: "127.0.0.1", LocalPort: 23, RemotePort: 6023},
+	}
+	out := ClientTOML(c, proxies)
+	if strings.Count(out, "transport.useEncryption = true") != 1 || strings.Count(out, "transport.useCompression = true") != 1 {
+		t.Fatalf("配置应只为 both 写入开关:\n%s", out)
+	}
+	res, err := ParseImport(RoleClient, out)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !res.Proxies[0].UseEncryption || !res.Proxies[0].UseCompression || res.Proxies[1].UseEncryption || res.Proxies[1].UseCompression {
+		t.Errorf("回导开关不一致: %+v", res.Proxies)
+	}
+	if len(res.Warnings) != 0 {
+		t.Errorf("不应有提示: %v", res.Warnings)
+	}
+
+	// 旧版 INI 写法
+	legacy := "[common]\nserver_addr = 1.2.3.4\nserver_port = 7000\n\n[ssh]\ntype = tcp\nlocal_ip = 127.0.0.1\nlocal_port = 22\nremote_port = 6022\nuse_encryption = true\nuse_compression = true\n"
+	lres, err := ParseImport(RoleClient, legacy)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(lres.Proxies) != 1 || !lres.Proxies[0].UseEncryption || !lres.Proxies[0].UseCompression {
+		t.Errorf("旧版写法未识别: %+v", lres.Proxies)
+	}
+	if len(lres.Warnings) != 0 {
+		t.Errorf("不应有提示: %v", lres.Warnings)
 	}
 }

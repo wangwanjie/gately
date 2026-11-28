@@ -52,7 +52,7 @@ type luckyServerParams struct {
 // luckyProxyKeys 是 frp 代理 JSON 中已映射到 Proxy 的字段。
 var luckyProxyKeys = map[string]bool{
 	"name": true, "type": true, "localIP": true, "localPort": true, "remotePort": true,
-	"customDomains": true, "subdomain": true, "secretKey": true, "disabled": true, "enabled": true,
+	"customDomains": true, "subdomain": true, "secretKey": true, "disabled": true, "enabled": true, "useEncryption": true, "useCompression": true,
 }
 
 // ImportLucky 实现 luckyimport.Importer。Lucky 中的每个客户端、服务端实例分别导入为 Gately 的 frpc、frps 实例。
@@ -236,6 +236,8 @@ func convertLuckyProxy(raw map[string]any, unsupported map[string]int) (Proxy, s
 		Subdomain:  str("subdomain"),
 		SecretKey:  str("secretKey"),
 	}
+	px.UseEncryption, _ = raw["useEncryption"].(bool)
+	px.UseCompression, _ = raw["useCompression"].(bool)
 	if d, _ := raw["disabled"].(bool); d {
 		px.Enable = false
 	}

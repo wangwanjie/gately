@@ -433,6 +433,14 @@
           <SecretInput v-model="editingProxy.secretKey" :reveal="secretOf(proxySecretKey && `/api/frp/proxies/${proxySecretKey}/secrets`, 'secretKey')" />
           <div class="form-help">{{ t('frp.secretHelp') }}</div>
         </el-form-item>
+        <el-form-item :label="t('frp.useEncryption')">
+          <el-switch v-model="editingProxy.useEncryption" />
+          <div class="form-help">{{ t('frp.useEncryptionHelp') }}</div>
+        </el-form-item>
+        <el-form-item :label="t('frp.useCompression')">
+          <el-switch v-model="editingProxy.useCompression" />
+          <div class="form-help">{{ t('frp.useCompressionHelp') }}</div>
+        </el-form-item>
         <el-form-item :label="t('common.remark')"><el-input v-model="editingProxy.remark" /></el-form-item>
       </el-form>
       <template #footer>
@@ -575,6 +583,8 @@ interface Proxy {
   customDomains: string[] | null
   subdomain: string
   secretKey: string
+  useEncryption: boolean
+  useCompression: boolean
   remark: string
 }
 
@@ -994,7 +1004,7 @@ const domainsText = useListText(() => editingProxy.value.customDomains, (v) => (
 function emptyProxy(): Proxy {
   // 新代理默认归属当前筛选的实例，未筛选时归属第一个实例
   const client = proxyFilter.value || clients.value[0]?.key || ''
-  return { client, name: '', type: 'tcp', enable: true, localIp: '127.0.0.1', localPort: 22, remotePort: 6000, customDomains: [], subdomain: '', secretKey: '', remark: '' }
+  return { client, name: '', type: 'tcp', enable: true, localIp: '127.0.0.1', localPort: 22, remotePort: 6000, customDomains: [], subdomain: '', secretKey: '', useEncryption: false, useCompression: false, remark: '' }
 }
 
 // openProxy 打开代理编辑框：copy 为 true 时以 p 为模板新建副本。

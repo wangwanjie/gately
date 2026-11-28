@@ -1454,6 +1454,8 @@ Syntaxe générique : `*:read` désigne la lecture seule sur tous les modules, `
 | `secretKey` | string |
 | `subdomain` | string |
 | `type` | string |
+| `useCompression` | boolean |
+| `useEncryption` | boolean |
 
 ### frp.Server
 

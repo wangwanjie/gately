@@ -62,7 +62,7 @@ func TestImportLuckyFRP(t *testing.T) {
 	if len(m.cfg.Proxies) != 3 {
 		t.Fatalf("应导入 3 个代理（插件代理跳过），实际 %+v", m.cfg.Proxies)
 	}
-	if p := m.cfg.Proxies[1]; p.Type != TypeHTTP || p.CustomDomains[0] != "a.example.com" || p.LocalIP != "192.168.1.2" {
+	if p := m.cfg.Proxies[1]; p.Type != TypeHTTP || p.CustomDomains[0] != "a.example.com" || p.LocalIP != "192.168.1.2" || !p.UseCompression || p.UseEncryption {
 		t.Fatalf("http 代理映射错误: %+v", p)
 	}
 	if m.cfg.Proxies[2].Enable {
@@ -73,12 +73,12 @@ func TestImportLuckyFRP(t *testing.T) {
 		t.Fatalf("服务端映射错误: %+v", s)
 	}
 	joined := strings.Join(rep.Warnings, "\n")
-	for _, want := range []string{"virtual_net", "useCompression（1 个代理）", "访问者", "控制台未迁移"} {
+	for _, want := range []string{"virtual_net", "访问者", "控制台未迁移"} {
 		if !strings.Contains(joined, want) {
 			t.Errorf("缺少提示 %q:\n%s", want, joined)
 		}
 	}
-	if strings.Contains(joined, "annotations") || strings.Contains(joined, "natTraversal") || strings.Contains(joined, "useEncryption") {
+	if strings.Contains(joined, "annotations") || strings.Contains(joined, "natTraversal") || strings.Contains(joined, "useEncryption") || strings.Contains(joined, "useCompression") {
 		t.Errorf("空值字段不应提示:\n%s", joined)
 	}
 

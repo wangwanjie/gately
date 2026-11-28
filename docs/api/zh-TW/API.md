@@ -1454,6 +1454,8 @@ curl -X POST -H "Authorization: Bearer gtl_xxxx" http://localhost:16680/api/ddns
 | `secretKey` | string |
 | `subdomain` | string |
 | `type` | string |
+| `useCompression` | boolean |
+| `useEncryption` | boolean |
 
 ### frp.Server
 

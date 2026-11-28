@@ -444,6 +444,7 @@ func importAllowPorts(top map[string]any) string {
 var proxyKeys = []string{
 	"name", "type", "localIP", "local_ip", "localPort", "local_port", "remotePort", "remote_port",
 	"customDomains", "custom_domains", "subdomain", "secretKey", "sk",
+	"transport.useEncryption", "use_encryption", "transport.useCompression", "use_compression",
 }
 
 func importProxies(secs []*section, legacy bool, res *ImportResult) {
@@ -485,6 +486,9 @@ func importProxies(secs []*section, legacy bool, res *ImportResult) {
 			CustomDomains: pickList(kv, "customDomains", "custom_domains"),
 			Subdomain:     pick(kv, "subdomain"),
 			SecretKey:     pick(kv, "secretKey", "sk"),
+			// 新版 TOML 为 transport.useEncryption，旧版 INI 为 use_encryption
+			UseEncryption:  pick(kv, "transport.useEncryption", "use_encryption") == "true",
+			UseCompression: pick(kv, "transport.useCompression", "use_compression") == "true",
 		}
 		if p.Type == "" && legacy {
 			// 旧版 frp 省略 type 时默认为 tcp

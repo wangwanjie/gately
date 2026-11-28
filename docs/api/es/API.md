@@ -1454,6 +1454,8 @@ Comodines: `*:read` equivale a solo lectura en todos los módulos; `*:write` o `
 | `secretKey` | string |
 | `subdomain` | string |
 | `type` | string |
+| `useCompression` | boolean |
+| `useEncryption` | boolean |
 
 ### frp.Server
 
